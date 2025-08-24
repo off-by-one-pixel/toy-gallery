@@ -1,0 +1,18 @@
+services:
+  python-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Mount the root folder that contains .git
+      - .:/workspace
+    command: sleep infinity
+    # ...
+
+  node-app:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm
+    volumes:
+      # Mount the root folder that contains .git
+      - .:/workspace
+    command: sleep infinity
+    # ...

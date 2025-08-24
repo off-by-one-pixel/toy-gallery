@@ -1,0 +1,61 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+*.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# VS Code settings
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+out/
+*.egg-info/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Coverage reports
+coverage/
+*.cover
+*.coverage
+.coverage.*
+
+# Test output
+junit.xml
+test-results/
+
+# Misc
+.idea/
+*.bak
+*.orig
+*.rej
+*.sublime-workspace
+*.sublime-project
