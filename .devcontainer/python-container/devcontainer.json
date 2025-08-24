@@ -1,6 +1,9 @@
 {
     "name": "Python Development",
-    "dockerFile": "Dockerfile",
+    "dockerComposeFile": ["../../docker-compose.yml"],
+    "service": "python-api",
+    "shutdownAction": "none",
+    "workspaceFolder": "/workspace/toy_gallery_be",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -23,6 +26,5 @@
         }
     },
     "forwardPorts": [8000],
-    "postCreateCommand": "pip install --user -r requirements.txt || true",
     "remoteUser": "vscode"
 }
