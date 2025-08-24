@@ -6,8 +6,6 @@ services:
     volumes:
       - .:/workspace
     command: sleep infinity
-    networks:
-      - app-network
 
   node-app:
     build:
@@ -16,9 +14,3 @@ services:
     volumes:
       - .:/workspace
     command: sleep infinity
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
