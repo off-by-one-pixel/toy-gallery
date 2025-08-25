@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import ConeVisualization from './ConeVisualization';
+import { saveCone } from '../services/api';
 
 const TOP_SHAPES = {
   CONE: 'cone',
   EGG: 'egg'
 };
-
 const ConeSectionsManager = () => {
   const [sections, setSections] = useState([
     { id: 1, diameter: 100, height: 50, shape: TOP_SHAPES.CONE }
   ]);
+  const [saveStatus, setSaveStatus] = useState('');
+  const [coneName, setConeName] = useState('');
 
   const addSection = () => {
     const newId = sections.length ? Math.max(...sections.map(s => s.id)) + 1 : 1;
@@ -41,7 +43,20 @@ const ConeSectionsManager = () => {
     
     if (newIndex >= 0 && newIndex < sections.length) {
       [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
-      setSections(newSections);
+      onSectionsChange(newSections);
+    }
+  };  
+
+  const handleSaveCone = async () => {
+    try {
+      setSaveStatus('Saving...');
+      await saveCone(coneName, sections);
+      setSaveStatus('Saved successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveStatus(''), 3000);
+    } catch (err) {
+      setSaveStatus(`Error saving: ${err.message}`);
     }
   };
 
@@ -49,7 +64,7 @@ const ConeSectionsManager = () => {
   const maxDiameter = Math.max(...sections.map(section => section.diameter));
 
   return (
-    <div className="cone-sections-manager">
+    <div className="cone-section-manager">
       <ConeVisualization sections={sections} />
 
       <div className="controls-container">
@@ -120,6 +135,28 @@ const ConeSectionsManager = () => {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="save-controls">
+        <input
+          type="text"
+          value={coneName}
+          onChange={(e) => setConeName(e.target.value)}
+          placeholder="Enter cone name"
+          className="cone-name-input"
+        />
+        <button 
+          className="save-button"
+          onClick={handleSaveCone}
+          disabled={!coneName.trim()}
+        >
+          Save Cone
+        </button>
+        {saveStatus && (
+          <div className={`save-status ${saveStatus.includes('Error') ? 'error' : 'success'}`}>
+            {saveStatus}
+          </div>
+        )}
       </div>
     </div>
   );

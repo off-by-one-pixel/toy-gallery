@@ -62,3 +62,4 @@ test-results/
 
 # Database files
 *.sqlite
+*.sqlite3
