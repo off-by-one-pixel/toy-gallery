@@ -63,3 +63,6 @@ test-results/
 # Database files
 *.sqlite
 *.sqlite3
+
+# Next.js
+next-env.d.ts

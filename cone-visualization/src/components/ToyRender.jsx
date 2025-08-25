@@ -1,8 +1,7 @@
-import React from 'react';
 import ConeSection from './ConeSection';
 import ConeSectionTop from './ConeSectionTop';
 
-const ConeVisualization = ({ sections }) => {
+const ToyRender = ({ sections }) => {
   const totalHeight = sections.reduce((sum, section) => sum + section.height, 0);
   const maxDiameter = Math.max(...sections.map(section => section.diameter));
 
@@ -43,4 +42,4 @@ const ConeVisualization = ({ sections }) => {
   );
 };
 
-export default ConeVisualization;
+export default ToyRender;

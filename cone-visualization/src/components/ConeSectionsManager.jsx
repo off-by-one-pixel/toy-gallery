@@ -1,6 +1,16 @@
+'use client'
+
 import React, { useState } from 'react';
-import ConeVisualization from './ConeVisualization';
+import ConeVisualization from './ToyRender';
 import { saveCone } from '../services/api';
+import {
+  Button,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@material-tailwind/react";
+ 
 
 const TOP_SHAPES = {
   CONE: 'cone',
@@ -125,12 +135,12 @@ const ConeSectionsManager = () => {
                   />
                   <span className="value">{section.height}px</span>
                 </label>
-                <button 
+                <Button 
                   className="remove-button" 
                   onClick={() => removeSection(section.id)}
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -145,13 +155,13 @@ const ConeSectionsManager = () => {
           placeholder="Enter cone name"
           className="cone-name-input"
         />
-        <button 
+        <Button 
           className="save-button"
           onClick={handleSaveCone}
           disabled={!coneName.trim()}
         >
           Save Cone
-        </button>
+        </Button>
         {saveStatus && (
           <div className={`save-status ${saveStatus.includes('Error') ? 'error' : 'success'}`}>
             {saveStatus}
