@@ -1,6 +1,7 @@
 import React from 'react';
 import ConeSectionsManager from './components/ConeSectionsManager';
 import './styles/ConeSectionsManager.css';
+import './styles/index.css';
 import ConeList from './components/ConeList';
 
 function App() {

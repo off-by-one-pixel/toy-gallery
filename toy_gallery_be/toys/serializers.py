@@ -14,7 +14,7 @@ class ToyShapeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Shape
-        fields = ["sections", "top_section_shape"]
+        fields = ["sections"]
 
     def create(self, validated_data):
         sections_data = validated_data.pop("sections")
@@ -29,7 +29,16 @@ class ToySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Toy
-        fields = ["name", "shape"]
+        fields = [
+            "brand",
+            "name",
+            "shape",
+            "diameter",
+            "height",
+            "size",
+            "date_purchased",
+            "retired",
+        ]
 
     def create(self, validated_data):
         shape_data = validated_data.pop("shape")
