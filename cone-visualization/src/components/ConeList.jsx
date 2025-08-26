@@ -1,13 +1,19 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchCones } from '../services/api';
 import ToyCard from './ToyCard';
+import { Card, CardBody, CardFooter } from '@material-tailwind/react';
+import ConeSectionsManager from "../components/ConeSectionsManager";
 
 const ConeList = () => {
   const [cones, setCones] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const maxHeight = 320;
+  const maxToyHeight = Math.max(...cones.map(cone => cone.height), maxHeight);
+  const scaleFactor = maxHeight / maxToyHeight;
 
   useEffect(() => {
     const loadCones = async () => {
@@ -43,12 +49,20 @@ const ConeList = () => {
   }
 
   return (
-    <div className="cone-list">
-      <h1>Cone List</h1>
+    <div className="pt-5 pb-5">
       <div className="flex flex-row flex-wrap gap-4 mx-4 items-end">
         {cones.map((cone) => (
-          <ToyCard key={cone.name} toy={cone}/>
+          <ToyCard key={cone.name} toy={cone} scaleFactor={scaleFactor} />
         ))}
+        <Card className="w-96 bg-gray-200 border-dashed border-4 border-gray-400 shadow-none">
+          <CardBody className="h-[320px]">
+            <div className="mb-2 flex items-center justify-center h-full">
+              <ConeSectionsManager />
+            </div>
+          </CardBody>
+          <CardFooter className="h-36">
+            </CardFooter>
+        </Card>
       </div>
     </div>
   );

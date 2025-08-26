@@ -1,9 +1,14 @@
-const ConeSection = ({ diameter, prev_diameter = 0, height, x = 0}) => {
+const ConeSection = ({ diameter, prev_diameter = 0, height, x = 0, scaleFactor=1}) => {
+  diameter = diameter * scaleFactor;
+  prev_diameter = prev_diameter * scaleFactor;
+  height = height * scaleFactor;
+
   const diff_prev = Math.max(0, diameter - prev_diameter) / 2;
   const diff = Math.max(0,  prev_diameter - diameter) / 2;
 
+
   return (
-    <g transform={`translate(${x}, 0)`}>
+    <g transform={`translate(${x+2}, 0)`}>
       <path
         d={`
           M ${0 + diff_prev} 0
@@ -13,7 +18,7 @@ const ConeSection = ({ diameter, prev_diameter = 0, height, x = 0}) => {
         `}
         fill="lightblue"
         stroke="#000"
-        strokeWidth="1"
+        strokeWidth="2"
       />
     </g>
   );

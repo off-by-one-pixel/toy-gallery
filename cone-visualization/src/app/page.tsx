@@ -1,5 +1,4 @@
 import ConeList from "../components/ConeList";
-import ConeSectionsManager from "../components/ConeSectionsManager";
 
 export default async function Page() {
  
@@ -10,9 +9,7 @@ export default async function Page() {
   ];
 
   return (
-    <div className="App">
-      <h1>Cone Section Visualization</h1>
-      <ConeSectionsManager />
+    <div className="App antialiased px-5 bg-gray-200">
       <ConeList />
     </div>
   );

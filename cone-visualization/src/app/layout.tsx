@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import '../styles/ConeSectionsManager.css';
 import '../styles/index.css';
 
 export const metadata: Metadata = {
