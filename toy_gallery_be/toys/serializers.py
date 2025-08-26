@@ -30,6 +30,7 @@ class ToySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Toy
         fields = [
+            "id",
             "brand",
             "name",
             "shape",
@@ -38,6 +39,7 @@ class ToySerializer(serializers.ModelSerializer):
             "size",
             "date_purchased",
             "retired",
+            "color",
         ]
 
     def create(self, validated_data):

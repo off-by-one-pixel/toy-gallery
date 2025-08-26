@@ -37,11 +37,8 @@ class Toy(models.Model):
     name = models.CharField()
     date_purchased = models.DateField(null=True, blank=True)
     retired = models.BooleanField(default=False)
-    shape = models.OneToOneField(
-        Shape,
-        on_delete=models.CASCADE,
-        primary_key=True,
-    )
+    shape = models.OneToOneField(Shape, on_delete=models.CASCADE)
+    color = models.CharField(null=True, blank=True)
 
     def diameter(self) -> float:
         return self.shape.get_diameter()
