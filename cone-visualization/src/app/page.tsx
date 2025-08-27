@@ -9,7 +9,7 @@ export default async function Page() {
   ];
 
   return (
-    <div className="App antialiased px-5 bg-gray-200">
+    <div className="antialiased px-5">
       <ConeList />
     </div>
   );

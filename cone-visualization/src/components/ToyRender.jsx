@@ -1,7 +1,7 @@
 import ConeSection from './ConeSection';
 import ConeSectionTop from './ConeSectionTop';
 
-const ToyRender = ({ sections, scaleFactor=1 }) => {
+const ToyRender = ({ topShape, sections, scaleFactor=1 }) => {
   const totalHeight = sections.reduce((sum, section) => sum + section.height, 0) * scaleFactor;
   const maxDiameter = Math.max(...sections.map(section => section.diameter)) * scaleFactor;
   return (
@@ -22,7 +22,7 @@ const ToyRender = ({ sections, scaleFactor=1 }) => {
             <ConeSectionTop
               diameter={section.diameter}
               height={section.height}
-              shape={section.shape}
+              shape={topShape}
               scaleFactor={scaleFactor}
               x={(maxDiameter - Math.max(section.diameter, prev_diameter) * scaleFactor) / 2 }
             />

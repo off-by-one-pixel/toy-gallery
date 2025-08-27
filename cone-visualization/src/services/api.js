@@ -1,10 +1,7 @@
 import { API_CONFIG } from '../config';
 
-const TOYS_ENDPOINT = '/toys/toys/';
+const TOYS_ENDPOINT = '/toys/toys';
 
-/**
- * Custom error class for API errors
- */
 export class APIError extends Error {
   constructor(message, status, data) {
     super(message);
@@ -14,17 +11,11 @@ export class APIError extends Error {
   }
 }
 
-/**
- * Base API client with common functionality
- */
 class APIClient {
   constructor(baseURL) {
     this.baseURL = baseURL;
   }
 
-  /**
-   * Get auth header for requests
-   */
   getHeaders(contentType = null) {
     const headers = {
       'Authorization': `Basic ${btoa(`${API_CONFIG.auth.username}:${API_CONFIG.auth.password}`)}`
@@ -35,9 +26,6 @@ class APIClient {
     return headers;
   }
 
-  /**
-   * Handle API response
-   */
   async handleResponse(response) {
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
@@ -50,9 +38,6 @@ class APIClient {
     return response.json();
   }
 
-  /**
-   * Make API request with common error handling
-   */
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     try {
@@ -67,11 +52,10 @@ class APIClient {
   }
 }
 
-/**
- * Transform cone data for API requests
- */
-const transformConeForAPI = (name, sections) => ({
+const transformConeForAPI = (brand, name, size, sections) => ({
   name,
+  brand,
+  size,
   shape: {
     sections: sections.map(section => ({
       order: section.id,
@@ -82,7 +66,6 @@ const transformConeForAPI = (name, sections) => ({
   }
 });
 
-// Create API client instance
 const apiClient = new APIClient(API_CONFIG.baseUrl);
 
 /**
@@ -90,7 +73,7 @@ const apiClient = new APIClient(API_CONFIG.baseUrl);
  * @returns {Promise<Array>} List of cones
  */
 export const fetchCones = () => 
-  apiClient.request(TOYS_ENDPOINT);
+  apiClient.request(`${TOYS_ENDPOINT}/`);
 
 /**
  * Delete a cone by ID
@@ -98,7 +81,7 @@ export const fetchCones = () =>
  * @returns {Promise<Object>} Deleted cone data
  */
 export const deleteToy = (id) =>
-  apiClient.request(`${TOYS_ENDPOINT}/${id}`, {
+  apiClient.request(`${TOYS_ENDPOINT}/${id}/`, {
     method: 'DELETE',
     headers: apiClient.getHeaders()
   });
@@ -109,18 +92,12 @@ export const deleteToy = (id) =>
  * @param {Array} coneSections - Array of cone sections
  * @returns {Promise<Object>} Created cone data
  */
-export const saveCone = async (coneName, coneSections) => {
-  const transformedData = transformConeForAPI(coneName, coneSections);
+export const saveCone = async (toyBrand, coneName, toySize, coneSections) => {
+  const transformedData = transformConeForAPI(toyBrand, coneName, toySize, coneSections);
   
-  return apiClient.request(TOYS_ENDPOINT, {
+  return apiClient.request(`${TOYS_ENDPOINT}/`, {
     method: 'POST',
     headers: apiClient.getHeaders('application/json'),
     body: JSON.stringify(transformedData)
   });
-
-  if (!response.ok) {
-    throw new Error(`Failed to save cone: ${response.statusText}`);
-  }
-
-  return await response.json();
 };

@@ -16,7 +16,7 @@ export default function RootLayout({
             <head>
                 <meta name="theme-color" content="#000000" />
             </head>
-            <body>
+            <body className="bg-gray-200 min-h-screen">
                 <main>{children}</main>
             </body>
         </html>

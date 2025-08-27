@@ -22,6 +22,9 @@ const ConeSectionsManager = () => {
   ]);
   const [saveStatus, setSaveStatus] = useState('');
   const [coneName, setConeName] = useState('');
+  const [toyBrand, setToyBrand] = useState('');
+  const [toySize, setToySize] = useState('');
+
   const [open, setOpen] = React.useState(false);
 
   const addSection = () => {
@@ -63,7 +66,7 @@ const ConeSectionsManager = () => {
   const handleSaveCone = async () => {
     try {
       setSaveStatus('Saving...');
-      await saveCone(coneName, sections);
+      await saveCone(toyBrand, coneName, toySize, sections);
       setSaveStatus('Saved successfully!');
 
       // Clear success message after 3 seconds
@@ -98,15 +101,29 @@ const ConeSectionsManager = () => {
           <div className="flex-1">
             <input
               type="text"
+              value={toyBrand}
+              onChange={(e) => setToyBrand(e.target.value)}
+              placeholder="Enter brand"
+              className="cone-name-input"
+            />
+            <input
+              type="text"
               value={coneName}
               onChange={(e) => setConeName(e.target.value)}
-              placeholder="Enter cone name"
+              placeholder="Enter name"
+              className="cone-name-input"
+            />
+            <input
+              type="text"
+              value={toySize}
+              onChange={(e) => setToySize(e.target.value)}
+              placeholder="Enter size (e.g., Small, Medium, Large)"
               className="cone-name-input"
             />
             <Button
               className="save-button"
               onClick={handleSaveCone}
-              disabled={!coneName.trim()}
+              disabled={!coneName.trim() || !toyBrand.trim() || sections.length === 0}
             >
               Save Cone
             </Button>

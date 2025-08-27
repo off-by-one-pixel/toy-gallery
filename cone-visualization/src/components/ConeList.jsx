@@ -14,6 +14,9 @@ const ConeList = () => {
   const maxHeight = 320;
   const maxToyHeight = Math.max(...cones.map(cone => cone.height), maxHeight);
   const scaleFactor = maxHeight / maxToyHeight;
+  const [lastChanged, setLastChanged] = useState(0);
+
+  const updateLastChanged = () => setLastChanged(Date.now());
 
   useEffect(() => {
     const loadCones = async () => {
@@ -22,11 +25,11 @@ const ConeList = () => {
         // Transform the API data to match our ConeVisualization component's format
         const transformedCones = data.map(cone => ({
           ...cone,
+          topShape: cone.shape.top_section_shape.toLowerCase(),
           sections: cone.shape.sections.map(section => ({
-            id: section.order,
+            id: section.id,
             height: section.height,
-            diameter: section.diameter,
-            shape: section.order === 0 ? cone.shape.top_section_shape.toLowerCase() : 'cone'
+            diameter: section.diameter
           }))
         }));
         setCones(transformedCones);
@@ -38,7 +41,7 @@ const ConeList = () => {
     };
 
     loadCones();
-  }, []);
+  }, [lastChanged]);
 
   if (isLoading) {
     return <div className="loading">Loading cones...</div>;
@@ -52,7 +55,7 @@ const ConeList = () => {
     <div className="pt-5 pb-5">
       <div className="flex flex-row flex-wrap gap-4 mx-4 items-end">
         {cones.map((cone) => (
-          <ToyCard key={cone.name} toy={cone} scaleFactor={scaleFactor} />
+          <ToyCard key={cone.name} toy={cone} scaleFactor={scaleFactor} updateLastChanged={updateLastChanged} />
         ))}
         <Card className="w-96 bg-gray-200 border-dashed border-4 border-gray-400 shadow-none">
           <CardBody className="h-[320px]">
