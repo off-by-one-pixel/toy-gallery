@@ -9,8 +9,8 @@ import {
 const ConeControls = ({ addSection, updateSection, removeSection, moveSection, sections, shapes }) => {
   const MIN_DIAMETER = 10;
   const MAX_DIAMETER = 200;
-  const MIN_HEIGHT = 10;
-  const MAX_HEIGHT = 200;
+  const MIN_HEIGHT = 1;
+  const MAX_HEIGHT = 350;
 
   return (
     <div className="flex-1/2">
