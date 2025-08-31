@@ -1,1 +1,1 @@
-export { default as ConeEditor } from './components/ConeEditor';
+export { default as ToyEditor } from './components/ToyEditor.js';

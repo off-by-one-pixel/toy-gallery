@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "esnext",
+    "module": "node16",
     "lib": ["dom", "esnext"],
     "jsx": "react",
     "declaration": true,
     "declarationDir": "dist",
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    // "strictNullChecks": true,
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.test.tsx", "**/*.stories.tsx"]
