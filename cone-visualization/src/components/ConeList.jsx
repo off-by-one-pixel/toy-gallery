@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchCones } from '../services/api';
 import ToyCard from './ToyCard';
 import { Card, CardBody, CardFooter } from '@material-tailwind/react';
-import ConeSectionsManager from "../components/ConeSectionsManager";
+import ConeSectionsManager from './ConeSectionsManager';
 
 const ConeList = () => {
   const [cones, setCones] = useState([]);
@@ -24,7 +24,7 @@ const ConeList = () => {
         const data = await fetchCones();
         // Transform the API data to match our ConeVisualization component's format
         const transformedCones = data.map(cone => ({
-          ...cone,
+          ...cone,  
           topShape: cone.shape.top_section_shape.toLowerCase(),
           sections: cone.shape.sections.map(section => ({
             id: section.id,
@@ -55,7 +55,7 @@ const ConeList = () => {
     <div className="pt-5 pb-5">
       <div className="flex flex-row flex-wrap gap-4 mx-4 items-end">
         {cones.map((cone) => (
-          <ToyCard key={cone.name} toy={cone} scaleFactor={scaleFactor} updateLastChanged={updateLastChanged} />
+          <ToyCard key={cone.id} toy={cone} scaleFactor={scaleFactor} updateLastChanged={updateLastChanged} />
         ))}
         <Card className="w-96 bg-gray-200 border-dashed border-4 border-gray-400 shadow-none">
           <CardBody className="h-[320px]">

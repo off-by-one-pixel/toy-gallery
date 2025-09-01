@@ -1,5 +1,5 @@
 import { deleteToy } from "../services/api";
-import ToyRender from "./ToyRender"
+import { Render } from "cone-editor";
 import {
     Card,
     CardHeader,
@@ -36,7 +36,7 @@ const ToyCard = ({ toy, scaleFactor, updateLastChanged }) => {
             <CardHeader shadow={false} floated={false} className="h-[320px]">
 
                 <div className="h-full w-full flex items-end bg-gradient-to-br from-red-50/40 to-teal-100/40">
-                    <ToyRender topShape={toy.topShape} sections={toy.sections} scaleFactor={scaleFactor} />
+                    <Render toy={toy} scaleFactor={scaleFactor} />
                 </div>
 
             </CardHeader>

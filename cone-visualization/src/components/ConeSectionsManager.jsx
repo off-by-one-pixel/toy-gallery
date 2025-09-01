@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react';
-import ConeVisualization from './ToyRender';
 import { saveCone } from '../services/api';
 import {
   Button,
@@ -9,7 +8,7 @@ import {
   DialogHeader,
   DialogBody,
 } from "@material-tailwind/react";
-import ConeControls from './ConeControls';
+import { ToyEditor } from 'cone-editor';
 
 
 const TOP_SHAPES = {
@@ -24,45 +23,8 @@ const ConeSectionsManager = () => {
   const [coneName, setConeName] = useState('');
   const [toyBrand, setToyBrand] = useState('');
   const [toySize, setToySize] = useState('');
-
   const [open, setOpen] = React.useState(false);
-
-  const addSection = () => {
-    const newId = sections.length ? Math.max(...sections.map(s => s.id)) + 1 : 1;
-    const lastSection = sections[sections.length - 1];
-    setSections([...sections, {
-      id: newId,
-      diameter: lastSection.diameter * 0.8,
-      height: 50,
-      shape: TOP_SHAPES.CONE
-    }]);
-  };
-
-  const removeSection = (id) => {
-    setSections(sections.filter(section => section.id !== id));
-  };
-
-  const updateSection = (id, property, value) => {
-    setSections(sections.map(section =>
-      section.id === id ? {
-        ...section,
-        [property]: property === 'shape' ? value : Number(value)
-      } : section
-    ));
-  };
-
-  const moveSection = (index, direction) => {
-    const newSections = [...sections];
-    const newIndex = index + direction;
-
-    if (newIndex >= 0 && newIndex < sections.length) {
-      [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
-      setSections(newSections);
-    }
-  };
-
   const handleOpen = () => setOpen(!open);
-
   const handleSaveCone = async () => {
     try {
       setSaveStatus('Saving...');
@@ -85,19 +47,7 @@ const ConeSectionsManager = () => {
         <DialogHeader className="pb-0">Create new toy</DialogHeader>
         <DialogBody className='pt-0'>
           <div className="flex flex-wrap items-end">
-            <div className="flex-1/2">
-          <ConeVisualization sections={sections} scaleFactor={2}/>
-          </div>
-          <div className="flex-1/2">
-          <ConeControls
-            addSection={addSection}
-            updateSection={updateSection}
-            removeSection={removeSection}
-            moveSection={moveSection}
-            sections={sections}
-            shapes={TOP_SHAPES}
-          />
-          </div>
+            <ToyEditor/>
           <div className="flex-1">
             <input
               type="text"
