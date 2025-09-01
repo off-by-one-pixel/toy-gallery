@@ -1,28 +1,25 @@
-import React from 'react';
-import { useToyStore } from '../toyMachine.js';
+import React from "react";
+import { ToySection } from "../toyMachine.js";
 
 type Props = {
-  useSectionStore: ReturnType<typeof useToyStore.getState>["sections"][number];
+  section: ToySection;
+  scaleFactor: number;
+  previousDiameter: number;
+  totalWidth: number;
+  borderWidth: number;
 };
 
-
-const Section: React.FC<Props> = ({ useSectionStore }) => {
-  const section = useSectionStore();
-  const { scaleFactor } = useToyStore(() => ({ scaleFactor: useToyStore.getState().scaleFactor }));
-  const getPreviousDiameter = useToyStore((s) => s.getPreviousDiameter);
-  const getXOffset = useToyStore((s) => s.getXOffset);
-
-  const x = getXOffset(section.id) * scaleFactor;
+const Section: React.FC<Props> = ({ section, scaleFactor, previousDiameter, totalWidth, borderWidth }) => {
+  const x = (totalWidth - Math.max(section.diameter, previousDiameter) * scaleFactor) / 2;
   const diameter = section.diameter * scaleFactor;
-  const prev_diameter = getPreviousDiameter(section.id) * scaleFactor;
+  const prev_diameter = previousDiameter * scaleFactor;
   const height = section.height * scaleFactor;
 
   const diff_prev = Math.max(0, diameter - prev_diameter) / 2;
   const diff = Math.max(0, prev_diameter - diameter) / 2;
 
-
   return (
-    <g transform={`translate(${x + 2}, 0)`}>
+    <g transform={`translate(${x + borderWidth}, 0)`}>
       <path
         d={`
           M ${0 + diff_prev} 0
@@ -32,7 +29,7 @@ const Section: React.FC<Props> = ({ useSectionStore }) => {
         `}
         fill="lightblue"
         stroke="#000"
-        strokeWidth="2"
+        strokeWidth={borderWidth}
       />
     </g>
   );

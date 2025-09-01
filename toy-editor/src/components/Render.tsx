@@ -1,30 +1,56 @@
 import React from "react";
-import { useToyStore } from "../toyMachine.js";
+import { Toy } from "../toyMachine.js";
 import Section from "./Section.js";
+import TopSection from "./TopSection.js";
 
-export const Render: React.FC<{}> = () => {
-  const sections = useToyStore((s) => s.sections);
-  const { scaleFactor, getTotalHeight, getMaxWidth, getYOffset } = useToyStore();
+type Props = {
+  toy: Toy;
+  scaleFactor: number;
+};
 
-  const totalHeight = getTotalHeight() * scaleFactor;
-  const maxDiameter = getMaxWidth() * scaleFactor;
+export const Render: React.FC<Props> = ({ toy, scaleFactor }) => {
+  const borderWidth = 2;
+  const totalHeight = toy.sections.reduce((a, b) => a + b.height, 0) * scaleFactor;
+  const maxDiameter = Math.max(...toy.sections.map((s) => s.diameter), 0) * scaleFactor;
+  let yOffset = 0;
+  let previousDiameter = 0;
+  let currentDiameter = 0;
+  let previousHeight = 0;
 
   return (
     <svg
       width={maxDiameter}
       height={totalHeight}
-      viewBox={`0 0 ${maxDiameter+4} ${totalHeight}`}
+      viewBox={`0 0 ${maxDiameter + 4} ${totalHeight}`}
       style={{ display: 'block', margin: '20px auto' }}
     >
-      {sections.map((useSectionStore, index) => {
-        const section = useSectionStore();
-
+      {toy.sections.map((section, index) => {
+        yOffset += previousHeight;
+        previousHeight = section.height;
+        previousDiameter = currentDiameter;
+        currentDiameter = section.diameter;
+        const sectionElement = (index === 0) ? (
+          <TopSection
+            section={section}
+            scaleFactor={scaleFactor}
+            borderWidth={borderWidth}
+            totalWidth={maxDiameter}
+            shape={toy.topShape} />
+        ) : (
+          <Section
+            section={section}
+            scaleFactor={scaleFactor}
+            previousDiameter={previousDiameter}
+            totalWidth={maxDiameter}
+            borderWidth={borderWidth}
+          />
+        );
         return (
-          <g key={section.id} transform={`translate(0, ${getYOffset(section.id) * scaleFactor})`}>
-            <Section useSectionStore={useSectionStore} />
-          </g>
+          <g key={section.id} transform={`translate(0, ${yOffset * scaleFactor})`}> {sectionElement}</g>
         );
       })}
     </svg>
   );
 };
+
+export default Render;
