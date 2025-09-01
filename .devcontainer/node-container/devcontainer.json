@@ -1,5 +1,5 @@
 {
-  "name": "Node Container",
+  "name": "Node Container (FE)",
   "dockerComposeFile": ["../../docker-compose.yml"],
   "service": "node-app",
   "shutdownAction": "none",
