@@ -1,7 +1,7 @@
 "use client"
 
 import { Button, Input, Slider, Typography } from '@material-tailwind/react';
-import { ToyEditor } from 'cone-editor';
+import { ToyEditor } from 'toy-editor';
 import { useRef, useState } from 'react';
 import { HexColorPicker } from "react-colorful";
 
