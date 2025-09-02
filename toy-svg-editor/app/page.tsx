@@ -11,7 +11,7 @@ export default function Home() {
     borderColor: "#000",
     color: "lightblue",
   })
-  const ref = useRef(null)
+  const ref = useRef<SVGElement>(null)
   const [ toy, setToy] = useState({})
   const [ width, setWidth] = useState(100)
   const [ copyStatus, setCopyStatus ] = useState(0)

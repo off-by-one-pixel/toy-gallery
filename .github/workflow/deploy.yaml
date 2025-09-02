@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - "main" # change to the branch you wish to deploy from
+
+env:
+  PUBLIC_URL: "/toy-editor"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - id: build-publish
+      uses: bitovi/github-actions-react-to-github-pages@v1.2.4
+      with:
+        install_command: cd toy-svg-editor && npm ci
+        build_command: cd toy-svg-editor && npm run build
+        path: toy-scg-editor/out
