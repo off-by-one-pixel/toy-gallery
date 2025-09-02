@@ -1,103 +1,82 @@
-import Image from "next/image";
+"use client"
+
+import { Button, Input, Slider, Typography } from '@material-tailwind/react';
+import { ToyEditor } from 'cone-editor';
+import { useRef, useState } from 'react';
+import { HexColorPicker } from "react-colorful";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [style, setStyle] = useState({
+    borderWidth: 2,
+    borderColor: "#000",
+    color: "lightblue",
+  })
+  const ref = useRef(null)
+  const [ toy, setToy] = useState({})
+  const [ width, setWidth] = useState(100)
+  const [ copyStatus, setCopyStatus ] = useState(0)
+  const maxWidth = 200;
+  const minWidth = 5;
+  const maxBorder = 10;
+  const minBorder = 0;
+  const setStyleColor = ((color: string) => setStyle({ ...style, ...{ color: color } }));
+  const setStyleBorderColor = ((color: string) => setStyle({ ...style, ...{ borderColor: color } }));
+  const setStyleBorderWidth = ((width: number) => setStyle({ ...style, ...{ borderWidth: width } }));
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    const handleCopyClick = async () => {
+    try {
+      await navigator.clipboard.writeText(ref?.current ? ref.current.outerHTML : "");
+      setCopyStatus(1);
+      setTimeout(() => setCopyStatus(0), 2000);
+    } catch (err) {
+      setCopyStatus(-1);
+    }
+  };
+  const getButtonColor = () => {
+    return copyStatus===0? "black" : copyStatus===-1? "red": "green"
+  }
+
+  const getButtonText = () => {
+    return copyStatus===0? "Copy SVG" : copyStatus===-1? "Faild": "Copied"
+  }
+
+  return (
+    <>
+      <div className="items-center justify-items-center min-h-screen p-8 flex-col">
+        <div className="flex flex-wrap gap-4">
+          <div className='flex-none smallPicker'>
+            <Typography>Toy color</Typography>
+            <HexColorPicker color={style.color} onChange={setStyleColor} />
+            <div className='mt-2'>
+            <Input value={style.color} onChange={(e) => setStyleColor(e.target.value)}></Input>
+            </div>
+          </div>
+          <div className='flex-none smallPicker'>
+            <Typography>Border color</Typography>
+            <HexColorPicker color={style.borderColor} onChange={setStyleBorderColor} />
+            <div className='mt-2'>
+            <Input value={style.borderColor} onChange={(e) => setStyleBorderColor(e.target.value)}></Input>
+            </div>
+          </div>
+          <div className='flex-1'>
+            <Typography>SVG width: {Math.round(width)} px</Typography>
+            <Slider
+              value={(width - minWidth) / ((maxWidth - minWidth) / 100)}
+              onChange={(e) => setWidth(((maxWidth - minWidth) / 100) * Number(e.target.value) + minWidth)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <Typography className='mt-3'>SVG Stroke Width: {Math.round(style.borderWidth)} px</Typography>
+            <Slider
+              value={(style.borderWidth - minBorder) / ((maxBorder - minBorder) / 100)}
+              onChange={(e) => setStyleBorderWidth(((maxBorder - minBorder) / 100) * Number(e.target.value) + minBorder)}
+            />
+          </div>
+          <div className='flex-1'> <Button color={ getButtonColor() } onClick={handleCopyClick}>{getButtonText()}</Button></div>
+                 
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className="flex flex- justify-center">
+          <ToyEditor style={style} width={width} onChange={setToy} ref={ref}/>
+        </div>
+      </div>
+    </>
   );
 }
