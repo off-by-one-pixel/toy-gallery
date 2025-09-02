@@ -1,15 +1,15 @@
 import React from "react";
-import { ToySection } from "../toyMachine.js";
+import { StyleOption, ToySection } from "../toyMachine.js";
 
 type Props = {
   section: ToySection;
   scaleFactor: number;
   previousDiameter: number;
   totalWidth: number;
-  borderWidth: number;
+  style: StyleOption;
 };
 
-const Section: React.FC<Props> = ({ section, scaleFactor, previousDiameter, totalWidth, borderWidth }) => {
+const Section: React.FC<Props> = ({ section, scaleFactor, previousDiameter, totalWidth, style }) => {
   const x = (totalWidth - Math.max(section.diameter, previousDiameter) * scaleFactor) / 2;
   const diameter = section.diameter * scaleFactor;
   const prev_diameter = previousDiameter * scaleFactor;
@@ -19,7 +19,7 @@ const Section: React.FC<Props> = ({ section, scaleFactor, previousDiameter, tota
   const diff = Math.max(0, prev_diameter - diameter) / 2;
 
   return (
-    <g transform={`translate(${x + borderWidth}, 0)`}>
+    <g transform={`translate(${x + style.borderWidth}, 0)`}>
       <path
         d={`
           M ${0 + diff_prev} 0
@@ -27,9 +27,9 @@ const Section: React.FC<Props> = ({ section, scaleFactor, previousDiameter, tota
           L ${diameter + diff} ${height} 
           C ${diameter + diff} ${height / 2} ${prev_diameter + diff_prev} ${height / 2} ${prev_diameter + diff_prev} 0
         `}
-        fill="lightblue"
-        stroke="#000"
-        strokeWidth={borderWidth}
+        fill={style.color}
+        stroke={style.borderColor}
+        strokeWidth={style.borderWidth}
       />
     </g>
   );

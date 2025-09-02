@@ -1,15 +1,16 @@
-import React from "react";
-import { Toy } from "../toyMachine.js";
+import React, { RefObject } from "react";
+import { StyleOption, Toy } from "../toyMachine.js";
 import Section from "./Section.js";
 import TopSection from "./TopSection.js";
 
 type Props = {
   toy: Toy;
   scaleFactor: number;
+  style: StyleOption;
+  ref?: RefObject<null>;
 };
 
-export const Render: React.FC<Props> = ({ toy, scaleFactor }) => {
-  const borderWidth = 2;
+export const Render: React.FC<Props> = ({ toy, style, scaleFactor, ref }) => {
   const totalHeight = toy.sections.reduce((a, b) => a + b.height, 0) * scaleFactor;
   const maxDiameter = Math.max(...toy.sections.map((s) => s.diameter), 0) * scaleFactor;
   let yOffset = 0;
@@ -19,9 +20,10 @@ export const Render: React.FC<Props> = ({ toy, scaleFactor }) => {
 
   return (
     <svg
+      ref={ref}
       width={maxDiameter}
       height={totalHeight}
-      viewBox={`0 0 ${maxDiameter + 4} ${totalHeight}`}
+      viewBox={`0 0 ${maxDiameter + style.borderWidth * 2} ${totalHeight}`}
       style={{ display: 'block', margin: '20px auto' }}
     >
       {toy.sections.map((section, index) => {
@@ -33,8 +35,8 @@ export const Render: React.FC<Props> = ({ toy, scaleFactor }) => {
           <TopSection
             section={section}
             scaleFactor={scaleFactor}
-            borderWidth={borderWidth}
             totalWidth={maxDiameter}
+            style={style}
             shape={toy.topShape} />
         ) : (
           <Section
@@ -42,7 +44,7 @@ export const Render: React.FC<Props> = ({ toy, scaleFactor }) => {
             scaleFactor={scaleFactor}
             previousDiameter={previousDiameter}
             totalWidth={maxDiameter}
-            borderWidth={borderWidth}
+            style={style}
           />
         );
         return (

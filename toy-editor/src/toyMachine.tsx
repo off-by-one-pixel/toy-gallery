@@ -1,4 +1,11 @@
 import { create } from "zustand";
+import { RefObject } from "react";
+
+export type StyleOption = {
+  borderWidth: number;
+  borderColor: string;
+  color: string;
+}
 
 export interface ToySection {
   id: number;
@@ -12,14 +19,13 @@ export interface Toy {
   sections: ToySection[];
   topShape: Shapes;
   bottomShape: Shapes;
+  ref?: RefObject<null>;
 }
 
-interface ToyMachineState {
-  sections: ToySection[];
-  topShape: Shapes;
-  bottomShape: Shapes;
+interface ToyMachineState extends Toy {
   scaleFactor: number;
   nextId: number;
+  style: StyleOption;
   getMaxWidth: () => number;
   getTotalHeight: () => number;
   newSection: () => void;
@@ -33,16 +39,27 @@ interface ToyMachineState {
   setTopShape: (shape: Shapes) => void;
   setBottomShape: (shape: Shapes) => void;
   moveSection: (id: number, direction: number) => void;
+  setStyle: (style: StyleOption) => void;
+  setRef: (ref: RefObject<null>) => void;
 }
 
 export const useToyStore = create<ToyMachineState>()((set, get) => ({
   sections: [
     { id: 0, diameter: 100, height: 50 },
   ],
+  style: {
+    borderWidth: 2,
+    borderColor: "#000",
+    color: "lightblue"
+  },
   scaleFactor: 1,
   topShape: "cone",
   bottomShape: "flat",
+  ref: undefined,
   nextId: 1,
+  setRef: (r) => {
+    set({ref: r})
+  },
   getMaxWidth: () => {
     const widths = get().sections.map((r) => r.diameter);
     return Math.max(...widths, 0);
@@ -101,6 +118,7 @@ export const useToyStore = create<ToyMachineState>()((set, get) => ({
       sections: get().sections,
       topShape: get().topShape,
       bottomShape: "flat",
+      ref: get().ref
     };
   },
   setDiameter: (id: number, diameter: number) => {
@@ -131,5 +149,8 @@ export const useToyStore = create<ToyMachineState>()((set, get) => ({
       [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
       set({ sections: newSections });
     }
+  },
+  setStyle(style) {
+    set({style: {...get().style, ...style}})
   }
 }));
