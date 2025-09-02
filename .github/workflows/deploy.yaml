@@ -19,5 +19,5 @@ jobs:
       uses: bitovi/github-actions-react-to-github-pages@v1.2.4
       with:
         install_command: cd toy-svg-editor && npm ci
-        build_command: cd toy-svg-editor && npm run build
+        build_command: npm run build
         path: toy-svg-editor/out
