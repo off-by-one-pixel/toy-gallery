@@ -20,4 +20,4 @@ jobs:
       with:
         install_command: cd toy-svg-editor && npm ci
         build_command: cd toy-svg-editor && npm run build
-        path: toy-scg-editor/out
+        path: toy-svg-editor/out
