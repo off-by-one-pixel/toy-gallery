@@ -1,3 +1,4 @@
+import dj_database_url
 from .settings import *
 import os
 
@@ -12,3 +13,14 @@ SESSION_COOKIE_SECURE = True
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.environ["DB_URL"],
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+
+# postgres://postgres:PMLvhxcImmZcAN7jCFhgNokTxFMFIhu1BuOpDGzTNVULrUWLMIpMZBIxOfsSxn5P@sggg8og8kcogg0o8wwcogkcs:5432/postgres
