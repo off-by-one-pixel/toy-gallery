@@ -21,6 +21,3 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
-
-
-# postgres://postgres:PMLvhxcImmZcAN7jCFhgNokTxFMFIhu1BuOpDGzTNVULrUWLMIpMZBIxOfsSxn5P@sggg8og8kcogg0o8wwcogkcs:5432/postgres
