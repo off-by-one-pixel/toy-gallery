@@ -52,7 +52,7 @@ class APIClient {
   }
 }
 
-const transformConeForAPI = (brand, name, size, sections) => ({
+const transformConeForAPI = (brand, name, size, sections, topShape) => ({
   name,
   brand,
   size,
@@ -62,7 +62,7 @@ const transformConeForAPI = (brand, name, size, sections) => ({
       height: parseFloat(section.height),
       diameter: parseFloat(section.diameter)
     })),
-    top_section_shape: sections[0].shape.toUpperCase()
+    top_section_shape: topShape.toUpperCase()
   }
 });
 
@@ -92,8 +92,8 @@ export const deleteToy = (id) =>
  * @param {Array} coneSections - Array of cone sections
  * @returns {Promise<Object>} Created cone data
  */
-export const saveCone = async (toyBrand, coneName, toySize, coneSections) => {
-  const transformedData = transformConeForAPI(toyBrand, coneName, toySize, coneSections);
+export const saveCone = async (toyBrand, coneName, toySize, coneSections, topShape) => {
+  const transformedData = transformConeForAPI(toyBrand, coneName, toySize, coneSections, topShape);
   
   return apiClient.request(`${TOYS_ENDPOINT}/`, {
     method: 'POST',

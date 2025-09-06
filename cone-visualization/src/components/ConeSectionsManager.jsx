@@ -23,12 +23,13 @@ const ConeSectionsManager = () => {
   const [coneName, setConeName] = useState('');
   const [toyBrand, setToyBrand] = useState('');
   const [toySize, setToySize] = useState('');
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [topShape, setTopShape] = useState('');
   const handleOpen = () => setOpen(!open);
   const handleSaveCone = async () => {
     try {
       setSaveStatus('Saving...');
-      await saveCone(toyBrand, coneName, toySize, sections);
+      await saveCone(toyBrand, coneName, toySize, sections, topShape);
       setSaveStatus('Saved successfully!');
 
       // Clear success message after 3 seconds
@@ -47,42 +48,42 @@ const ConeSectionsManager = () => {
         <DialogHeader className="pb-0">Create new toy</DialogHeader>
         <DialogBody className='pt-0'>
           <div className="flex flex-wrap items-end">
-            <ToyEditor/>
-          <div className="flex-1">
-            <input
-              type="text"
-              value={toyBrand}
-              onChange={(e) => setToyBrand(e.target.value)}
-              placeholder="Enter brand"
-              className="cone-name-input"
-            />
-            <input
-              type="text"
-              value={coneName}
-              onChange={(e) => setConeName(e.target.value)}
-              placeholder="Enter name"
-              className="cone-name-input"
-            />
-            <input
-              type="text"
-              value={toySize}
-              onChange={(e) => setToySize(e.target.value)}
-              placeholder="Enter size (e.g., Small, Medium, Large)"
-              className="cone-name-input"
-            />
-            <Button
-              className="save-button"
-              onClick={handleSaveCone}
-              disabled={!coneName.trim() || !toyBrand.trim() || sections.length === 0}
-            >
-              Save Cone
-            </Button>
-            {saveStatus && (
-              <div className={`save-status ${saveStatus.includes('Error') ? 'error' : 'success'}`}>
-                {saveStatus}
-              </div>
-            )}
-          </div>
+            <ToyEditor onChange={(toy) => { setSections(toy.sections); setTopShape(toy.topShape) }} />
+            <div className="flex-1">
+              <input
+                type="text"
+                value={toyBrand}
+                onChange={(e) => setToyBrand(e.target.value)}
+                placeholder="Enter brand"
+                className="cone-name-input"
+              />
+              <input
+                type="text"
+                value={coneName}
+                onChange={(e) => setConeName(e.target.value)}
+                placeholder="Enter name"
+                className="cone-name-input"
+              />
+              <input
+                type="text"
+                value={toySize}
+                onChange={(e) => setToySize(e.target.value)}
+                placeholder="Enter size (e.g., Small, Medium, Large)"
+                className="cone-name-input"
+              />
+              <Button
+                className="save-button"
+                onClick={handleSaveCone}
+                disabled={!coneName.trim() || !toyBrand.trim() || sections.length === 0}
+              >
+                Save Cone
+              </Button>
+              {saveStatus && (
+                <div className={`save-status ${saveStatus.includes('Error') ? 'error' : 'success'}`}>
+                  {saveStatus}
+                </div>
+              )}
+            </div>
           </div>
         </DialogBody>
       </Dialog>
