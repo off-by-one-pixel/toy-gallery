@@ -23,6 +23,12 @@ const ToyCard = ({ toy, scaleFactor, updateLastChanged }) => {
       }
     };
 
+    const style={
+        borderWidth: 2,
+        borderColor: "black",
+        color: "lightblue",
+    }
+
     return (
         <Card className="w-96 shadow-lg group" >
             <Menu>
@@ -36,7 +42,7 @@ const ToyCard = ({ toy, scaleFactor, updateLastChanged }) => {
             <CardHeader shadow={false} floated={false} className="h-[320px]">
 
                 <div className="h-full w-full flex items-end bg-gradient-to-br from-red-50/40 to-teal-100/40">
-                    <Render toy={toy} scaleFactor={scaleFactor} />
+                    <Render toy={toy} scaleFactor={scaleFactor} style={style}/>
                 </div>
 
             </CardHeader>
