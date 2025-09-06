@@ -4,7 +4,7 @@
   "description": "A React application for visualizing a cone based on specified measurements.",
   "main": "src/index.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "npx serve@latest ./build"
   },
