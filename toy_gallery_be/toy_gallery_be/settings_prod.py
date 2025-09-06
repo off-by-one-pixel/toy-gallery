@@ -21,3 +21,5 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+
+CORS_ALLOWED_ORIGINS.append(os.environ["CORS_ALLOW_ORIGIN"])
