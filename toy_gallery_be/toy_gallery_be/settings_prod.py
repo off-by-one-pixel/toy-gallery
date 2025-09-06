@@ -12,7 +12,7 @@ SESSION_COOKIE_SECURE = True
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
 
 DATABASES = {
     "default": dj_database_url.config(
