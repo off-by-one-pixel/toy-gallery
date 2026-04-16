@@ -2,8 +2,17 @@ import { API_CONFIG } from '../config';
 
 const TOYS_ENDPOINT = '/toys/toys';
 
+interface Section {
+  id: number;
+  height: number | string;
+  diameter: number | string;
+}
+
 export class APIError extends Error {
-  constructor(message, status, data) {
+  status: number;
+  data: unknown;
+
+  constructor(message: string, status: number, data: unknown) {
     super(message);
     this.name = 'APIError';
     this.status = status;
@@ -12,12 +21,14 @@ export class APIError extends Error {
 }
 
 class APIClient {
-  constructor(baseURL) {
+  private baseURL: string;
+
+  constructor(baseURL: string) {
     this.baseURL = baseURL;
   }
 
-  getHeaders(contentType = null) {
-    const headers = {
+  getHeaders(contentType?: string): Record<string, string> {
+    const headers: Record<string, string> = {
       'Authorization': `Basic ${btoa(`${API_CONFIG.auth.username}:${API_CONFIG.auth.password}`)}`
     };
     if (contentType) {
@@ -26,7 +37,7 @@ class APIClient {
     return headers;
   }
 
-  async handleResponse(response) {
+  async handleResponse(response: Response): Promise<unknown> {
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new APIError(
@@ -38,10 +49,17 @@ class APIClient {
     return response.json();
   }
 
-  async request(endpoint, options = {}) {
+  async request(endpoint: string, options: RequestInit = {}): Promise<unknown> {
     const url = `${this.baseURL}${endpoint}`;
+    const mergedOptions: RequestInit = {
+      ...options,
+      headers: {
+        ...this.getHeaders(),
+        ...options.headers,
+      },
+    };
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, mergedOptions);
       return this.handleResponse(response);
     } catch (error) {
       if (error instanceof APIError) {
@@ -52,15 +70,15 @@ class APIClient {
   }
 }
 
-const transformConeForAPI = (brand, name, size, sections, topShape) => ({
+const transformConeForAPI = (brand: string, name: string, size: string, sections: Section[], topShape: string) => ({
   name,
   brand,
   size,
   shape: {
     sections: sections.map(section => ({
       order: section.id,
-      height: parseFloat(section.height),
-      diameter: parseFloat(section.diameter)
+      height: parseFloat(String(section.height)),
+      diameter: parseFloat(String(section.diameter))
     })),
     top_section_shape: topShape.toUpperCase()
   }
@@ -68,36 +86,20 @@ const transformConeForAPI = (brand, name, size, sections, topShape) => ({
 
 const apiClient = new APIClient(API_CONFIG.baseUrl);
 
-/**
- * Fetch all cones
- * @returns {Promise<Array>} List of cones
- */
-export const fetchCones = () => 
+export const fetchCones = () =>
   apiClient.request(`${TOYS_ENDPOINT}/`);
 
-/**
- * Delete a cone by ID
- * @param {string} id - Cone ID
- * @returns {Promise<Object>} Deleted cone data
- */
-export const deleteToy = (id) =>
+export const deleteToy = (id: number | string) =>
   apiClient.request(`${TOYS_ENDPOINT}/${id}/`, {
     method: 'DELETE',
-    headers: apiClient.getHeaders()
   });
 
-/**
- * Save a new cone
- * @param {string} coneName - Name of the cone
- * @param {Array} coneSections - Array of cone sections
- * @returns {Promise<Object>} Created cone data
- */
-export const saveCone = async (toyBrand, coneName, toySize, coneSections, topShape) => {
+export const saveCone = (toyBrand: string, coneName: string, toySize: string, coneSections: Section[], topShape: string) => {
   const transformedData = transformConeForAPI(toyBrand, coneName, toySize, coneSections, topShape);
-  
+
   return apiClient.request(`${TOYS_ENDPOINT}/`, {
     method: 'POST',
-    headers: apiClient.getHeaders('application/json'),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(transformedData)
   });
 };
