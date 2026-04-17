@@ -22,7 +22,8 @@ RUN npm run build
 # ----- Stage 3: runtime (serves the static export) ----------------------
 FROM node:22-alpine AS runner
 WORKDIR /app
-RUN npm install -g serve@14.2.4
+RUN apk add --no-cache curl \
+ && npm install -g serve@14.2.4
 COPY --from=builder /app/out ./out
 ENV PORT=3000
 EXPOSE 3000
