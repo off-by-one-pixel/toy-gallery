@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config';
+import { refreshAccessToken, tokenStorage } from './auth';
 
 const TOYS_ENDPOINT = '/toys/toys';
 
@@ -27,23 +28,21 @@ class APIClient {
     this.baseURL = baseURL;
   }
 
-  getHeaders(contentType?: string): Record<string, string> {
-    const headers: Record<string, string> = {
-      'Authorization': `Basic ${btoa(`${API_CONFIG.auth.username}:${API_CONFIG.auth.password}`)}`
-    };
-    if (contentType) {
-      headers['Content-Type'] = contentType;
-    }
+  private buildHeaders(extra?: HeadersInit): HeadersInit {
+    const headers = new Headers(extra);
+    const token = tokenStorage.getAccess();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
     return headers;
   }
 
-  async handleResponse(response: Response): Promise<unknown> {
+  private async handleResponse(response: Response): Promise<unknown> {
+    if (response.status === 204) return null;
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new APIError(
-        error.message || 'API request failed',
+        error.detail || error.message || 'API request failed',
         response.status,
-        error
+        error,
       );
     }
     return response.json();
@@ -51,22 +50,28 @@ class APIClient {
 
   async request(endpoint: string, options: RequestInit = {}): Promise<unknown> {
     const url = `${this.baseURL}${endpoint}`;
-    const mergedOptions: RequestInit = {
-      ...options,
-      headers: {
-        ...this.getHeaders(),
-        ...options.headers,
-      },
-    };
+    const doFetch = () =>
+      fetch(url, { ...options, headers: this.buildHeaders(options.headers) });
+
+    let response: Response;
     try {
-      const response = await fetch(url, mergedOptions);
-      return this.handleResponse(response);
+      response = await doFetch();
     } catch (error) {
-      if (error instanceof APIError) {
-        throw error;
-      }
       throw new APIError('Network error', 0, error);
     }
+
+    if (response.status === 401 && tokenStorage.getRefresh()) {
+      const newAccess = await refreshAccessToken();
+      if (newAccess) {
+        try {
+          response = await doFetch();
+        } catch (error) {
+          throw new APIError('Network error', 0, error);
+        }
+      }
+    }
+
+    return this.handleResponse(response);
   }
 }
 

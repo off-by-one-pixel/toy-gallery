@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import '../styles/index.css';
+import { AuthProvider } from '../providers/AuthProvider';
 
 export const metadata: Metadata = {
   title: 'Cone Visualization',
@@ -17,7 +18,9 @@ export default function RootLayout({
                 <meta name="theme-color" content="#000000" />
             </head>
             <body className="bg-gray-200 min-h-screen">
-                <main>{children}</main>
+                <AuthProvider>
+                    <main>{children}</main>
+                </AuthProvider>
             </body>
         </html>
     )
