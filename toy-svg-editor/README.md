@@ -33,3 +33,11 @@ make build        # static export to ./out
 ## CI
 
 `../.github/workflows/toy-svg-editor.yml` (at the monorepo root) runs `lint`, `typecheck`, and `build` on PRs and pushes to `main` that touch `toy-svg-editor/` or `cone_editor/`.
+
+## Deploy
+
+Configured for Nixpacks via [`nixpacks.toml`](nixpacks.toml) with this folder as the deploy root.
+
+The `file:../cone_editor` dep can't be satisfied from the monorepo submodule (Docker can't `COPY` outside its build context), so the install phase **clones `cone_editor` fresh from `github.com/off-by-one-pixel/toy-editor` into `/cone_editor`** inside the container, which is exactly where `file:../cone_editor` resolves from `/app`. It then builds cone_editor before running the demo's own `npm ci`, so the nested `prepare` script has its devDeps.
+
+The live demo therefore always tracks `main` of `cone_editor`, independent of the submodule pin in this repo.

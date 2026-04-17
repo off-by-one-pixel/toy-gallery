@@ -1,0 +1,24 @@
+providers = ["node"]
+
+[phases.setup]
+nixPkgs = ["nodejs_22", "git"]
+
+[phases.install]
+cmds = [
+  # When Coolify sets this folder as the app root, /app contains only
+  # toy-svg-editor. Fetch cone_editor fresh at the sibling path so the
+  # "file:../cone_editor" dep resolves: /app/../cone_editor = /cone_editor.
+  "git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git /cone_editor",
+  # Install and build cone_editor first so its dist/ exists and its devDeps
+  # (tsup, tsc) are present when toy-svg-editor's install triggers
+  # cone_editor's prepare script.
+  "npm --prefix /cone_editor ci",
+  "npm --prefix /cone_editor run build",
+  "npm ci",
+]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npx --yes serve out -l $PORT"
