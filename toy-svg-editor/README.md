@@ -36,8 +36,8 @@ make build        # static export to ./out
 
 ## Deploy
 
-Configured for Nixpacks via [`nixpacks.toml`](nixpacks.toml) with this folder as the deploy root.
+Ships as a multi-stage [`Dockerfile`](Dockerfile) — deploy with **Build Pack = Dockerfile** and this folder as the app's base directory.
 
-The `file:../cone_editor` dep can't be satisfied from the monorepo submodule (Docker can't `COPY` outside its build context), so the install phase **clones `cone_editor` fresh from `github.com/off-by-one-pixel/toy-editor` into `/cone_editor`** inside the container, which is exactly where `file:../cone_editor` resolves from `/app`. It then builds cone_editor before running the demo's own `npm ci`, so the nested `prepare` script has its devDeps.
+The Docker build can't `COPY` the sibling `cone_editor/` (outside the build context), so stage 1 clones `github.com/off-by-one-pixel/toy-editor` fresh, builds it, and stage 2 copies the result to `/cone_editor` — exactly where `file:../cone_editor` resolves from `/app`. Stage 3 serves the static export with [`serve`](https://www.npmjs.com/package/serve).
 
 The live demo therefore always tracks `main` of `cone_editor`, independent of the submodule pin in this repo.
