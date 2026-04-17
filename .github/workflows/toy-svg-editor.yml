@@ -33,7 +33,15 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: toy-svg-editor/package-lock.json
+          cache-dependency-path: |
+            toy-svg-editor/package-lock.json
+            cone_editor/package-lock.json
+
+      - name: Install and build cone_editor
+        working-directory: cone_editor
+        run: |
+          npm ci
+          npm run build
 
       - name: Install dependencies
         run: npm ci
