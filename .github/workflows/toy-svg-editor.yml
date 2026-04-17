@@ -1,9 +1,17 @@
-name: CI
+name: toy-svg-editor CI
 
 on:
   pull_request:
+    paths:
+      - "toy-svg-editor/**"
+      - "cone_editor/**"
+      - ".github/workflows/toy-svg-editor.yml"
   push:
     branches: [main]
+    paths:
+      - "toy-svg-editor/**"
+      - "cone_editor/**"
+      - ".github/workflows/toy-svg-editor.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,13 +21,19 @@ jobs:
   build:
     name: Lint, typecheck, build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: toy-svg-editor
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: toy-svg-editor/package-lock.json
 
       - name: Install dependencies
         run: npm ci

@@ -32,4 +32,4 @@ make build        # static export to ./out
 
 ## CI
 
-`.github/workflows/ci.yml` runs `lint`, `typecheck`, and `build` on every PR and push to `main`.
+`../.github/workflows/toy-svg-editor.yml` (at the monorepo root) runs `lint`, `typecheck`, and `build` on PRs and pushes to `main` that touch `toy-svg-editor/` or `cone_editor/`.
