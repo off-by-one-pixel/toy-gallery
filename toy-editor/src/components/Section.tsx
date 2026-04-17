@@ -6,9 +6,17 @@ type Props = {
   previousDiameter: number;
   totalWidth: number;
   style: StyleOption;
+  onSelect?: (id: number) => void;
 };
 
-const Section = ({ section, scaleFactor, previousDiameter, totalWidth, style }: Props) => {
+const Section = ({
+  section,
+  scaleFactor,
+  previousDiameter,
+  totalWidth,
+  style,
+  onSelect,
+}: Props) => {
   const x = (totalWidth - Math.max(section.diameter, previousDiameter) * scaleFactor) / 2;
   const diameter = section.diameter * scaleFactor;
   const prev_diameter = previousDiameter * scaleFactor;
@@ -18,7 +26,14 @@ const Section = ({ section, scaleFactor, previousDiameter, totalWidth, style }: 
   const diff = Math.max(0, prev_diameter - diameter) / 2;
 
   return (
-    <g transform={`translate(${x + style.borderWidth}, 0)`}>
+    <g
+      className="cone-editor-part"
+      transform={`translate(${x + style.borderWidth}, 0)`}
+      onClick={onSelect ? () => onSelect(section.id) : undefined}
+      role={onSelect ? "button" : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      style={{ cursor: onSelect ? "pointer" : undefined }}
+    >
       <path
         d={`
           M ${0 + diff_prev} 0

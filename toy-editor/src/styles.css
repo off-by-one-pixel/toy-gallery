@@ -1,120 +1,268 @@
 /* cone-editor default styles
  * Import with: import "cone-editor/styles.css";
- * All class names are prefixed with `cone-editor-` so they're easy to scope or override.
+ * All class names are prefixed with `cone-editor-` so they're easy to scope
+ * or override from the consumer.
  */
 
 .cone-editor-root {
+  --cone-editor-ink: #111827;
+  --cone-editor-ink-muted: #6b7280;
+  --cone-editor-ink-soft: #9ca3af;
+  --cone-editor-line: #e5e7eb;
+  --cone-editor-line-strong: #d1d5db;
+  --cone-editor-accent: #2563eb;
+  --cone-editor-accent-soft: rgba(37, 99, 235, 0.08);
+  --cone-editor-surface: #ffffff;
+  --cone-editor-bg: #f3f4f6;
+  --cone-editor-canvas-a: #fafaff;
+  --cone-editor-canvas-b: #f0fdfa;
+
   display: flex;
-  gap: 24px;
+  gap: 0;
   align-items: stretch;
   font-family: inherit;
-  color: inherit;
+  color: var(--cone-editor-ink);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  background: var(--cone-editor-surface);
 }
+
+/* ---------- Canvas ---------- */
 
 .cone-editor-canvas {
-  flex: 1 1 50%;
-  padding: 16px;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
+  justify-content: stretch;
+  background: linear-gradient(135deg, var(--cone-editor-canvas-a), var(--cone-editor-canvas-b));
+  padding: 48px 32px 32px;
+  overflow: hidden;
 }
+.cone-editor-stage {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+.cone-editor-svg {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  user-select: none;
+}
+.cone-editor-hint {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  font-size: 11px;
+  color: var(--cone-editor-ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cone-editor-line);
+}
+
+/* ---------- Silhouette parts (clickable) ---------- */
+
+.cone-editor-part { transition: filter 0.15s ease; }
+.cone-editor-part:hover { filter: brightness(0.96); }
+
+.cone-editor-selection-tint {
+  fill: var(--cone-editor-accent);
+  fill-opacity: 0.12;
+}
+.cone-editor-selection-outline {
+  fill: none;
+  stroke: var(--cone-editor-accent);
+  stroke-width: 2;
+  stroke-dasharray: 5 3;
+}
+.cone-editor-handle {
+  fill: var(--cone-editor-surface);
+  stroke: var(--cone-editor-accent);
+  stroke-width: 1.6;
+}
+.cone-editor-handle-diameter { cursor: ew-resize; }
+.cone-editor-handle-height { cursor: ns-resize; }
+
+/* ---------- Right panel ---------- */
 
 .cone-editor-controls {
-  flex: 1 1 50%;
-  padding: 16px;
+  flex: 0 0 340px;
+  border-left: 1px solid var(--cone-editor-line);
+  background: var(--cone-editor-surface);
+  padding: 22px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-width: 0;
+  gap: 20px;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.cone-editor-section {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 8px 12px;
-  padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #ffffff;
+.cone-editor-group { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+.cone-editor-group-title {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cone-editor-ink-soft);
 }
 
-.cone-editor-section-move {
+/* Top shape radio pills */
+.cone-editor-shape-radio {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  grid-row: 1 / span 2;
-  align-self: center;
+  gap: 8px;
 }
+.cone-editor-shape-option {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--cone-editor-line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--cone-editor-ink-muted);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.cone-editor-shape-option input { margin: 0; }
+.cone-editor-shape-option:hover { border-color: var(--cone-editor-line-strong); color: var(--cone-editor-ink); }
+.cone-editor-shape-option:has(input:checked) {
+  border-color: var(--cone-editor-accent);
+  background: var(--cone-editor-accent-soft);
+  color: var(--cone-editor-accent);
+  font-weight: 600;
+}
+.cone-editor-shape-glyph { font-size: 15px; }
 
-.cone-editor-fields {
+/* Sections list — takes remaining height, scrolls internally. */
+.cone-editor-sections-group {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-width: 0;
 }
-
-.cone-editor-field {
+.cone-editor-sections {
+  list-style: none;
+  margin: 0;
+  padding: 2px 6px 2px 2px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 60px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cone-editor-line-strong) transparent;
+}
+.cone-editor-sections::-webkit-scrollbar { width: 8px; }
+.cone-editor-sections::-webkit-scrollbar-thumb {
+  background: var(--cone-editor-line-strong);
+  border-radius: 4px;
+  border: 2px solid var(--cone-editor-surface);
+  background-clip: padding-box;
+}
+.cone-editor-sections::-webkit-scrollbar-track { background: transparent; }
+
+.cone-editor-section {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px 5px 4px;
+  border: 1px solid var(--cone-editor-line);
+  border-radius: 8px;
+  cursor: grab;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+  background: var(--cone-editor-surface);
+}
+.cone-editor-section:active { cursor: grabbing; }
+.cone-editor-section:hover {
+  border-color: var(--cone-editor-line-strong);
+  background: var(--cone-editor-bg);
+}
+.cone-editor-section-selected {
+  border-color: var(--cone-editor-accent);
+  background: var(--cone-editor-accent-soft);
+}
+.cone-editor-section-dragging {
+  opacity: 0.4;
+}
+.cone-editor-section-drop-before {
+  box-shadow: 0 -4px 0 -1px var(--cone-editor-accent);
+}
+.cone-editor-section-drop-after {
+  box-shadow: 0 4px 0 -1px var(--cone-editor-accent);
+}
+
+.cone-editor-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  letter-spacing: -1.5px;
+  color: var(--cone-editor-ink-soft);
+  font-size: 11px;
+  line-height: 1;
+  user-select: none;
+  cursor: grab;
+}
+.cone-editor-section:active .cone-editor-drag-handle { cursor: grabbing; }
+
+.cone-editor-section-vals {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #374151;
-}
-
-.cone-editor-field-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.cone-editor-field-label {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #6b7280;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.cone-editor-field-value {
+  color: var(--cone-editor-ink);
   font-variant-numeric: tabular-nums;
-  color: #111827;
-  font-weight: 500;
+  min-width: 0;
 }
-
-.cone-editor-slider {
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 999px;
-  background: #e5e7eb;
+.cone-editor-section-vals input {
+  width: 62px;
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font: inherit;
+  color: var(--cone-editor-ink);
+  background: transparent;
+  text-align: right;
+}
+.cone-editor-section-vals input:hover {
+  border-color: var(--cone-editor-line);
+  background: var(--cone-editor-surface);
+}
+.cone-editor-section-vals input:focus {
   outline: none;
-  cursor: pointer;
+  border-color: var(--cone-editor-accent);
+  background: var(--cone-editor-surface);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
-.cone-editor-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #2563eb;
-  border: 2px solid #ffffff;
-  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.12);
-  cursor: grab;
-}
-.cone-editor-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #2563eb;
-  border: 2px solid #ffffff;
-  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.12);
-  cursor: grab;
-}
-.cone-editor-slider:focus-visible {
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+.cone-editor-section-sep { color: var(--cone-editor-ink-soft); }
+.cone-editor-section-unit {
+  color: var(--cone-editor-ink-soft);
+  font-size: 11px;
+  margin-left: 2px;
 }
 
+/* Buttons */
 .cone-editor-btn {
   appearance: none;
   display: inline-flex;
@@ -125,75 +273,58 @@
   font-weight: 500;
   font-size: 13px;
   padding: 6px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--cone-editor-line);
   border-radius: 8px;
-  background: #ffffff;
-  color: #111827;
+  background: var(--cone-editor-surface);
+  color: var(--cone-editor-ink);
   cursor: pointer;
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
 }
 .cone-editor-btn:hover:not(:disabled) {
-  border-color: #d1d5db;
-  background: #f9fafb;
+  border-color: var(--cone-editor-line-strong);
+  background: var(--cone-editor-bg);
 }
 .cone-editor-btn:focus-visible {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--cone-editor-accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 .cone-editor-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
-
-.cone-editor-btn-primary {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #ffffff;
-}
-.cone-editor-btn-primary:hover:not(:disabled) {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
 .cone-editor-btn-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
 }
-
 .cone-editor-btn-danger {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   color: #b91c1c;
   border-color: transparent;
+  background: transparent;
 }
 .cone-editor-btn-danger:hover:not(:disabled) {
+  color: #7f1d1d;
   background: #fef2f2;
   border-color: #fecaca;
 }
 
-.cone-editor-select {
-  padding: 4px 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font: inherit;
-  font-size: 12px;
-  background: #ffffff;
-  color: #111827;
-  cursor: pointer;
-}
-.cone-editor-select:focus-visible {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-}
-
 .cone-editor-add {
-  margin-top: 4px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px dashed var(--cone-editor-line-strong);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--cone-editor-ink-muted);
+  text-align: center;
+}
+.cone-editor-add:hover:not(:disabled) {
+  color: var(--cone-editor-accent);
+  border-color: var(--cone-editor-accent);
+  background: rgba(37, 99, 235, 0.03);
 }
