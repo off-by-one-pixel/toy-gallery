@@ -6,7 +6,10 @@ describe("ToyEditor", () => {
   it("renders the controls and canvas", () => {
     render(<ToyEditor />);
     expect(screen.getByRole("button", { name: /add section/i })).toBeInTheDocument();
-    expect(screen.getByText(/diameter/i)).toBeInTheDocument();
-    expect(screen.getByText(/height/i)).toBeInTheDocument();
+    expect(screen.getByText(/top shape/i)).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /egg/i })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /cone/i })).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: /diameter/i })).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: /height/i })).toBeInTheDocument();
   });
 });

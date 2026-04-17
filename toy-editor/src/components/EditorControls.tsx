@@ -1,6 +1,7 @@
-import type { ChangeEvent } from "react";
-import { useToyStore } from "../toyMachine";
+import type { ChangeEvent, DragEvent } from "react";
+import { useState } from "react";
 import type { Shape } from "../toyMachine";
+import { useToyStore } from "../toyMachine";
 
 const MIN_DIAMETER = 10;
 const MAX_DIAMETER = 200;
@@ -9,102 +10,152 @@ const MAX_HEIGHT = 350;
 
 const EditorControls = () => {
   const toy = useToyStore();
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ id: number; position: "before" | "after" } | null>(
+    null,
+  );
+
+  const clampDiameter = (v: number) => Math.min(Math.max(v, MIN_DIAMETER), MAX_DIAMETER);
+  const clampHeight = (v: number) => Math.min(Math.max(v, MIN_HEIGHT), MAX_HEIGHT);
+
+  const onDragStart = (id: number) => (e: DragEvent<HTMLLIElement>) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(id));
+    setDraggedId(id);
+  };
+  const onDragOver = (id: number) => (e: DragEvent<HTMLLIElement>) => {
+    if (draggedId === null || draggedId === id) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    const rect = e.currentTarget.getBoundingClientRect();
+    const position: "before" | "after" =
+      e.clientY - rect.top < rect.height / 2 ? "before" : "after";
+    if (dropTarget?.id !== id || dropTarget.position !== position) {
+      setDropTarget({ id, position });
+    }
+  };
+  const onDragLeave = (id: number) => () => {
+    if (dropTarget?.id === id) setDropTarget(null);
+  };
+  const onDrop = (id: number) => (e: DragEvent<HTMLLIElement>) => {
+    e.preventDefault();
+    if (draggedId !== null && draggedId !== id && dropTarget) {
+      toy.reorderSection(draggedId, id, dropTarget.position);
+    }
+    setDraggedId(null);
+    setDropTarget(null);
+  };
+  const onDragEnd = () => {
+    setDraggedId(null);
+    setDropTarget(null);
+  };
 
   return (
     <>
-      {toy.sections.map((section, index) => {
-        const isTop = index === 0;
-        return (
-          <div key={section.id} className="cone-editor-section">
-            {!isTop && (
-              <button
-                type="button"
-                className="cone-editor-btn cone-editor-btn-icon cone-editor-btn-danger"
-                aria-label="Remove section"
-                onClick={() => toy.removeSection(section.id)}
+      <section className="cone-editor-group">
+        <h2 className="cone-editor-group-title">Top shape</h2>
+        <div className="cone-editor-shape-radio">
+          {(["egg", "cone"] as const).map((value) => (
+            <label key={value} className="cone-editor-shape-option">
+              <input
+                type="radio"
+                name="cone-editor-top-shape"
+                value={value}
+                checked={toy.topShape === value}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  toy.setTopShape(e.target.value as Shape)
+                }
+              />
+              <span className="cone-editor-shape-glyph" aria-hidden>
+                {value === "egg" ? "◒" : "▲"}
+              </span>
+              <span className="cone-editor-shape-label">{value === "egg" ? "Egg" : "Cone"}</span>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="cone-editor-group cone-editor-sections-group">
+        <h2 className="cone-editor-group-title">Sections (top → bottom)</h2>
+        <ol className="cone-editor-sections">
+          {toy.sections.map((section) => {
+            const selected = toy.selectedId === section.id;
+            const rowClasses = ["cone-editor-section"];
+            if (selected) rowClasses.push("cone-editor-section-selected");
+            if (draggedId === section.id) rowClasses.push("cone-editor-section-dragging");
+            if (dropTarget?.id === section.id) {
+              rowClasses.push(
+                dropTarget.position === "before"
+                  ? "cone-editor-section-drop-before"
+                  : "cone-editor-section-drop-after",
+              );
+            }
+            return (
+              <li
+                key={section.id}
+                className={rowClasses.join(" ")}
+                draggable
+                onDragStart={onDragStart(section.id)}
+                onDragOver={onDragOver(section.id)}
+                onDragLeave={onDragLeave(section.id)}
+                onDrop={onDrop(section.id)}
+                onDragEnd={onDragEnd}
+                onClick={() => toy.setSelected(section.id)}
+                role="button"
+                tabIndex={0}
               >
-                ×
-              </button>
-            )}
-            <div className="cone-editor-section-move">
-              <button
-                type="button"
-                className="cone-editor-btn cone-editor-btn-icon"
-                aria-label="Move section up"
-                onClick={() => toy.moveSection(section.id, -1)}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                className="cone-editor-btn cone-editor-btn-icon"
-                aria-label="Move section down"
-                onClick={() => toy.moveSection(section.id, 1)}
-              >
-                ↓
-              </button>
-            </div>
-            <div className="cone-editor-fields">
-              {isTop && (
-                <label className="cone-editor-field">
-                  <span className="cone-editor-field-label">Top shape</span>
-                  <select
-                    className="cone-editor-select"
-                    value={toy.topShape}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      toy.setTopShape(e.target.value as Shape)
-                    }
+                <span className="cone-editor-drag-handle" aria-hidden>
+                  ⋮⋮
+                </span>
+                <div className="cone-editor-section-vals">
+                  <input
+                    type="number"
+                    aria-label="Diameter"
+                    min={MIN_DIAMETER}
+                    max={MAX_DIAMETER}
+                    step={1}
+                    value={Math.round(section.diameter)}
+                    onChange={(e) => toy.setDiameter(section.id, clampDiameter(Number(e.target.value)))}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="cone-editor-section-sep">×</span>
+                  <input
+                    type="number"
+                    aria-label="Height"
+                    min={MIN_HEIGHT}
+                    max={MAX_HEIGHT}
+                    step={1}
+                    value={Math.round(section.height)}
+                    onChange={(e) => toy.setHeight(section.id, clampHeight(Number(e.target.value)))}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="cone-editor-section-unit">mm</span>
+                </div>
+                {toy.sections.length > 1 && (
+                  <button
+                    type="button"
+                    className="cone-editor-btn cone-editor-btn-icon cone-editor-btn-danger"
+                    aria-label="Remove section"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toy.removeSection(section.id);
+                    }}
                   >
-                    <option value="cone">Cone</option>
-                    <option value="egg">Egg</option>
-                  </select>
-                </label>
-              )}
-              <label className="cone-editor-field">
-                <div className="cone-editor-field-header">
-                  <span className="cone-editor-field-label">Diameter</span>
-                  <span className="cone-editor-field-value">
-                    {Math.round(section.diameter)} mm
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  className="cone-editor-slider"
-                  min={MIN_DIAMETER}
-                  max={MAX_DIAMETER}
-                  step={1}
-                  value={section.diameter}
-                  onChange={(e) => toy.setDiameter(section.id, Number(e.target.value))}
-                />
-              </label>
-              <label className="cone-editor-field">
-                <div className="cone-editor-field-header">
-                  <span className="cone-editor-field-label">Height</span>
-                  <span className="cone-editor-field-value">
-                    {Math.round(section.height)} mm
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  className="cone-editor-slider"
-                  min={MIN_HEIGHT}
-                  max={MAX_HEIGHT}
-                  step={1}
-                  value={section.height}
-                  onChange={(e) => toy.setHeight(section.id, Number(e.target.value))}
-                />
-              </label>
-            </div>
-          </div>
-        );
-      })}
-      <button
-        type="button"
-        className="cone-editor-btn cone-editor-btn-primary cone-editor-add"
-        onClick={() => toy.newSection()}
-      >
-        + Add section
-      </button>
+                    ×
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        <button
+          type="button"
+          className="cone-editor-btn cone-editor-add"
+          onClick={() => toy.newSection()}
+        >
+          + Add section
+        </button>
+      </section>
     </>
   );
 };

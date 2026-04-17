@@ -17,6 +17,7 @@ const ToyEditor = ({ width, scaleFactor = 1, style = {}, onChange, ref }: Props)
   const toy = useToyStore();
   const effectiveScale = width ? width / toy.getMaxWidth() : scaleFactor;
   const mergedStyle = { ...toy.style, ...style } as StyleOption;
+  const fixed = width !== undefined;
 
   useEffect(() => {
     onChange?.(toy.getToy());
@@ -25,12 +26,25 @@ const ToyEditor = ({ width, scaleFactor = 1, style = {}, onChange, ref }: Props)
 
   return (
     <div className="cone-editor-root">
-      <div className="cone-editor-canvas">
-        <Render toy={toy} ref={ref} scaleFactor={effectiveScale} style={mergedStyle} />
-      </div>
-      <div className="cone-editor-controls">
+      <section className="cone-editor-canvas">
+        <div className="cone-editor-hint" aria-hidden>
+          Click a section to select
+        </div>
+        <div className="cone-editor-stage">
+          <Render
+            toy={toy}
+            ref={ref}
+            scaleFactor={effectiveScale}
+            style={mergedStyle}
+            selectedId={toy.selectedId}
+            onSelect={toy.setSelected}
+            fixed={fixed}
+          />
+        </div>
+      </section>
+      <aside className="cone-editor-controls">
         <EditorControls />
-      </div>
+      </aside>
     </div>
   );
 };

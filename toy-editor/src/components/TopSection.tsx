@@ -6,9 +6,10 @@ type Props = {
   shape: string;
   style: StyleOption;
   totalWidth: number;
+  onSelect?: (id: number) => void;
 };
 
-const TopSection = ({ section, scaleFactor, shape, style, totalWidth }: Props) => {
+const TopSection = ({ section, scaleFactor, shape, style, totalWidth, onSelect }: Props) => {
   const diameter = section.diameter * scaleFactor;
   const height = section.height * scaleFactor;
 
@@ -23,8 +24,16 @@ const TopSection = ({ section, scaleFactor, shape, style, totalWidth }: Props) =
     x1 = radius;
     x2 = radius;
   }
+
   return (
-    <g transform={`translate(${(totalWidth - diameter) / 2 + style.borderWidth}, 0)`}>
+    <g
+      className="cone-editor-part"
+      transform={`translate(${(totalWidth - diameter) / 2 + style.borderWidth}, 0)`}
+      onClick={onSelect ? () => onSelect(section.id) : undefined}
+      role={onSelect ? "button" : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      style={{ cursor: onSelect ? "pointer" : undefined }}
+    >
       <path
         d={`
           M 0 ${height}

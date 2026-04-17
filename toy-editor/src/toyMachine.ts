@@ -26,6 +26,7 @@ interface ToyStore extends Toy {
   scaleFactor: number;
   nextId: number;
   style: StyleOption;
+  selectedId: number | null;
   getMaxWidth: () => number;
   getTotalHeight: () => number;
   newSection: () => void;
@@ -39,8 +40,10 @@ interface ToyStore extends Toy {
   setTopShape: (shape: Shape) => void;
   setBottomShape: (shape: Shape) => void;
   moveSection: (id: number, direction: number) => void;
+  reorderSection: (fromId: number, toId: number, position: "before" | "after") => void;
   setStyle: (style: Partial<StyleOption>) => void;
   setRef: (ref: RefObject<SVGSVGElement | null>) => void;
+  setSelected: (id: number | null) => void;
 }
 
 export const useToyStore = create<ToyStore>()((set, get) => ({
@@ -55,7 +58,9 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   bottomShape: "flat",
   ref: undefined,
   nextId: 1,
+  selectedId: null,
   setRef: (r) => set({ ref: r }),
+  setSelected: (id) => set({ selectedId: id }),
   getMaxWidth: () => {
     const widths = get().sections.map((r) => r.diameter);
     return Math.max(...widths, 0);
@@ -75,6 +80,7 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   removeSection: (id) => {
     set((state) => ({
       sections: state.sections.filter((section) => section.id !== id),
+      selectedId: state.selectedId === id ? null : state.selectedId,
     }));
   },
   getPreviousDiameter: (id) => {
@@ -130,6 +136,20 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     const newSections = [...get().sections];
     [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
     set({ sections: newSections });
+  },
+  reorderSection: (fromId, toId, position) => {
+    set((state) => {
+      if (fromId === toId) return {};
+      const sections = [...state.sections];
+      const fromIdx = sections.findIndex((s) => s.id === fromId);
+      let toIdx = sections.findIndex((s) => s.id === toId);
+      if (fromIdx < 0 || toIdx < 0) return {};
+      const [item] = sections.splice(fromIdx, 1);
+      if (fromIdx < toIdx) toIdx -= 1;
+      const insertIdx = position === "before" ? toIdx : toIdx + 1;
+      sections.splice(insertIdx, 0, item);
+      return { sections };
+    });
   },
   setStyle: (style) => set({ style: { ...get().style, ...style } }),
 }));
