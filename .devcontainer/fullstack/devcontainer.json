@@ -1,0 +1,36 @@
+{
+  "name": "Toy Gallery (Full Stack)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "../.."
+  },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "forwardPorts": [3000, 3001, 8000],
+  "portsAttributes": {
+    "3000": { "label": "Frontend (cone-visualization)" },
+    "3001": { "label": "Frontend (toy-svg-editor)" },
+    "8000": { "label": "Django Backend" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "batisteo.vscode-django",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "dsznajder.es7-react-js-snippets"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true
+      }
+    }
+  },
+  "postCreateCommand": "cd toy_gallery_be && uv sync && cd ../cone-visualization && npm install && cd ../toy-svg-editor && npm install",
+  "remoteUser": "vscode"
+}
