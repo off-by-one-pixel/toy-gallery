@@ -12,6 +12,9 @@ lib/
 # TypeScript
 *.tsbuildinfo
 
+# Linter caches
+.eslintcache
+
 # IDE/Editor specific
 .vscode/*
 !.vscode/extensions.json

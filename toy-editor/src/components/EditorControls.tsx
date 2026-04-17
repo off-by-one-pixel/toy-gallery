@@ -1,106 +1,111 @@
-import React, { use } from "react";
+import type { ChangeEvent } from "react";
+import { useToyStore } from "../toyMachine";
+import type { Shape } from "../toyMachine";
 
-import { Button, Slider, IconButton } from "@material-tailwind/react";
-import { useToyStore } from "../toyMachine.js";
+const MIN_DIAMETER = 10;
+const MAX_DIAMETER = 200;
+const MIN_HEIGHT = 1;
+const MAX_HEIGHT = 350;
 
-
-const EditorControls: React.FC = () => {
+const EditorControls = () => {
   const toy = useToyStore();
 
-  const MIN_DIAMETER = 10;
-  const MAX_DIAMETER = 200;
-  const MIN_HEIGHT = 1;
-  const MAX_HEIGHT = 350;
-
   return (
-    <div className="flex-1/2">
-      <div className="flex flex-col gap-4">
-        {toy.sections.map((section, index) => {
-          return (
-            <>
-              <div key={section.id} className="flex border p-2 m-3 rounded-2xl relative">
-                {index !== 0 && (
-                <IconButton
-                  key={`delete-${section.id}`}
-                  size="sm"
-                  className="text-xs absolute top-2 right-2"
-                  color="red"
-                  onClick={() => toy.removeSection(section.id)}
-                >
-                  X
-                </IconButton>
-                )}
-                {index === 0 && (
-                  <select value={toy.topShape} onChange={(e) => {toy.setTopShape(e.target.value) }}>
+    <>
+      {toy.sections.map((section, index) => {
+        const isTop = index === 0;
+        return (
+          <div key={section.id} className="cone-editor-section">
+            {!isTop && (
+              <button
+                type="button"
+                className="cone-editor-btn cone-editor-btn-icon cone-editor-btn-danger"
+                aria-label="Remove section"
+                onClick={() => toy.removeSection(section.id)}
+              >
+                ×
+              </button>
+            )}
+            <div className="cone-editor-section-move">
+              <button
+                type="button"
+                className="cone-editor-btn cone-editor-btn-icon"
+                aria-label="Move section up"
+                onClick={() => toy.moveSection(section.id, -1)}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                className="cone-editor-btn cone-editor-btn-icon"
+                aria-label="Move section down"
+                onClick={() => toy.moveSection(section.id, 1)}
+              >
+                ↓
+              </button>
+            </div>
+            <div className="cone-editor-fields">
+              {isTop && (
+                <label className="cone-editor-field">
+                  <span className="cone-editor-field-label">Top shape</span>
+                  <select
+                    className="cone-editor-select"
+                    value={toy.topShape}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                      toy.setTopShape(e.target.value as Shape)
+                    }
+                  >
                     <option value="cone">Cone</option>
                     <option value="egg">Egg</option>
                   </select>
-                )}
-                <div className="flex flex-col gap-1 p-1">
-                  <IconButton
-                    size="sm"
-                    className="text-xs"
-                    color="white"
-                    variant="gradient"
-                    onClick={() => { toy.moveSection(section.id, -1) }}
-                  >
-                    ↑
-                  </IconButton>
-                  <IconButton
-                    size="sm"
-                    className="text-xs"
-                    color="white"
-                    variant="gradient"
-                    onClick={() => { toy.moveSection(section.id, 1) }}
-                  >
-                    ↓
-                  </IconButton>
+                </label>
+              )}
+              <label className="cone-editor-field">
+                <div className="cone-editor-field-header">
+                  <span className="cone-editor-field-label">Diameter</span>
+                  <span className="cone-editor-field-value">
+                    {Math.round(section.diameter)} mm
+                  </span>
                 </div>
-                <div className="flex flex-col flex-1 p-1 gap-2">
-                  <label className="flex-1">
-                    Diameter:{" "}
-                    <span className="value">{Math.round(section.diameter)} mm</span>
-                    <Slider
-                      size="sm"
-                      value={
-                        (section.diameter - MIN_DIAMETER) /
-                        ((MAX_DIAMETER - MIN_DIAMETER) / 100)
-                      }
-                      onChange={(e) =>
-                        toy.setDiameter(section.id,
-                          ((MAX_DIAMETER - MIN_DIAMETER) / 100) * e.target.value +
-                          MIN_DIAMETER,
-                        )
-                      }
-                    />
-                  </label>
-                  <label>
-                    Height: <span className="value">{Math.round(section.height)} mm</span>
-                    <Slider
-                      size="sm"
-                      value={
-                        (section.height - MIN_HEIGHT) / ((MAX_HEIGHT - MIN_HEIGHT) / 100)
-                      }
-                      onChange={(e) =>
-                        toy.setHeight(section.id,
-                          ((MAX_HEIGHT - MIN_HEIGHT) / 100) * e.target.value +
-                          MIN_HEIGHT,
-                        )
-                      }
-                    />
-                  </label>
+                <input
+                  type="range"
+                  className="cone-editor-slider"
+                  min={MIN_DIAMETER}
+                  max={MAX_DIAMETER}
+                  step={1}
+                  value={section.diameter}
+                  onChange={(e) => toy.setDiameter(section.id, Number(e.target.value))}
+                />
+              </label>
+              <label className="cone-editor-field">
+                <div className="cone-editor-field-header">
+                  <span className="cone-editor-field-label">Height</span>
+                  <span className="cone-editor-field-value">
+                    {Math.round(section.height)} mm
+                  </span>
                 </div>
-              </div>
-            </>
-          );
-        })}
-      </div>
-      <div className="pt-5">
-        <Button id="saf" onClick={() => toy.newSection()} fullWidth>
-          Add New Section
-        </Button>
-      </div>
-    </div>
+                <input
+                  type="range"
+                  className="cone-editor-slider"
+                  min={MIN_HEIGHT}
+                  max={MAX_HEIGHT}
+                  step={1}
+                  value={section.height}
+                  onChange={(e) => toy.setHeight(section.id, Number(e.target.value))}
+                />
+              </label>
+            </div>
+          </div>
+        );
+      })}
+      <button
+        type="button"
+        className="cone-editor-btn cone-editor-btn-primary cone-editor-add"
+        onClick={() => toy.newSection()}
+      >
+        + Add section
+      </button>
+    </>
   );
 };
 
