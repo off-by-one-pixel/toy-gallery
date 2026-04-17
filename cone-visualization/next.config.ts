@@ -1,8 +1,13 @@
+import path from 'node:path'
 import type { NextConfig } from 'next'
- 
+
 const nextConfig: NextConfig = {
-  output: 'export', // Outputs a Single-Page Application (SPA)
-  distDir: 'build', // Changes the build output directory to `build`
+  output: 'export',
+  distDir: 'build',
+  transpilePackages: ['cone-editor'],
+  turbopack: {
+    root: path.resolve(__dirname, '..'),
+  },
 }
  
 export default nextConfig
