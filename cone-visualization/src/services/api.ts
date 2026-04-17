@@ -75,18 +75,28 @@ class APIClient {
   }
 }
 
-const transformConeForAPI = (brand: string, name: string, size: string, sections: Section[], topShape: string) => ({
-  name,
-  brand,
-  size,
+export interface ToyPayload {
+  brand: string;
+  name: string;
+  size: string;
+  color: string;
+  topShape: string;
+  sections: Section[];
+}
+
+const transformToyForAPI = (toy: ToyPayload) => ({
+  brand: toy.brand,
+  name: toy.name,
+  size: toy.size,
+  color: toy.color,
   shape: {
-    sections: sections.map(section => ({
-      order: section.id,
-      height: parseFloat(String(section.height)),
-      diameter: parseFloat(String(section.diameter))
+    top_section_shape: toy.topShape.toUpperCase(),
+    sections: toy.sections.map((s, idx) => ({
+      order: idx,
+      height: parseFloat(String(s.height)),
+      diameter: parseFloat(String(s.diameter)),
     })),
-    top_section_shape: topShape.toUpperCase()
-  }
+  },
 });
 
 const apiClient = new APIClient(API_CONFIG.baseUrl);
@@ -99,12 +109,20 @@ export const deleteToy = (id: number | string) =>
     method: 'DELETE',
   });
 
-export const saveCone = (toyBrand: string, coneName: string, toySize: string, coneSections: Section[], topShape: string) => {
-  const transformedData = transformConeForAPI(toyBrand, coneName, toySize, coneSections, topShape);
-
-  return apiClient.request(`${TOYS_ENDPOINT}/`, {
+export const createToy = (toy: ToyPayload) =>
+  apiClient.request(`${TOYS_ENDPOINT}/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(transformedData)
+    body: JSON.stringify(transformToyForAPI(toy)),
   });
+
+/**
+ * The DRF serializer doesn't support in-place update of the nested shape, so
+ * "edit" is implemented as create-new-then-delete-old. We POST first so a
+ * failure leaves the original intact.
+ */
+export const replaceToy = async (originalId: number, toy: ToyPayload) => {
+  const created = await createToy(toy);
+  await deleteToy(originalId);
+  return created;
 };

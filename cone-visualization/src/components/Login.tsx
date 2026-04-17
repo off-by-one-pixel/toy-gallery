@@ -30,39 +30,48 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="shadow-sm border border-slate-200 rounded-lg mt-6 max-w-96 p-3 mx-auto bg-white">
-            <form onSubmit={handleSubmit}>
-                <h2 className="font-bold leading-snug tracking-normal text-slate-800 mx-auto my-6 w-full text-2xl lg:max-w-3xl lg:text-4xl">Login</h2>
-                <div className="w-full max-w-sm min-w-50">
-                    <label className="block mb-2 text-sm text-slate-600 mt-4">Username</label>
-                    <Input
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="username"
-                        autoComplete="username"
-                        required
-                        aria-label="Username"
-                    />
+        <div className="min-h-screen flex items-center justify-center px-4">
+            <div className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white shadow-sm p-8">
+                <div className="mb-6">
+                    <h1 className="text-xl font-semibold tracking-tight text-neutral-900">Toy Gallery</h1>
+                    <p className="mt-1 text-sm text-neutral-500">Sign in to continue.</p>
                 </div>
-                <div className="w-full max-w-sm min-w-50">
-                    <label className="block mb-2 text-sm text-slate-600 mt-4">Password</label>
-                    <Input
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="********"
-                        type="password"
-                        autoComplete="current-password"
-                        required
-                        aria-label="Password"
-                    />
-                </div>
-                {error && (
-                    <p className="mt-4 text-sm text-red-600" role="alert">{error}</p>
-                )}
-                <Button type="submit" fullWidth className="mt-4" isDisabled={submitting}>
-                    {submitting ? 'Signing in…' : 'Login'}
-                </Button>
-            </form>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <div>
+                        <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-neutral-500">
+                            Username
+                        </label>
+                        <Input
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="username"
+                            autoComplete="username"
+                            required
+                            aria-label="Username"
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-neutral-500">
+                            Password
+                        </label>
+                        <Input
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            type="password"
+                            autoComplete="current-password"
+                            required
+                            aria-label="Password"
+                        />
+                    </div>
+                    {error && (
+                        <p className="text-xs text-red-600" role="alert">{error}</p>
+                    )}
+                    <Button type="submit" fullWidth isDisabled={submitting} variant="primary">
+                        {submitting ? 'Signing in…' : 'Sign in'}
+                    </Button>
+                </form>
+            </div>
         </div>
     );
 };

@@ -5,9 +5,7 @@ export default function Page() {
 
   return (
     <AuthGate>
-      <div className="antialiased px-5">
-        <ConeList />
-      </div>
+      <ConeList />
     </AuthGate>
   );
 }

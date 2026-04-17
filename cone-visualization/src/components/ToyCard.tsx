@@ -1,76 +1,95 @@
 'use client'
 
-import { deleteToy } from "../services/api";
 import { Render } from "cone-editor";
-import { Card, Dropdown, Label } from "@heroui/react";
-import { buttonVariants } from "@heroui/styles";
+import type { Toy as EditorToy } from "cone-editor";
 import type { Toy } from "./ConeList";
 
-interface ToyCardProps {
+type Props = {
   toy: Toy;
-  scaleFactor: number;
-  updateLastChanged: () => void;
-}
-
-const ToyCard = ({ toy, scaleFactor, updateLastChanged }: ToyCardProps) => {
-
-    const deleteToyAndUpdate = async (id: number) => {
-      try {
-        await deleteToy(id);
-      } finally {
-        updateLastChanged();
-      }
-    };
-
-    const style = {
-        borderWidth: 2,
-        borderColor: "black",
-        color: "lightblue",
-    };
-
-    return (
-        <Card className="w-96 shadow-lg group">
-            <Card.Header className="relative">
-                <div className="h-[320px] w-full flex items-end bg-gradient-to-br from-red-50/40 to-teal-100/40">
-                    <Render toy={toy} scaleFactor={scaleFactor} style={style} />
-                </div>
-                <div className="hidden group-hover:block absolute top-5 right-5 z-10">
-                    <Dropdown>
-                        <Dropdown.Trigger className={buttonVariants({ variant: "ghost", size: "sm", isIconOnly: true })}>
-                            ...
-                        </Dropdown.Trigger>
-                        <Dropdown.Popover>
-                            <Dropdown.Menu onAction={(key) => { if (key === 'delete') deleteToyAndUpdate(toy.id); }}>
-                                <Dropdown.Item id="delete" textValue="Delete" className="text-red-500">
-                                    <Label>Delete</Label>
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown.Popover>
-                    </Dropdown>
-                </div>
-            </Card.Header>
-            <Card.Content>
-                <div className="mb-2 flex items-center justify-between">
-                    <p className="font-medium text-blue-gray-800">
-                        {toy.brand} {toy.name}
-                    </p>
-                    <p className="font-medium text-blue-gray-800">
-                        {toy.size}
-                    </p>
-                </div>
-                <p className="flex items-center font-normal text-sm text-gray-500 opacity-75">
-                    <svg className="mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 1024 1024"><path fill="currentColor" d="M840 836H184c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h656c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8zm0-724H184c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h656c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8zM610.8 378c6 0 9.4-7 5.7-11.7L515.7 238.7a7.14 7.14 0 0 0-11.3 0L403.6 366.3a7.23 7.23 0 0 0 5.7 11.7H476v268h-62.8c-6 0-9.4 7-5.7 11.7l100.8 127.5c2.9 3.7 8.5 3.7 11.3 0l100.8-127.5c3.7-4.7.4-11.7-5.7-11.7H548V378h62.8z" /></svg>
-                    {Math.round(toy.height)} mm
-                </p>
-                <p className="flex items-center font-normal text-sm text-gray-500 opacity-75">
-                    <svg className="mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10Zm7-10l-3-3m3 3l-3 3m3-3H5m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    {Math.round(toy.diameter)} mm
-                </p>
-            </Card.Content>
-        </Card>
-    );
+  heightRatio: number;
+  onEdit: (toy: Toy) => void;
+  onDelete: (toy: Toy) => void;
 };
 
-export default ToyCard;
+const DEFAULT_FILL = "#c7e4ee";
+
+export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
+  const style = {
+    borderWidth: 1.25,
+    borderColor: "#1f2937",
+    color: toy.color || DEFAULT_FILL,
+  };
+
+  const editorToy: EditorToy = {
+    sections: toy.sections,
+    topShape: toy.topShape,
+    bottomShape: toy.bottomShape,
+  };
+
+  return (
+    <article className="group relative rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
+      <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
+        <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onEdit(toy); }}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white/90 text-neutral-800 backdrop-blur hover:bg-white hover:border-neutral-300"
+            aria-label="Edit"
+            title="Edit"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onDelete(toy); }}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white/90 text-neutral-800 backdrop-blur hover:bg-red-50 hover:border-red-200 hover:text-red-700"
+            aria-label="Delete"
+            title="Delete"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-center" style={{ top: `${(1 - heightRatio) * 100}%` }}>
+          <Render toy={editorToy} scaleFactor={1} style={style} />
+        </div>
+      </div>
+      <div className="px-3.5 py-3">
+        <div className="mb-2 flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500 truncate">{toy.brand}</div>
+            <div className="truncate text-sm font-semibold text-neutral-900">{toy.name}</div>
+          </div>
+          {toy.size && (
+            <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-indigo-800">
+              {toy.size}
+            </span>
+          )}
+        </div>
+        <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2.5">
+          <Metric label="Length" value={Math.round(toy.height)} />
+          <Metric label="Diameter" value={Math.round(toy.diameter)} bordered />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Metric({ label, value, bordered }: { label: string; value: number; bordered?: boolean }) {
+  return (
+    <div className={bordered ? "pl-3 border-l border-neutral-200" : ""}>
+      <div className="text-[22px] font-semibold leading-none tracking-tight text-neutral-900 tabular-nums">
+        {value}
+        <span className="ml-0.5 text-xs font-medium text-neutral-500">mm</span>
+      </div>
+      <div className="mt-1 text-[10px] uppercase tracking-wider text-neutral-400">{label}</div>
+    </div>
+  );
+}
