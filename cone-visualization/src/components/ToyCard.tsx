@@ -2,7 +2,8 @@
 
 import { deleteToy } from "../services/api";
 import { Render } from "cone-editor";
-import { Card, Dropdown, Button, Label } from "@heroui/react";
+import { Card, Dropdown, Label } from "@heroui/react";
+import { buttonVariants } from "@heroui/styles";
 import type { Toy } from "./ConeList";
 
 interface ToyCardProps {
@@ -35,8 +36,8 @@ const ToyCard = ({ toy, scaleFactor, updateLastChanged }: ToyCardProps) => {
                 </div>
                 <div className="hidden group-hover:block absolute top-5 right-5 z-10">
                     <Dropdown>
-                        <Dropdown.Trigger>
-                            <Button variant="ghost" size="sm" isIconOnly>...</Button>
+                        <Dropdown.Trigger className={buttonVariants({ variant: "ghost", size: "sm", isIconOnly: true })}>
+                            ...
                         </Dropdown.Trigger>
                         <Dropdown.Popover>
                             <Dropdown.Menu onAction={(key) => { if (key === 'delete') deleteToyAndUpdate(toy.id); }}>
