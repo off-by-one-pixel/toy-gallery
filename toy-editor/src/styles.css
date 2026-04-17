@@ -1,0 +1,199 @@
+/* cone-editor default styles
+ * Import with: import "cone-editor/styles.css";
+ * All class names are prefixed with `cone-editor-` so they're easy to scope or override.
+ */
+
+.cone-editor-root {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+  font-family: inherit;
+  color: inherit;
+}
+
+.cone-editor-canvas {
+  flex: 1 1 50%;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.cone-editor-controls {
+  flex: 1 1 50%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cone-editor-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.cone-editor-section-move {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.cone-editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cone-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #374151;
+}
+
+.cone-editor-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.cone-editor-field-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.cone-editor-field-value {
+  font-variant-numeric: tabular-nums;
+  color: #111827;
+  font-weight: 500;
+}
+
+.cone-editor-slider {
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  outline: none;
+  cursor: pointer;
+}
+.cone-editor-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.12);
+  cursor: grab;
+}
+.cone-editor-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.12);
+  cursor: grab;
+}
+.cone-editor-slider:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.cone-editor-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.cone-editor-btn:hover:not(:disabled) {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+.cone-editor-btn:focus-visible {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+.cone-editor-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cone-editor-btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+.cone-editor-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.cone-editor-btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.cone-editor-btn-danger {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #b91c1c;
+  border-color: transparent;
+}
+.cone-editor-btn-danger:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.cone-editor-select {
+  padding: 4px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  background: #ffffff;
+  color: #111827;
+  cursor: pointer;
+}
+.cone-editor-select:focus-visible {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.cone-editor-add {
+  margin-top: 4px;
+}

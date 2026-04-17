@@ -1,36 +1,37 @@
-import React, { RefObject, useEffect } from "react";
-import { Render } from "./Render.js";
-import { StyleOption, Toy, useToyStore } from "../toyMachine.js";
-import EditorControls from "./EditorControls.js";
+import type { RefObject } from "react";
+import { useEffect } from "react";
+import type { StyleOption, Toy } from "../toyMachine";
+import { useToyStore } from "../toyMachine";
+import EditorControls from "./EditorControls";
+import { Render } from "./Render";
 
 type Props = {
   width?: number;
   scaleFactor?: number;
-  style: StyleOption;
+  style?: Partial<StyleOption>;
   onChange?: (toy: Toy) => void;
-  ref?: RefObject<null>
-}
+  ref?: RefObject<SVGSVGElement | null>;
+};
 
-const ToyEditor: React.FC<Props> = ({ width, scaleFactor=1, style={}, onChange, ref }) => {
-  const toy = useToyStore()
-  
-  if (width) {
-    scaleFactor = width / toy.getMaxWidth();
-  }
+const ToyEditor = ({ width, scaleFactor = 1, style = {}, onChange, ref }: Props) => {
+  const toy = useToyStore();
+  const effectiveScale = width ? width / toy.getMaxWidth() : scaleFactor;
+  const mergedStyle = { ...toy.style, ...style } as StyleOption;
 
   useEffect(() => {
-    if (onChange) onChange(toy.getToy())
-  }, [toy]);
+    onChange?.(toy.getToy());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toy.sections, toy.topShape, toy.bottomShape]);
 
   return (
-    <>
-      <div className="flex-1/2 p-8">
-        <Render toy={toy} ref={ref} scaleFactor={scaleFactor} style={{...toy.style, ...style} as StyleOption}/>
+    <div className="cone-editor-root">
+      <div className="cone-editor-canvas">
+        <Render toy={toy} ref={ref} scaleFactor={effectiveScale} style={mergedStyle} />
       </div>
-      <div className="flex-1/2 p-8">
+      <div className="cone-editor-controls">
         <EditorControls />
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
-import React from "react";
-import { StyleOption, ToySection } from "../toyMachine.js";
+import type { StyleOption, ToySection } from "../toyMachine";
 
 type Props = {
   section: ToySection;
@@ -9,11 +8,11 @@ type Props = {
   totalWidth: number;
 };
 
-const TopSection: React.FC<Props> = ({ section, scaleFactor, shape, style, totalWidth }) => {
+const TopSection = ({ section, scaleFactor, shape, style, totalWidth }: Props) => {
   const diameter = section.diameter * scaleFactor;
   const height = section.height * scaleFactor;
 
-  const isEgg = shape === 'egg';
+  const isEgg = shape === "egg";
   const radius = diameter / 2;
   let x1, x2;
 

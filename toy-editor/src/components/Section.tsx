@@ -1,5 +1,4 @@
-import React from "react";
-import { StyleOption, ToySection } from "../toyMachine.js";
+import type { StyleOption, ToySection } from "../toyMachine";
 
 type Props = {
   section: ToySection;
@@ -9,7 +8,7 @@ type Props = {
   style: StyleOption;
 };
 
-const Section: React.FC<Props> = ({ section, scaleFactor, previousDiameter, totalWidth, style }) => {
+const Section = ({ section, scaleFactor, previousDiameter, totalWidth, style }: Props) => {
   const x = (totalWidth - Math.max(section.diameter, previousDiameter) * scaleFactor) / 2;
   const diameter = section.diameter * scaleFactor;
   const prev_diameter = previousDiameter * scaleFactor;
@@ -23,8 +22,8 @@ const Section: React.FC<Props> = ({ section, scaleFactor, previousDiameter, tota
       <path
         d={`
           M ${0 + diff_prev} 0
-          C ${0 + diff_prev} ${height / 2} ${0 + diff} ${height / 2} ${0 + diff} ${height} 
-          L ${diameter + diff} ${height} 
+          C ${0 + diff_prev} ${height / 2} ${0 + diff} ${height / 2} ${0 + diff} ${height}
+          L ${diameter + diff} ${height}
           C ${diameter + diff} ${height / 2} ${prev_diameter + diff_prev} ${height / 2} ${prev_diameter + diff_prev} 0
         `}
         fill={style.color}
