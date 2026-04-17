@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A React application for visualizing a cone based on specified measurements.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "npx serve@latest ./build -l 3000"
   },
@@ -13,7 +13,7 @@
     "@tailwindcss/postcss": "^4.1.12",
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
-    "cone-editor": "github:off-by-one-pixel/toy-editor",
+    "cone-editor": "file:../cone_editor",
     "next": "^16.2.4",
     "postcss": "^8.5.6",
     "react": "^19.1.1",

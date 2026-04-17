@@ -1,10 +1,11 @@
 import { Metadata } from "next"
 import '../styles/index.css';
+import 'cone-editor/styles.css';
 import { AuthProvider } from '../providers/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'Cone Visualization',
-  description: 'Cone Visualization - A React application for visualizing cone measurements',
+  title: 'Toy Gallery',
+  description: 'Toy Gallery',
 }
 
 export default function RootLayout({
@@ -15,11 +16,11 @@ export default function RootLayout({
     return (
         <html lang="en">
             <head>
-                <meta name="theme-color" content="#000000" />
+                <meta name="theme-color" content="#f3f4f6" />
             </head>
-            <body className="bg-gray-200 min-h-screen">
+            <body className="bg-neutral-100 text-neutral-900 min-h-screen antialiased">
                 <AuthProvider>
-                    <main>{children}</main>
+                    {children}
                 </AuthProvider>
             </body>
         </html>
