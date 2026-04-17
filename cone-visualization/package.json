@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A React application for visualizing a cone based on specified measurements.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "npx serve@latest ./build -l 3000"
   },
