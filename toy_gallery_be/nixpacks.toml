@@ -1,0 +1,13 @@
+providers = ["python"]
+
+[phases.setup]
+nixPkgs = ["python313", "uv", "gcc", "postgresql"]
+
+[phases.install]
+cmds = ["uv sync --frozen"]
+
+[phases.build]
+cmds = ["uv run python manage.py collectstatic --noinput"]
+
+[start]
+cmd = "uv run python manage.py migrate --noinput && uv run gunicorn toy_gallery_be.wsgi:application --bind 0.0.0.0:$PORT"
