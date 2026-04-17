@@ -44,6 +44,7 @@ interface ToyStore extends Toy {
   setStyle: (style: Partial<StyleOption>) => void;
   setRef: (ref: RefObject<SVGSVGElement | null>) => void;
   setSelected: (id: number | null) => void;
+  hydrate: (toy: Toy) => void;
 }
 
 export const useToyStore = create<ToyStore>()((set, get) => ({
@@ -152,4 +153,14 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     });
   },
   setStyle: (style) => set({ style: { ...get().style, ...style } }),
+  hydrate: (toy) => {
+    const maxId = toy.sections.reduce((a, s) => Math.max(a, s.id), 0);
+    set({
+      sections: toy.sections.map((s) => ({ ...s })),
+      topShape: toy.topShape,
+      bottomShape: toy.bottomShape,
+      nextId: maxId + 1,
+      selectedId: null,
+    });
+  },
 }));
