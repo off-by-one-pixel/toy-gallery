@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# toy-svg-editor
 
-## Getting Started
+Standalone Next.js demo app for the [`cone-editor`](../cone_editor) React component library. Use it to interactively tweak a toy's shape, stroke, and fill color, then copy the generated SVG to the clipboard.
 
-First, run the development server:
+It exists so the component can be built, demoed, and shared without any extra dependencies from the larger Toy Gallery app.
+
+## Stack
+
+- Next.js 16 (App Router, Turbopack, static export)
+- React 19.2
+- Tailwind CSS 4
+- `cone-editor` — linked as `file:../cone_editor` so local changes to the library are picked up without republishing
+- `react-colorful` — hex color pickers
+
+## Develop
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+make install      # or: npm install
+make dev          # http://localhost:3000
+make lint
+make typecheck
+make build        # static export to ./out
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+(`make help` prints all targets.)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Layout
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/page.tsx` — the demo UI (color pickers, width/stroke sliders, copy button, the `<ToyEditor />`).
+- `app/globals.css` — imports Tailwind and `cone-editor/styles.css`.
+- `next.config.ts` — static export + Turbopack `root: ..` so the sibling `cone_editor/` is inside the workspace root.
 
-## Learn More
+## CI
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`.github/workflows/ci.yml` runs `lint`, `typecheck`, and `build` on every PR and push to `main`.
