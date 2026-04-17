@@ -2,26 +2,36 @@
   "name": "toy-svg-editor",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
-    "build": "next build --turbopack",
-    "start": "next start"
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx,css,md,json}\""
   },
   "dependencies": {
-    "@material-tailwind/react": "^2.1.10",
-    "next": "15.5.2",
-    "postcss": "^8.5.6",
-    "react": "19.1.0",
+    "cone-editor": "file:../cone_editor",
+    "next": "^16.2.4",
+    "react": "^19.2.5",
     "react-colorful": "^5.6.1",
-    "react-dom": "19.1.0",
-    "toy-editor": "github:off-by-one-pixel/toy-editor"
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.12",
-    "@types/node": "^20",
-    "@types/react": "^19",  
-    "@types/react-dom": "^19",
-    "tailwindcss": "^4.1.12",
-    "typescript": "^5"
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/node": "^22.19.17",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.4",
+    "eslint-config-prettier": "^10.1.8",
+    "postcss": "^8.5.10",
+    "prettier": "^3.8.3",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.9.3"
   }
 }
