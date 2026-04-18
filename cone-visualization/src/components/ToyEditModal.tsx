@@ -92,6 +92,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const sections = useToyStore((s) => s.sections);
   const topShape = useToyStore((s) => s.topShape);
   const hydrate = useToyStore((s) => s.hydrate);
+  const setCircumference = useToyStore((s) => s.setCircumference);
   const getTotalHeight = useToyStore((s) => s.getTotalHeight);
   const getMaxWidth = useToyStore((s) => s.getMaxWidth);
 
@@ -108,6 +109,16 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
 
   const toyCircumferenceMm = maxCircumferenceMm(sections, unit);
   const hasCircumference = toyCircumferenceMm != null;
+
+  // Writing at the toy level targets the widest-diameter section. Ties go to
+  // the first section in document order (reduce keeps the accumulator unless
+  // the next candidate is strictly wider).
+  const handleToyCircumferenceMmChange = (mm: number | null) => {
+    if (sections.length === 0) return;
+    const widest = sections.reduce((a, s) => (s.diameter > a.diameter ? s : a));
+    const valueInUnit = mm == null ? null : fromMm(mm, unit);
+    setCircumference(widest.id, valueInUnit);
+  };
 
   // For the silhouette in the editor canvas, always feed mm sections; the
   // editor's store holds active-unit values used only by the section inputs.
@@ -234,6 +245,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                 onSize={setSize}
                 onColor={setColor}
                 onInsertableLengthMm={setInsertableLengthMm}
+                onCircumferenceMm={handleToyCircumferenceMmChange}
                 totalHeightMm={totalHeightMm}
                 maxDiameterMm={maxDiameterMm}
               />
@@ -258,6 +270,7 @@ type IdentificationProps = {
   onSize: (v: string) => void;
   onColor: (v: string) => void;
   onInsertableLengthMm: (v: number | null) => void;
+  onCircumferenceMm: (v: number | null) => void;
   totalHeightMm: number;
   maxDiameterMm: number;
 };
@@ -275,6 +288,7 @@ function IdentificationGroup({
   onSize,
   onColor,
   onInsertableLengthMm,
+  onCircumferenceMm,
   totalHeightMm,
   maxDiameterMm,
 }: IdentificationProps) {
@@ -321,11 +335,11 @@ function IdentificationGroup({
             unit={unit}
             onChangeMm={onInsertableLengthMm}
           />
-          <DimReadout
+          <DimInput
             label="Circumference"
             valueMm={circumferenceMm}
             unit={unit}
-            hint={circumferenceMm == null ? 'Set per section' : undefined}
+            onChangeMm={onCircumferenceMm}
           />
         </div>
         <div className="flex items-center gap-3 border-t border-neutral-200 pt-2.5 text-[11px] uppercase tracking-wider text-neutral-400">
@@ -392,32 +406,6 @@ function DimInput({
   );
 }
 
-function DimReadout({
-  label,
-  valueMm,
-  unit,
-  hint,
-}: {
-  label: string;
-  valueMm: number | null;
-  unit: Unit;
-  hint?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="inline-flex items-baseline gap-1">
-        <span className="text-2xl font-semibold tracking-tight tabular-nums text-neutral-900">
-          {formatInUnit(valueMm, unit)}
-        </span>
-        <span className="text-xs font-medium text-neutral-500">{unit}</span>
-      </span>
-      <span className="text-[10px] uppercase tracking-wider text-neutral-400">
-        {label}
-        {hint && <span className="ml-1 normal-case text-neutral-400/80">({hint})</span>}
-      </span>
-    </div>
-  );
-}
 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
