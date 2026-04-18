@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Download, Upload } from 'lucide-react';
 import { downloadExport, importFromFile } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useToasts } from '../providers/ToastProvider';
@@ -66,19 +67,11 @@ export default function CollectionMenu({ onImported, count }: Props) {
             {count} {count === 1 ? 'item' : 'items'}
           </span>
         )}
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+        <ChevronDown
+          size={10}
+          strokeWidth={2.5}
           className="text-neutral-400 transition-colors group-hover:text-neutral-600"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        />
       </button>
 
       {open && (
@@ -91,26 +84,14 @@ export default function CollectionMenu({ onImported, count }: Props) {
             description="Download the gallery as JSON"
             onClick={handleExport}
             disabled={busy}
-            icon={
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3v12" />
-                <path d="m7 10 5 5 5-5" />
-                <path d="M5 21h14" />
-              </svg>
-            }
+            icon={<Download size={14} strokeWidth={1.8} />}
           />
           <MenuItem
             label="Import collection"
             description="Add toys from a JSON file"
             onClick={() => fileRef.current?.click()}
             disabled={busy}
-            icon={
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 21V9" />
-                <path d="m7 14 5-5 5 5" />
-                <path d="M5 3h14" />
-              </svg>
-            }
+            icon={<Upload size={14} strokeWidth={1.8} />}
           />
         </div>
       )}

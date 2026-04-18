@@ -16,6 +16,7 @@
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
     "cone-editor": "file:../cone_editor",
+    "lucide-react": "^1.8.0",
     "next": "^16.2.4",
     "postcss": "^8.5.6",
     "react": "^19.1.1",

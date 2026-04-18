@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { X } from 'lucide-react';
 
 export type ToastKind = 'error' | 'success';
 
@@ -71,9 +72,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               aria-label="Dismiss"
               className="-mr-1 -mt-0.5 rounded p-1 text-neutral-500 hover:bg-black/5 hover:text-neutral-900"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
+              <X size={12} strokeWidth={2.4} />
             </button>
           </div>
         ))}
