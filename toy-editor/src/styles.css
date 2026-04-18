@@ -236,7 +236,7 @@
   min-width: 0;
 }
 .cone-editor-section-vals input {
-  width: 62px;
+  width: 48px;
   padding: 3px 6px;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -260,6 +260,7 @@
   color: var(--cone-editor-ink-soft);
   font-size: 11px;
   margin-left: 2px;
+  margin-right: 10px;
 }
 
 /* Buttons */
