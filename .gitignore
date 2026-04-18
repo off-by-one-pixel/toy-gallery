@@ -74,3 +74,6 @@ test-results/
 
 # Next.js
 next-env.d.ts
+
+# Design comps — lives locally, not versioned
+mockups/
