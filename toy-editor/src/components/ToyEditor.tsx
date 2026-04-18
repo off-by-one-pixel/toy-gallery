@@ -4,6 +4,7 @@ import type { StyleOption, Toy } from "../toyMachine";
 import { useToyStore } from "../toyMachine";
 import EditorControls from "./EditorControls";
 import { Render } from "./Render";
+import { EditorUnitContext, type Unit } from "./unit";
 
 type Props = {
   width?: number;
@@ -19,6 +20,8 @@ type Props = {
   initialToy?: Toy;
   /** Rendered at the top of the controls column, above the built-in groups. */
   leadingSlot?: ReactNode;
+  /** Display unit for the section-row inputs. Storage is always mm. */
+  unit?: Unit;
 };
 
 const ToyEditor = ({
@@ -29,6 +32,7 @@ const ToyEditor = ({
   ref,
   initialToy,
   leadingSlot,
+  unit = "mm",
 }: Props) => {
   const toy = useToyStore();
   const hydrate = useToyStore((s) => s.hydrate);
@@ -46,28 +50,30 @@ const ToyEditor = ({
   }, [toy.sections, toy.topShape, toy.bottomShape]);
 
   return (
-    <div className="cone-editor-root">
-      <section className="cone-editor-canvas">
-        <div className="cone-editor-hint" aria-hidden>
-          Click a section to select
-        </div>
-        <div className="cone-editor-stage">
-          <Render
-            toy={toy}
-            ref={ref}
-            scaleFactor={effectiveScale}
-            style={mergedStyle}
-            selectedId={toy.selectedId}
-            onSelect={toy.setSelected}
-            fixed={fixed}
-          />
-        </div>
-      </section>
-      <aside className="cone-editor-controls">
-        {leadingSlot}
-        <EditorControls />
-      </aside>
-    </div>
+    <EditorUnitContext.Provider value={unit}>
+      <div className="cone-editor-root">
+        <section className="cone-editor-canvas">
+          <div className="cone-editor-hint" aria-hidden>
+            Click a section to select
+          </div>
+          <div className="cone-editor-stage">
+            <Render
+              toy={toy}
+              ref={ref}
+              scaleFactor={effectiveScale}
+              style={mergedStyle}
+              selectedId={toy.selectedId}
+              onSelect={toy.setSelected}
+              fixed={fixed}
+            />
+          </div>
+        </section>
+        <aside className="cone-editor-controls">
+          {leadingSlot}
+          <EditorControls />
+        </aside>
+      </div>
+    </EditorUnitContext.Provider>
   );
 };
 

@@ -28,7 +28,7 @@ const TopSection = ({ section, scaleFactor, shape, style, totalWidth, onSelect }
   return (
     <g
       className="cone-editor-part"
-      transform={`translate(${(totalWidth - diameter) / 2 + style.borderWidth}, 0)`}
+      transform={`translate(${(totalWidth - diameter) / 2}, 0)`}
       onClick={onSelect ? () => onSelect(section.id) : undefined}
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -43,6 +43,7 @@ const TopSection = ({ section, scaleFactor, shape, style, totalWidth, onSelect }
         fill={style.color}
         stroke={style.borderColor}
         strokeWidth={style.borderWidth}
+        vectorEffect="non-scaling-stroke"
       />
     </g>
   );

@@ -84,6 +84,7 @@
   stroke: var(--cone-editor-accent);
   stroke-width: 2;
   stroke-dasharray: 5 3;
+  vector-effect: non-scaling-stroke;
 }
 .cone-editor-handle {
   fill: var(--cone-editor-surface);
