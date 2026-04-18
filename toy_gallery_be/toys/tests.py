@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 
+from . import export as export_mod
 from . import models
 from .dimensions import Dimensions
 
@@ -124,3 +125,92 @@ class ToyCreateTests(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         # 254 mm = exactly 10 inches
         self.assertEqual(response.data["circumference"], {"mm": 254.0, "in": 10.0})
+
+
+class ExportRegistryTests(TestCase):
+    def test_latest_returns_highest_version(self):
+        self.assertIs(export_mod.latest(), export_mod.ExportV1)
+
+    def test_for_version_returns_handler(self):
+        self.assertIs(export_mod.for_version(1), export_mod.ExportV1)
+
+    def test_for_version_rejects_unknown(self):
+        from rest_framework.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError):
+            export_mod.for_version(99)
+
+    def test_for_version_rejects_non_int(self):
+        from rest_framework.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError):
+            export_mod.for_version("1")
+
+
+class ExportImportTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        # Seed one toy so the export has content.
+        self.client.post(
+            "/toys/toys/",
+            _payload(section_circumferences=(None, 220.0, None)),
+            format="json",
+        )
+
+    def test_export_has_envelope_and_portable_toy_shape(self):
+        response = self.client.get("/toys/toys/export/")
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.data
+        self.assertEqual(data["version"], 1)
+        self.assertIn("exported_at", data)
+        self.assertEqual(len(data["toys"]), 1)
+        toy = data["toys"][0]
+        # Scalar mm shape (NOT the {mm, in} dict).
+        self.assertEqual(toy["brand"], "Acme")
+        self.assertEqual(toy["insertable_length"], 170)
+        section = toy["shape"]["sections"][1]
+        self.assertEqual(section["circumference"], 220.0)
+        self.assertNotIsInstance(section["height"], dict)
+
+    def test_export_download_headers(self):
+        response = self.client.get("/toys/toys/export/")
+        disposition = response["Content-Disposition"]
+        self.assertIn("attachment", disposition)
+        self.assertIn("toy-gallery-", disposition)
+        self.assertIn(".json", disposition)
+
+    def test_import_is_additive(self):
+        # Export what's there, import it back, count should double.
+        exported = self.client.get("/toys/toys/export/").data
+        before = models.Toy.objects.count()
+        response = self.client.post(
+            "/toys/toys/import/", exported, format="json"
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.data, {"created": before})
+        self.assertEqual(models.Toy.objects.count(), before * 2)
+
+    def test_import_rejects_missing_version(self):
+        response = self.client.post("/toys/toys/import/", {"toys": []}, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_import_rejects_unknown_version(self):
+        response = self.client.post(
+            "/toys/toys/import/",
+            {"version": 99, "toys": []},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("99", str(response.content))
+
+    def test_import_is_atomic(self):
+        # Build an envelope where the second toy is invalid (all-null circ).
+        good = _payload(section_circumferences=(None, 200.0, None))
+        bad = _payload(section_circumferences=(None, None, None))
+        envelope = {"version": 1, "exported_at": "x", "toys": [good, bad]}
+        before = models.Toy.objects.count()
+        response = self.client.post("/toys/toys/import/", envelope, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(models.Toy.objects.count(), before)

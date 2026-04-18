@@ -1,9 +1,9 @@
 'use client';
 
 import { useUnit } from '../providers/UnitProvider';
-import type { Unit } from '../services/units';
+import { Unit } from '../services/units';
 
-const OPTIONS: Unit[] = ['mm', 'in'];
+const OPTIONS: Unit[] = [Unit.mm, Unit.in];
 
 export default function UnitToggle() {
   const { unit, setUnit } = useUnit();

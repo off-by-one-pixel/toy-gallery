@@ -3,10 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
 import type { StyleOption, Toy as EditorToy, ToySection } from 'cone-editor';
-import { createToy, replaceToy } from '../services/api';
+import { createToy, replaceToy, type Toy } from '../services/api';
 import { useUnit } from '../providers/UnitProvider';
-import { fromMm, toMm, type Unit } from '../services/units';
-import type { Toy } from './ConeList';
+import { Unit, convertSections, fromMm, toMm } from '../services/units';
 
 type Mode =
   | { kind: 'new' }
@@ -39,23 +38,6 @@ const NEW_TOY_MM: EditorToy = {
   bottomShape: 'flat',
 };
 
-// Render geometry is unit-agnostic (self-consistent numbers), but Render expects
-// `diameter` and `height` to be reasonable pixel-ish values. To keep the silhouette
-// looking the same regardless of unit, we scale the canvas by the right factor.
-// The editor's store values are in the active unit; the render will produce the
-// same visual result either way because the stage auto-fits.
-
-const convertSections = (sections: ToySection[], from: Unit, to: Unit): ToySection[] => {
-  if (from === to) return sections;
-  return sections.map((s) => ({
-    ...s,
-    diameter: fromMm(toMm(s.diameter, from), to),
-    height: fromMm(toMm(s.height, from), to),
-    circumference:
-      s.circumference == null ? s.circumference : fromMm(toMm(s.circumference, from), to),
-  }));
-};
-
 const maxCircumferenceMm = (sections: ToySection[], unit: Unit): number | null => {
   const values = sections
     .map((s) => s.circumference)
@@ -67,7 +49,7 @@ const maxCircumferenceMm = (sections: ToySection[], unit: Unit): number | null =
 const formatInUnit = (mm: number | null | undefined, unit: Unit): string => {
   if (mm == null) return '—';
   const v = fromMm(mm, unit);
-  return unit === 'in' ? v.toFixed(2) : String(Math.round(v));
+  return unit === Unit.in ? v.toFixed(2) : String(Math.round(v));
 };
 
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
@@ -89,7 +71,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
 
   // Initial hydrate uses the active unit at mount.
   const initial = useMemo<EditorToy>(
-    () => ({ ...seedMm, sections: convertSections(seedMm.sections, 'mm', unit) }),
+    () => ({ ...seedMm, sections: convertSections(seedMm.sections, Unit.mm, unit) }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [seedMm],
   );
@@ -159,7 +141,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     }
     setSaving(true);
     try {
-      const sectionsMm = convertSections(sections, unit, 'mm');
+      const sectionsMm = convertSections(sections, unit, Unit.mm);
       const payload = {
         brand: brand.trim(),
         name: name.trim(),
@@ -382,11 +364,11 @@ function DimInput({
   unit: Unit;
   onChangeMm: (v: number | null) => void;
 }) {
-  const step = unit === 'in' ? 0.1 : 1;
+  const step = unit === Unit.in ? 0.1 : 1;
   const display =
     valueMm == null
       ? ''
-      : unit === 'in'
+      : unit === Unit.in
       ? fromMm(valueMm, unit).toFixed(2)
       : String(Math.round(fromMm(valueMm, unit)));
   return (
