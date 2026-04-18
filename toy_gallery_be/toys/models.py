@@ -23,12 +23,21 @@ class Shape(models.Model):
             return 0.0
         return max(section.diameter for section in self.sections.all())  # type: ignore
 
+    def get_circumference(self) -> float | None:
+        values = [
+            section.circumference
+            for section in self.sections.all()  # type: ignore
+            if section.circumference is not None
+        ]
+        return max(values) if values else None
+
 
 class ShapeSection(models.Model):
     shape = models.ForeignKey(Shape, on_delete=models.CASCADE, related_name="sections")
     diameter = models.FloatField()
     height = models.FloatField()
     order = models.IntegerField()
+    circumference = models.FloatField(null=True, blank=True)
 
 
 class Toy(models.Model):
@@ -39,9 +48,13 @@ class Toy(models.Model):
     retired = models.BooleanField(default=False)
     shape = models.OneToOneField(Shape, on_delete=models.CASCADE)
     color = models.CharField(null=True, blank=True)
+    insertable_length = models.FloatField(null=True, blank=True)
 
     def diameter(self) -> float:
         return self.shape.get_diameter()
 
     def height(self) -> float:
         return self.shape.get_height()
+
+    def circumference(self) -> float | None:
+        return self.shape.get_circumference()

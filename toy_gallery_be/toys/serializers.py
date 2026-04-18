@@ -6,7 +6,7 @@ from . import models
 class ToyShapeSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ShapeSection
-        fields = ["id", "order", "height", "diameter"]
+        fields = ["id", "order", "height", "diameter", "circumference"]
 
 
 class ToyShapeSerializer(serializers.ModelSerializer):
@@ -15,6 +15,13 @@ class ToyShapeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Shape
         fields = ["top_section_shape", "sections"]
+
+    def validate_sections(self, sections):
+        if not any(s.get("circumference") is not None for s in sections):
+            raise serializers.ValidationError(
+                "At least one section must have a circumference."
+            )
+        return sections
 
     def create(self, validated_data):
         sections_data = validated_data.pop("sections")
@@ -36,10 +43,12 @@ class ToySerializer(serializers.ModelSerializer):
             "shape",
             "diameter",
             "height",
+            "circumference",
             "size",
             "date_purchased",
             "retired",
             "color",
+            "insertable_length",
         ]
 
     def create(self, validated_data):
