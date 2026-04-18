@@ -54,7 +54,11 @@ const refreshAccessToken = (): Promise<string | null> => {
       tokenStorage.setTokens(tokens);
       return tokens.access;
     })
-    .catch(() => {
+    .catch((err) => {
+      // Silent refresh: failures are expected (expired refresh token,
+      // offline, etc.). Log for debugging but don't surface to the user —
+      // the caller will see a 401 and redirect to login.
+      console.warn('Silent token refresh failed', err);
       tokenStorage.clear();
       return null;
     })

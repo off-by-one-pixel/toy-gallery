@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { deleteToy, fetchCones, type Toy } from '../services/api';
+import { useAsyncAction } from '../hooks/useAsyncAction';
 import CollectionMenu from './CollectionMenu';
 import ToyCard from './ToyCard';
 import ToyEditModal from './ToyEditModal';
@@ -23,6 +24,8 @@ const ConeList = () => {
   const [openCardId, setOpenCardId] = useState<number | null>(null);
 
   const updateLastChanged = () => setLastChanged(Date.now());
+  const runInline = useAsyncAction(setError);
+  const runToast = useAsyncAction();
 
   const maxHeight = useMemo(
     () => Math.max(1, ...cones.map((c) => c.height.mm)),
@@ -30,28 +33,18 @@ const ConeList = () => {
   );
 
   useEffect(() => {
-    const loadCones = async () => {
-      try {
-        setIsLoading(true);
-        setCones(await fetchCones());
+    runInline(fetchCones, {
+      busy: setIsLoading,
+      onSuccess: (loaded) => {
+        setCones(loaded);
         setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadCones();
-  }, [lastChanged]);
+      },
+    });
+  }, [lastChanged, runInline]);
 
   const handleDelete = async (toy: Toy) => {
     if (!confirm(`Delete ${toy.brand} ${toy.name}?`)) return;
-    try {
-      await deleteToy(toy.id);
-    } finally {
-      updateLastChanged();
-    }
+    await runToast(() => deleteToy(toy.id), { onDone: updateLastChanged });
   };
 
   const handleEditorSaved = () => {

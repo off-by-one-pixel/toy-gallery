@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "start": "npx serve@latest ./build -l 3000"
+    "start": "npx serve@latest ./build -l 3000",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@heroui/react": "^3.0.2",
@@ -22,7 +24,8 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "tailwindcss": "^4.1.12",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.4"
   },
   "keywords": [],
   "author": "",

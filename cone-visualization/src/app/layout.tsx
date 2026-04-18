@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import '../styles/index.css';
 import 'cone-editor/styles.css';
 import { AuthProvider } from '../providers/AuthProvider';
+import { ToastProvider } from '../providers/ToastProvider';
 import { UnitProvider } from '../providers/UnitProvider';
 
 export const metadata: Metadata = {
@@ -20,11 +21,13 @@ export default function RootLayout({
                 <meta name="theme-color" content="#f3f4f6" />
             </head>
             <body className="bg-neutral-100 text-neutral-900 min-h-screen antialiased">
-                <UnitProvider>
-                    <AuthProvider>
-                        {children}
-                    </AuthProvider>
-                </UnitProvider>
+                <ToastProvider>
+                    <UnitProvider>
+                        <AuthProvider>
+                            {children}
+                        </AuthProvider>
+                    </UnitProvider>
+                </ToastProvider>
             </body>
         </html>
     )

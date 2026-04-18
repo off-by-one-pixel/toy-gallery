@@ -1,33 +1,22 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { APIError, downloadExport, importFromFile } from '../services/api';
+import { downloadExport, importFromFile } from '../services/api';
+import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useToasts } from '../providers/ToastProvider';
 
 type Props = {
   onImported: () => void;
   count: number | null;
 };
 
-type Status =
-  | { kind: 'idle' }
-  | { kind: 'busy' }
-  | { kind: 'ok'; message: string }
-  | { kind: 'error'; message: string };
-
-const errorMessage = (err: unknown): string => {
-  if (err instanceof SyntaxError) return 'File is not valid JSON';
-  if (err instanceof APIError) {
-    const detail = typeof err.data === 'string' ? err.data : JSON.stringify(err.data);
-    return detail.length > 120 ? err.message : detail;
-  }
-  return err instanceof Error ? err.message : 'Something went wrong';
-};
-
 export default function CollectionMenu({ onImported, count }: Props) {
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  const [busy, setBusy] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const runAction = useAsyncAction();
+  const { showToast } = useToasts();
 
   useEffect(() => {
     if (!open) return;
@@ -40,29 +29,27 @@ export default function CollectionMenu({ onImported, count }: Props) {
     return () => document.removeEventListener('mousedown', close);
   }, [open]);
 
-  const handleExport = async () => {
-    setStatus({ kind: 'busy' });
-    try {
-      await downloadExport();
-      setStatus({ kind: 'ok', message: 'Exported' });
-    } catch (err) {
-      setStatus({ kind: 'error', message: errorMessage(err) });
-    }
-  };
+  const handleExport = () =>
+    runAction(downloadExport, {
+      busy: setBusy,
+      onSuccess: () => {
+        showToast('Exported collection', 'success');
+        setOpen(false);
+      },
+    });
 
-  const handleImportFile = async (file: File) => {
-    setStatus({ kind: 'busy' });
-    try {
-      const result = await importFromFile(file);
-      setStatus({
-        kind: 'ok',
-        message: `Imported ${result.created} ${result.created === 1 ? 'toy' : 'toys'}`,
-      });
-      onImported();
-    } catch (err) {
-      setStatus({ kind: 'error', message: errorMessage(err) });
-    }
-  };
+  const handleImportFile = (file: File) =>
+    runAction(() => importFromFile(file), {
+      busy: setBusy,
+      onSuccess: (result) => {
+        showToast(
+          `Imported ${result.created} ${result.created === 1 ? 'toy' : 'toys'}`,
+          'success',
+        );
+        setOpen(false);
+        onImported();
+      },
+    });
 
   return (
     <span ref={rootRef} className="relative inline-flex items-baseline">
@@ -103,7 +90,7 @@ export default function CollectionMenu({ onImported, count }: Props) {
             label="Export collection"
             description="Download the gallery as JSON"
             onClick={handleExport}
-            disabled={status.kind === 'busy'}
+            disabled={busy}
             icon={
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3v12" />
@@ -116,7 +103,7 @@ export default function CollectionMenu({ onImported, count }: Props) {
             label="Import collection"
             description="Add toys from a JSON file"
             onClick={() => fileRef.current?.click()}
-            disabled={status.kind === 'busy'}
+            disabled={busy}
             icon={
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 21V9" />
@@ -125,12 +112,6 @@ export default function CollectionMenu({ onImported, count }: Props) {
               </svg>
             }
           />
-          {status.kind === 'ok' && (
-            <p className="px-2 pt-2 pb-1 text-xs text-green-700">{status.message}</p>
-          )}
-          {status.kind === 'error' && (
-            <p className="px-2 pt-2 pb-1 text-xs text-red-600">{status.message}</p>
-          )}
         </div>
       )}
 
