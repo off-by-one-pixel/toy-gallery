@@ -1,53 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react';
-import { deleteToy, fetchCones } from '../services/api';
-import type { Dimension } from '../services/units';
+import { deleteToy, fetchCones, type Toy } from '../services/api';
+import CollectionMenu from './CollectionMenu';
 import ToyCard from './ToyCard';
 import ToyEditModal from './ToyEditModal';
 import UnitToggle from './UnitToggle';
 
-import type { Shape, ToySection } from 'cone-editor';
-
-interface ApiSection {
-  id: number;
-  height: Dimension;
-  diameter: Dimension;
-  circumference: Dimension | null;
-}
-
-interface ApiCone {
-  id: number;
-  name: string;
-  brand: string;
-  size: string;
-  color: string;
-  height: Dimension;
-  diameter: Dimension;
-  circumference: Dimension | null;
-  insertable_length: Dimension | null;
-  shape: {
-    top_section_shape: string;
-    bottom_section_shape?: string;
-    sections: ApiSection[];
-  };
-}
-
-export interface Toy {
-  id: number;
-  name: string;
-  brand: string;
-  size: string;
-  color: string;
-  height: Dimension;
-  diameter: Dimension;
-  circumference: Dimension | null;
-  insertableLength: Dimension | null;
-  topShape: Shape;
-  bottomShape: Shape;
-  /** Sections carry mm values for the geometry renderer. */
-  sections: ToySection[];
-}
+export type { Toy } from '../services/api';
 
 type EditorMode =
   | { kind: 'closed' }
@@ -73,27 +33,7 @@ const ConeList = () => {
     const loadCones = async () => {
       try {
         setIsLoading(true);
-        const data = (await fetchCones()) as ApiCone[];
-        const transformed: Toy[] = data.map((cone) => ({
-          id: cone.id,
-          name: cone.name,
-          brand: cone.brand,
-          size: cone.size,
-          color: cone.color,
-          height: cone.height,
-          diameter: cone.diameter,
-          circumference: cone.circumference,
-          insertableLength: cone.insertable_length,
-          topShape: cone.shape.top_section_shape.toLowerCase() as Shape,
-          bottomShape: (cone.shape.bottom_section_shape || 'flat').toLowerCase() as Shape,
-          sections: cone.shape.sections.map((s) => ({
-            id: s.id,
-            height: s.height.mm,
-            diameter: s.diameter.mm,
-            circumference: s.circumference?.mm ?? null,
-          })),
-        }));
-        setCones(transformed);
+        setCones(await fetchCones());
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -123,16 +63,12 @@ const ConeList = () => {
     <>
       <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight text-neutral-900">
-              Toy Gallery
-              {!isLoading && (
-                <span className="ml-2 text-sm font-normal text-neutral-500">
-                  {cones.length} {cones.length === 1 ? 'item' : 'items'}
-                </span>
-              )}
-            </h1>
-          </div>
+          <h1 className="m-0">
+            <CollectionMenu
+              onImported={updateLastChanged}
+              count={isLoading ? null : cones.length}
+            />
+          </h1>
           <div className="flex-1" />
           <UnitToggle />
           <button

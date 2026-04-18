@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
-import { loginRequest, tokenStorage } from '../services/auth';
+import { login as authLogin, tokenStorage } from '../services/auth';
 
 interface AuthState {
   username: string | null;
@@ -32,8 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (username: string, password: string) => {
-    const tokens = await loginRequest(username, password);
-    tokenStorage.setTokens(tokens, username);
+    await authLogin(username, password);
     setState({ username, isAuthenticated: true, isHydrated: true });
   }, []);
 

@@ -3,8 +3,8 @@
 import { Render } from "cone-editor";
 import type { Toy as EditorToy } from "cone-editor";
 import { useUnit } from "../providers/UnitProvider";
-import { formatDim, type Dimension } from "../services/units";
-import type { Toy } from "./ConeList";
+import { formatDim, type Dimension, type Unit } from "../services/units";
+import type { Toy } from "../services/api";
 
 type Props = {
   toy: Toy;
@@ -124,7 +124,7 @@ function Metric({
 }: {
   label: string;
   value: Dimension | null;
-  unit: "mm" | "in";
+  unit: Unit;
   bordered?: boolean;
 }) {
   return (
