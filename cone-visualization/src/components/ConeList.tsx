@@ -2,16 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { deleteToy, fetchCones } from '../services/api';
+import type { Dimension } from '../services/units';
 import ToyCard from './ToyCard';
 import ToyEditModal from './ToyEditModal';
+import UnitToggle from './UnitToggle';
 
 import type { Shape, ToySection } from 'cone-editor';
 
 interface ApiSection {
   id: number;
-  height: number;
-  diameter: number;
-  circumference: number | null;
+  height: Dimension;
+  diameter: Dimension;
+  circumference: Dimension | null;
 }
 
 interface ApiCone {
@@ -20,10 +22,10 @@ interface ApiCone {
   brand: string;
   size: string;
   color: string;
-  height: number;
-  diameter: number;
-  circumference: number | null;
-  insertable_length: number | null;
+  height: Dimension;
+  diameter: Dimension;
+  circumference: Dimension | null;
+  insertable_length: Dimension | null;
   shape: {
     top_section_shape: string;
     bottom_section_shape?: string;
@@ -37,12 +39,13 @@ export interface Toy {
   brand: string;
   size: string;
   color: string;
-  height: number;
-  diameter: number;
-  circumference: number | null;
-  insertableLength: number | null;
+  height: Dimension;
+  diameter: Dimension;
+  circumference: Dimension | null;
+  insertableLength: Dimension | null;
   topShape: Shape;
   bottomShape: Shape;
+  /** Sections carry mm values for the geometry renderer. */
   sections: ToySection[];
 }
 
@@ -57,11 +60,12 @@ const ConeList = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastChanged, setLastChanged] = useState(0);
   const [editorMode, setEditorMode] = useState<EditorMode>({ kind: 'closed' });
+  const [openCardId, setOpenCardId] = useState<number | null>(null);
 
   const updateLastChanged = () => setLastChanged(Date.now());
 
   const maxHeight = useMemo(
-    () => Math.max(1, ...cones.map((c) => c.height)),
+    () => Math.max(1, ...cones.map((c) => c.height.mm)),
     [cones],
   );
 
@@ -84,9 +88,9 @@ const ConeList = () => {
           bottomShape: (cone.shape.bottom_section_shape || 'flat').toLowerCase() as Shape,
           sections: cone.shape.sections.map((s) => ({
             id: s.id,
-            height: s.height,
-            diameter: s.diameter,
-            circumference: s.circumference,
+            height: s.height.mm,
+            diameter: s.diameter.mm,
+            circumference: s.circumference?.mm ?? null,
           })),
         }));
         setCones(transformed);
@@ -130,6 +134,7 @@ const ConeList = () => {
             </h1>
           </div>
           <div className="flex-1" />
+          <UnitToggle />
           <button
             type="button"
             onClick={() => setEditorMode({ kind: 'new' })}
@@ -157,7 +162,11 @@ const ConeList = () => {
               <ToyCard
                 key={toy.id}
                 toy={toy}
-                heightRatio={Math.max(0.15, toy.height / maxHeight)}
+                heightRatio={Math.max(0.15, toy.height.mm / maxHeight)}
+                detailsOpen={openCardId === toy.id}
+                onToggleDetails={() =>
+                  setOpenCardId((cur) => (cur === toy.id ? null : toy.id))
+                }
                 onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
                 onDelete={handleDelete}
               />

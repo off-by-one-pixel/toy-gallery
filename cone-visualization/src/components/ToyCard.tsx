@@ -1,21 +1,31 @@
 'use client'
 
-import { useState } from "react";
 import { Render } from "cone-editor";
 import type { Toy as EditorToy } from "cone-editor";
+import { useUnit } from "../providers/UnitProvider";
+import { formatDim, type Dimension } from "../services/units";
 import type { Toy } from "./ConeList";
 
 type Props = {
   toy: Toy;
   heightRatio: number;
+  detailsOpen: boolean;
+  onToggleDetails: () => void;
   onEdit: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
 };
 
 const DEFAULT_FILL = "#c7e4ee";
 
-export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
-  const [detailsOpen, setDetailsOpen] = useState(false);
+export default function ToyCard({
+  toy,
+  heightRatio,
+  detailsOpen,
+  onToggleDetails,
+  onEdit,
+  onDelete,
+}: Props) {
+  const { unit } = useUnit();
 
   const style = {
     borderWidth: 1.25,
@@ -37,7 +47,7 @@ export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
           ? "z-10 rounded-t-2xl rounded-b-none"
           : "z-0 rounded-2xl")
       }
-      onClick={() => setDetailsOpen((v) => !v)}
+      onClick={onToggleDetails}
     >
       <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
@@ -85,8 +95,8 @@ export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
           )}
         </div>
         <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2.5">
-          <Metric label="Insertable" value={toy.insertableLength} />
-          <Metric label="Circumference" value={toy.circumference} bordered />
+          <Metric label="Insertable" value={toy.insertableLength} unit={unit} />
+          <Metric label="Circumference" value={toy.circumference} unit={unit} bordered />
         </div>
       </div>
 
@@ -99,8 +109,8 @@ export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
         }
         onClick={(e) => e.stopPropagation()}
       >
-        <AttrRow label="Length" value={toy.height == null ? "—" : `${Math.round(toy.height)} mm`} />
-        <AttrRow label="Diameter" value={toy.diameter == null ? "—" : `${Math.round(toy.diameter)} mm`} />
+        <AttrRow label="Length" value={`${formatDim(toy.height, unit)} ${unit}`} />
+        <AttrRow label="Diameter" value={`${formatDim(toy.diameter, unit)} ${unit}`} />
       </div>
     </article>
   );
@@ -109,18 +119,20 @@ export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
 function Metric({
   label,
   value,
+  unit,
   bordered,
 }: {
   label: string;
-  value: number | null;
+  value: Dimension | null;
+  unit: "mm" | "in";
   bordered?: boolean;
 }) {
   return (
     <div className={bordered ? "pl-3 border-l border-neutral-200" : ""}>
       <div className="text-[22px] font-semibold leading-none tracking-tight text-neutral-900 tabular-nums">
-        {value == null ? "—" : Math.round(value)}
+        {formatDim(value, unit)}
         {value != null && (
-          <span className="ml-0.5 text-xs font-medium text-neutral-500">mm</span>
+          <span className="ml-0.5 text-xs font-medium text-neutral-500">{unit}</span>
         )}
       </div>
       <div className="mt-1 text-[10px] uppercase tracking-wider text-neutral-400">{label}</div>
