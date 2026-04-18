@@ -2,25 +2,18 @@ import type { ChangeEvent, DragEvent } from "react";
 import { useState } from "react";
 import type { Shape } from "../toyMachine";
 import { useToyStore } from "../toyMachine";
-
-const MIN_DIAMETER = 10;
-const MAX_DIAMETER = 200;
-const MIN_HEIGHT = 1;
-const MAX_HEIGHT = 350;
-const MIN_CIRCUMFERENCE = 1;
-const MAX_CIRCUMFERENCE = 2000;
+import { useEditorUnit } from "./unit";
 
 const EditorControls = () => {
   const toy = useToyStore();
+  const unit = useEditorUnit();
+  const step = unit === "in" ? 0.1 : 1;
+  const decimals = unit === "in" ? 2 : 0;
+  const format = (v: number) => Number(v.toFixed(decimals));
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: number; position: "before" | "after" } | null>(
     null,
   );
-
-  const clampDiameter = (v: number) => Math.min(Math.max(v, MIN_DIAMETER), MAX_DIAMETER);
-  const clampHeight = (v: number) => Math.min(Math.max(v, MIN_HEIGHT), MAX_HEIGHT);
-  const clampCircumference = (v: number) =>
-    Math.min(Math.max(v, MIN_CIRCUMFERENCE), MAX_CIRCUMFERENCE);
 
   const onDragStart = (id: number) => (e: DragEvent<HTMLLIElement>) => {
     e.dataTransfer.effectAllowed = "move";
@@ -115,22 +108,20 @@ const EditorControls = () => {
                   <input
                     type="number"
                     aria-label="Diameter"
-                    min={MIN_DIAMETER}
-                    max={MAX_DIAMETER}
-                    step={1}
-                    value={Math.round(section.diameter)}
-                    onChange={(e) => toy.setDiameter(section.id, clampDiameter(Number(e.target.value)))}
+                    min={0}
+                    step={step}
+                    value={format(section.diameter)}
+                    onChange={(e) => toy.setDiameter(section.id, Number(e.target.value))}
                     onClick={(e) => e.stopPropagation()}
                   />
                   <span className="cone-editor-section-sep">×</span>
                   <input
                     type="number"
                     aria-label="Height"
-                    min={MIN_HEIGHT}
-                    max={MAX_HEIGHT}
-                    step={1}
-                    value={Math.round(section.height)}
-                    onChange={(e) => toy.setHeight(section.id, clampHeight(Number(e.target.value)))}
+                    min={0}
+                    step={step}
+                    value={format(section.height)}
+                    onChange={(e) => toy.setHeight(section.id, Number(e.target.value))}
                     onClick={(e) => e.stopPropagation()}
                   />
                   <span className="cone-editor-section-sep">·</span>
@@ -138,22 +129,16 @@ const EditorControls = () => {
                     type="number"
                     aria-label="Circumference"
                     placeholder="C"
-                    min={MIN_CIRCUMFERENCE}
-                    max={MAX_CIRCUMFERENCE}
-                    step={1}
-                    value={
-                      section.circumference == null ? "" : Math.round(section.circumference)
-                    }
+                    min={0}
+                    step={step}
+                    value={section.circumference == null ? "" : format(section.circumference)}
                     onChange={(e) => {
                       const raw = e.target.value;
-                      toy.setCircumference(
-                        section.id,
-                        raw === "" ? null : clampCircumference(Number(raw)),
-                      );
+                      toy.setCircumference(section.id, raw === "" ? null : Number(raw));
                     }}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="cone-editor-section-unit">mm</span>
+                  <span className="cone-editor-section-unit">{unit}</span>
                 </div>
                 {toy.sections.length > 1 && (
                   <button

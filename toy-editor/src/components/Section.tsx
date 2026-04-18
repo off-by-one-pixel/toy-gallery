@@ -28,7 +28,7 @@ const Section = ({
   return (
     <g
       className="cone-editor-part"
-      transform={`translate(${x + style.borderWidth}, 0)`}
+      transform={`translate(${x}, 0)`}
       onClick={onSelect ? () => onSelect(section.id) : undefined}
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -44,6 +44,7 @@ const Section = ({
         fill={style.color}
         stroke={style.borderColor}
         strokeWidth={style.borderWidth}
+        vectorEffect="non-scaling-stroke"
       />
     </g>
   );

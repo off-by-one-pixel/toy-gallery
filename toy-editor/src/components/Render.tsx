@@ -18,7 +18,13 @@ type Props = {
   fixed?: boolean;
 };
 
-const SELECTION_GAP = 6;
+// Padding + selection-outline offsets are expressed as fractions of the
+// toy's reference size so the silhouette occupies the same portion of the
+// viewBox regardless of the numeric unit the values happen to be in.
+const PAD_RATIO = 0.04;
+const SELECTION_GAP_RATIO = 0.07;
+const OUTLINE_EXTRA_RATIO = 0.02;
+const CORNER_RADIUS_RATIO = 0.025;
 
 export const Render = ({
   toy,
@@ -31,13 +37,11 @@ export const Render = ({
 }: Props) => {
   const totalHeight = toy.sections.reduce((a, b) => a + b.height, 0) * scaleFactor;
   const maxDiameter = Math.max(...toy.sections.map((s) => s.diameter), 0) * scaleFactor;
-  const padX = style.borderWidth * 2;
-  // Distance from the section's stroke edge to the selection outline.
-  // Includes half of the section's stroke (which sits outside the path) so
-  // thick borders don't visually overlap the outline.
-  const outlineInset = SELECTION_GAP + style.borderWidth / 2;
-  // Enlarge the viewBox a touch more so the dashed line never clips.
-  const outlinePad = outlineInset + 2;
+  const ref_ = Math.max(maxDiameter, totalHeight, 1);
+  const padX = ref_ * PAD_RATIO;
+  const outlineInset = ref_ * SELECTION_GAP_RATIO;
+  const outlinePad = outlineInset + ref_ * OUTLINE_EXTRA_RATIO;
+  const cornerRadius = ref_ * CORNER_RADIUS_RATIO;
   const vbW = maxDiameter + padX + outlinePad * 2;
   const vbH = totalHeight + outlinePad * 2;
   let yOffset = 0;
@@ -57,7 +61,7 @@ export const Render = ({
       const boxWidth =
         (prev ? Math.max(section.diameter, prev.diameter) : section.diameter) * scaleFactor;
       const h = section.height * scaleFactor;
-      const sectionX = (maxDiameter - boxWidth) / 2 + style.borderWidth;
+      const sectionX = (maxDiameter - boxWidth) / 2;
       selOverlay = { x: sectionX, y: yMm * scaleFactor, w: boxWidth, h };
     }
   }
@@ -121,7 +125,7 @@ export const Render = ({
             y={-outlineInset}
             width={selOverlay.w + outlineInset * 2}
             height={selOverlay.h + outlineInset * 2}
-            rx={4}
+            rx={cornerRadius}
           />
           <rect
             className="cone-editor-selection-outline"
@@ -129,7 +133,7 @@ export const Render = ({
             y={-outlineInset}
             width={selOverlay.w + outlineInset * 2}
             height={selOverlay.h + outlineInset * 2}
-            rx={4}
+            rx={cornerRadius}
           />
         </g>
       )}
