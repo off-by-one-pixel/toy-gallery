@@ -3,7 +3,9 @@
 
 html {
   font-size: 14px;
-  font-family: "Inter", "Work Sans", sans-serif;
+  /* Same stack as the mockups — system font first so we get San Francisco
+     on macOS, Segoe UI on Windows, Roboto on Linux when Inter isn't loaded. */
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 @layer base {
