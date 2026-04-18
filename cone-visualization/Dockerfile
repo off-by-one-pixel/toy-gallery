@@ -1,12 +1,10 @@
 # syntax=docker/dockerfile:1.7
 
 # ----- Stage 1: fetch + build cone_editor (the library) ------------------
-# cone-visualization depends on the section-circumference branch (adds the
-# optional per-section circumference field). Pin the clone until it merges.
 FROM node:22-alpine AS cone_editor
 WORKDIR /cone_editor
 RUN apk add --no-cache git
-RUN git clone --depth=1 --branch feat/section-circumference https://github.com/off-by-one-pixel/toy-editor.git . \
+RUN git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git . \
  && npm ci \
  && npm run build
 
