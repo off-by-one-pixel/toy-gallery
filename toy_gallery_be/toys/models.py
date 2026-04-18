@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
+
+if TYPE_CHECKING:
+    from django.db.models.manager import RelatedManager
 
 
 class Shape(models.Model):
@@ -15,21 +20,9 @@ class Shape(models.Model):
         default=EGG,
     )
 
-    def get_height(self) -> float:
-        return sum(section.height for section in self.sections.all())  # type: ignore
-
-    def get_diameter(self) -> float:
-        if not self.sections.exists():  # type: ignore
-            return 0.0
-        return max(section.diameter for section in self.sections.all())  # type: ignore
-
-    def get_circumference(self) -> float | None:
-        values = [
-            section.circumference
-            for section in self.sections.all()  # type: ignore
-            if section.circumference is not None
-        ]
-        return max(values) if values else None
+    if TYPE_CHECKING:
+        # Reverse relation from ShapeSection.shape (related_name="sections").
+        sections: "RelatedManager[ShapeSection]"
 
 
 class ShapeSection(models.Model):
@@ -49,12 +42,3 @@ class Toy(models.Model):
     shape = models.OneToOneField(Shape, on_delete=models.CASCADE)
     color = models.CharField(null=True, blank=True)
     insertable_length = models.FloatField(null=True, blank=True)
-
-    def diameter(self) -> float:
-        return self.shape.get_diameter()
-
-    def height(self) -> float:
-        return self.shape.get_height()
-
-    def circumference(self) -> float | None:
-        return self.shape.get_circumference()

@@ -149,3 +149,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+# Dev convenience: accept any localhost / 127.0.0.1 port so the frontend dev
+# server on 3001/3002/etc. can call the API without reconfiguring CORS.
+# settings_prod.py clears this back out for production.
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
+]

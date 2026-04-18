@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
-import type { StyleOption, Toy as EditorToy } from 'cone-editor';
+import type { StyleOption, Toy as EditorToy, ToySection } from 'cone-editor';
 import { createToy, replaceToy } from '../services/api';
+import { useUnit } from '../providers/UnitProvider';
+import { fromMm, toMm, type Unit } from '../services/units';
 import type { Toy } from './ConeList';
 
 type Mode =
@@ -26,7 +28,8 @@ const PRESET_COLORS: { name: string; hex: string }[] = [
 
 const DEFAULT_FILL = '#c4b5fd';
 
-const NEW_TOY: EditorToy = {
+// NEW_TOY sections are mm values; they get converted to the active unit on hydrate.
+const NEW_TOY_MM: EditorToy = {
   sections: [
     { id: 0, diameter: 90, height: 25, circumference: null },
     { id: 1, diameter: 55, height: 75, circumference: null },
@@ -36,16 +39,43 @@ const NEW_TOY: EditorToy = {
   bottomShape: 'flat',
 };
 
-const maxCircumference = (sections: { circumference?: number | null }[]): number | null => {
+// Render geometry is unit-agnostic (self-consistent numbers), but Render expects
+// `diameter` and `height` to be reasonable pixel-ish values. To keep the silhouette
+// looking the same regardless of unit, we scale the canvas by the right factor.
+// The editor's store values are in the active unit; the render will produce the
+// same visual result either way because the stage auto-fits.
+
+const convertSections = (sections: ToySection[], from: Unit, to: Unit): ToySection[] => {
+  if (from === to) return sections;
+  return sections.map((s) => ({
+    ...s,
+    diameter: fromMm(toMm(s.diameter, from), to),
+    height: fromMm(toMm(s.height, from), to),
+    circumference:
+      s.circumference == null ? s.circumference : fromMm(toMm(s.circumference, from), to),
+  }));
+};
+
+const maxCircumferenceMm = (sections: ToySection[], unit: Unit): number | null => {
   const values = sections
     .map((s) => s.circumference)
     .filter((v): v is number => v != null);
-  return values.length ? Math.max(...values) : null;
+  if (!values.length) return null;
+  return toMm(Math.max(...values), unit);
+};
+
+const formatInUnit = (mm: number | null | undefined, unit: Unit): string => {
+  if (mm == null) return '—';
+  const v = fromMm(mm, unit);
+  return unit === 'in' ? v.toFixed(2) : String(Math.round(v));
 };
 
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const isEdit = mode.kind === 'edit';
-  const initial = useMemo<EditorToy>(
+  const { unit } = useUnit();
+
+  // Snapshot the seed in mm; the hydrate step below re-scales to the active unit.
+  const seedMm = useMemo<EditorToy>(
     () =>
       mode.kind === 'edit'
         ? {
@@ -53,28 +83,50 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             topShape: mode.toy.topShape,
             bottomShape: mode.toy.bottomShape,
           }
-        : NEW_TOY,
+        : NEW_TOY_MM,
     [mode],
+  );
+
+  // Initial hydrate uses the active unit at mount.
+  const initial = useMemo<EditorToy>(
+    () => ({ ...seedMm, sections: convertSections(seedMm.sections, 'mm', unit) }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [seedMm],
   );
 
   const [brand, setBrand] = useState(isEdit ? mode.toy.brand : '');
   const [name, setName] = useState(isEdit ? mode.toy.name : '');
   const [size, setSize] = useState(isEdit ? mode.toy.size : '');
   const [color, setColor] = useState(isEdit ? mode.toy.color || DEFAULT_FILL : DEFAULT_FILL);
-  const [insertableLength, setInsertableLength] = useState<number | null>(
-    isEdit ? mode.toy.insertableLength : null,
+  // Always store insertableLength internally in mm.
+  const [insertableLengthMm, setInsertableLengthMm] = useState<number | null>(
+    isEdit ? (mode.toy.insertableLength?.mm ?? null) : null,
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const sections = useToyStore((s) => s.sections);
   const topShape = useToyStore((s) => s.topShape);
+  const hydrate = useToyStore((s) => s.hydrate);
   const getTotalHeight = useToyStore((s) => s.getTotalHeight);
   const getMaxWidth = useToyStore((s) => s.getMaxWidth);
 
-  const toyCircumference = maxCircumference(sections);
-  const hasCircumference = toyCircumference != null;
+  // When the global unit flips while the modal is open, convert the current
+  // store values (preserving in-flight edits).
+  const prevUnit = useRef<Unit>(unit);
+  useEffect(() => {
+    if (prevUnit.current === unit) return;
+    const converted = convertSections(sections, prevUnit.current, unit);
+    hydrate({ sections: converted, topShape, bottomShape: 'flat' });
+    prevUnit.current = unit;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unit]);
 
+  const toyCircumferenceMm = maxCircumferenceMm(sections, unit);
+  const hasCircumference = toyCircumferenceMm != null;
+
+  // For the silhouette in the editor canvas, always feed mm sections; the
+  // editor's store holds active-unit values used only by the section inputs.
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -107,14 +159,15 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     }
     setSaving(true);
     try {
+      const sectionsMm = convertSections(sections, unit, 'mm');
       const payload = {
         brand: brand.trim(),
         name: name.trim(),
         size: size.trim(),
         color,
-        insertableLength,
+        insertableLength: insertableLengthMm,
         topShape,
-        sections,
+        sections: sectionsMm,
       };
       if (mode.kind === 'edit') {
         await replaceToy(mode.toy.id, payload);
@@ -131,6 +184,10 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const title = isEdit
     ? `${mode.toy.brand} · ${mode.toy.name}${mode.toy.size ? ` · ${mode.toy.size}` : ''}`
     : 'Untitled toy';
+
+  // Convert store totals back to mm for the shared readout path.
+  const totalHeightMm = toMm(getTotalHeight(), unit);
+  const maxDiameterMm = toMm(getMaxWidth(), unit);
 
   return (
     <div className="fixed inset-0 z-50">
@@ -183,21 +240,23 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             ref={svgRef}
             initialToy={initial}
             style={style}
+            unit={unit}
             leadingSlot={
               <IdentificationGroup
                 brand={brand}
                 name={name}
                 size={size}
                 color={color}
-                insertableLength={insertableLength}
-                circumference={toyCircumference}
+                insertableLengthMm={insertableLengthMm}
+                circumferenceMm={toyCircumferenceMm}
+                unit={unit}
                 onBrand={setBrand}
                 onName={setName}
                 onSize={setSize}
                 onColor={setColor}
-                onInsertableLength={setInsertableLength}
-                totalHeight={Math.round(getTotalHeight())}
-                maxDiameter={Math.round(getMaxWidth())}
+                onInsertableLengthMm={setInsertableLengthMm}
+                totalHeightMm={totalHeightMm}
+                maxDiameterMm={maxDiameterMm}
               />
             }
           />
@@ -212,15 +271,16 @@ type IdentificationProps = {
   name: string;
   size: string;
   color: string;
-  insertableLength: number | null;
-  circumference: number | null;
+  insertableLengthMm: number | null;
+  circumferenceMm: number | null;
+  unit: Unit;
   onBrand: (v: string) => void;
   onName: (v: string) => void;
   onSize: (v: string) => void;
   onColor: (v: string) => void;
-  onInsertableLength: (v: number | null) => void;
-  totalHeight: number;
-  maxDiameter: number;
+  onInsertableLengthMm: (v: number | null) => void;
+  totalHeightMm: number;
+  maxDiameterMm: number;
 };
 
 function IdentificationGroup({
@@ -228,15 +288,16 @@ function IdentificationGroup({
   name,
   size,
   color,
-  insertableLength,
-  circumference,
+  insertableLengthMm,
+  circumferenceMm,
+  unit,
   onBrand,
   onName,
   onSize,
   onColor,
-  onInsertableLength,
-  totalHeight,
-  maxDiameter,
+  onInsertableLengthMm,
+  totalHeightMm,
+  maxDiameterMm,
 }: IdentificationProps) {
   return (
     <>
@@ -277,19 +338,33 @@ function IdentificationGroup({
         <div className="grid grid-cols-2 gap-4">
           <DimInput
             label="Insertable"
-            value={insertableLength}
-            onChange={onInsertableLength}
+            valueMm={insertableLengthMm}
+            unit={unit}
+            onChangeMm={onInsertableLengthMm}
           />
           <DimReadout
             label="Circumference"
-            value={circumference}
-            hint={circumference == null ? 'Set per section' : undefined}
+            valueMm={circumferenceMm}
+            unit={unit}
+            hint={circumferenceMm == null ? 'Set per section' : undefined}
           />
         </div>
         <div className="flex items-center gap-3 border-t border-neutral-200 pt-2.5 text-[11px] uppercase tracking-wider text-neutral-400">
-          <span>Length <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">{totalHeight}</b> mm</span>
+          <span>
+            Length{' '}
+            <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">
+              {formatInUnit(totalHeightMm, unit)}
+            </b>{' '}
+            {unit}
+          </span>
           <span className="opacity-40">·</span>
-          <span>Diameter <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">{maxDiameter}</b> mm</span>
+          <span>
+            Diameter{' '}
+            <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">
+              {formatInUnit(maxDiameterMm, unit)}
+            </b>{' '}
+            {unit}
+          </span>
         </div>
       </section>
     </>
@@ -298,28 +373,40 @@ function IdentificationGroup({
 
 function DimInput({
   label,
-  value,
-  onChange,
+  valueMm,
+  unit,
+  onChangeMm,
 }: {
   label: string;
-  value: number | null;
-  onChange: (v: number | null) => void;
+  valueMm: number | null;
+  unit: Unit;
+  onChangeMm: (v: number | null) => void;
 }) {
+  const step = unit === 'in' ? 0.1 : 1;
+  const display =
+    valueMm == null
+      ? ''
+      : unit === 'in'
+      ? fromMm(valueMm, unit).toFixed(2)
+      : String(Math.round(fromMm(valueMm, unit)));
   return (
     <label className="flex flex-col gap-1">
       <span className="inline-flex items-baseline gap-1">
         <input
           type="number"
           min={0}
-          value={value ?? ''}
+          step={step}
+          value={display}
           placeholder="—"
           onChange={(e) => {
             const raw = e.target.value;
-            onChange(raw === '' ? null : Math.max(0, Number(raw)));
+            if (raw === '') return onChangeMm(null);
+            const v = Math.max(0, Number(raw));
+            onChangeMm(toMm(v, unit));
           }}
           className="w-20 border-0 border-b border-transparent bg-transparent p-0 text-2xl font-semibold tracking-tight tabular-nums text-neutral-900 outline-none focus:border-blue-500"
         />
-        <span className="text-xs font-medium text-neutral-500">mm</span>
+        <span className="text-xs font-medium text-neutral-500">{unit}</span>
       </span>
       <span className="text-[10px] uppercase tracking-wider text-neutral-400">{label}</span>
     </label>
@@ -328,20 +415,22 @@ function DimInput({
 
 function DimReadout({
   label,
-  value,
+  valueMm,
+  unit,
   hint,
 }: {
   label: string;
-  value: number | null;
+  valueMm: number | null;
+  unit: Unit;
   hint?: string;
 }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="inline-flex items-baseline gap-1">
         <span className="text-2xl font-semibold tracking-tight tabular-nums text-neutral-900">
-          {value == null ? '—' : Math.round(value)}
+          {formatInUnit(valueMm, unit)}
         </span>
-        <span className="text-xs font-medium text-neutral-500">mm</span>
+        <span className="text-xs font-medium text-neutral-500">{unit}</span>
       </span>
       <span className="text-[10px] uppercase tracking-wider text-neutral-400">
         {label}

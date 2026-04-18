@@ -1,9 +1,21 @@
 from rest_framework import serializers
 
 from . import models
+from .dimensions import Dimensions
+
+
+class DimensionField(serializers.FloatField):
+    """Read returns {mm, in}; write accepts a scalar in mm (inherited)."""
+
+    def to_representation(self, value):  # type: ignore[override]
+        return Dimensions.to_dual(value)
 
 
 class ToyShapeSectionSerializer(serializers.ModelSerializer):
+    height = DimensionField()
+    diameter = DimensionField()
+    circumference = DimensionField(allow_null=True, required=False)
+
     class Meta:
         model = models.ShapeSection
         fields = ["id", "order", "height", "diameter", "circumference"]
@@ -33,6 +45,10 @@ class ToyShapeSerializer(serializers.ModelSerializer):
 
 class ToySerializer(serializers.ModelSerializer):
     shape = ToyShapeSerializer()
+    diameter = serializers.SerializerMethodField()
+    height = serializers.SerializerMethodField()
+    circumference = serializers.SerializerMethodField()
+    insertable_length = DimensionField(allow_null=True, required=False)
 
     class Meta:
         model = models.Toy
@@ -50,6 +66,15 @@ class ToySerializer(serializers.ModelSerializer):
             "color",
             "insertable_length",
         ]
+
+    def get_diameter(self, obj):
+        return Dimensions.to_dual(Dimensions.toy_diameter(obj))
+
+    def get_height(self, obj):
+        return Dimensions.to_dual(Dimensions.toy_height(obj))
+
+    def get_circumference(self, obj):
+        return Dimensions.to_dual(Dimensions.toy_circumference(obj))
 
     def create(self, validated_data):
         shape_data = validated_data.pop("shape")
