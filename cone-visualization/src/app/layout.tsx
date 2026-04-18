@@ -4,6 +4,7 @@ import 'cone-editor/styles.css';
 import { AuthProvider } from '../providers/AuthProvider';
 import { ToastProvider } from '../providers/ToastProvider';
 import { UnitProvider } from '../providers/UnitProvider';
+import { ViewModeProvider } from '../providers/ViewModeProvider';
 
 export const metadata: Metadata = {
   title: 'Toy Gallery',
@@ -23,9 +24,11 @@ export default function RootLayout({
             <body className="bg-neutral-100 text-neutral-900 min-h-screen antialiased">
                 <ToastProvider>
                     <UnitProvider>
-                        <AuthProvider>
-                            {children}
-                        </AuthProvider>
+                        <ViewModeProvider>
+                            <AuthProvider>
+                                {children}
+                            </AuthProvider>
+                        </ViewModeProvider>
                     </UnitProvider>
                 </ToastProvider>
             </body>
