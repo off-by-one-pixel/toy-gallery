@@ -11,6 +11,8 @@ export interface ToySection {
   id: number;
   diameter: number;
   height: number;
+  /** Optional measured circumference in the same units as diameter. */
+  circumference?: number | null;
 }
 
 export type Shape = "cone" | "egg" | "flat" | "spike";
@@ -37,6 +39,7 @@ interface ToyStore extends Toy {
   getToy: () => Toy;
   setDiameter: (id: number, diameter: number) => void;
   setHeight: (id: number, height: number) => void;
+  setCircumference: (id: number, circumference: number | null) => void;
   setTopShape: (shape: Shape) => void;
   setBottomShape: (shape: Shape) => void;
   moveSection: (id: number, direction: number) => void;
@@ -125,6 +128,13 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     set((state) => ({
       sections: state.sections.map((section) =>
         section.id === id ? { ...section, height } : section,
+      ),
+    }));
+  },
+  setCircumference: (id, circumference) => {
+    set((state) => ({
+      sections: state.sections.map((section) =>
+        section.id === id ? { ...section, circumference } : section,
       ),
     }));
   },
