@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { deleteToy, fetchCones, type Toy } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import CollectionMenu from './CollectionMenu';
@@ -69,9 +70,7 @@ const ConeList = () => {
             onClick={() => setEditorMode({ kind: 'new' })}
             className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 pt-2.25 pb-1.75 pl-2.5 pr-3.5 text-sm font-medium leading-none text-white shadow-sm transition-colors hover:bg-blue-700"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            <Plus size={14} strokeWidth={2.2} />
             New Toy
           </button>
         </div>

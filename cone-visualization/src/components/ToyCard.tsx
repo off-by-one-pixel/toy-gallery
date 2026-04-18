@@ -2,6 +2,7 @@
 
 import { Render } from "cone-editor";
 import type { Toy as EditorToy } from "cone-editor";
+import { Pencil, Trash2 } from "lucide-react";
 import { useUnit } from "../providers/UnitProvider";
 import { formatDim, type Dimension, type Unit } from "../services/units";
 import type { Toy } from "../services/api";
@@ -58,10 +59,7 @@ export default function ToyCard({
             aria-label="Edit"
             title="Edit"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4z" />
-            </svg>
+            <Pencil size={13} strokeWidth={1.8} />
           </button>
           <button
             type="button"
@@ -70,12 +68,7 @@ export default function ToyCard({
             aria-label="Delete"
             title="Delete"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
-              <path d="M10 11v6M14 11v6" />
-              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-            </svg>
+            <Trash2 size={13} strokeWidth={1.8} />
           </button>
         </div>
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-center" style={{ top: `${(1 - heightRatio) * 100}%` }}>

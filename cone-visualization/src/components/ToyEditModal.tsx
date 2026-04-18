@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
 import type { StyleOption, Toy as EditorToy, ToySection } from 'cone-editor';
+import { ArrowLeft } from 'lucide-react';
 import { createToy, replaceToy, type Toy } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
@@ -191,9 +192,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             title="Back"
             aria-label="Back"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5m0 0 7 7m-7-7 7-7" />
-            </svg>
+            <ArrowLeft size={14} strokeWidth={2} />
           </button>
           <h2 className="text-sm font-semibold tracking-tight text-neutral-900">
             {isEdit ? 'Edit' : 'New toy'}
