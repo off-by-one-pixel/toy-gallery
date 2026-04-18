@@ -7,6 +7,8 @@ const MIN_DIAMETER = 10;
 const MAX_DIAMETER = 200;
 const MIN_HEIGHT = 1;
 const MAX_HEIGHT = 350;
+const MIN_CIRCUMFERENCE = 1;
+const MAX_CIRCUMFERENCE = 2000;
 
 const EditorControls = () => {
   const toy = useToyStore();
@@ -17,6 +19,8 @@ const EditorControls = () => {
 
   const clampDiameter = (v: number) => Math.min(Math.max(v, MIN_DIAMETER), MAX_DIAMETER);
   const clampHeight = (v: number) => Math.min(Math.max(v, MIN_HEIGHT), MAX_HEIGHT);
+  const clampCircumference = (v: number) =>
+    Math.min(Math.max(v, MIN_CIRCUMFERENCE), MAX_CIRCUMFERENCE);
 
   const onDragStart = (id: number) => (e: DragEvent<HTMLLIElement>) => {
     e.dataTransfer.effectAllowed = "move";
@@ -127,6 +131,26 @@ const EditorControls = () => {
                     step={1}
                     value={Math.round(section.height)}
                     onChange={(e) => toy.setHeight(section.id, clampHeight(Number(e.target.value)))}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="cone-editor-section-sep">·</span>
+                  <input
+                    type="number"
+                    aria-label="Circumference"
+                    placeholder="C"
+                    min={MIN_CIRCUMFERENCE}
+                    max={MAX_CIRCUMFERENCE}
+                    step={1}
+                    value={
+                      section.circumference == null ? "" : Math.round(section.circumference)
+                    }
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      toy.setCircumference(
+                        section.id,
+                        raw === "" ? null : clampCircumference(Number(raw)),
+                      );
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   />
                   <span className="cone-editor-section-unit">mm</span>
