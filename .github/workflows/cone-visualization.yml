@@ -1,0 +1,53 @@
+name: cone-visualization CI
+
+on:
+  pull_request:
+    paths:
+      - "cone-visualization/**"
+      - "cone_editor/**"
+      - ".github/workflows/cone-visualization.yml"
+  push:
+    branches: [main]
+    paths:
+      - "cone-visualization/**"
+      - "cone_editor/**"
+      - ".github/workflows/cone-visualization.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Typecheck and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cone-visualization
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            cone-visualization/package-lock.json
+            cone_editor/package-lock.json
+
+      - name: Install and build cone_editor
+        working-directory: cone_editor
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
