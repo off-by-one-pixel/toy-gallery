@@ -7,6 +7,7 @@ interface Section {
   id: number;
   height: number | string;
   diameter: number | string;
+  circumference?: number | null;
 }
 
 export class APIError extends Error {
@@ -80,6 +81,7 @@ export interface ToyPayload {
   name: string;
   size: string;
   color: string;
+  insertableLength: number | null;
   topShape: string;
   sections: Section[];
 }
@@ -89,12 +91,14 @@ const transformToyForAPI = (toy: ToyPayload) => ({
   name: toy.name,
   size: toy.size,
   color: toy.color,
+  insertable_length: toy.insertableLength,
   shape: {
     top_section_shape: toy.topShape.toUpperCase(),
     sections: toy.sections.map((s, idx) => ({
       order: idx,
       height: parseFloat(String(s.height)),
       diameter: parseFloat(String(s.diameter)),
+      circumference: s.circumference ?? null,
     })),
   },
 });
