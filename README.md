@@ -16,16 +16,13 @@ This repo is a multi-project monorepo. Each directory is an independent project 
 REST API (Django 5 + DRF) with JWT auth. Stores toys and their shape data (ordered cylindrical sections + top-shape enum). Serves the gallery and editor frontends.
 
 ### [`cone-visualization/`](cone-visualization/) — gallery frontend (primary app)
-Next.js 16 + HeroUI v3 + Tailwind 4. The main Toy Gallery UI — browse, search, sort, group, edit attributes inline, and pin fields. Talks to the Django backend. See [mockups/](mockups/) for the design direction.
+Next.js 16 + HeroUI v3 + Tailwind 4. The main Toy Gallery UI — browse, search, sort, group, edit attributes inline, and pin fields. Talks to the Django backend.
 
 ### [`cone_editor/`](cone_editor/) — shape editor component library
 Headless React component (`<ToyEditor />`) for building/editing a toy's silhouette by stacking cylindrical sections with a configurable egg / cone top. Published as `cone-editor` and consumed by the gallery and demo apps via GitHub (`github:off-by-one-pixel/toy-editor`). Ships its own `styles.css` so consumers aren't forced into a specific UI framework. Built with tsup + TypeScript + Zustand; tested with Vitest.
 
 ### [`toy-svg-editor/`](toy-svg-editor/) — standalone demo for `cone_editor`
 Minimal Next.js 16 app that showcases `cone-editor` in isolation: tweak a toy's dimensions and colors, then copy the generated SVG. Useful for developing the editor component in isolation from the full gallery app.
-
-### [`mockups/`](mockups/) — design comps
-Self-contained HTML design comps for the gallery redesign and toy-edit flows, plus the [implementation plan](mockups/implementation-plan.md) for the frontend state architecture.
 
 ## Local development
 
@@ -35,6 +32,8 @@ A root [`Makefile`](Makefile) wraps the two most common workflows:
 make be   # Django backend on 0.0.0.0:8000
 make fe   # Next.js dev server for cone-visualization
 ```
+
+`make test` runs both suites; `make test-be` and `make test-fe` run them individually.
 
 For anything in `cone_editor/` or `toy-svg-editor/`, run `npm install && npm run dev` (or `build`, `test`, `lint`) inside that directory.
 
