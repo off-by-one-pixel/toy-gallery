@@ -7,6 +7,13 @@ import ToyEditModal from './ToyEditModal';
 
 import type { Shape, ToySection } from 'cone-editor';
 
+interface ApiSection {
+  id: number;
+  height: number;
+  diameter: number;
+  circumference: number | null;
+}
+
 interface ApiCone {
   id: number;
   name: string;
@@ -15,10 +22,12 @@ interface ApiCone {
   color: string;
   height: number;
   diameter: number;
+  circumference: number | null;
+  insertable_length: number | null;
   shape: {
     top_section_shape: string;
     bottom_section_shape?: string;
-    sections: ToySection[];
+    sections: ApiSection[];
   };
 }
 
@@ -30,6 +39,8 @@ export interface Toy {
   color: string;
   height: number;
   diameter: number;
+  circumference: number | null;
+  insertableLength: number | null;
   topShape: Shape;
   bottomShape: Shape;
   sections: ToySection[];
@@ -67,12 +78,15 @@ const ConeList = () => {
           color: cone.color,
           height: cone.height,
           diameter: cone.diameter,
+          circumference: cone.circumference,
+          insertableLength: cone.insertable_length,
           topShape: cone.shape.top_section_shape.toLowerCase() as Shape,
           bottomShape: (cone.shape.bottom_section_shape || 'flat').toLowerCase() as Shape,
           sections: cone.shape.sections.map((s) => ({
             id: s.id,
             height: s.height,
             diameter: s.diameter,
+            circumference: s.circumference,
           })),
         }));
         setCones(transformed);

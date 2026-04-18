@@ -28,12 +28,19 @@ const DEFAULT_FILL = '#c4b5fd';
 
 const NEW_TOY: EditorToy = {
   sections: [
-    { id: 0, diameter: 90, height: 25 },
-    { id: 1, diameter: 55, height: 75 },
-    { id: 2, diameter: 65, height: 50 },
+    { id: 0, diameter: 90, height: 25, circumference: null },
+    { id: 1, diameter: 55, height: 75, circumference: null },
+    { id: 2, diameter: 65, height: 50, circumference: null },
   ],
   topShape: 'egg',
   bottomShape: 'flat',
+};
+
+const maxCircumference = (sections: { circumference?: number | null }[]): number | null => {
+  const values = sections
+    .map((s) => s.circumference)
+    .filter((v): v is number => v != null);
+  return values.length ? Math.max(...values) : null;
 };
 
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
@@ -54,6 +61,9 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const [name, setName] = useState(isEdit ? mode.toy.name : '');
   const [size, setSize] = useState(isEdit ? mode.toy.size : '');
   const [color, setColor] = useState(isEdit ? mode.toy.color || DEFAULT_FILL : DEFAULT_FILL);
+  const [insertableLength, setInsertableLength] = useState<number | null>(
+    isEdit ? mode.toy.insertableLength : null,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,6 +71,9 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const topShape = useToyStore((s) => s.topShape);
   const getTotalHeight = useToyStore((s) => s.getTotalHeight);
   const getMaxWidth = useToyStore((s) => s.getMaxWidth);
+
+  const toyCircumference = maxCircumference(sections);
+  const hasCircumference = toyCircumference != null;
 
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -88,6 +101,10 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       setError('At least one section is required.');
       return;
     }
+    if (!hasCircumference) {
+      setError('Set a circumference on at least one section.');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -95,6 +112,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
         name: name.trim(),
         size: size.trim(),
         color,
+        insertableLength,
         topShape,
         sections,
       };
@@ -146,7 +164,8 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !hasCircumference}
+            title={!hasCircumference ? 'Set a circumference on at least one section' : undefined}
             className="rounded-md bg-blue-600 px-3 pt-1.75 pb-1.25 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-60"
           >
             {saving ? 'Saving…' : 'Save'}
@@ -170,10 +189,13 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                 name={name}
                 size={size}
                 color={color}
+                insertableLength={insertableLength}
+                circumference={toyCircumference}
                 onBrand={setBrand}
                 onName={setName}
                 onSize={setSize}
                 onColor={setColor}
+                onInsertableLength={setInsertableLength}
                 totalHeight={Math.round(getTotalHeight())}
                 maxDiameter={Math.round(getMaxWidth())}
               />
@@ -190,10 +212,13 @@ type IdentificationProps = {
   name: string;
   size: string;
   color: string;
+  insertableLength: number | null;
+  circumference: number | null;
   onBrand: (v: string) => void;
   onName: (v: string) => void;
   onSize: (v: string) => void;
   onColor: (v: string) => void;
+  onInsertableLength: (v: number | null) => void;
   totalHeight: number;
   maxDiameter: number;
 };
@@ -203,10 +228,13 @@ function IdentificationGroup({
   name,
   size,
   color,
+  insertableLength,
+  circumference,
   onBrand,
   onName,
   onSize,
   onColor,
+  onInsertableLength,
   totalHeight,
   maxDiameter,
 }: IdentificationProps) {
@@ -245,17 +273,81 @@ function IdentificationGroup({
         </FormField>
       </section>
 
-      <section className="flex flex-col gap-2.5">
-        <h2 className="m-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
-          Dimensions
-        </h2>
-        <div className="flex items-center gap-4 text-xs text-neutral-500">
-          <span>Length <b className="ml-1 font-semibold tabular-nums text-neutral-700">{totalHeight}</b> mm</span>
+      <section className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-4">
+          <DimInput
+            label="Insertable"
+            value={insertableLength}
+            onChange={onInsertableLength}
+          />
+          <DimReadout
+            label="Circumference"
+            value={circumference}
+            hint={circumference == null ? 'Set per section' : undefined}
+          />
+        </div>
+        <div className="flex items-center gap-3 border-t border-neutral-200 pt-2.5 text-[11px] uppercase tracking-wider text-neutral-400">
+          <span>Length <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">{totalHeight}</b> mm</span>
           <span className="opacity-40">·</span>
-          <span>Diameter <b className="ml-1 font-semibold tabular-nums text-neutral-700">{maxDiameter}</b> mm</span>
+          <span>Diameter <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">{maxDiameter}</b> mm</span>
         </div>
       </section>
     </>
+  );
+}
+
+function DimInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="inline-flex items-baseline gap-1">
+        <input
+          type="number"
+          min={0}
+          value={value ?? ''}
+          placeholder="—"
+          onChange={(e) => {
+            const raw = e.target.value;
+            onChange(raw === '' ? null : Math.max(0, Number(raw)));
+          }}
+          className="w-20 border-0 border-b border-transparent bg-transparent p-0 text-2xl font-semibold tracking-tight tabular-nums text-neutral-900 outline-none focus:border-blue-500"
+        />
+        <span className="text-xs font-medium text-neutral-500">mm</span>
+      </span>
+      <span className="text-[10px] uppercase tracking-wider text-neutral-400">{label}</span>
+    </label>
+  );
+}
+
+function DimReadout({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: number | null;
+  hint?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="inline-flex items-baseline gap-1">
+        <span className="text-2xl font-semibold tracking-tight tabular-nums text-neutral-900">
+          {value == null ? '—' : Math.round(value)}
+        </span>
+        <span className="text-xs font-medium text-neutral-500">mm</span>
+      </span>
+      <span className="text-[10px] uppercase tracking-wider text-neutral-400">
+        {label}
+        {hint && <span className="ml-1 normal-case text-neutral-400/80">({hint})</span>}
+      </span>
+    </div>
   );
 }
 

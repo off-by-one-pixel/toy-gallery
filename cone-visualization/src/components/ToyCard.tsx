@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from "react";
 import { Render } from "cone-editor";
 import type { Toy as EditorToy } from "cone-editor";
 import type { Toy } from "./ConeList";
@@ -14,6 +15,8 @@ type Props = {
 const DEFAULT_FILL = "#c7e4ee";
 
 export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   const style = {
     borderWidth: 1.25,
     borderColor: "#1f2937",
@@ -27,7 +30,15 @@ export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
   };
 
   return (
-    <article className="group relative rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
+    <article
+      className={
+        "group relative bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer " +
+        (detailsOpen
+          ? "z-10 rounded-t-2xl rounded-b-none"
+          : "z-0 rounded-2xl")
+      }
+      onClick={() => setDetailsOpen((v) => !v)}
+    >
       <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
           <button
@@ -74,22 +85,54 @@ export default function ToyCard({ toy, heightRatio, onEdit, onDelete }: Props) {
           )}
         </div>
         <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2.5">
-          <Metric label="Length" value={Math.round(toy.height)} />
-          <Metric label="Diameter" value={Math.round(toy.diameter)} bordered />
+          <Metric label="Insertable" value={toy.insertableLength} />
+          <Metric label="Circumference" value={toy.circumference} bordered />
         </div>
+      </div>
+
+      <div
+        className={
+          "absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-white px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 " +
+          (detailsOpen
+            ? "visible translate-y-0 opacity-100"
+            : "invisible -translate-y-2 opacity-0 pointer-events-none")
+        }
+        onClick={(e) => e.stopPropagation()}
+      >
+        <AttrRow label="Length" value={toy.height == null ? "—" : `${Math.round(toy.height)} mm`} />
+        <AttrRow label="Diameter" value={toy.diameter == null ? "—" : `${Math.round(toy.diameter)} mm`} />
       </div>
     </article>
   );
 }
 
-function Metric({ label, value, bordered }: { label: string; value: number; bordered?: boolean }) {
+function Metric({
+  label,
+  value,
+  bordered,
+}: {
+  label: string;
+  value: number | null;
+  bordered?: boolean;
+}) {
   return (
     <div className={bordered ? "pl-3 border-l border-neutral-200" : ""}>
       <div className="text-[22px] font-semibold leading-none tracking-tight text-neutral-900 tabular-nums">
-        {value}
-        <span className="ml-0.5 text-xs font-medium text-neutral-500">mm</span>
+        {value == null ? "—" : Math.round(value)}
+        {value != null && (
+          <span className="ml-0.5 text-xs font-medium text-neutral-500">mm</span>
+        )}
       </div>
       <div className="mt-1 text-[10px] uppercase tracking-wider text-neutral-400">{label}</div>
+    </div>
+  );
+}
+
+function AttrRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[80px_1fr] items-center gap-3">
+      <span className="text-[10px] uppercase tracking-wider text-neutral-400">{label}</span>
+      <span className="text-sm tabular-nums text-neutral-900">{value}</span>
     </div>
   );
 }
