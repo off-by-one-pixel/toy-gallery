@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
 import type { StyleOption, Toy as EditorToy, ToySection } from 'cone-editor';
 import { createToy, replaceToy, type Toy } from '../services/api';
+import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
 import { Unit, convertSections, fromMm, toMm } from '../services/units';
 
@@ -86,6 +87,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const runAction = useAsyncAction(setError);
 
   const sections = useToyStore((s) => s.sections);
   const topShape = useToyStore((s) => s.topShape);
@@ -139,28 +141,23 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       setError('Set a circumference on at least one section.');
       return;
     }
-    setSaving(true);
-    try {
-      const sectionsMm = convertSections(sections, unit, Unit.mm);
-      const payload = {
-        brand: brand.trim(),
-        name: name.trim(),
-        size: size.trim(),
-        color,
-        insertableLength: insertableLengthMm,
-        topShape,
-        sections: sectionsMm,
-      };
-      if (mode.kind === 'edit') {
-        await replaceToy(mode.toy.id, payload);
-      } else {
-        await createToy(payload);
-      }
-      onSaved();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed');
-      setSaving(false);
-    }
+    const sectionsMm = convertSections(sections, unit, Unit.mm);
+    const payload = {
+      brand: brand.trim(),
+      name: name.trim(),
+      size: size.trim(),
+      color,
+      insertableLength: insertableLengthMm,
+      topShape,
+      sections: sectionsMm,
+    };
+    await runAction(
+      () =>
+        mode.kind === 'edit'
+          ? replaceToy(mode.toy.id, payload)
+          : createToy(payload),
+      { busy: setSaving, onSuccess: onSaved },
+    );
   };
 
   const title = isEdit

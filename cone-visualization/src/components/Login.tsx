@@ -4,6 +4,7 @@ import { Button, Input } from '@heroui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
+import { useAsyncAction } from '../hooks/useAsyncAction';
 
 const LoginPage = () => {
     const router = useRouter();
@@ -14,19 +15,15 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const runAction = useAsyncAction(setError);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSubmitting(true);
-        try {
-            await login(username, password);
-            const next = searchParams.get('next') || '/';
-            router.replace(next);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Login failed');
-            setSubmitting(false);
-        }
+        await runAction(() => login(username, password), {
+            busy: setSubmitting,
+            onSuccess: () => router.replace(searchParams.get('next') || '/'),
+        });
     };
 
     return (
