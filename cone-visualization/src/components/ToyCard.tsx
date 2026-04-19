@@ -66,10 +66,13 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
           </Button>
         </div>
         <div
-          className="absolute inset-x-0 bottom-0 flex items-end justify-center"
-          style={{ top: `${(1 - heightRatio) * 100}%` }}
+          className="absolute inset-x-0 flex items-end justify-center"
+          style={{
+            top: `calc(${(1 - heightRatio) * 100}% - ${(1 - heightRatio) * 8}px)`,
+            bottom: '8px',
+          }}
         >
-          <Render toy={editorToy} scaleFactor={1} style={style} />
+          <Render toy={editorToy} scaleFactor={1} style={style} interactive={false} />
         </div>
       </div>
       <div className="px-3.5 py-3">
