@@ -7,6 +7,7 @@ type Props = {
   totalWidth: number;
   style: StyleOption;
   onSelect?: (id: number) => void;
+  interactive?: boolean;
 };
 
 const Section = ({
@@ -16,6 +17,7 @@ const Section = ({
   totalWidth,
   style,
   onSelect,
+  interactive = true,
 }: Props) => {
   const x = (totalWidth - Math.max(section.diameter, previousDiameter) * scaleFactor) / 2;
   const diameter = section.diameter * scaleFactor;
@@ -27,7 +29,7 @@ const Section = ({
 
   return (
     <g
-      className="cone-editor-part"
+      className={interactive ? "cone-editor-part" : undefined}
       transform={`translate(${x}, 0)`}
       onClick={onSelect ? () => onSelect(section.id) : undefined}
       role={onSelect ? "button" : undefined}

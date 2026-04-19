@@ -16,6 +16,12 @@ type Props = {
    * containing canvas can scale the silhouette to fit.
    */
   fixed?: boolean;
+  /**
+   * Whether sections should respond to hover and reserve bottom viewBox
+   * space for a selection outline. Set to false for read-only previews
+   * (cards, thumbnails) so the silhouette sits flush against the bottom.
+   */
+  interactive?: boolean;
 };
 
 // Padding + selection-outline offsets are expressed as fractions of the
@@ -34,16 +40,19 @@ export const Render = ({
   selectedId = null,
   onSelect,
   fixed = false,
+  interactive = true,
 }: Props) => {
   const totalHeight = toy.sections.reduce((a, b) => a + b.height, 0) * scaleFactor;
   const maxDiameter = Math.max(...toy.sections.map((s) => s.diameter), 0) * scaleFactor;
   const ref_ = Math.max(maxDiameter, totalHeight, 1);
   const padX = ref_ * PAD_RATIO;
   const outlineInset = ref_ * SELECTION_GAP_RATIO;
-  const outlinePad = outlineInset + ref_ * OUTLINE_EXTRA_RATIO;
+  const strokeAllowance = ref_ * OUTLINE_EXTRA_RATIO;
+  const outlinePad = outlineInset + strokeAllowance;
+  const bottomPad = interactive ? outlinePad : strokeAllowance;
   const cornerRadius = ref_ * CORNER_RADIUS_RATIO;
   const vbW = maxDiameter + padX + outlinePad * 2;
-  const vbH = totalHeight + outlinePad * 2;
+  const vbH = totalHeight + outlinePad + bottomPad;
   let yOffset = 0;
   let previousDiameter = 0;
   let currentDiameter = 0;
@@ -96,6 +105,7 @@ export const Render = ({
               style={style}
               shape={toy.topShape}
               onSelect={onSelect}
+              interactive={interactive}
             />
           ) : (
             <Section
@@ -105,6 +115,7 @@ export const Render = ({
               totalWidth={maxDiameter}
               style={style}
               onSelect={onSelect}
+              interactive={interactive}
             />
           );
         return (
