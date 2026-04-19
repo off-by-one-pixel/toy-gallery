@@ -1,5 +1,6 @@
 'use client'
 
+import { Button, Chip } from "@heroui/react";
 import { Render } from "cone-editor";
 import type { Toy as EditorToy } from "cone-editor";
 import { Pencil, Trash2 } from "lucide-react";
@@ -52,24 +53,26 @@ export default function ToyCard({
     >
       <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onEdit(toy); }}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white/90 text-neutral-800 backdrop-blur hover:bg-white hover:border-neutral-300"
+          <Button
+            variant="outline"
+            size="sm"
+            isIconOnly
             aria-label="Edit"
-            title="Edit"
+            onPress={() => onEdit(toy)}
+            onClick={(e) => e.stopPropagation()}
           >
             <Pencil size={13} strokeWidth={1.8} />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onDelete(toy); }}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white/90 text-neutral-800 backdrop-blur hover:bg-red-50 hover:border-red-200 hover:text-red-700"
+          </Button>
+          <Button
+            variant="danger-soft"
+            size="sm"
+            isIconOnly
             aria-label="Delete"
-            title="Delete"
+            onPress={() => onDelete(toy)}
+            onClick={(e) => e.stopPropagation()}
           >
             <Trash2 size={13} strokeWidth={1.8} />
-          </button>
+          </Button>
         </div>
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-center" style={{ top: `${(1 - heightRatio) * 100}%` }}>
           <Render toy={editorToy} scaleFactor={1} style={style} />
@@ -82,9 +85,9 @@ export default function ToyCard({
             <div className="truncate text-sm font-semibold text-neutral-900">{toy.name}</div>
           </div>
           {toy.size && (
-            <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-indigo-800">
-              {toy.size}
-            </span>
+            <Chip size="sm" color="accent" className="shrink-0">
+              <Chip.Label>{toy.size}</Chip.Label>
+            </Chip>
           )}
         </div>
         <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2.5">

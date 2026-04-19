@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react';
+import { Alert, Button, Spinner } from '@heroui/react';
 import { Plus } from 'lucide-react';
 import { deleteToy, fetchCones, type Toy } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
@@ -73,25 +74,27 @@ const ConeList = () => {
           <div className="flex-1" />
           <ViewToggle />
           <UnitToggle />
-          <button
-            type="button"
-            onClick={() => setEditorMode({ kind: 'new' })}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 pt-2.25 pb-1.75 pl-2.5 pr-3.5 text-sm font-medium leading-none text-white shadow-sm transition-colors hover:bg-blue-700"
+          <Button
+            variant="primary"
+            size="sm"
+            onPress={() => setEditorMode({ kind: 'new' })}
           >
             <Plus size={14} strokeWidth={2.2} />
             New Toy
-          </button>
+          </Button>
         </div>
       </header>
 
       <main className="mx-auto max-w-300 px-6 py-6">
         {error && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
+          <Alert status="danger" className="mb-4">
+            <Alert.Description>{error}</Alert.Description>
+          </Alert>
         )}
         {isLoading ? (
-          <div className="py-20 text-center text-sm text-neutral-500">Loading…</div>
+          <div className="flex justify-center py-20 text-neutral-500">
+            <Spinner />
+          </div>
         ) : view === ViewMode.list ? (
           <ToyList
             toys={cones}

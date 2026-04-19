@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { Dropdown, Toast } from '@heroui/react';
 import { ChevronDown, Download, Upload } from 'lucide-react';
+
 import { downloadExport, importFromFile } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
-import { useToasts } from '../providers/ToastProvider';
 
 type Props = {
   onImported: () => void;
@@ -12,89 +13,64 @@ type Props = {
 };
 
 export default function CollectionMenu({ onImported, count }: Props) {
-  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const rootRef = useRef<HTMLSpanElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const runAction = useAsyncAction();
-  const { showToast } = useToasts();
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
 
   const handleExport = () =>
     runAction(downloadExport, {
       busy: setBusy,
-      onSuccess: () => {
-        showToast('Exported collection', 'success');
-        setOpen(false);
-      },
+      onSuccess: () => Toast.toast.success('Exported collection'),
     });
 
   const handleImportFile = (file: File) =>
     runAction(() => importFromFile(file), {
       busy: setBusy,
       onSuccess: (result) => {
-        showToast(
+        Toast.toast.success(
           `Imported ${result.created} ${result.created === 1 ? 'toy' : 'toys'}`,
-          'success',
         );
-        setOpen(false);
         onImported();
       },
     });
 
   return (
-    <span ref={rootRef} className="relative inline-flex items-baseline">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className="group inline-flex items-baseline gap-2 rounded-md px-1 -mx-1 text-left transition-colors hover:bg-neutral-200/60"
-      >
-        <span className="text-lg font-semibold tracking-tight text-neutral-900">Toy Gallery</span>
-        {count != null && (
-          <span className="text-sm font-normal text-neutral-500">
-            {count} {count === 1 ? 'item' : 'items'}
+    <>
+      <Dropdown>
+        <Dropdown.Trigger className="group inline-flex items-baseline gap-2 rounded-md px-1 -mx-1 text-left transition-colors hover:bg-neutral-200/60">
+          <span className="text-lg font-semibold tracking-tight text-neutral-900">
+            Toy Gallery
           </span>
-        )}
-        <ChevronDown
-          size={10}
-          strokeWidth={2.5}
-          className="text-neutral-400 transition-colors group-hover:text-neutral-600"
-        />
-      </button>
-
-      {open && (
-        <div
-          role="menu"
-          className="absolute left-0 top-full z-20 mt-2 w-60 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg"
-        >
-          <MenuItem
-            label="Export collection"
-            description="Download the gallery as JSON"
-            onClick={handleExport}
-            disabled={busy}
-            icon={<Download size={14} strokeWidth={1.8} />}
+          {count != null && (
+            <span className="text-sm font-normal text-neutral-500">
+              {count} {count === 1 ? 'item' : 'items'}
+            </span>
+          )}
+          <ChevronDown
+            size={10}
+            strokeWidth={2.5}
+            className="text-neutral-400 transition-colors group-hover:text-neutral-600"
           />
-          <MenuItem
-            label="Import collection"
-            description="Add toys from a JSON file"
-            onClick={() => fileRef.current?.click()}
-            disabled={busy}
-            icon={<Upload size={14} strokeWidth={1.8} />}
-          />
-        </div>
-      )}
+        </Dropdown.Trigger>
+        <Dropdown.Popover placement="bottom start">
+          <Dropdown.Menu disabledKeys={busy ? ['export', 'import'] : []}>
+            <Dropdown.Item id="export" onAction={handleExport}>
+              <MenuRow
+                icon={<Download size={14} strokeWidth={1.8} />}
+                label="Export collection"
+                description="Download the gallery as JSON"
+              />
+            </Dropdown.Item>
+            <Dropdown.Item id="import" onAction={() => fileRef.current?.click()}>
+              <MenuRow
+                icon={<Upload size={14} strokeWidth={1.8} />}
+                label="Import collection"
+                description="Add toys from a JSON file"
+              />
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
 
       <input
         ref={fileRef}
@@ -107,36 +83,26 @@ export default function CollectionMenu({ onImported, count }: Props) {
           if (file) handleImportFile(file);
         }}
       />
-    </span>
+    </>
   );
 }
 
-function MenuItem({
+function MenuRow({
+  icon,
   label,
   description,
-  icon,
-  onClick,
-  disabled,
 }: {
+  icon: React.ReactNode;
   label: string;
   description: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      role="menuitem"
-      onClick={onClick}
-      disabled={disabled}
-      className="flex w-full items-start gap-2.5 rounded px-2 py-1.5 text-left text-sm text-neutral-900 transition-colors hover:bg-neutral-100 disabled:opacity-60"
-    >
+    <span className="flex items-start gap-2.5">
       <span className="mt-0.5 text-neutral-500">{icon}</span>
       <span className="flex flex-col">
         <span className="font-medium">{label}</span>
         <span className="text-[11px] text-neutral-500">{description}</span>
       </span>
-    </button>
+    </span>
   );
 }

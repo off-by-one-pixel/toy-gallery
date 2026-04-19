@@ -1,45 +1,30 @@
 'use client';
 
+import { ToggleButton, ToggleButtonGroup } from '@heroui/react';
 import { LayoutGrid, List } from 'lucide-react';
-import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 
-const OPTIONS = [
-  { value: ViewMode.cards, label: 'Cards', Icon: LayoutGrid },
-  { value: ViewMode.list, label: 'List', Icon: List },
-] as const;
+import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 
 export default function ViewToggle() {
   const { view, setView } = useViewMode();
-  const activeIndex = OPTIONS.findIndex((o) => o.value === view);
 
   return (
-    <div
-      data-active={view}
-      className="relative inline-flex rounded-lg bg-neutral-200/70 p-0.5"
-      role="group"
+    <ToggleButtonGroup
+      selectionMode="single"
+      disallowEmptySelection
+      selectedKeys={[view]}
+      onSelectionChange={(keys) => setView([...keys][0] as ViewMode)}
       aria-label="Gallery view"
+      size="sm"
     >
-      <span
-        aria-hidden
-        className="absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white shadow-[0_1px_2px_rgba(17,24,39,0.08)] transition-transform duration-200"
-        style={{ transform: `translateX(${activeIndex * 100}%)` }}
-      />
-      {OPTIONS.map(({ value, label, Icon }) => (
-        <button
-          key={value}
-          type="button"
-          onClick={() => setView(value)}
-          aria-pressed={view === value}
-          title={label}
-          className={
-            'relative z-10 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium transition-colors ' +
-            (view === value ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-800')
-          }
-        >
-          <Icon size={13} strokeWidth={2} />
-          {label}
-        </button>
-      ))}
-    </div>
+      <ToggleButton id={ViewMode.cards} aria-label="Cards">
+        <LayoutGrid size={13} strokeWidth={2} />
+        <span>Cards</span>
+      </ToggleButton>
+      <ToggleButton id={ViewMode.list} aria-label="List">
+        <List size={13} strokeWidth={2} />
+        <span>List</span>
+      </ToggleButton>
+    </ToggleButtonGroup>
   );
 }

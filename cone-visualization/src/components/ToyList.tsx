@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Button, Chip } from '@heroui/react';
 import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
@@ -14,20 +15,13 @@ type SortDirection = 'asc' | 'desc';
 
 const DEFAULT_FILL = '#c7e4ee';
 
-// Grid template — redefined at each breakpoint so hidden cells don't leave
-// empty tracks. Matches the three-tier layout from the mockup.
-//
-//   mobile (<640):         thumb | name | insertable | circumference | actions
-//   tablet (>=640, <900):  thumb | name | size | insertable | circumference | actions
-//   desktop (>=900):       thumb | name | size | insertable | circumference | length | diameter | actions
 const GRID_COLS =
   'grid-cols-[44px_2fr_1fr_1fr_40px] ' +
   'min-[640px]:grid-cols-[48px_2fr_70px_1fr_1fr_76px] ' +
   'min-[900px]:grid-cols-[56px_2fr_70px_100px_120px_100px_100px_76px]';
 
-// Hide classes for each optional column. Plain cells use `block`; SortHeader
-// buttons need `inline-flex` restored at the breakpoint or the chevron flows
-// onto a new line.
+// SortHeader buttons need `inline-flex` at the breakpoint so the chevron
+// stays inline; plain cells can use `block`.
 const HIDDEN_SIZE = 'hidden min-[640px]:block';
 const HIDDEN_LENGTH = 'hidden min-[900px]:block';
 const HIDDEN_DIAMETER = 'hidden min-[900px]:block';
@@ -203,9 +197,9 @@ function ToyRow({
         <NameCol toy={toy} />
         <div className={HIDDEN_SIZE}>
           {toy.size && (
-            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-indigo-800">
-              {toy.size}
-            </span>
+            <Chip size="sm" color="accent">
+              <Chip.Label>{toy.size}</Chip.Label>
+            </Chip>
           )}
         </div>
         <Metric value={toy.insertableLength} unit={unit} />
@@ -216,24 +210,12 @@ function ToyRow({
           className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            type="button"
-            onClick={onEdit}
-            aria-label="Edit"
-            title="Edit"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50 hover:border-neutral-300"
-          >
+          <Button variant="outline" size="sm" isIconOnly aria-label="Edit" onPress={onEdit}>
             <Pencil size={13} strokeWidth={1.8} />
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            aria-label="Delete"
-            title="Delete"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-800 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
-          >
+          </Button>
+          <Button variant="danger-soft" size="sm" isIconOnly aria-label="Delete" onPress={onDelete}>
             <Trash2 size={13} strokeWidth={1.8} />
-          </button>
+          </Button>
         </div>
       </div>
       {open && <ExpandedPanel toy={toy} />}
@@ -268,9 +250,9 @@ function NameCol({ toy }: { toy: Toy }) {
       <div className="flex min-w-0 items-center gap-1.5">
         <span className="truncate text-base font-semibold text-neutral-900">{toy.name}</span>
         {toy.size && (
-          <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-indigo-800 min-[640px]:hidden">
-            {toy.size}
-          </span>
+          <Chip size="sm" color="accent" className="shrink-0 min-[640px]:hidden">
+            <Chip.Label>{toy.size}</Chip.Label>
+          </Chip>
         )}
       </div>
     </div>
