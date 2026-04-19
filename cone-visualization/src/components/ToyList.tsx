@@ -74,10 +74,7 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onDelet
 
   return (
     <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-      <ListHeader
-        sort={sort}
-        onSort={handleSort}
-      />
+      <ListHeader sort={sort} onSort={handleSort} />
       {sortedToys.map((toy) => (
         <ToyRow
           key={toy.id}
@@ -112,8 +109,22 @@ function ListHeader({
       <span className={HIDDEN_SIZE}>Size</span>
       <SortHeader label="Insertable" column="insertable" sort={sort} onSort={onSort} align="right" />
       <SortHeader label="Circumference" column="circumference" sort={sort} onSort={onSort} align="right" />
-      <SortHeader label="Length" column="length" sort={sort} onSort={onSort} align="right" className={HIDDEN_LENGTH_HEADER} />
-      <SortHeader label="Diameter" column="diameter" sort={sort} onSort={onSort} align="right" className={HIDDEN_DIAMETER_HEADER} />
+      <SortHeader
+        label="Length"
+        column="length"
+        sort={sort}
+        onSort={onSort}
+        align="right"
+        className={HIDDEN_LENGTH_HEADER}
+      />
+      <SortHeader
+        label="Diameter"
+        column="diameter"
+        sort={sort}
+        onSort={onSort}
+        align="right"
+        className={HIDDEN_DIAMETER_HEADER}
+      />
       <span />
     </div>
   );
@@ -140,20 +151,16 @@ function SortHeader({
     <button
       type="button"
       onClick={() => onSort(column)}
-      className={
-        `inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-neutral-500 ${
-          active ? 'text-neutral-700' : ''
-        } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`
-      }
+      className={`inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-neutral-500 ${
+        active ? 'text-neutral-700' : ''
+      } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`}
     >
       <span className="whitespace-nowrap">{label}</span>
       <ChevronDown
         size={8}
         strokeWidth={2.5}
         className={
-          'transition-transform ' +
-          (active ? 'opacity-100 ' : 'opacity-40 ') +
-          (dir === 'desc' ? 'rotate-180' : '')
+          'transition-transform ' + (active ? 'opacity-100 ' : 'opacity-40 ') + (dir === 'desc' ? 'rotate-180' : '')
         }
       />
     </button>
@@ -244,9 +251,7 @@ function Thumb({ toy }: { toy: Toy }) {
 function NameCol({ toy }: { toy: Toy }) {
   return (
     <div className="min-w-0">
-      <div className="truncate text-[11px] font-normal uppercase tracking-[0.06em] text-neutral-500">
-        {toy.brand}
-      </div>
+      <div className="truncate text-[11px] font-normal uppercase tracking-[0.06em] text-neutral-500">{toy.brand}</div>
       <div className="flex min-w-0 items-center gap-1.5">
         <span className="truncate text-base font-semibold text-neutral-900">{toy.name}</span>
         {toy.size && (
@@ -272,18 +277,16 @@ function Metric({
 }) {
   return (
     <div
-      className={
-        `text-right text-[17px] font-semibold tracking-tight tabular-nums ${
-          muted ? 'font-medium text-neutral-500' : 'text-neutral-900'
-        } ${className ?? ''}`
-      }
+      className={`text-right text-[17px] font-semibold tracking-tight tabular-nums ${
+        muted ? 'font-medium text-neutral-500' : 'text-neutral-900'
+      } ${className ?? ''}`}
     >
       {value == null ? (
         <span className="font-normal text-neutral-300">—</span>
       ) : (
         <>
           {formatDim(value, unit)}
-          <span className="ml-1.5 text-[11px] font-medium text-neutral-500">{unit}</span>
+          <span className="ml-1.5 text-[11px] font-medium text-neutral-500">{unit.id}</span>
         </>
       )}
     </div>
@@ -314,9 +317,7 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
               <SectionLine key={s.id} n={idx + 1} d={s.diameter} h={s.height} c={s.circumference ?? null} />
             ))}
             <span className="text-neutral-400">+</span>
-            <span className="italic text-neutral-500 col-span-4">
-              {toy.topShape === 'egg' ? 'Egg' : 'Cone'} cap
-            </span>
+            <span className="italic text-neutral-500 col-span-4">{toy.topShape === 'egg' ? 'Egg' : 'Cone'} cap</span>
           </div>
         </dd>
       </dl>

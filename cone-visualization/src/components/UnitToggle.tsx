@@ -3,7 +3,7 @@
 import { ToggleButton, ToggleButtonGroup } from '@heroui/react';
 
 import { useUnit } from '../providers/UnitProvider';
-import { Unit } from '../services/units';
+import { Unit, unitById } from '../services/units';
 
 export default function UnitToggle() {
   const { unit, setUnit } = useUnit();
@@ -12,13 +12,18 @@ export default function UnitToggle() {
     <ToggleButtonGroup
       selectionMode="single"
       disallowEmptySelection
-      selectedKeys={[unit]}
-      onSelectionChange={(keys) => setUnit([...keys][0] as Unit)}
+      selectedKeys={[unit.id]}
+      onSelectionChange={(keys) => {
+        const next = unitById([...keys][0] as string);
+        if (next) setUnit(next);
+      }}
       aria-label="Display units"
       size="sm"
     >
       {Object.values(Unit).map((u) => (
-        <ToggleButton key={u} id={u}>{u}</ToggleButton>
+        <ToggleButton key={u.id} id={u.id}>
+          {u.id}
+        </ToggleButton>
       ))}
     </ToggleButtonGroup>
   );
