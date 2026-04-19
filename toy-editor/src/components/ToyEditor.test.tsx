@@ -4,7 +4,7 @@ import ToyEditor from "./ToyEditor";
 
 describe("ToyEditor", () => {
   it("renders the controls and canvas", () => {
-    render(<ToyEditor />);
+    render(<ToyEditor unit={{ id: "mm", factor: 1, decimals: 0 }} />);
     expect(screen.getByRole("button", { name: /add section/i })).toBeInTheDocument();
     expect(screen.getByText(/top shape/i)).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: /egg/i })).toBeInTheDocument();
