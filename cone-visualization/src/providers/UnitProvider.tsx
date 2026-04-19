@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
-import { Unit } from '../services/units';
+import { Unit, defaultUnit, unitById } from '../services/units';
 
 const STORAGE_KEY = 'units';
 
@@ -13,16 +13,17 @@ interface UnitContextValue {
 const UnitContext = createContext<UnitContextValue | null>(null);
 
 export function UnitProvider({ children }: { children: ReactNode }) {
-  const [unit, setUnitState] = useState<Unit>(Unit.mm);
+  const [unit, setUnitState] = useState<Unit>(defaultUnit);
 
   useEffect(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-    if (stored === Unit.mm || stored === Unit.in) setUnitState(stored);
+    const restored = stored ? unitById(stored) : undefined;
+    if (restored) setUnitState(restored);
   }, []);
 
   const setUnit = useCallback((next: Unit) => {
     setUnitState(next);
-    if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next);
+    if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next.id);
   }, []);
 
   return <UnitContext.Provider value={{ unit, setUnit }}>{children}</UnitContext.Provider>;

@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { Button, Chip } from "@heroui/react";
-import { Render } from "cone-editor";
-import type { Toy as EditorToy } from "cone-editor";
-import { Pencil, Trash2 } from "lucide-react";
-import { useUnit } from "../providers/UnitProvider";
-import { formatDim, type Dimension, type Unit } from "../services/units";
-import type { Toy } from "../services/api";
+import { Button, Chip } from '@heroui/react';
+import { Render } from 'cone-editor';
+import type { Toy as EditorToy } from 'cone-editor';
+import { Pencil, Trash2 } from 'lucide-react';
+import { useUnit } from '../providers/UnitProvider';
+import { formatDim, type Dimension, type Unit } from '../services/units';
+import type { Toy } from '../services/api';
 
 type Props = {
   toy: Toy;
@@ -17,21 +17,14 @@ type Props = {
   onDelete: (toy: Toy) => void;
 };
 
-const DEFAULT_FILL = "#c7e4ee";
+const DEFAULT_FILL = '#c7e4ee';
 
-export default function ToyCard({
-  toy,
-  heightRatio,
-  detailsOpen,
-  onToggleDetails,
-  onEdit,
-  onDelete,
-}: Props) {
+export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails, onEdit, onDelete }: Props) {
   const { unit } = useUnit();
 
   const style = {
     borderWidth: 1.25,
-    borderColor: "#1f2937",
+    borderColor: '#1f2937',
     color: toy.color || DEFAULT_FILL,
   };
 
@@ -44,10 +37,8 @@ export default function ToyCard({
   return (
     <article
       className={
-        "group relative bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer " +
-        (detailsOpen
-          ? "z-10 rounded-t-2xl rounded-b-none"
-          : "z-0 rounded-2xl")
+        'group relative bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer ' +
+        (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
       }
       onClick={onToggleDetails}
     >
@@ -74,14 +65,19 @@ export default function ToyCard({
             <Trash2 size={13} strokeWidth={1.8} />
           </Button>
         </div>
-        <div className="absolute inset-x-0 bottom-0 flex items-end justify-center" style={{ top: `${(1 - heightRatio) * 100}%` }}>
+        <div
+          className="absolute inset-x-0 bottom-0 flex items-end justify-center"
+          style={{ top: `${(1 - heightRatio) * 100}%` }}
+        >
           <Render toy={editorToy} scaleFactor={1} style={style} />
         </div>
       </div>
       <div className="px-3.5 py-3">
         <div className="mb-2 flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500 truncate">{toy.brand}</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500 truncate">
+              {toy.brand}
+            </div>
             <div className="truncate text-sm font-semibold text-neutral-900">{toy.name}</div>
           </div>
           {toy.size && (
@@ -98,15 +94,13 @@ export default function ToyCard({
 
       <div
         className={
-          "absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-white px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 " +
-          (detailsOpen
-            ? "visible translate-y-0 opacity-100"
-            : "invisible -translate-y-2 opacity-0 pointer-events-none")
+          'absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-white px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 ' +
+          (detailsOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0 pointer-events-none')
         }
         onClick={(e) => e.stopPropagation()}
       >
-        <AttrRow label="Length" value={`${formatDim(toy.height, unit)} ${unit}`} />
-        <AttrRow label="Diameter" value={`${formatDim(toy.diameter, unit)} ${unit}`} />
+        <AttrRow label="Length" value={`${formatDim(toy.height, unit)} ${unit.id}`} />
+        <AttrRow label="Diameter" value={`${formatDim(toy.diameter, unit)} ${unit.id}`} />
       </div>
     </article>
   );
@@ -124,12 +118,10 @@ function Metric({
   bordered?: boolean;
 }) {
   return (
-    <div className={bordered ? "pl-3 border-l border-neutral-200" : ""}>
+    <div className={bordered ? 'pl-3 border-l border-neutral-200' : ''}>
       <div className="text-[22px] font-semibold leading-none tracking-tight text-neutral-900 tabular-nums">
         {formatDim(value, unit)}
-        {value != null && (
-          <span className="ml-0.5 text-xs font-medium text-neutral-500">{unit}</span>
-        )}
+        {value != null && <span className="ml-0.5 text-xs font-medium text-neutral-500">{unit.id}</span>}
       </div>
       <div className="mt-1 text-[10px] uppercase tracking-wider text-neutral-400">{label}</div>
     </div>

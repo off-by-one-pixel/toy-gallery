@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { ToySection } from 'cone-editor';
 
-import { INCH_MM, Unit, convertSections, formatDim, formatValue, fromMm, toMm } from './units';
+import { Unit, convertSections, formatDim, formatValue, fromMm, toMm } from './units';
 
 describe('toMm / fromMm', () => {
   it('passes mm through unchanged', () => {
@@ -15,8 +15,8 @@ describe('toMm / fromMm', () => {
     expect(fromMm(254, Unit.in)).toBeCloseTo(10);
   });
 
-  it('has the correct inch constant', () => {
-    expect(INCH_MM).toBe(25.4);
+  it('has the correct inch conversion factor', () => {
+    expect(Unit.in.factor).toBe(25.4);
   });
 
   it('round-trips a non-trivial value', () => {
@@ -83,11 +83,7 @@ describe('convertSections', () => {
   });
 
   it('round-trips mm → in → mm', () => {
-    const round = convertSections(
-      convertSections(sections, Unit.mm, Unit.in),
-      Unit.in,
-      Unit.mm,
-    );
+    const round = convertSections(convertSections(sections, Unit.mm, Unit.in), Unit.in, Unit.mm);
     expect(round[0].diameter).toBeCloseTo(sections[0].diameter);
     expect(round[0].height).toBeCloseTo(sections[0].height);
     expect(round[0].circumference).toBeCloseTo(sections[0].circumference!);
