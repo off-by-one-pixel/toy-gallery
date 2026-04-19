@@ -20,8 +20,8 @@ type Props = {
   initialToy?: Toy;
   /** Rendered at the top of the controls column, above the built-in groups. */
   leadingSlot?: ReactNode;
-  /** Display unit for the section-row inputs. Storage is always mm. */
-  unit?: Unit;
+  /** Display unit for the section-row inputs. Storage is always canonical (mm-equivalent). */
+  unit: Unit;
 };
 
 const ToyEditor = ({
@@ -32,7 +32,7 @@ const ToyEditor = ({
   ref,
   initialToy,
   leadingSlot,
-  unit = "mm",
+  unit,
 }: Props) => {
   const toy = useToyStore();
   const hydrate = useToyStore((s) => s.hydrate);

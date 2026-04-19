@@ -7,9 +7,9 @@ import { useEditorUnit } from "./unit";
 const EditorControls = () => {
   const toy = useToyStore();
   const unit = useEditorUnit();
-  const step = unit === "in" ? 0.1 : 1;
-  const decimals = unit === "in" ? 2 : 0;
-  const format = (v: number) => Number(v.toFixed(decimals));
+  const step = 10 ** -unit.decimals;
+  const toDisplay = (canonical: number) => Number((canonical / unit.factor).toFixed(unit.decimals));
+  const fromDisplay = (display: number) => display * unit.factor;
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: number; position: "before" | "after" } | null>(
     null,
@@ -110,8 +110,10 @@ const EditorControls = () => {
                     aria-label="Diameter"
                     min={0}
                     step={step}
-                    value={format(section.diameter)}
-                    onChange={(e) => toy.setDiameter(section.id, Number(e.target.value))}
+                    value={toDisplay(section.diameter)}
+                    onChange={(e) =>
+                      toy.setDiameter(section.id, fromDisplay(Number(e.target.value)))
+                    }
                     onClick={(e) => e.stopPropagation()}
                   />
                   <span className="cone-editor-section-sep">×</span>
@@ -120,8 +122,8 @@ const EditorControls = () => {
                     aria-label="Height"
                     min={0}
                     step={step}
-                    value={format(section.height)}
-                    onChange={(e) => toy.setHeight(section.id, Number(e.target.value))}
+                    value={toDisplay(section.height)}
+                    onChange={(e) => toy.setHeight(section.id, fromDisplay(Number(e.target.value)))}
                     onClick={(e) => e.stopPropagation()}
                   />
                   <span className="cone-editor-section-sep">·</span>
@@ -131,14 +133,17 @@ const EditorControls = () => {
                     placeholder="C"
                     min={0}
                     step={step}
-                    value={section.circumference == null ? "" : format(section.circumference)}
+                    value={section.circumference == null ? "" : toDisplay(section.circumference)}
                     onChange={(e) => {
                       const raw = e.target.value;
-                      toy.setCircumference(section.id, raw === "" ? null : Number(raw));
+                      toy.setCircumference(
+                        section.id,
+                        raw === "" ? null : fromDisplay(Number(raw)),
+                      );
                     }}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="cone-editor-section-unit">{unit}</span>
+                  <span className="cone-editor-section-unit">{unit.id}</span>
                 </div>
                 {toy.sections.length > 1 && (
                   <button
