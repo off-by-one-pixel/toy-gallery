@@ -4,10 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { deleteToy, fetchCones, type Toy } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import CollectionMenu from './CollectionMenu';
 import ToyCard from './ToyCard';
 import ToyEditModal from './ToyEditModal';
+import ToyList from './ToyList';
 import UnitToggle from './UnitToggle';
+import ViewToggle from './ViewToggle';
 
 export type { Toy } from '../services/api';
 
@@ -23,10 +26,14 @@ const ConeList = () => {
   const [lastChanged, setLastChanged] = useState(0);
   const [editorMode, setEditorMode] = useState<EditorMode>({ kind: 'closed' });
   const [openCardId, setOpenCardId] = useState<number | null>(null);
+  const { view } = useViewMode();
 
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
+
+  const toggleOpen = (id: number) =>
+    setOpenCardId((cur) => (cur === id ? null : id));
 
   const maxHeight = useMemo(
     () => Math.max(1, ...cones.map((c) => c.height.mm)),
@@ -64,6 +71,7 @@ const ConeList = () => {
             />
           </h1>
           <div className="flex-1" />
+          <ViewToggle />
           <UnitToggle />
           <button
             type="button"
@@ -84,6 +92,14 @@ const ConeList = () => {
         )}
         {isLoading ? (
           <div className="py-20 text-center text-sm text-neutral-500">Loading…</div>
+        ) : view === ViewMode.list ? (
+          <ToyList
+            toys={cones}
+            openToyId={openCardId}
+            onToggleOpen={toggleOpen}
+            onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
+            onDelete={handleDelete}
+          />
         ) : (
           <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
             {cones.map((toy) => (
@@ -92,9 +108,7 @@ const ConeList = () => {
                 toy={toy}
                 heightRatio={Math.max(0.15, toy.height.mm / maxHeight)}
                 detailsOpen={openCardId === toy.id}
-                onToggleDetails={() =>
-                  setOpenCardId((cur) => (cur === toy.id ? null : toy.id))
-                }
+                onToggleDetails={() => toggleOpen(toy.id)}
                 onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
                 onDelete={handleDelete}
               />
