@@ -16,6 +16,7 @@ class Shape(models.Model):
     ]
 
     top_section_shape = models.CharField(
+        max_length=16,
         choices=TOP_SHAPE_CHOICES,
         default=EGG,
     )
@@ -34,11 +35,11 @@ class ShapeSection(models.Model):
 
 
 class Toy(models.Model):
-    brand = models.CharField()
-    size = models.CharField()
-    name = models.CharField()
+    brand = models.CharField(max_length=255)
+    size = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
     date_purchased = models.DateField(null=True, blank=True)
     retired = models.BooleanField(default=False)
     shape = models.OneToOneField(Shape, on_delete=models.CASCADE)
-    color = models.CharField(null=True, blank=True)
+    color = models.CharField(max_length=50, null=True, blank=True)
     insertable_length = models.FloatField(null=True, blank=True)
