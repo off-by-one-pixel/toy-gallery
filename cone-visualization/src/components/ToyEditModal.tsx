@@ -3,7 +3,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
 import type { StyleOption, Toy as EditorToy } from 'cone-editor';
-import { Alert, Button, ColorSwatchPicker, Input, Modal, NumberField, useOverlayState } from '@heroui/react';
+import { Alert, Button, ColorSwatchPicker, Modal, NumberField, useOverlayState } from '@heroui/react';
+import TextInput from './TextInput';
 import { ArrowLeft } from 'lucide-react';
 import { createToy, replaceToy, type Toy } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
@@ -236,13 +237,13 @@ function IdentificationGroup({
       <section className="flex flex-col gap-2.5">
         <h2 className="m-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">Identification</h2>
         <FormField label="Brand">
-          <Input value={brand} onChange={(e) => onBrand(e.target.value)} aria-label="Brand" />
+          <TextInput size="sm" value={brand} onChange={onBrand} aria-label="Brand" />
         </FormField>
         <FormField label="Model">
-          <Input value={name} onChange={(e) => onName(e.target.value)} aria-label="Model" />
+          <TextInput size="sm" value={name} onChange={onName} aria-label="Model" />
         </FormField>
         <FormField label="Size">
-          <Input value={size} onChange={(e) => onSize(e.target.value)} aria-label="Size" />
+          <TextInput size="sm" value={size} onChange={onSize} aria-label="Size" />
         </FormField>
         <FormField label="Color">
           <ColorPicker value={color} onChange={onColor} />
