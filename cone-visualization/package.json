@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "npx serve@latest ./build -l 3000",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@heroui/react": "^3.0.2",
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "prettier": "^3.8.3",
     "tailwindcss": "^4.1.12",
     "typescript": "^6.0.2",
     "vitest": "^4.1.4"
