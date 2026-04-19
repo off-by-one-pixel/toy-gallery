@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input } from '@heroui/react';
+import { Alert, Button, Input } from '@heroui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
@@ -62,7 +62,9 @@ const LoginPage = () => {
                         />
                     </div>
                     {error && (
-                        <p className="text-xs text-red-600" role="alert">{error}</p>
+                        <Alert status="danger">
+                            <Alert.Description>{error}</Alert.Description>
+                        </Alert>
                     )}
                     <Button type="submit" fullWidth isDisabled={submitting} variant="primary">
                         {submitting ? 'Signing in…' : 'Sign in'}
