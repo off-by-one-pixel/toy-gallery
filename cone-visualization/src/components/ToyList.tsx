@@ -204,7 +204,7 @@ function Thumb({ toy }: { toy: Toy }) {
   };
   return (
     <div className="flex h-15 w-12 items-end justify-center rounded-md border border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa] p-1">
-      <Render toy={editorToy} scaleFactor={1} style={style} />
+      <Render toy={editorToy} scaleFactor={1} style={style} interactive={false} />
     </div>
   );
 }
