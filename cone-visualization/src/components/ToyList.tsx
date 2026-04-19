@@ -1,17 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import { Button, Chip } from '@heroui/react';
 import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 
+import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
+import { cycleSort, type Sort, type SortColumn } from '../services/sort';
 import { formatDim, type Dimension, type Unit } from '../services/units';
 import type { Toy } from '../services/api';
-
-type SortColumn = 'name' | 'insertable' | 'circumference' | 'length' | 'diameter';
-type SortDirection = 'asc' | 'desc';
 
 const DEFAULT_FILL = '#c7e4ee';
 
@@ -28,15 +26,6 @@ const HIDDEN_DIAMETER = 'hidden min-[900px]:block';
 const HIDDEN_LENGTH_HEADER = 'hidden min-[900px]:inline-flex';
 const HIDDEN_DIAMETER_HEADER = 'hidden min-[900px]:inline-flex';
 
-type SortAccessor = (toy: Toy) => number | string;
-const sortAccessors: Record<SortColumn, SortAccessor> = {
-  name: (t) => `${t.brand} ${t.name}`.toLowerCase(),
-  insertable: (t) => t.insertableLength?.mm ?? -Infinity,
-  circumference: (t) => t.circumference?.mm ?? -Infinity,
-  length: (t) => t.height.mm,
-  diameter: (t) => t.diameter.mm,
-};
-
 type Props = {
   toys: Toy[];
   openToyId: number | null;
@@ -47,35 +36,13 @@ type Props = {
 
 export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onDelete }: Props) {
   const { unit } = useUnit();
-  const [sort, setSort] = useState<{ column: SortColumn; direction: SortDirection } | null>(null);
-
-  const sortedToys = useMemo(() => {
-    if (!sort) return toys;
-    const { column, direction } = sort;
-    const accessor = sortAccessors[column];
-    const mul = direction === 'asc' ? 1 : -1;
-    return toys.slice().sort((a, b) => {
-      const av = accessor(a);
-      const bv = accessor(b);
-      if (av < bv) return -1 * mul;
-      if (av > bv) return 1 * mul;
-      return 0;
-    });
-  }, [toys, sort]);
-
-  const handleSort = (column: SortColumn) => {
-    setSort((cur) => {
-      if (cur?.column === column) {
-        return { column, direction: cur.direction === 'asc' ? 'desc' : 'asc' };
-      }
-      return { column, direction: 'asc' };
-    });
-  };
+  const { sort, setSort } = useSort();
+  const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
 
   return (
     <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
       <ListHeader sort={sort} onSort={handleSort} />
-      {sortedToys.map((toy) => (
+      {toys.map((toy) => (
         <ToyRow
           key={toy.id}
           toy={toy}
@@ -90,13 +57,7 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onDelet
   );
 }
 
-function ListHeader({
-  sort,
-  onSort,
-}: {
-  sort: { column: SortColumn; direction: SortDirection } | null;
-  onSort: (column: SortColumn) => void;
-}) {
+function ListHeader({ sort, onSort }: { sort: Sort | null; onSort: (column: SortColumn) => void }) {
   return (
     <div
       className={
@@ -140,7 +101,7 @@ function SortHeader({
 }: {
   label: string;
   column: SortColumn;
-  sort: { column: SortColumn; direction: SortDirection } | null;
+  sort: Sort | null;
   onSort: (column: SortColumn) => void;
   align?: 'right';
   className?: string;
