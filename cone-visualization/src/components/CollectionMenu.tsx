@@ -2,10 +2,11 @@
 
 import { useRef, useState } from 'react';
 import { Dropdown, Toast } from '@heroui/react';
-import { ChevronDown, Download, Upload } from 'lucide-react';
+import { ChevronDown, Download, LogOut, Upload } from 'lucide-react';
 
 import { downloadExport, importFromFile } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useAuth } from '../providers/AuthProvider';
 
 type Props = {
   onImported: () => void;
@@ -16,6 +17,7 @@ export default function CollectionMenu({ onImported, count }: Props) {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const runAction = useAsyncAction();
+  const { username, logout } = useAuth();
 
   const handleExport = () =>
     runAction(downloadExport, {
@@ -27,9 +29,7 @@ export default function CollectionMenu({ onImported, count }: Props) {
     runAction(() => importFromFile(file), {
       busy: setBusy,
       onSuccess: (result) => {
-        Toast.toast.success(
-          `Imported ${result.created} ${result.created === 1 ? 'toy' : 'toys'}`,
-        );
+        Toast.toast.success(`Imported ${result.created} ${result.created === 1 ? 'toy' : 'toys'}`);
         onImported();
       },
     });
@@ -38,9 +38,7 @@ export default function CollectionMenu({ onImported, count }: Props) {
     <>
       <Dropdown>
         <Dropdown.Trigger className="group inline-flex items-baseline gap-2 rounded-md px-1 -mx-1 text-left transition-colors hover:bg-neutral-200/60">
-          <span className="text-lg font-semibold tracking-tight text-neutral-900">
-            Toy Gallery
-          </span>
+          <span className="text-lg font-semibold tracking-tight text-neutral-900">Toy Gallery</span>
           {count != null && (
             <span className="text-sm font-normal text-neutral-500">
               {count} {count === 1 ? 'item' : 'items'}
@@ -68,6 +66,13 @@ export default function CollectionMenu({ onImported, count }: Props) {
                 description="Add toys from a JSON file"
               />
             </Dropdown.Item>
+            <Dropdown.Item id="logout" onAction={logout}>
+              <MenuRow
+                icon={<LogOut size={14} strokeWidth={1.8} />}
+                label="Sign out"
+                description={username ? `Signed in as ${username}` : 'End your session'}
+              />
+            </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown.Popover>
       </Dropdown>
@@ -87,15 +92,7 @@ export default function CollectionMenu({ onImported, count }: Props) {
   );
 }
 
-function MenuRow({
-  icon,
-  label,
-  description,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-}) {
+function MenuRow({ icon, label, description }: { icon: React.ReactNode; label: string; description: string }) {
   return (
     <span className="flex items-start gap-2.5">
       <span className="mt-0.5 text-neutral-500">{icon}</span>
