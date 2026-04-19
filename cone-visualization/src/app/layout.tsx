@@ -10,6 +10,7 @@ import { ViewModeProvider } from '../providers/ViewModeProvider';
 export const metadata: Metadata = {
   title: 'Toy Gallery',
   description: 'Toy Gallery',
+  icons: { icon: '/favicon.svg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
