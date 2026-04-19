@@ -44,7 +44,7 @@ export default function Home() {
       </div>
 
       <div className="h-[640px] overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <ToyEditor style={style} ref={ref} />
+        <ToyEditor style={style} ref={ref} unit={{ id: "mm", factor: 1, decimals: 0 }} />
       </div>
     </main>
   );
