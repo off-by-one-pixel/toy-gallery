@@ -1,7 +1,7 @@
 import type { CSSProperties, RefObject } from "react";
 import type { StyleOption, Toy } from "../toyMachine";
+import CapSection from "./CapSection";
 import Section from "./Section";
-import TopSection from "./TopSection";
 
 type Props = {
   toy: Toy;
@@ -96,18 +96,41 @@ export const Render = ({
         previousHeight = section.height;
         previousDiameter = currentDiameter;
         currentDiameter = section.diameter;
-        const sectionElement =
-          index === 0 ? (
-            <TopSection
+        const isFirst = index === 0;
+        const isLast = index === toy.sections.length - 1 && !isFirst;
+        const renderAsBottomCap = isLast && toy.bottomShape !== "flat";
+        let sectionElement;
+        if (isFirst) {
+          sectionElement = (
+            <CapSection
               section={section}
               scaleFactor={scaleFactor}
               totalWidth={maxDiameter}
               style={style}
               shape={toy.topShape}
+              orientation="top"
+              hasAdjacent={toy.sections.length > 1}
               onSelect={onSelect}
               interactive={interactive}
             />
-          ) : (
+          );
+        } else if (renderAsBottomCap) {
+          sectionElement = (
+            <CapSection
+              section={section}
+              scaleFactor={scaleFactor}
+              previousDiameter={previousDiameter}
+              totalWidth={maxDiameter}
+              style={style}
+              shape={toy.bottomShape}
+              orientation="bottom"
+              hasAdjacent
+              onSelect={onSelect}
+              interactive={interactive}
+            />
+          );
+        } else {
+          sectionElement = (
             <Section
               section={section}
               scaleFactor={scaleFactor}
@@ -118,6 +141,7 @@ export const Render = ({
               interactive={interactive}
             />
           );
+        }
         return (
           <g key={section.id} transform={`translate(0, ${yOffset * scaleFactor})`}>
             {sectionElement}
