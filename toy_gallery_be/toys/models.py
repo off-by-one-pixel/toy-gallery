@@ -9,16 +9,25 @@ if TYPE_CHECKING:
 class Shape(models.Model):
     EGG = "EGG"
     CONE = "CONE"
+    SPIKE = "SPIKE"
+    FLAT = "FLAT"
 
-    TOP_SHAPE_CHOICES = [
+    CAP_SHAPE_CHOICES = [
+        (FLAT, "Flat"),
         (EGG, "Egg"),
         (CONE, "Cone"),
+        (SPIKE, "Spike"),
     ]
 
     top_section_shape = models.CharField(
         max_length=16,
-        choices=TOP_SHAPE_CHOICES,
+        choices=CAP_SHAPE_CHOICES,
         default=EGG,
+    )
+    bottom_section_shape = models.CharField(
+        max_length=16,
+        choices=CAP_SHAPE_CHOICES,
+        default=FLAT,
     )
 
     if TYPE_CHECKING:

@@ -77,6 +77,7 @@ class ExportV1(ExportVersion):
             "insertable_length": toy.insertable_length,
             "shape": {
                 "top_section_shape": toy.shape.top_section_shape,
+                "bottom_section_shape": toy.shape.bottom_section_shape,
                 "sections": [
                     {
                         "order": s.order,

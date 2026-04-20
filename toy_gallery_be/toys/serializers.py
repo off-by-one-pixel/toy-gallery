@@ -26,7 +26,7 @@ class ToyShapeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Shape
-        fields = ["top_section_shape", "sections"]
+        fields = ["top_section_shape", "bottom_section_shape", "sections"]
 
     def validate_sections(self, sections):
         if not any(s.get("circumference") is not None for s in sections):
