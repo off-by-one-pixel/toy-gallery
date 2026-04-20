@@ -114,7 +114,7 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   getToy: () => ({
     sections: get().sections,
     topShape: get().topShape,
-    bottomShape: "flat",
+    bottomShape: get().bottomShape,
     ref: get().ref,
   }),
   setDiameter: (id, diameter) => {
