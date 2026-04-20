@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
 import { Plus } from 'lucide-react';
-import { deleteToy, fetchCones, type Toy } from '../services/api';
+import { deleteToy, fetchCones } from '../services/api';
+import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
@@ -16,7 +17,7 @@ import ToyList from './ToyList';
 import UnitToggle from './UnitToggle';
 import ViewToggle from './ViewToggle';
 
-export type { Toy } from '../services/api';
+export type { Toy } from '../services/types';
 
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy };
 

@@ -1,4 +1,4 @@
-import type { Toy } from './api';
+import type { Toy } from './types';
 
 export type SortColumn = 'name' | 'insertable' | 'circumference' | 'length' | 'diameter';
 export type SortDirection = 'asc' | 'desc';

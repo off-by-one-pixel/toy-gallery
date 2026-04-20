@@ -6,7 +6,7 @@ import type { Toy as EditorToy } from 'cone-editor';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useUnit } from '../providers/UnitProvider';
 import { formatDim, type Dimension, type Unit } from '../services/units';
-import type { Toy } from '../services/api';
+import type { Toy } from '../services/types';
 
 type Props = {
   toy: Toy;
