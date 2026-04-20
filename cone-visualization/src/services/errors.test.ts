@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { APIError } from './api';
+import { APIError } from './types';
 import { formatError } from './errors';
 
 const apiError = (status: number, data: unknown, message = 'API request failed') =>

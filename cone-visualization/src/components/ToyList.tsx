@@ -9,7 +9,7 @@ import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
 import { formatDim, type Dimension, type Unit } from '../services/units';
-import type { Toy } from '../services/api';
+import type { Toy } from '../services/types';
 
 const DEFAULT_FILL = '#c7e4ee';
 

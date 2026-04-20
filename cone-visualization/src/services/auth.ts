@@ -1,16 +1,11 @@
-import {
-  login as apiLogin,
-  refreshTokens as apiRefresh,
-  setAuthContext,
-  type AuthContext,
-  type TokenPair,
-} from './api';
+import { login as apiLogin, refreshTokens as apiRefresh, setAuthContext } from './api';
+import type { AuthContext, TokenPair } from './types';
 
 const ACCESS_KEY = 'auth.access';
 const REFRESH_KEY = 'auth.refresh';
 const USERNAME_KEY = 'auth.username';
 
-export type { TokenPair } from './api';
+export type { TokenPair } from './types';
 
 const isBrowser = () => typeof window !== 'undefined';
 
