@@ -68,6 +68,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
 
   const sections = useToyStore((s) => s.sections);
   const topShape = useToyStore((s) => s.topShape);
+  const bottomShape = useToyStore((s) => s.bottomShape);
   const setCircumference = useToyStore((s) => s.setCircumference);
   const getTotalHeight = useToyStore((s) => s.getTotalHeight);
   const getMaxWidth = useToyStore((s) => s.getMaxWidth);
@@ -120,6 +121,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       color,
       insertableLength: insertableLengthMm,
       topShape,
+      bottomShape,
       sections,
     };
     await runAction(() => (mode.kind === 'edit' ? replaceToy(mode.toy.id, payload) : createToy(payload)), {
