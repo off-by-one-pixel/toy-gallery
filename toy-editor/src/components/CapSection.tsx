@@ -19,6 +19,65 @@ type Props = {
   hasAdjacent?: boolean;
 };
 
+type CapGeometry = {
+  diameter: number;
+  /** y of the base edge — where the cap meets the adjacent body section. */
+  baseY: number;
+  /** y of the apex — the tip of the cap. */
+  apexY: number;
+  /** Omit the closing `Z` so the base edge isn't double-stroked by the
+   *  adjacent body section. */
+  openBase: boolean;
+};
+
+type ShapeRenderer = (g: CapGeometry) => string;
+
+const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+
+const renderFlat: ShapeRenderer = ({ diameter, baseY, apexY }) =>
+  `M 0 ${baseY} L ${diameter} ${baseY} L ${diameter} ${apexY} L 0 ${apexY} Z`;
+
+// Symmetric cubic with both inner control points at y = cpY. For such a
+// curve the apex reaches y = baseY/4 + 3·cpY/4, so to land it on apexY we
+// need cpY = lerp(baseY, apexY, 4/3) — the CPs sit *past* the apex on
+// purpose (otherwise the curve bottoms out 25% short of apexY).
+const renderEgg: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
+  const cpY = lerp(baseY, apexY, 4 / 3);
+  const close = openBase ? "" : " Z";
+  return `M 0 ${baseY} C 0 ${cpY} ${diameter} ${cpY} ${diameter} ${baseY}${close}`;
+};
+
+// Same apex math as egg, but both CPs collapse onto the centerline (x = r),
+// which pulls the silhouette toward a cone profile.
+const renderCone: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
+  const r = diameter / 2;
+  const cpY = lerp(baseY, apexY, 4 / 3);
+  const close = openBase ? "" : " Z";
+  return `M 0 ${baseY} C ${r} ${cpY} ${r} ${cpY} ${diameter} ${baseY}${close}`;
+};
+
+// Two cubics meeting at the apex (r, apexY). Side CPs sit 15% of the way
+// from the base toward the apex, pulled toward the center axis (0.4r / 1.6r)
+// so the sides bow inward (concave). Apex CPs sit on the apex line so the
+// tangents at the tip are horizontal — slightly rounded apex.
+const renderSpike: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
+  const r = diameter / 2;
+  const sideCpY = lerp(baseY, apexY, 0.15);
+  const close = openBase ? "" : " Z";
+  return (
+    `M 0 ${baseY} ` +
+    `C ${r * 0.4} ${sideCpY} ${r * 0.78} ${apexY} ${r} ${apexY} ` +
+    `C ${r * 1.22} ${apexY} ${r * 1.6} ${sideCpY} ${diameter} ${baseY}${close}`
+  );
+};
+
+const shapeRenderers: Record<Shape, ShapeRenderer> = {
+  flat: renderFlat,
+  egg: renderEgg,
+  cone: renderCone,
+  spike: renderSpike,
+};
+
 const capPath = (
   shape: Shape,
   orientation: Orientation,
@@ -26,35 +85,15 @@ const capPath = (
   h: number,
   openAdjacentEdge: boolean,
 ): string => {
-  const r = diameter / 2;
-  if (shape === "flat") {
-    return `M 0 0 L ${diameter} 0 L ${diameter} ${h} L 0 ${h} Z`;
-  }
-  if (orientation === "top") {
-    // Top cap always closes; the next section below re-strokes its own top edge,
-    // but keeping both avoids missing/dim outlines at the junction.
-    if (shape === "egg") return `M 0 ${h} C 0 0 ${diameter} 0 ${diameter} ${h} Z`;
-    if (shape === "cone") return `M 0 ${h} C ${r} 0 ${r} 0 ${diameter} ${h} Z`;
-    // Spike: control points pulled toward the center axis so the sides bow
-    // inward (concave); cp2/cp1 at the apex sit on y=0 so tangents are
-    // horizontal at the tip, giving a slightly rounded apex.
-    const leftCp1 = `${r * 0.4} ${h * 0.85}`;
-    const leftCp2 = `${r * 0.78} 0`;
-    const rightCp1 = `${r * 1.22} 0`;
-    const rightCp2 = `${r * 1.6} ${h * 0.85}`;
-    return `M 0 ${h} C ${leftCp1} ${leftCp2} ${r} 0 C ${rightCp1} ${rightCp2} ${diameter} ${h} Z`;
-  }
-  // Bottom cap: omit the closing `Z` on the top edge (touching the section
-  // above) so the junction isn't double-stroked. Fill still auto-closes.
-  const close = openAdjacentEdge ? "" : " Z";
-  if (shape === "egg") return `M 0 0 C 0 ${h} ${diameter} ${h} ${diameter} 0${close}`;
-  if (shape === "cone") return `M 0 0 C ${r} ${h} ${r} ${h} ${diameter} 0${close}`;
-  // Spike (bottom): mirrored.
-  const leftCp1 = `${r * 0.4} ${h * 0.15}`;
-  const leftCp2 = `${r * 0.78} ${h}`;
-  const rightCp1 = `${r * 1.22} ${h}`;
-  const rightCp2 = `${r * 1.6} ${h * 0.15}`;
-  return `M 0 0 C ${leftCp1} ${leftCp2} ${r} ${h} C ${rightCp1} ${rightCp2} ${diameter} 0${close}`;
+  const isTop = orientation === "top";
+  // Top caps always close at the base — the junction with the section below
+  // gets re-stroked but that avoids missing/dim outlines.
+  return shapeRenderers[shape]({
+    diameter,
+    baseY: isTop ? h : 0,
+    apexY: isTop ? 0 : h,
+    openBase: !isTop && openAdjacentEdge,
+  });
 };
 
 const CapSection = ({
