@@ -221,6 +221,7 @@ export interface ToyPayload {
   color: string;
   insertableLength: number | null;
   topShape: string;
+  bottomShape: string;
   sections: Section[];
 }
 
@@ -232,6 +233,7 @@ const transformToyForAPI = (toy: ToyPayload) => ({
   insertable_length: toy.insertableLength,
   shape: {
     top_section_shape: toy.topShape.toUpperCase(),
+    bottom_section_shape: toy.bottomShape.toUpperCase(),
     sections: toy.sections.map((s, idx) => ({
       order: idx,
       height: parseFloat(String(s.height)),
