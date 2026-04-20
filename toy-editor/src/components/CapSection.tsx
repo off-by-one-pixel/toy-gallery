@@ -33,8 +33,11 @@ const capPath = (
   if (orientation === "top") {
     // Top cap always closes; the next section below re-strokes its own top edge,
     // but keeping both avoids missing/dim outlines at the junction.
-    if (shape === "egg") return `M 0 ${h} C 0 0 ${diameter} 0 ${diameter} ${h} Z`;
-    if (shape === "cone") return `M 0 ${h} C ${r} 0 ${r} 0 ${diameter} ${h} Z`;
+    // Inner control-point y of -h/3 sits outside the cap's box on purpose:
+    // for a symmetric cubic this is what makes the apex actually reach y=0
+    // (otherwise it bottoms out at h/4, leaving the cap 25% short).
+    if (shape === "egg") return `M 0 ${h} C 0 ${-h / 3} ${diameter} ${-h / 3} ${diameter} ${h} Z`;
+    if (shape === "cone") return `M 0 ${h} C ${r} ${-h / 3} ${r} ${-h / 3} ${diameter} ${h} Z`;
     // Spike: control points pulled toward the center axis so the sides bow
     // inward (concave); cp2/cp1 at the apex sit on y=0 so tangents are
     // horizontal at the tip, giving a slightly rounded apex.
@@ -47,8 +50,8 @@ const capPath = (
   // Bottom cap: omit the closing `Z` on the top edge (touching the section
   // above) so the junction isn't double-stroked. Fill still auto-closes.
   const close = openAdjacentEdge ? "" : " Z";
-  if (shape === "egg") return `M 0 0 C 0 ${h} ${diameter} ${h} ${diameter} 0${close}`;
-  if (shape === "cone") return `M 0 0 C ${r} ${h} ${r} ${h} ${diameter} 0${close}`;
+  if (shape === "egg") return `M 0 0 C 0 ${(4 * h) / 3} ${diameter} ${(4 * h) / 3} ${diameter} 0${close}`;
+  if (shape === "cone") return `M 0 0 C ${r} ${(4 * h) / 3} ${r} ${(4 * h) / 3} ${diameter} 0${close}`;
   // Spike (bottom): mirrored.
   const leftCp1 = `${r * 0.4} ${h * 0.15}`;
   const leftCp2 = `${r * 0.78} ${h}`;
