@@ -8,8 +8,10 @@ import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
+import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
 import CollectionMenu from './CollectionMenu';
+import SearchInput from './SearchInput';
 import SortControl from './SortControl';
 import ToyCard from './ToyCard';
 import ToyEditModal from './ToyEditModal';
@@ -28,9 +30,13 @@ const ConeList = () => {
   const [lastChanged, setLastChanged] = useState(0);
   const [editorMode, setEditorMode] = useState<EditorMode>({ kind: 'closed' });
   const [openCardId, setOpenCardId] = useState<number | null>(null);
+  const [query, setQuery] = useState('');
   const { view } = useViewMode();
   const { sort } = useSort();
-  const sortedCones = useMemo(() => sortToys(cones, sort), [cones, sort]);
+  const sortedCones = useMemo(
+    () => sortToys(filterToys(cones, query), sort),
+    [cones, sort, query],
+  );
 
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
@@ -63,10 +69,15 @@ const ConeList = () => {
   return (
     <>
       <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
+        <div className="relative mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
           <h1 className="m-0">
             <CollectionMenu onImported={updateLastChanged} count={isLoading ? null : cones.length} />
           </h1>
+          <div className="pointer-events-none absolute left-1/2 -translate-x-1/2">
+            <div className="pointer-events-auto">
+              <SearchInput value={query} onChange={setQuery} />
+            </div>
+          </div>
           <div className="flex-1" />
           <ViewToggle />
           <UnitToggle />
