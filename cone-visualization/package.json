@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "A React application for visualizing a cone based on specified measurements.",
   "scripts": {
+    "codegen": "orval --config orval.config.ts",
+    "predev": "npm run codegen",
     "dev": "next dev --webpack",
+    "prebuild": "npm run codegen",
     "build": "next build",
     "start": "npx serve@latest ./build -l 3000",
+    "pretest": "npm run codegen",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
@@ -26,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "orval": "^8.8.1",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.1.12",
     "typescript": "^6.0.2",

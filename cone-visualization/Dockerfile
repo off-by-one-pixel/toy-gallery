@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1.7
 
+# Build context: repo root. Invoke with:
+#   docker build -f cone-visualization/Dockerfile .
+
 # ----- Stage 1: fetch + build cone_editor (the library) ------------------
 FROM node:22-alpine AS cone_editor
 WORKDIR /cone_editor
@@ -10,13 +13,17 @@ RUN git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git . \
 
 # ----- Stage 2: install + build the Next.js app -------------------------
 FROM node:22-alpine AS builder
-# Place the built cone_editor at the sibling path the app's package.json
-# expects: `file:../cone_editor`, and /app/../cone_editor = /cone_editor.
-COPY --from=cone_editor /cone_editor /cone_editor
-WORKDIR /app
-COPY package.json package-lock.json ./
+# The Next.js app's package.json has `cone-editor: file:../cone_editor`.
+# Preserve the sibling layout under /workspace/.
+COPY --from=cone_editor /cone_editor /workspace/cone_editor
+WORKDIR /workspace/cone-visualization
+COPY cone-visualization/package.json cone-visualization/package-lock.json ./
 RUN npm ci
-COPY . .
+COPY cone-visualization/ ./
+# The orval config reads `../toy_gallery_be/schema.yml`. Bring just that file
+# into the builder so the generated SDK is always regenerated from the
+# committed schema at image-build time.
+COPY toy_gallery_be/schema.yml /workspace/toy_gallery_be/schema.yml
 RUN npm run build
 
 # ----- Stage 3: runtime (serves the static export) ----------------------
@@ -24,8 +31,8 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache curl \
  && npm install -g serve@14.2.4
-# next.config.ts sets distDir: 'build', so the static export lands in /app/build.
-COPY --from=builder /app/build ./build
+# next.config.ts sets distDir: 'build', so the static export lands in build/.
+COPY --from=builder /workspace/cone-visualization/build ./build
 ENV PORT=3000
 EXPOSE 3000
 CMD ["sh", "-c", "serve build -l tcp://0.0.0.0:${PORT}"]

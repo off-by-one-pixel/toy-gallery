@@ -1,0 +1,538 @@
+openapi: 3.0.3
+info:
+  title: Toy Gallery API
+  version: 1.0.0
+paths:
+  /toys/token/:
+    post:
+      operationId: toys_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /toys/token/refresh/:
+    post:
+      operationId: toys_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /toys/toys/:
+    get:
+      operationId: toys_toys_list
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Toy'
+          description: ''
+    post:
+      operationId: toys_toys_create
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ToyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ToyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Toy'
+          description: ''
+  /toys/toys/{id}/:
+    get:
+      operationId: toys_toys_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this toy.
+        required: true
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Toy'
+          description: ''
+    put:
+      operationId: toys_toys_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this toy.
+        required: true
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ToyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ToyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Toy'
+          description: ''
+    patch:
+      operationId: toys_toys_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this toy.
+        required: true
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedToyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedToyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedToyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Toy'
+          description: ''
+    delete:
+      operationId: toys_toys_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this toy.
+        required: true
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /toys/toys/export/:
+    get:
+      operationId: toys_toys_export_retrieve
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportEnvelope'
+          description: ''
+  /toys/toys/import/:
+    post:
+      operationId: toys_toys_import_create
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportEnvelopeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExportEnvelopeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExportEnvelopeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportSummary'
+          description: ''
+components:
+  schemas:
+    ExportEnvelope:
+      type: object
+      properties:
+        version:
+          type: integer
+        exported_at:
+          type: string
+        toys:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - exported_at
+      - toys
+      - version
+    ExportEnvelopeRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+        exported_at:
+          type: string
+          minLength: 1
+        toys:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - exported_at
+      - toys
+      - version
+    ImportSummary:
+      type: object
+      properties:
+        created:
+          type: integer
+      required:
+      - created
+    PatchedToyRequest:
+      type: object
+      properties:
+        brand:
+          type: string
+          minLength: 1
+          maxLength: 255
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        shape:
+          $ref: '#/components/schemas/ToyShapeRequest'
+        size:
+          type: string
+          minLength: 1
+          maxLength: 100
+        date_purchased:
+          type: string
+          format: date
+          nullable: true
+        retired:
+          type: boolean
+        color:
+          type: string
+          nullable: true
+          maxLength: 50
+        insertable_length:
+          type: number
+          format: double
+          nullable: true
+    SectionShapeEnum:
+      enum:
+      - FLAT
+      - EGG
+      - CONE
+      - SPIKE
+      type: string
+      description: |-
+        * `FLAT` - Flat
+        * `EGG` - Egg
+        * `CONE` - Cone
+        * `SPIKE` - Spike
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Toy:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        brand:
+          type: string
+          maxLength: 255
+        name:
+          type: string
+          maxLength: 255
+        shape:
+          $ref: '#/components/schemas/ToyShape'
+        diameter:
+          type: number
+          format: double
+          readOnly: true
+        height:
+          type: number
+          format: double
+          readOnly: true
+        circumference:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        size:
+          type: string
+          maxLength: 100
+        date_purchased:
+          type: string
+          format: date
+          nullable: true
+        retired:
+          type: boolean
+        color:
+          type: string
+          nullable: true
+          maxLength: 50
+        insertable_length:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - brand
+      - circumference
+      - diameter
+      - height
+      - id
+      - name
+      - shape
+      - size
+    ToyRequest:
+      type: object
+      properties:
+        brand:
+          type: string
+          minLength: 1
+          maxLength: 255
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        shape:
+          $ref: '#/components/schemas/ToyShapeRequest'
+        size:
+          type: string
+          minLength: 1
+          maxLength: 100
+        date_purchased:
+          type: string
+          format: date
+          nullable: true
+        retired:
+          type: boolean
+        color:
+          type: string
+          nullable: true
+          maxLength: 50
+        insertable_length:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - brand
+      - name
+      - shape
+      - size
+    ToyShape:
+      type: object
+      properties:
+        top_section_shape:
+          $ref: '#/components/schemas/SectionShapeEnum'
+        bottom_section_shape:
+          $ref: '#/components/schemas/SectionShapeEnum'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToyShapeSection'
+      required:
+      - sections
+    ToyShapeRequest:
+      type: object
+      properties:
+        top_section_shape:
+          $ref: '#/components/schemas/SectionShapeEnum'
+        bottom_section_shape:
+          $ref: '#/components/schemas/SectionShapeEnum'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToyShapeSectionRequest'
+      required:
+      - sections
+    ToyShapeSection:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        height:
+          type: number
+          format: double
+        diameter:
+          type: number
+          format: double
+        circumference:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - diameter
+      - height
+      - id
+      - order
+    ToyShapeSectionRequest:
+      type: object
+      properties:
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        height:
+          type: number
+          format: double
+        diameter:
+          type: number
+          format: double
+        circumference:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - diameter
+      - height
+      - order
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

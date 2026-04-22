@@ -62,12 +62,6 @@ class DimensionsShapeTests(TestCase):
         self.assertEqual(Dimensions.shape_height(self.shape), 70)
         self.assertEqual(Dimensions.shape_diameter(self.shape), 90)
 
-    def test_to_dual_rounds_and_handles_none(self):
-        self.assertIsNone(Dimensions.to_dual(None))
-        self.assertEqual(Dimensions.to_dual(254), {"mm": 254.0, "in": 10.0})
-        self.assertEqual(Dimensions.to_dual(170), {"mm": 170.0, "in": 6.693})
-
-
 class ToyCreateTests(TestCase):
     def setUp(self):
         user = User.objects.create_user(username="u", password="p")
@@ -81,8 +75,8 @@ class ToyCreateTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(response.data["insertable_length"], {"mm": 170.0, "in": 6.693})
-        self.assertEqual(response.data["circumference"], {"mm": 220.0, "in": 8.661})
+        self.assertEqual(response.data["insertable_length"], 170)
+        self.assertEqual(response.data["circumference"], 220.0)
 
     def test_create_rejects_when_no_section_has_circumference(self):
         response = self.client.post(
@@ -93,7 +87,7 @@ class ToyCreateTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("sections", str(response.content))
 
-    def test_response_wraps_every_dimension_in_mm_in(self):
+    def test_response_has_scalar_mm_dimensions(self):
         response = self.client.post(
             "/toys/toys/",
             _payload(section_circumferences=(None, 220.0, None)),
@@ -101,30 +95,13 @@ class ToyCreateTests(TestCase):
         )
         self.assertEqual(response.status_code, 201, response.content)
         data = response.data
-        # Toy-level derived dims
         for field in ("height", "diameter", "circumference", "insertable_length"):
-            self.assertIsInstance(data[field], dict, field)
-            self.assertIn("mm", data[field])
-            self.assertIn("in", data[field])
-        # Each section
+            self.assertIsInstance(data[field], (int, float), field)
         for section in data["shape"]["sections"]:
             for field in ("height", "diameter"):
-                self.assertIsInstance(section[field], dict, field)
-                self.assertIn("mm", section[field])
-                self.assertIn("in", section[field])
-        # Null sections circumference stays null (not wrapped)
+                self.assertIsInstance(section[field], (int, float), field)
         null_sections = [s for s in data["shape"]["sections"] if s["circumference"] is None]
         self.assertTrue(null_sections)
-
-    def test_mm_inches_conversion(self):
-        response = self.client.post(
-            "/toys/toys/",
-            _payload(section_circumferences=(None, 254.0, None)),
-            format="json",
-        )
-        self.assertEqual(response.status_code, 201, response.content)
-        # 254 mm = exactly 10 inches
-        self.assertEqual(response.data["circumference"], {"mm": 254.0, "in": 10.0})
 
 
 class ExportRegistryTests(TestCase):

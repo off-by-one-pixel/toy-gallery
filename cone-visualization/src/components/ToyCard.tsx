@@ -5,8 +5,8 @@ import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useUnit } from '../providers/UnitProvider';
-import { formatDim, type Dimension, type Unit } from '../services/units';
-import type { Toy } from '../services/types';
+import { formatValue, type Unit } from '../services/units';
+import { SectionShape, type Toy } from '../services/types';
 
 type Props = {
   toy: Toy;
@@ -29,9 +29,9 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   };
 
   const editorToy: EditorToy = {
-    sections: toy.sections,
-    topShape: toy.topShape,
-    bottomShape: toy.bottomShape,
+    sections: toy.shape.sections,
+    topShape: toy.shape.topSectionShape ?? SectionShape.FLAT,
+    bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
   };
 
   return (
@@ -102,8 +102,8 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         }
         onClick={(e) => e.stopPropagation()}
       >
-        <AttrRow label="Length" value={`${formatDim(toy.height, unit)} ${unit.id}`} />
-        <AttrRow label="Diameter" value={`${formatDim(toy.diameter, unit)} ${unit.id}`} />
+        <AttrRow label="Length" value={`${formatValue(toy.height, unit)} ${unit.id}`} />
+        <AttrRow label="Diameter" value={`${formatValue(toy.diameter, unit)} ${unit.id}`} />
       </div>
     </article>
   );
@@ -116,14 +116,14 @@ function Metric({
   bordered,
 }: {
   label: string;
-  value: Dimension | null;
+  value: number | null | undefined;
   unit: Unit;
   bordered?: boolean;
 }) {
   return (
     <div className={bordered ? 'pl-3 border-l border-neutral-200' : ''}>
       <div className="text-[22px] font-semibold leading-none tracking-tight text-neutral-900 tabular-nums">
-        {formatDim(value, unit)}
+        {formatValue(value, unit)}
         {value != null && <span className="ml-0.5 text-xs font-medium text-neutral-500">{unit.id}</span>}
       </div>
       <div className="mt-1 text-[10px] uppercase tracking-wider text-neutral-400">{label}</div>

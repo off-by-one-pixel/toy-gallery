@@ -4,20 +4,20 @@ export type SortColumn = 'name' | 'insertable' | 'circumference' | 'length' | 'd
 export type SortDirection = 'asc' | 'desc';
 export type Sort = { column: SortColumn; direction: SortDirection };
 
-export const sortColumns: { id: SortColumn; label: string }[] = [
-  { id: 'name', label: 'Brand / Model' },
-  { id: 'insertable', label: 'Insertable' },
-  { id: 'circumference', label: 'Circumference' },
-  { id: 'length', label: 'Length' },
-  { id: 'diameter', label: 'Diameter' },
+export const sortColumns: readonly SortColumn[] = [
+  'name',
+  'insertable',
+  'circumference',
+  'length',
+  'diameter',
 ];
 
 const accessors: Record<SortColumn, (t: Toy) => number | string> = {
   name: (t) => `${t.brand} ${t.name}`.toLowerCase(),
-  insertable: (t) => t.insertableLength?.mm ?? -Infinity,
-  circumference: (t) => t.circumference?.mm ?? -Infinity,
-  length: (t) => t.height.mm,
-  diameter: (t) => t.diameter.mm,
+  insertable: (t) => t.insertableLength ?? -Infinity,
+  circumference: (t) => t.circumference ?? -Infinity,
+  length: (t) => t.height,
+  diameter: (t) => t.diameter,
 };
 
 export const sortToys = (toys: Toy[], sort: Sort | null): Toy[] => {

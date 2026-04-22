@@ -37,3 +37,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# openapi SDK (regenerated via `npm run codegen`)
+src/services/generated/
