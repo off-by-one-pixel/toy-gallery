@@ -7,14 +7,11 @@ export const setAuthContext = (ctx: AuthContext | null): void => {
   authContext = ctx;
 };
 
-const UNAUTHENTICATED_PATHS = ['/toys/token/', '/toys/token/refresh/'];
-
-const isUnauthenticated = (path: string): boolean => UNAUTHENTICATED_PATHS.some((p) => path.startsWith(p));
-
 const attachAuth = (init: RequestInit): RequestInit => {
-  const headers = new Headers(init.headers);
   const token = authContext?.getAccessToken();
-  if (token) headers.set('Authorization', `Bearer ${token}`);
+  if (!token) return init;
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${token}`);
   return { ...init, headers };
 };
 
@@ -44,11 +41,8 @@ const toError = async (response: Response): Promise<APIError> => {
  * generated code expects a `{ data, status, headers }` envelope back.
  */
 export const customFetch = async <T>(url: string, options: RequestInit): Promise<T> => {
-  const absoluteUrl = url.startsWith('http') ? url : `${API_CONFIG.baseUrl}${url}`;
-  const path = url.startsWith('http') ? new URL(url).pathname : url.split('?')[0];
-  const shouldAuth = !isUnauthenticated(path);
-
-  const doFetch = () => fetch(absoluteUrl, shouldAuth ? attachAuth(options) : options);
+  const target = new URL(url, API_CONFIG.baseUrl);
+  const doFetch = () => fetch(target, attachAuth(options));
 
   let response: Response;
   try {
@@ -57,7 +51,7 @@ export const customFetch = async <T>(url: string, options: RequestInit): Promise
     throw new APIError('Network error', 0, error);
   }
 
-  if (shouldAuth && response.status === 401 && authContext) {
+  if (response.status === 401 && authContext) {
     const newAccess = await authContext.onUnauthorized();
     if (newAccess) {
       try {
