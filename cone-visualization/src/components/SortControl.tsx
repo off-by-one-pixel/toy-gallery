@@ -3,12 +3,13 @@
 import { Dropdown } from '@heroui/react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 
+import { SORT_COLUMN_LABEL } from '../labels';
 import { useSort } from '../providers/SortProvider';
-import { cycleSort, sortColumns, type SortColumn } from '../services/sort';
+import { cycleSort, sortColumns } from '../services/sort';
 
 export default function SortControl() {
   const { sort, setSort } = useSort();
-  const activeLabel = sort ? sortColumns.find((c) => c.id === sort.column)?.label : 'Sort';
+  const activeLabel = sort ? SORT_COLUMN_LABEL[sort.column] : 'Sort';
   const DirArrow = sort?.direction === 'desc' ? ArrowDown : ArrowUp;
 
   const flipDirection = () => {
@@ -25,9 +26,12 @@ export default function SortControl() {
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom end">
           <Dropdown.Menu selectedKeys={sort ? [sort.column] : []}>
-            {sortColumns.map((c) => (
-              <Dropdown.Item key={c.id} id={c.id} onAction={() => setSort(cycleSort(sort, c.id as SortColumn))}>
-                <SortRow label={c.label} direction={sort?.column === c.id ? sort.direction : null} />
+            {sortColumns.map((column) => (
+              <Dropdown.Item key={column} id={column} onAction={() => setSort(cycleSort(sort, column))}>
+                <SortRow
+                  label={SORT_COLUMN_LABEL[column]}
+                  direction={sort?.column === column ? sort.direction : null}
+                />
               </Dropdown.Item>
             ))}
           </Dropdown.Menu>

@@ -5,6 +5,7 @@ import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 
+import { SHAPE_LABEL } from '../labels';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
@@ -259,7 +260,7 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 pl-18 text-xs min-[640px]:px-5 min-[640px]:pl-19 min-[900px]:pl-21">
       <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Top shape</dt>
-        <dd className="text-neutral-900">{toy.shape.topSectionShape === SectionShape.EGG ? 'Egg' : 'Cone'}</dd>
+        <dd className="text-neutral-900">{SHAPE_LABEL[toy.shape.topSectionShape ?? SectionShape.FLAT]}</dd>
 
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Color</dt>
         <dd className="inline-flex items-center gap-2 text-neutral-900">
@@ -279,7 +280,7 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
             ))}
             <span className="text-neutral-400">+</span>
             <span className="italic text-neutral-500 col-span-4">
-              {toy.shape.topSectionShape === SectionShape.EGG ? 'Egg' : 'Cone'} cap
+              {SHAPE_LABEL[toy.shape.topSectionShape ?? SectionShape.FLAT]} cap
             </span>
           </div>
         </dd>

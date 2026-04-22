@@ -4,12 +4,12 @@ export type SortColumn = 'name' | 'insertable' | 'circumference' | 'length' | 'd
 export type SortDirection = 'asc' | 'desc';
 export type Sort = { column: SortColumn; direction: SortDirection };
 
-export const sortColumns: { id: SortColumn; label: string }[] = [
-  { id: 'name', label: 'Brand / Model' },
-  { id: 'insertable', label: 'Insertable' },
-  { id: 'circumference', label: 'Circumference' },
-  { id: 'length', label: 'Length' },
-  { id: 'diameter', label: 'Diameter' },
+export const sortColumns: readonly SortColumn[] = [
+  'name',
+  'insertable',
+  'circumference',
+  'length',
+  'diameter',
 ];
 
 const accessors: Record<SortColumn, (t: Toy) => number | string> = {
