@@ -98,7 +98,7 @@ export const Render = ({
         currentDiameter = section.diameter;
         const isFirst = index === 0;
         const isLast = index === toy.sections.length - 1 && !isFirst;
-        const renderAsBottomCap = isLast && toy.bottomShape !== "flat";
+        const renderAsBottomCap = isLast && toy.bottomShape !== "FLAT";
         let sectionElement;
         if (isFirst) {
           sectionElement = (

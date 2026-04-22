@@ -15,7 +15,7 @@ export interface ToySection {
   circumference?: number | null;
 }
 
-export type Shape = "cone" | "egg" | "flat" | "spike";
+export type Shape = "CONE" | "EGG" | "FLAT" | "SPIKE";
 
 export interface Toy {
   sections: ToySection[];
@@ -58,8 +58,8 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     color: "lightblue",
   },
   scaleFactor: 1,
-  topShape: "cone",
-  bottomShape: "flat",
+  topShape: "CONE",
+  bottomShape: "FLAT",
   ref: undefined,
   nextId: 1,
   selectedId: null,

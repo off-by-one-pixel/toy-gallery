@@ -5,10 +5,10 @@ import { useToyStore } from "../toyMachine";
 import { useEditorUnit } from "./unit";
 
 const CAP_SHAPES: { id: Shape; label: string; glyph: string }[] = [
-  { id: "flat", label: "Flat", glyph: "▬" },
-  { id: "egg", label: "Egg", glyph: "◒" },
-  { id: "cone", label: "Cone", glyph: "△" },
-  { id: "spike", label: "Spike", glyph: "▲" },
+  { id: "FLAT", label: "Flat", glyph: "▬" },
+  { id: "EGG", label: "Egg", glyph: "◒" },
+  { id: "CONE", label: "Cone", glyph: "△" },
+  { id: "SPIKE", label: "Spike", glyph: "▲" },
 ];
 
 type ShapeRadioProps = {
@@ -104,7 +104,7 @@ const EditorControls = () => {
             const isShapedBottomCap =
               index === toy.sections.length - 1 &&
               toy.sections.length > 1 &&
-              toy.bottomShape !== "flat";
+              toy.bottomShape !== "FLAT";
             const selected = toy.selectedId === section.id;
             const rowClasses = ["cone-editor-section"];
             if (selected) rowClasses.push("cone-editor-section-selected");

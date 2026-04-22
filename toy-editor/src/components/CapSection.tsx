@@ -72,10 +72,10 @@ const renderSpike: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
 };
 
 const shapeRenderers: Record<Shape, ShapeRenderer> = {
-  flat: renderFlat,
-  egg: renderEgg,
-  cone: renderCone,
-  spike: renderSpike,
+  FLAT: renderFlat,
+  EGG: renderEgg,
+  CONE: renderCone,
+  SPIKE: renderSpike,
 };
 
 const capPath = (
