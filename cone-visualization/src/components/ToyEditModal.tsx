@@ -7,7 +7,7 @@ import { Alert, Button, ColorSwatchPicker, Modal, NumberField, useOverlayState }
 import TextInput from './TextInput';
 import { ArrowLeft } from 'lucide-react';
 import { createToy, replaceToy } from '../services/api';
-import type { Toy, ToyPayload } from '../services/types';
+import { SectionShape, type Toy, type ToyPayload } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
 import { Unit, formatValue, fromMm, toMm } from '../services/units';
@@ -36,8 +36,8 @@ const NEW_TOY_MM: EditorToy = {
     { id: 1, diameter: 55, height: 75, circumference: null },
     { id: 2, diameter: 65, height: 50, circumference: null },
   ],
-  topShape: 'EGG',
-  bottomShape: 'FLAT',
+  topShape: SectionShape.EGG,
+  bottomShape: SectionShape.FLAT,
 };
 
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
@@ -49,8 +49,8 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       mode.kind === 'edit'
         ? {
             sections: mode.toy.shape.sections.map((s) => ({ ...s })),
-            topShape: mode.toy.shape.topSectionShape ?? 'FLAT',
-            bottomShape: mode.toy.shape.bottomSectionShape ?? 'FLAT',
+            topShape: mode.toy.shape.topSectionShape ?? SectionShape.FLAT,
+            bottomShape: mode.toy.shape.bottomSectionShape ?? SectionShape.FLAT,
           }
         : NEW_TOY_MM,
     [mode],

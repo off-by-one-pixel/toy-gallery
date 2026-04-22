@@ -6,7 +6,7 @@ import type { Toy as EditorToy } from 'cone-editor';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useUnit } from '../providers/UnitProvider';
 import { formatValue, type Unit } from '../services/units';
-import type { Toy } from '../services/types';
+import { SectionShape, type Toy } from '../services/types';
 
 type Props = {
   toy: Toy;
@@ -30,8 +30,8 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
 
   const editorToy: EditorToy = {
     sections: toy.shape.sections,
-    topShape: toy.shape.topSectionShape ?? 'FLAT',
-    bottomShape: toy.shape.bottomSectionShape ?? 'FLAT',
+    topShape: toy.shape.topSectionShape ?? SectionShape.FLAT,
+    bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
   };
 
   return (

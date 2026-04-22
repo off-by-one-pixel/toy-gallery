@@ -9,7 +9,7 @@ import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
 import { formatValue, type Unit } from '../services/units';
-import type { Toy } from '../services/types';
+import { SectionShape, type Toy } from '../services/types';
 
 const DEFAULT_FILL = '#c7e4ee';
 
@@ -199,8 +199,8 @@ function Thumb({ toy }: { toy: Toy }) {
   };
   const editorToy: EditorToy = {
     sections: toy.shape.sections,
-    topShape: toy.shape.topSectionShape ?? 'FLAT',
-    bottomShape: toy.shape.bottomSectionShape ?? 'FLAT',
+    topShape: toy.shape.topSectionShape ?? SectionShape.FLAT,
+    bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
   };
   return (
     <div className="flex h-15 w-12 items-end justify-center rounded-md border border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa] p-1">
@@ -259,7 +259,7 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 pl-18 text-xs min-[640px]:px-5 min-[640px]:pl-19 min-[900px]:pl-21">
       <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Top shape</dt>
-        <dd className="text-neutral-900">{toy.shape.topSectionShape === 'EGG' ? 'Egg' : 'Cone'}</dd>
+        <dd className="text-neutral-900">{toy.shape.topSectionShape === SectionShape.EGG ? 'Egg' : 'Cone'}</dd>
 
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Color</dt>
         <dd className="inline-flex items-center gap-2 text-neutral-900">
@@ -279,7 +279,7 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
             ))}
             <span className="text-neutral-400">+</span>
             <span className="italic text-neutral-500 col-span-4">
-              {toy.shape.topSectionShape === 'EGG' ? 'Egg' : 'Cone'} cap
+              {toy.shape.topSectionShape === SectionShape.EGG ? 'Egg' : 'Cone'} cap
             </span>
           </div>
         </dd>
