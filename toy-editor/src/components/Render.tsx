@@ -1,5 +1,5 @@
 import type { CSSProperties, RefObject } from "react";
-import type { StyleOption, Toy } from "../toyMachine";
+import { Shape, type StyleOption, type Toy } from "../toyMachine";
 import CapSection from "./CapSection";
 import Section from "./Section";
 
@@ -98,7 +98,7 @@ export const Render = ({
         currentDiameter = section.diameter;
         const isFirst = index === 0;
         const isLast = index === toy.sections.length - 1 && !isFirst;
-        const renderAsBottomCap = isLast && toy.bottomShape !== "flat";
+        const renderAsBottomCap = isLast && toy.bottomShape !== Shape.FLAT;
         let sectionElement;
         if (isFirst) {
           sectionElement = (

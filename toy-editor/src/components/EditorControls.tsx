@@ -1,14 +1,13 @@
 import type { ChangeEvent, DragEvent } from "react";
 import { useState } from "react";
-import type { Shape } from "../toyMachine";
-import { useToyStore } from "../toyMachine";
+import { Shape, useToyStore } from "../toyMachine";
 import { useEditorUnit } from "./unit";
 
 const CAP_SHAPES: { id: Shape; label: string; glyph: string }[] = [
-  { id: "flat", label: "Flat", glyph: "▬" },
-  { id: "egg", label: "Egg", glyph: "◒" },
-  { id: "cone", label: "Cone", glyph: "△" },
-  { id: "spike", label: "Spike", glyph: "▲" },
+  { id: Shape.FLAT, label: "Flat", glyph: "▬" },
+  { id: Shape.EGG, label: "Egg", glyph: "◒" },
+  { id: Shape.CONE, label: "Cone", glyph: "△" },
+  { id: Shape.SPIKE, label: "Spike", glyph: "▲" },
 ];
 
 type ShapeRadioProps = {
@@ -104,7 +103,7 @@ const EditorControls = () => {
             const isShapedBottomCap =
               index === toy.sections.length - 1 &&
               toy.sections.length > 1 &&
-              toy.bottomShape !== "flat";
+              toy.bottomShape !== Shape.FLAT;
             const selected = toy.selectedId === section.id;
             const rowClasses = ["cone-editor-section"];
             if (selected) rowClasses.push("cone-editor-section-selected");
