@@ -8,7 +8,7 @@ import type { Toy as EditorToy } from 'cone-editor';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
-import { formatDim, type Dimension, type Unit } from '../services/units';
+import { formatValue, type Unit } from '../services/units';
 import type { Toy } from '../services/types';
 
 const DEFAULT_FILL = '#c7e4ee';
@@ -198,9 +198,9 @@ function Thumb({ toy }: { toy: Toy }) {
     color: toy.color || DEFAULT_FILL,
   };
   const editorToy: EditorToy = {
-    sections: toy.sections,
-    topShape: toy.topShape,
-    bottomShape: toy.bottomShape,
+    sections: toy.shape.sections,
+    topShape: toy.shape.topSectionShape ?? 'FLAT',
+    bottomShape: toy.shape.bottomSectionShape ?? 'FLAT',
   };
   return (
     <div className="flex h-15 w-12 items-end justify-center rounded-md border border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa] p-1">
@@ -231,7 +231,7 @@ function Metric({
   muted,
   className,
 }: {
-  value: Dimension | null;
+  value: number | null | undefined;
   unit: Unit;
   muted?: boolean;
   className?: string;
@@ -246,7 +246,7 @@ function Metric({
         <span className="font-normal text-neutral-300">—</span>
       ) : (
         <>
-          {formatDim(value, unit)}
+          {formatValue(value, unit)}
           <span className="ml-1.5 text-[11px] font-medium text-neutral-500">{unit.id}</span>
         </>
       )}
@@ -259,7 +259,7 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 pl-18 text-xs min-[640px]:px-5 min-[640px]:pl-19 min-[900px]:pl-21">
       <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Top shape</dt>
-        <dd className="text-neutral-900">{toy.topShape === 'egg' ? 'Egg' : 'Cone'}</dd>
+        <dd className="text-neutral-900">{toy.shape.topSectionShape === 'EGG' ? 'Egg' : 'Cone'}</dd>
 
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Color</dt>
         <dd className="inline-flex items-center gap-2 text-neutral-900">
@@ -274,11 +274,13 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Sections</dt>
         <dd>
           <div className="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-3 gap-y-0.5 font-mono text-[11px] text-neutral-800 tabular-nums">
-            {toy.sections.map((s, idx) => (
+            {toy.shape.sections.map((s, idx) => (
               <SectionLine key={s.id} n={idx + 1} d={s.diameter} h={s.height} c={s.circumference ?? null} />
             ))}
             <span className="text-neutral-400">+</span>
-            <span className="italic text-neutral-500 col-span-4">{toy.topShape === 'egg' ? 'Egg' : 'Cone'} cap</span>
+            <span className="italic text-neutral-500 col-span-4">
+              {toy.shape.topSectionShape === 'EGG' ? 'Egg' : 'Cone'} cap
+            </span>
           </div>
         </dd>
       </dl>

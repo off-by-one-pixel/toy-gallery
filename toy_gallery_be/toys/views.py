@@ -1,4 +1,5 @@
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers as drf_serializers
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -12,6 +13,7 @@ class ToyViewSet(viewsets.ModelViewSet):
     queryset = models.Toy.objects.all()
     serializer_class = serializers.ToySerializer
 
+    @extend_schema(responses=serializers.ExportEnvelopeSerializer)
     @action(detail=False, methods=["get"])
     def export(self, request):
         handler = export_mod.latest()
@@ -21,6 +23,10 @@ class ToyViewSet(viewsets.ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
+    @extend_schema(
+        request=serializers.ExportEnvelopeSerializer,
+        responses={201: serializers.ImportSummarySerializer},
+    )
     @action(detail=False, methods=["post"], url_path="import")
     def import_toys(self, request):
         data = request.data

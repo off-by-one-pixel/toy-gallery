@@ -5,7 +5,7 @@ const ACCESS_KEY = 'auth.access';
 const REFRESH_KEY = 'auth.refresh';
 const USERNAME_KEY = 'auth.username';
 
-export type { TokenPair } from './types';
+export type { TokenPair };
 
 const isBrowser = () => typeof window !== 'undefined';
 

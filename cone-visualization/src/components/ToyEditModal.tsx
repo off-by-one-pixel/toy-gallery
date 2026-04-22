@@ -7,7 +7,7 @@ import { Alert, Button, ColorSwatchPicker, Modal, NumberField, useOverlayState }
 import TextInput from './TextInput';
 import { ArrowLeft } from 'lucide-react';
 import { createToy, replaceToy } from '../services/api';
-import type { Toy } from '../services/types';
+import type { Toy, ToyPayload } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
 import { Unit, formatValue, fromMm, toMm } from '../services/units';
@@ -36,8 +36,8 @@ const NEW_TOY_MM: EditorToy = {
     { id: 1, diameter: 55, height: 75, circumference: null },
     { id: 2, diameter: 65, height: 50, circumference: null },
   ],
-  topShape: 'egg',
-  bottomShape: 'flat',
+  topShape: 'EGG',
+  bottomShape: 'FLAT',
 };
 
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
@@ -48,9 +48,9 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     () =>
       mode.kind === 'edit'
         ? {
-            sections: mode.toy.sections.map((s) => ({ ...s })),
-            topShape: mode.toy.topShape,
-            bottomShape: mode.toy.bottomShape,
+            sections: mode.toy.shape.sections.map((s) => ({ ...s })),
+            topShape: mode.toy.shape.topSectionShape ?? 'FLAT',
+            bottomShape: mode.toy.shape.bottomSectionShape ?? 'FLAT',
           }
         : NEW_TOY_MM,
     [mode],
@@ -61,7 +61,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const [size, setSize] = useState(isEdit ? mode.toy.size : '');
   const [color, setColor] = useState(isEdit ? mode.toy.color || DEFAULT_FILL : DEFAULT_FILL);
   const [insertableLengthMm, setInsertableLengthMm] = useState<number | null>(
-    isEdit ? (mode.toy.insertableLength?.mm ?? null) : null,
+    isEdit ? (mode.toy.insertableLength ?? null) : null,
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,15 +115,22 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       setError('Set a circumference on at least one section.');
       return;
     }
-    const payload = {
+    const payload: ToyPayload = {
       brand: brand.trim(),
       name: name.trim(),
       size: size.trim(),
       color,
       insertableLength: insertableLengthMm,
-      topShape,
-      bottomShape,
-      sections,
+      shape: {
+        topSectionShape: topShape,
+        bottomSectionShape: bottomShape,
+        sections: sections.map((s, idx) => ({
+          order: idx,
+          height: s.height,
+          diameter: s.diameter,
+          circumference: s.circumference ?? null,
+        })),
+      },
     };
     await runAction(() => (mode.kind === 'edit' ? replaceToy(mode.toy.id, payload) : createToy(payload)), {
       busy: setSaving,

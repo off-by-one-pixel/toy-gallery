@@ -1,0 +1,35 @@
+# Build context is the repo root. Exclude anything not needed by the FE
+# Dockerfile (cone-visualization/Dockerfile). The Dockerfile explicitly
+# COPYs cone-visualization/ and toy_gallery_be/schema.yml; everything else
+# is dead weight.
+
+# Node / Next.js outputs
+**/node_modules
+**/.next
+**/out
+cone-visualization/build
+cone-visualization/src/services/generated
+
+# Python / Django local state (we only need schema.yml from toy_gallery_be)
+toy_gallery_be/.venv
+toy_gallery_be/db.sqlite3
+toy_gallery_be/**/__pycache__
+
+# Sibling / legacy projects not used by the Docker build
+cone_editor
+toy-svg-editor
+
+# VCS / editor
+.git
+.gitignore
+.vscode
+.devcontainer
+
+# Env and secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs and OS cruft
+**/*-debug.log*
+.DS_Store

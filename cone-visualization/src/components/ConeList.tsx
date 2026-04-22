@@ -33,10 +33,7 @@ const ConeList = () => {
   const [query, setQuery] = useState('');
   const { view } = useViewMode();
   const { sort } = useSort();
-  const sortedCones = useMemo(
-    () => sortToys(filterToys(cones, query), sort),
-    [cones, sort, query],
-  );
+  const sortedCones = useMemo(() => sortToys(filterToys(cones, query), sort), [cones, sort, query]);
 
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
@@ -44,7 +41,7 @@ const ConeList = () => {
 
   const toggleOpen = (id: number) => setOpenCardId((cur) => (cur === id ? null : id));
 
-  const maxHeight = useMemo(() => Math.max(1, ...cones.map((c) => c.height.mm)), [cones]);
+  const maxHeight = useMemo(() => Math.max(1, ...cones.map((c) => c.height)), [cones]);
 
   useEffect(() => {
     runInline(fetchCones, {
@@ -116,7 +113,7 @@ const ConeList = () => {
                 <ToyCard
                   key={toy.id}
                   toy={toy}
-                  heightRatio={Math.max(0.15, toy.height.mm / maxHeight)}
+                  heightRatio={Math.max(0.15, toy.height / maxHeight)}
                   detailsOpen={openCardId === toy.id}
                   onToggleDetails={() => toggleOpen(toy.id)}
                   onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { ToySection } from 'cone-editor';
 
-import { Unit, convertSections, formatDim, formatValue, fromMm, toMm } from './units';
+import { Unit, convertSections, formatValue, fromMm, toMm } from './units';
 
 describe('toMm / fromMm', () => {
   it('passes mm through unchanged', () => {
@@ -22,20 +22,6 @@ describe('toMm / fromMm', () => {
   it('round-trips a non-trivial value', () => {
     const mm = 170;
     expect(toMm(fromMm(mm, Unit.in), Unit.in)).toBeCloseTo(mm);
-  });
-});
-
-describe('formatDim', () => {
-  it('returns an em-dash for null', () => {
-    expect(formatDim(null, Unit.mm)).toBe('—');
-  });
-
-  it('rounds to an integer in mm', () => {
-    expect(formatDim({ mm: 169.6, in: 6.677 }, Unit.mm)).toBe('170');
-  });
-
-  it('uses two decimal places in inches', () => {
-    expect(formatDim({ mm: 170, in: 6.693 }, Unit.in)).toBe('6.69');
   });
 });
 

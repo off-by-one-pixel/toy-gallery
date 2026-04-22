@@ -7,31 +7,14 @@ models and serializers.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from . import models
 
 
-INCH_MM: float = 25.4
-
-
 class Dimensions:
     """Namespace for dimensional operations. All methods are pure."""
-
-    # ---------- mm <-> in conversion ----------
-
-    @staticmethod
-    def mm_to_inches(mm: float) -> float:
-        return mm / INCH_MM
-
-    @staticmethod
-    def to_dual(mm: Optional[float]) -> Optional[Dict[str, float]]:
-        """Convert a stored mm value to the public {mm, in} pair."""
-        if mm is None:
-            return None
-        value = float(mm)
-        return {"mm": round(value, 3), "in": round(value / INCH_MM, 3)}
 
     # ---------- aggregates on a Shape ----------
 

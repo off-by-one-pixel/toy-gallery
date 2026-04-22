@@ -14,10 +14,10 @@ export const sortColumns: { id: SortColumn; label: string }[] = [
 
 const accessors: Record<SortColumn, (t: Toy) => number | string> = {
   name: (t) => `${t.brand} ${t.name}`.toLowerCase(),
-  insertable: (t) => t.insertableLength?.mm ?? -Infinity,
-  circumference: (t) => t.circumference?.mm ?? -Infinity,
-  length: (t) => t.height.mm,
-  diameter: (t) => t.diameter.mm,
+  insertable: (t) => t.insertableLength ?? -Infinity,
+  circumference: (t) => t.circumference ?? -Infinity,
+  length: (t) => t.height,
+  diameter: (t) => t.diameter,
 };
 
 export const sortToys = (toys: Toy[], sort: Sort | null): Toy[] => {
