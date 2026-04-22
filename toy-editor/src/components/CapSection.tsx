@@ -1,4 +1,4 @@
-import type { Shape, StyleOption, ToySection } from "../toyMachine";
+import { Shape, type StyleOption, type ToySection } from "../toyMachine";
 
 type Orientation = "top" | "bottom";
 
@@ -72,10 +72,10 @@ const renderSpike: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
 };
 
 const shapeRenderers: Record<Shape, ShapeRenderer> = {
-  FLAT: renderFlat,
-  EGG: renderEgg,
-  CONE: renderCone,
-  SPIKE: renderSpike,
+  [Shape.FLAT]: renderFlat,
+  [Shape.EGG]: renderEgg,
+  [Shape.CONE]: renderCone,
+  [Shape.SPIKE]: renderSpike,
 };
 
 const capPath = (
