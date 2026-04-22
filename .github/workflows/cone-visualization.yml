@@ -5,12 +5,14 @@ on:
     paths:
       - "cone-visualization/**"
       - "cone_editor/**"
+      - "toy_gallery_be/schema.yml"
       - ".github/workflows/cone-visualization.yml"
   push:
     branches: [main]
     paths:
       - "cone-visualization/**"
       - "cone_editor/**"
+      - "toy_gallery_be/schema.yml"
       - ".github/workflows/cone-visualization.yml"
 
 concurrency:
@@ -45,6 +47,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate API SDK
+        run: npm run codegen
 
       - name: Typecheck
         run: npx tsc --noEmit
