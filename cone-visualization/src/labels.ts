@@ -19,3 +19,10 @@ export const SORT_COLUMN_LABEL: Record<SortColumn, string> = {
   length: 'Length',
   diameter: 'Diameter',
 };
+
+export const ATTRIBUTES_HEADING = 'Attributes';
+export const ADD_ATTRIBUTE_BUTTON = '+ Add field';
+export const ATTRIBUTE_KEY_PLACEHOLDER = 'Name';
+export const ATTRIBUTE_VALUE_PLACEHOLDER = 'Value';
+export const ATTRIBUTE_REMOVE_LABEL = 'Remove attribute';
+export const ATTRIBUTE_SAVE_ERROR = 'Could not save attributes';

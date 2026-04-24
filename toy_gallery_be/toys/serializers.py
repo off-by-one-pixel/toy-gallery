@@ -37,6 +37,14 @@ class ToySerializer(serializers.ModelSerializer):
     diameter = serializers.SerializerMethodField()
     height = serializers.SerializerMethodField()
     circumference = serializers.SerializerMethodField()
+    custom_attributes = serializers.DictField(
+        child=serializers.CharField(allow_blank=True),
+        required=False,
+    )
+
+    def validate_custom_attributes(self, value):
+        """Drop entries with an empty key; trim keys. Empty values are kept."""
+        return {k.strip(): v for k, v in value.items() if k.strip()}
 
     class Meta:
         model = models.Toy
@@ -53,6 +61,7 @@ class ToySerializer(serializers.ModelSerializer):
             "retired",
             "color",
             "insertable_length",
+            "custom_attributes",
         ]
 
     def get_diameter(self, obj) -> float:

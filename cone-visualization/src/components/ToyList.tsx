@@ -5,12 +5,13 @@ import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 
-import { SHAPE_LABEL } from '../labels';
+import { ATTRIBUTES_HEADING, SHAPE_LABEL } from '../labels';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
 import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
+import AttributesPanel from './AttributesPanel';
 
 const DEFAULT_FILL = '#c7e4ee';
 
@@ -283,6 +284,11 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
               {SHAPE_LABEL[toy.shape.topSectionShape ?? SectionShape.FLAT]} cap
             </span>
           </div>
+        </dd>
+
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{ATTRIBUTES_HEADING}</dt>
+        <dd>
+          <AttributesPanel toy={toy} />
         </dd>
       </dl>
     </div>

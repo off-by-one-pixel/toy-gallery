@@ -7,6 +7,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { useUnit } from '../providers/UnitProvider';
 import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
+import AttributesPanel from './AttributesPanel';
 
 type Props = {
   toy: Toy;
@@ -104,6 +105,9 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
       >
         <AttrRow label="Length" value={`${formatValue(toy.height, unit)} ${unit.id}`} />
         <AttrRow label="Diameter" value={`${formatValue(toy.diameter, unit)} ${unit.id}`} />
+        <div className="mt-2 border-t border-neutral-200 pt-2.5">
+          <AttributesPanel toy={toy} />
+        </div>
       </div>
     </article>
   );

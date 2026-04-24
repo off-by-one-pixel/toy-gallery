@@ -311,6 +311,10 @@ components:
           type: number
           format: double
           nullable: true
+        custom_attributes:
+          type: object
+          additionalProperties:
+            type: string
     SectionShapeEnum:
       enum:
       - FLAT
@@ -412,6 +416,10 @@ components:
           type: number
           format: double
           nullable: true
+        custom_attributes:
+          type: object
+          additionalProperties:
+            type: string
       required:
       - brand
       - circumference
@@ -452,6 +460,10 @@ components:
           type: number
           format: double
           nullable: true
+        custom_attributes:
+          type: object
+          additionalProperties:
+            type: string
       required:
       - brand
       - name
