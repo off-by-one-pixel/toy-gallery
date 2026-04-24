@@ -1,6 +1,5 @@
 import {
   toysTokenCreate,
-  toysTokenRefreshCreate,
   toysToysCreate,
   toysToysDestroy,
   toysToysExportRetrieve,
@@ -8,11 +7,10 @@ import {
   toysToysList,
   toysToysPartialUpdate,
 } from './generated/sdk';
+import { API_CONFIG } from '../config';
 import { camelToSnake, snakeToCamel } from '../utils/case';
 import type { ExportEnvelopeRequest, PatchedToyRequest, ToyRequest as ApiToyRequest } from './generated/schemas';
-import type { TokenPair, Toy, ToyPayload } from './types';
-
-export { setAuthContext } from './http';
+import { APIError, type TokenPair, type Toy, type ToyPayload } from './types';
 
 // ---------- Token endpoints ----------
 
@@ -21,8 +19,24 @@ export const login = async (username: string, password: string): Promise<TokenPa
   return { access: data.access, refresh: data.refresh };
 };
 
+/**
+ * POST /toys/token/refresh/ via bare fetch — deliberately bypasses the
+ * generated SDK so the call itself can't re-enter the mutator's 401
+ * retry loop.
+ */
 export const refreshTokens = async (refresh: string): Promise<TokenPair> => {
-  const { data } = await toysTokenRefreshCreate({ refresh });
+  const response = await fetch(new URL('/toys/token/refresh/', API_CONFIG.baseUrl), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh }),
+  });
+  if (!response.ok) {
+    throw new APIError(`Refresh failed: ${response.status}`, response.status, null);
+  }
+  const data = (await response.json()) as Partial<TokenPair>;
+  if (!data.access) {
+    throw new APIError('Refresh response missing access token', response.status, data);
+  }
   return { access: data.access, refresh: data.refresh ?? refresh };
 };
 

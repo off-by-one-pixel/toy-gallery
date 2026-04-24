@@ -19,12 +19,6 @@ export interface TokenPair {
   refresh: string;
 }
 
-export interface AuthContext {
-  getAccessToken(): string | null;
-  /** Return a new access token (and persist however the caller wants), or null. */
-  onUnauthorized(): Promise<string | null>;
-}
-
 // ---------- Domain types ----------
 
 export type SectionShape = SectionShapeEnum;
