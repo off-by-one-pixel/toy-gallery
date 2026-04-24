@@ -104,6 +104,72 @@ class ToyCreateTests(TestCase):
         self.assertTrue(null_sections)
 
 
+class CustomAttributesTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+
+    def _create_toy(self, **extra):
+        payload = _payload(section_circumferences=(None, 220.0, None))
+        payload.update(extra)
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data
+
+    def test_create_round_trips_custom_attributes(self):
+        data = self._create_toy(custom_attributes={"firmness": "medium", "price": "99.00"})
+        self.assertEqual(data["custom_attributes"], {"firmness": "medium", "price": "99.00"})
+
+    def test_default_is_empty_dict(self):
+        data = self._create_toy()
+        self.assertEqual(data["custom_attributes"], {})
+
+    def test_patch_replaces_custom_attributes_without_touching_other_fields(self):
+        created = self._create_toy(custom_attributes={"firmness": "medium"})
+        toy_id = created["id"]
+        response = self.client.patch(
+            f"/toys/toys/{toy_id}/",
+            {"custom_attributes": {"material": "silicone"}},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["custom_attributes"], {"material": "silicone"})
+        self.assertEqual(response.data["brand"], created["brand"])
+        self.assertEqual(response.data["name"], created["name"])
+
+    def test_nested_structure_values_are_rejected(self):
+        payload = _payload(section_circumferences=(None, 220.0, None))
+        payload["custom_attributes"] = {"tags": ["a", "b"]}
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertIn("custom_attributes", response.data)
+
+    def test_empty_keys_are_stripped_and_keys_are_trimmed(self):
+        data = self._create_toy(
+            custom_attributes={
+                "firmness": "medium",
+                "color": "",
+                "": "orphan",
+                " padded ": "yes",
+            }
+        )
+        self.assertEqual(
+            data["custom_attributes"],
+            {"firmness": "medium", "color": "", "padded": "yes"},
+        )
+
+    def test_patch_with_empty_value_keeps_the_key(self):
+        created = self._create_toy(custom_attributes={"firmness": "medium"})
+        response = self.client.patch(
+            f"/toys/toys/{created['id']}/",
+            {"custom_attributes": {"firmness": ""}},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["custom_attributes"], {"firmness": ""})
+
+
 class ExportRegistryTests(TestCase):
     def test_latest_returns_highest_version(self):
         self.assertIs(export_mod.latest(), export_mod.ExportV1)

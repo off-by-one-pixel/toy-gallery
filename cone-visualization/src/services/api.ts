@@ -6,9 +6,10 @@ import {
   toysToysExportRetrieve,
   toysToysImportCreate,
   toysToysList,
+  toysToysPartialUpdate,
 } from './generated/sdk';
 import { camelToSnake, snakeToCamel } from '../utils/case';
-import type { ExportEnvelopeRequest, ToyRequest as ApiToyRequest } from './generated/schemas';
+import type { ExportEnvelopeRequest, PatchedToyRequest, ToyRequest as ApiToyRequest } from './generated/schemas';
 import type { TokenPair, Toy, ToyPayload } from './types';
 
 export { setAuthContext } from './http';
@@ -34,8 +35,7 @@ export const fetchCones = async (): Promise<Toy[]> => {
 
 export const deleteToy = (id: number | string) => toysToysDestroy(Number(id));
 
-export const createToy = (toy: ToyPayload) =>
-  toysToysCreate(camelToSnake<ApiToyRequest>(toy));
+export const createToy = (toy: ToyPayload) => toysToysCreate(camelToSnake<ApiToyRequest>(toy));
 
 /**
  * The DRF serializer doesn't support in-place update of the nested shape, so
@@ -46,6 +46,11 @@ export const replaceToy = async (originalId: number, toy: ToyPayload) => {
   const created = await createToy(toy);
   await deleteToy(originalId);
   return created;
+};
+
+export const patchToy = async (id: number, changes: Partial<ToyPayload>): Promise<Toy> => {
+  const { data } = await toysToysPartialUpdate(id, camelToSnake<PatchedToyRequest>(changes));
+  return snakeToCamel<Toy>(data);
 };
 
 const triggerBrowserDownload = (data: unknown, filename: string) => {

@@ -35,6 +35,19 @@ export type Shape = SnakeToCamel<ApiShape>;
 export type Toy = SnakeToCamel<ApiToy>;
 export type ToyPayload = SnakeToCamel<ApiToyRequest>;
 
+// ---------- Attribute editor row ----------
+
+/** A single editable row in the custom-attributes editor. `fromSaved`
+ *  distinguishes a row that came from the server (and should disappear
+ *  when the server drops it on save) from a fresh user-added row (which
+ *  stays visible until the user fills it in). */
+export interface AttributeRow {
+  rowId: number;
+  key: string;
+  value: string;
+  fromSaved: boolean;
+}
+
 // ---------- Errors ----------
 
 export class APIError extends Error {
