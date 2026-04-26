@@ -41,7 +41,7 @@ const ConeList = () => {
 
   const toggleOpen = (id: number) => setOpenCardId((cur) => (cur === id ? null : id));
 
-  const maxHeight = useMemo(() => Math.max(1, ...cones.map((c) => c.height)), [cones]);
+  const maxHeight = useMemo(() => Math.max(1, ...sortedCones.map((c) => c.height)), [sortedCones]);
 
   useEffect(() => {
     runInline(fetchCones, {
