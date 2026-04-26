@@ -217,6 +217,30 @@ class ExportImportTests(TestCase):
         self.assertEqual(section["circumference"], 220.0)
         self.assertNotIsInstance(section["height"], dict)
 
+    def test_export_round_trips_custom_attributes(self):
+        with_attrs = _payload(section_circumferences=(None, 220.0, None))
+        with_attrs["custom_attributes"] = {"firmness": "medium", "material": "silicone"}
+        self.client.post("/toys/toys/", with_attrs, format="json")
+
+        exported = self.client.get("/toys/toys/export/").data
+        attrs_by_name = {t["name"]: t.get("custom_attributes") for t in exported["toys"]}
+        self.assertEqual(
+            attrs_by_name["Demo"], {"firmness": "medium", "material": "silicone"}
+        )
+
+        # Import the export and verify the round-tripped toy keeps its attributes.
+        models.Toy.objects.all().delete()
+        response = self.client.post("/toys/toys/import/", exported, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        roundtripped = list(
+            models.Toy.objects.filter(custom_attributes__has_key="firmness")
+        )
+        self.assertEqual(len(roundtripped), 1)
+        self.assertEqual(
+            roundtripped[0].custom_attributes,
+            {"firmness": "medium", "material": "silicone"},
+        )
+
     def test_export_download_headers(self):
         response = self.client.get("/toys/toys/export/")
         disposition = response["Content-Disposition"]
