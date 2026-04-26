@@ -75,6 +75,7 @@ class ExportV1(ExportVersion):
             "size": toy.size,
             "color": toy.color,
             "insertable_length": toy.insertable_length,
+            "custom_attributes": toy.custom_attributes,
             "shape": {
                 "top_section_shape": toy.shape.top_section_shape,
                 "bottom_section_shape": toy.shape.bottom_section_shape,
