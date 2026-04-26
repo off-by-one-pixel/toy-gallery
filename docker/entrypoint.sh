@@ -14,6 +14,9 @@
 #   INITIAL_EMAIL      optional, defaults to ""
 #   PORT               listen port (default 8000)
 #   WORKERS            web worker count (default 3)
+#   SSL_CERT_PATH      path to TLS cert (default /data/certs/cert.pem)
+#   SSL_KEY_PATH       path to TLS key  (default /data/certs/key.pem)
+# If both cert and key files exist, gunicorn serves HTTPS; otherwise HTTP.
 
 set -eu
 
@@ -26,7 +29,21 @@ python manage.py collectstatic --noinput
 echo "[entrypoint] checking superuser"
 python /app/docker/init_superuser.py
 
-echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000}"
+SSL_CERT_PATH="${SSL_CERT_PATH:-/data/certs/cert.pem}"
+SSL_KEY_PATH="${SSL_KEY_PATH:-/data/certs/key.pem}"
+
+if [ -f "$SSL_CERT_PATH" ] && [ -f "$SSL_KEY_PATH" ]; then
+  echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} (HTTPS)"
+  exec gunicorn toy_gallery_be.wsgi:application \
+    --bind "0.0.0.0:${PORT:-8000}" \
+    --workers "${WORKERS:-3}" \
+    --certfile "$SSL_CERT_PATH" \
+    --keyfile "$SSL_KEY_PATH" \
+    --access-logfile - \
+    --error-logfile -
+fi
+
+echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} (HTTP)"
 exec gunicorn toy_gallery_be.wsgi:application \
   --bind "0.0.0.0:${PORT:-8000}" \
   --workers "${WORKERS:-3}" \
