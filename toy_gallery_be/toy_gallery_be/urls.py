@@ -15,14 +15,28 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
 from django.contrib import admin
-from django.http import JsonResponse
-from django.urls import include, path
+from django.http import FileResponse, HttpResponseNotFound, JsonResponse
+from django.urls import include, path, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 
 def health(_request):
     return JsonResponse({"status": "ok"})
+
+
+def spa_index(_request):
+    """Catch-all for client-side routes in the bundled Next.js export.
+
+    Django routes (`/admin/`, `/toys/`, `/api/`, `/health/`) resolve first;
+    WhiteNoise serves any matching static file from the frontend dir; this
+    runs only for unmatched paths so the SPA can handle them.
+    """
+    index_path = settings.BASE_DIR / "frontend" / "index.html"
+    if not index_path.is_file():
+        return HttpResponseNotFound()
+    return FileResponse(index_path.open("rb"), content_type="text/html")
 
 
 urlpatterns = [
@@ -31,4 +45,5 @@ urlpatterns = [
     path("health/", health, name="health"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
+    re_path(r"^.*$", spa_index),
 ]
