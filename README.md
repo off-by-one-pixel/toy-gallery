@@ -98,10 +98,27 @@ All optional — set only what you need.
 | `SECRET_KEY`       | generated automatically and stored in `/data` | Set this if you'd rather manage the key yourself.                                  |
 | `PORT`             | `8000`                               | Port the app listens on inside the container.                                             |
 | `WORKERS`          | `3`                                  | How many web workers to run. Bump it on bigger machines.                                  |
+| `SSL_CERT_PATH`    | `/data/certs/cert.pem`               | Path inside the container to a TLS certificate. If both this and the key are present, the app serves HTTPS. |
+| `SSL_KEY_PATH`     | `/data/certs/key.pem`                | Path inside the container to the private key matching the certificate above.              |
+
+### Serving over HTTPS
+
+Drop a certificate and key into a `certs` folder next to your data folder, then start the container as usual:
+
+```
+./data/
+  └── certs/
+      ├── cert.pem
+      └── key.pem
+```
+
+When both files are present the app serves HTTPS instead of HTTP — no extra flags needed. If you keep your certs somewhere else, point `SSL_CERT_PATH` and `SSL_KEY_PATH` at them.
+
+Renewing the certificate is up to you (e.g. with `certbot` or `acme.sh`); just replace the files and restart the container. Don't forget to add your public URL to `TRUSTED_ORIGINS` so the admin pages accept form submissions over HTTPS.
 
 ### Putting it on the internet
 
-If you want the app reachable beyond your own machine, put HTTPS in front of it (using nginx, Caddy, Traefik, Cloudflare, or whatever you already use), and add your public URL to `TRUSTED_ORIGINS` so the admin pages keep working.
+If you'd rather not manage the certificate yourself, you can put a reverse proxy with automatic HTTPS in front of the container instead — Caddy, Traefik, and Cloudflare Tunnel all handle that for you.
 
 ## Projects in this repo
 
