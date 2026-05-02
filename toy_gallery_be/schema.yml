@@ -3,6 +3,147 @@ info:
   title: Toy Gallery API
   version: 1.0.0
 paths:
+  /toys/sessions/:
+    get:
+      operationId: toys_sessions_list
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+          description: ''
+    post:
+      operationId: toys_sessions_create
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+  /toys/sessions/{id}/:
+    get:
+      operationId: toys_sessions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+    put:
+      operationId: toys_sessions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+    patch:
+      operationId: toys_sessions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSessionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+    delete:
+      operationId: toys_sessions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /toys/token/:
     post:
       operationId: toys_token_create
@@ -280,6 +421,26 @@ components:
           type: integer
       required:
       - created
+    InvolvementEnum:
+      enum:
+      - USED
+      - INSERTED
+      - FULLY_INSERTED
+      type: string
+      description: |-
+        * `USED` - Used
+        * `INSERTED` - Inserted
+        * `FULLY_INSERTED` - Fully inserted
+    PatchedSessionRequest:
+      type: object
+      properties:
+        started_at:
+          type: string
+          format: date-time
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToySessionEntryRequest'
     PatchedToyRequest:
       type: object
       properties:
@@ -327,6 +488,48 @@ components:
         * `EGG` - Egg
         * `CONE` - Cone
         * `SPIKE` - Spike
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToySessionEntry'
+        max_insertable_length:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        max_diameter:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+      required:
+      - entries
+      - id
+      - max_diameter
+      - max_insertable_length
+      - started_at
+    SessionRequest:
+      type: object
+      properties:
+        started_at:
+          type: string
+          format: date-time
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToySessionEntryRequest'
+      required:
+      - entries
+      - started_at
     TokenObtainPair:
       type: object
       properties:
@@ -469,6 +672,26 @@ components:
       - name
       - shape
       - size
+    ToySessionEntry:
+      type: object
+      properties:
+        toy:
+          type: integer
+        involvement:
+          $ref: '#/components/schemas/InvolvementEnum'
+      required:
+      - involvement
+      - toy
+    ToySessionEntryRequest:
+      type: object
+      properties:
+        toy:
+          type: integer
+        involvement:
+          $ref: '#/components/schemas/InvolvementEnum'
+      required:
+      - involvement
+      - toy
     ToyShape:
       type: object
       properties:

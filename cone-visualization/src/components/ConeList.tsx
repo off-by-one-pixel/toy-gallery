@@ -2,16 +2,20 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
-import { Plus } from 'lucide-react';
+import { CalendarClock, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { deleteToy, fetchCones } from '../services/api';
 import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
+import { TOY_ITEM_PLURAL, TOY_ITEM_SINGULAR } from '../labels';
 import { filterToys } from '../services/search';
+import { heightScale } from '../services/scaling';
 import { sortToys } from '../services/sort';
 import CollectionMenu from './CollectionMenu';
 import SearchInput from './SearchInput';
+import SectionTabs from './SectionTabs';
 import SortControl from './SortControl';
 import ToyCard from './ToyCard';
 import ToyEditModal from './ToyEditModal';
@@ -24,6 +28,7 @@ export type { Toy } from '../services/types';
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy };
 
 const ConeList = () => {
+  const router = useRouter();
   const [cones, setCones] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +46,7 @@ const ConeList = () => {
 
   const toggleOpen = (id: number) => setOpenCardId((cur) => (cur === id ? null : id));
 
-  const maxHeight = useMemo(() => Math.max(1, ...sortedCones.map((c) => c.height)), [sortedCones]);
+  const scale = useMemo(() => heightScale(sortedCones), [sortedCones]);
 
   useEffect(() => {
     runInline(fetchCones, {
@@ -68,8 +73,16 @@ const ConeList = () => {
       <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
         <div className="relative mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
           <h1 className="m-0">
-            <CollectionMenu onImported={updateLastChanged} count={isLoading ? null : cones.length} />
+            <CollectionMenu
+              onImported={updateLastChanged}
+              subtitle={
+                isLoading
+                  ? null
+                  : `${cones.length} ${cones.length === 1 ? TOY_ITEM_SINGULAR : TOY_ITEM_PLURAL}`
+              }
+            />
           </h1>
+          <SectionTabs />
           <div className="pointer-events-none absolute left-1/2 -translate-x-1/2">
             <div className="pointer-events-auto">
               <SearchInput value={query} onChange={setQuery} />
@@ -78,6 +91,10 @@ const ConeList = () => {
           <div className="flex-1" />
           <ViewToggle />
           <UnitToggle />
+          <Button variant="outline" size="sm" onPress={() => router.push('/sessions/new')}>
+            <CalendarClock size={14} strokeWidth={1.8} />
+            New session
+          </Button>
           <Button variant="primary" size="sm" onPress={() => setEditorMode({ kind: 'new' })}>
             <Plus size={14} strokeWidth={2.2} />
             New Toy
@@ -113,7 +130,7 @@ const ConeList = () => {
                 <ToyCard
                   key={toy.id}
                   toy={toy}
-                  heightRatio={Math.max(0.15, toy.height / maxHeight)}
+                  heightRatio={scale(toy)}
                   detailsOpen={openCardId === toy.id}
                   onToggleDetails={() => toggleOpen(toy.id)}
                   onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}

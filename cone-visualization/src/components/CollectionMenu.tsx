@@ -10,10 +10,10 @@ import { useAuth } from '../providers/AuthProvider';
 
 type Props = {
   onImported: () => void;
-  count: number | null;
+  subtitle?: React.ReactNode;
 };
 
-export default function CollectionMenu({ onImported, count }: Props) {
+export default function CollectionMenu({ onImported, subtitle }: Props) {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const runAction = useAsyncAction();
@@ -39,10 +39,8 @@ export default function CollectionMenu({ onImported, count }: Props) {
       <Dropdown>
         <Dropdown.Trigger className="group inline-flex items-baseline gap-2 rounded-md px-1 -mx-1 text-left transition-colors hover:bg-neutral-200/60">
           <span className="text-lg font-semibold tracking-tight text-neutral-900">Toy Gallery</span>
-          {count != null && (
-            <span className="text-sm font-normal text-neutral-500">
-              {count} {count === 1 ? 'item' : 'items'}
-            </span>
+          {subtitle !== undefined && (
+            <span className="inline-block min-w-22 text-sm font-normal text-neutral-500">{subtitle}</span>
           )}
           <ChevronDown
             size={10}

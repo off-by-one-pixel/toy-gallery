@@ -1,9 +1,10 @@
-.PHONY: help be fe test test-be test-fe schema
+.PHONY: help be fe migrate test test-be test-fe schema
 
 help:
 	@echo "Targets:"
 	@echo "  make be        Run Django backend on 0.0.0.0:8000 (Ctrl+C to stop)"
 	@echo "  make fe        Run Next.js frontend dev server (Ctrl+C to stop)"
+	@echo "  make migrate   Apply pending Django migrations to the dev database"
 	@echo "  make test      Run backend and frontend tests"
 	@echo "  make test-be   Run backend tests (Django)"
 	@echo "  make test-fe   Run frontend tests (Vitest)"
@@ -12,6 +13,9 @@ help:
 
 be:
 	cd toy_gallery_be && uv run python manage.py runserver 0.0.0.0:8000
+
+migrate:
+	cd toy_gallery_be && uv run python manage.py migrate
 
 fe:
 	cd cone-visualization && npm run dev

@@ -1,9 +1,12 @@
-import { SectionShapeEnum } from './generated/schemas';
+import { InvolvementEnum, SectionShapeEnum } from './generated/schemas';
 import type {
+  Session as ApiSession,
+  SessionRequest as ApiSessionRequest,
   Toy as ApiToy,
   ToyRequest as ApiToyRequest,
   ToyShape as ApiShape,
   ToyShapeSection as ApiSection,
+  ToySessionEntry as ApiSessionEntry,
 } from './generated/schemas';
 import type { SnakeToCamel } from '../utils/case';
 
@@ -28,6 +31,13 @@ export type Section = SnakeToCamel<ApiSection>;
 export type Shape = SnakeToCamel<ApiShape>;
 export type Toy = SnakeToCamel<ApiToy>;
 export type ToyPayload = SnakeToCamel<ApiToyRequest>;
+
+export type Involvement = InvolvementEnum;
+export const Involvement = InvolvementEnum;
+
+export type SessionEntry = SnakeToCamel<ApiSessionEntry>;
+export type Session = SnakeToCamel<ApiSession>;
+export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
 
 // ---------- Attribute editor row ----------
 
