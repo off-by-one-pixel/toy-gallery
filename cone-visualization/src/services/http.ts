@@ -69,11 +69,15 @@ const parseBody = async (response: Response): Promise<unknown> => {
 
 const toError = async (response: Response): Promise<APIError> => {
   const data = await parseBody(response);
+  if (data === null || typeof data !== 'object') {
+    return new APIError(`Server error (${response.status})`, response.status, null);
+  }
+  const body = data as { detail?: unknown; message?: unknown };
   const detail =
-    (typeof data === 'object' && data !== null && 'detail' in data && (data as { detail?: string }).detail) ||
-    (typeof data === 'object' && data !== null && 'message' in data && (data as { message?: string }).message) ||
+    (typeof body.detail === 'string' && body.detail) ||
+    (typeof body.message === 'string' && body.message) ||
     'API request failed';
-  return new APIError(String(detail), response.status, data);
+  return new APIError(detail, response.status, data);
 };
 
 // ---------- Mutator ----------
