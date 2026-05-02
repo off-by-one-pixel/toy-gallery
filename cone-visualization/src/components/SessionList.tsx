@@ -113,8 +113,8 @@ export default function SessionList() {
 
   return (
     <>
-      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
+      <div className="bg-neutral-100/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-3 px-4 py-2.5 sm:px-6">
           <h1 className="m-0">
             <CollectionMenu
               onImported={() => {}}
@@ -122,7 +122,11 @@ export default function SessionList() {
             />
           </h1>
           <SectionTabs />
-          <div className="ml-2 inline-flex gap-0.5 rounded-lg bg-neutral-200/70 p-0.5">
+        </div>
+      </div>
+      <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
+          <div className="inline-flex gap-0.5 rounded-lg bg-neutral-200/70 p-0.5">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -137,11 +141,11 @@ export default function SessionList() {
               </button>
             ))}
           </div>
-          <div className="flex-1" />
           <UnitToggle />
+          <div className="flex-1" />
           <Button variant="primary" size="sm" onPress={() => router.push('/sessions/new')}>
             <Plus size={14} strokeWidth={2.2} />
-            {SESSIONS_NEW_BUTTON}
+            <span className="hidden md:inline">{SESSIONS_NEW_BUTTON}</span>
           </Button>
         </div>
       </header>
@@ -189,35 +193,36 @@ function SessionRow({
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
 
   return (
-    <div className="grid grid-cols-[200px_1fr_auto_auto] items-center gap-5 rounded-xl border border-neutral-200 bg-white px-4 py-3.5 shadow-sm transition-shadow hover:shadow-md">
-      <div className="text-sm font-semibold tracking-tight text-neutral-900">{formatWhen(session.startedAt)}</div>
-
-      <div className="flex flex-wrap items-center gap-3.5">
-        {visibleEntries.map((entry) => {
-          const toy = toysById.get(entry.toy);
-          return (
-            <MiniToy key={entry.toy} entry={entry} toy={toy} heightRatio={scale(toy)} />
-          );
-        })}
-        {overflow > 0 && (
-          <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-500">
-            +{overflow} more
-          </span>
-        )}
+    <div className="rounded-xl border border-neutral-200 bg-white px-4 py-3.5 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[160px_1fr_auto_auto] sm:items-center sm:gap-4 sm:px-5">
+      <div className="flex items-center justify-between gap-3 sm:contents">
+        <div className="text-sm font-semibold tracking-tight text-neutral-900 sm:order-1">
+          {formatWhen(session.startedAt)}
+        </div>
+        <Link
+          href={`/sessions/edit?id=${session.id}`}
+          aria-label={SESSION_EDIT_ARROW_LABEL}
+          className="rounded-md p-1 text-neutral-300 transition-colors hover:bg-neutral-100 hover:text-blue-600 sm:order-4"
+        >
+          <ChevronRight size={18} />
+        </Link>
       </div>
-
-      <div className="min-w-27.5 text-right">
-        <PeakRow label={SESSION_PEAK_LENGTH} mm={session.maxInsertableLength} unit={unit} />
-        <PeakRow label={SESSION_PEAK_DIAMETER} mm={session.maxDiameter} unit={unit} />
+      <div className="mt-2 flex items-center justify-between gap-3 sm:mt-0 sm:contents">
+        <div className="flex flex-wrap items-center gap-3.5 sm:order-2">
+          {visibleEntries.map((entry) => {
+            const toy = toysById.get(entry.toy);
+            return <MiniToy key={entry.toy} entry={entry} toy={toy} heightRatio={scale(toy)} />;
+          })}
+          {overflow > 0 && (
+            <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-500">
+              +{overflow} more
+            </span>
+          )}
+        </div>
+        <div className="min-w-27.5 text-right shrink-0 sm:order-3">
+          <PeakRow label={SESSION_PEAK_LENGTH} mm={session.maxInsertableLength} unit={unit} />
+          <PeakRow label={SESSION_PEAK_DIAMETER} mm={session.maxDiameter} unit={unit} />
+        </div>
       </div>
-
-      <Link
-        href={`/sessions/edit?id=${session.id}`}
-        aria-label={SESSION_EDIT_ARROW_LABEL}
-        className="rounded-md p-1 text-neutral-300 transition-colors hover:bg-neutral-100 hover:text-blue-600"
-      >
-        <ChevronRight size={18} />
-      </Link>
     </div>
   );
 }
