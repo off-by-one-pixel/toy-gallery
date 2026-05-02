@@ -1,7 +1,8 @@
+from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers as drf_serializers
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -12,6 +13,23 @@ from . import models, serializers
 class ToyViewSet(viewsets.ModelViewSet):
     queryset = models.Toy.objects.all()
     serializer_class = serializers.ToySerializer
+
+    def destroy(self, request, *args, **kwargs):
+        toy = self.get_object()
+        try:
+            toy.delete()
+        except ProtectedError:
+            count = models.ToySessionEntry.objects.filter(toy=toy).count()
+            return Response(
+                {
+                    "detail": (
+                        f"Cannot delete this toy because it appears in {count} "
+                        f"session{'s' if count != 1 else ''}."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(responses=serializers.ExportEnvelopeSerializer)
     @action(detail=False, methods=["get"])
@@ -37,3 +55,11 @@ class ToyViewSet(viewsets.ModelViewSet):
         handler = export_mod.for_version(data["version"])
         created = handler.import_(data)
         return Response({"created": created}, status=201)
+
+
+class SessionViewSet(viewsets.ModelViewSet):
+    queryset = (
+        models.Session.objects.prefetch_related("entries", "entries__toy")
+        .order_by("-started_at")
+    )
+    serializer_class = serializers.SessionSerializer

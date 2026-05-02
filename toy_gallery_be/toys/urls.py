@@ -9,6 +9,7 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(r"toys", views.ToyViewSet)
+router.register(r"sessions", views.SessionViewSet)
 
 
 urlpatterns = [

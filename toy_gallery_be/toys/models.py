@@ -53,3 +53,34 @@ class Toy(models.Model):
     color = models.CharField(max_length=50, null=True, blank=True)
     insertable_length = models.FloatField(null=True, blank=True)
     custom_attributes = models.JSONField(default=dict, blank=True)
+
+
+class Session(models.Model):
+    started_at = models.DateTimeField()
+
+    if TYPE_CHECKING:
+        # Reverse relation from ToySessionEntry.session (related_name="entries").
+        entries: "RelatedManager[ToySessionEntry]"
+
+
+class ToySessionEntry(models.Model):
+    USED = "USED"
+    INSERTED = "INSERTED"
+    FULLY_INSERTED = "FULLY_INSERTED"
+
+    INVOLVEMENT_CHOICES = [
+        (USED, "Used"),
+        (INSERTED, "Inserted"),
+        (FULLY_INSERTED, "Fully inserted"),
+    ]
+
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="entries")
+    toy = models.ForeignKey(Toy, on_delete=models.PROTECT)
+    involvement = models.CharField(max_length=20, choices=INVOLVEMENT_CHOICES)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session", "toy"], name="unique_toy_per_session"
+            )
+        ]

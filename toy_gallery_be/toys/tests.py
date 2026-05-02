@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 from . import export as export_mod
 from . import models
-from .dimensions import Dimensions
+from .dimensions import ShapeDimensions
 
 
 def _payload(*, section_circumferences=(220.0, 180.0, None)):
@@ -35,7 +35,7 @@ class DimensionsShapeTests(TestCase):
         models.ShapeSection.objects.create(
             shape=self.shape, order=1, diameter=90, height=40, circumference=300
         )
-        self.assertEqual(Dimensions.shape_circumference(self.shape), 300)
+        self.assertEqual(ShapeDimensions.circumference(self.shape), 300)
 
     def test_circumference_ignores_nulls(self):
         models.ShapeSection.objects.create(
@@ -44,13 +44,13 @@ class DimensionsShapeTests(TestCase):
         models.ShapeSection.objects.create(
             shape=self.shape, order=1, diameter=90, height=40, circumference=250
         )
-        self.assertEqual(Dimensions.shape_circumference(self.shape), 250)
+        self.assertEqual(ShapeDimensions.circumference(self.shape), 250)
 
     def test_circumference_none_when_all_null(self):
         models.ShapeSection.objects.create(
             shape=self.shape, order=0, diameter=50, height=30, circumference=None
         )
-        self.assertIsNone(Dimensions.shape_circumference(self.shape))
+        self.assertIsNone(ShapeDimensions.circumference(self.shape))
 
     def test_height_is_sum_and_diameter_is_max(self):
         models.ShapeSection.objects.create(
@@ -59,8 +59,8 @@ class DimensionsShapeTests(TestCase):
         models.ShapeSection.objects.create(
             shape=self.shape, order=1, diameter=90, height=40, circumference=300
         )
-        self.assertEqual(Dimensions.shape_height(self.shape), 70)
-        self.assertEqual(Dimensions.shape_diameter(self.shape), 90)
+        self.assertEqual(ShapeDimensions.height(self.shape), 70)
+        self.assertEqual(ShapeDimensions.diameter(self.shape), 90)
 
 class ToyCreateTests(TestCase):
     def setUp(self):
@@ -281,3 +281,173 @@ class ExportImportTests(TestCase):
         response = self.client.post("/toys/toys/import/", envelope, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(models.Toy.objects.count(), before)
+
+
+class SessionTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        # Seed two toys to attach to sessions.
+        self.toy_a = self._create_toy(name="A")
+        self.toy_b = self._create_toy(name="B")
+
+    def _create_toy(self, name):
+        payload = _payload(section_circumferences=(None, 220.0, None))
+        payload["name"] = name
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data["id"]
+
+    def _session_payload(self, entries, started_at="2026-05-02T21:14:00Z"):
+        return {"started_at": started_at, "entries": entries}
+
+    def test_peak_dimensions_only_count_inserted_toys(self):
+        # toy_a has insertable_length=170, diameter=70 (per _payload defaults)
+        # toy_b same. Make a session where toy_a is "used" (skipped) and
+        # toy_b is "fully inserted" → peaks come only from toy_b.
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [
+                    {"toy": self.toy_a, "involvement": "USED"},
+                    {"toy": self.toy_b, "involvement": "FULLY_INSERTED"},
+                ]
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.data["max_insertable_length"], 170)
+        self.assertEqual(response.data["max_diameter"], 70)
+
+    def test_peak_dimensions_are_null_when_no_toys_inserted(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload([{"toy": self.toy_a, "involvement": "USED"}]),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertIsNone(response.data["max_insertable_length"])
+        self.assertIsNone(response.data["max_diameter"])
+
+    def test_create_with_mixed_involvement(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [
+                    {"toy": self.toy_a, "involvement": "USED"},
+                    {"toy": self.toy_b, "involvement": "FULLY_INSERTED"},
+                ]
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(len(response.data["entries"]), 2)
+        kinds = {e["involvement"] for e in response.data["entries"]}
+        self.assertEqual(kinds, {"USED", "FULLY_INSERTED"})
+
+    def test_list_orders_by_started_at_descending(self):
+        for ts in ("2026-04-01T10:00:00Z", "2026-05-01T10:00:00Z", "2026-04-15T10:00:00Z"):
+            self.client.post(
+                "/toys/sessions/",
+                self._session_payload(
+                    [{"toy": self.toy_a, "involvement": "USED"}], started_at=ts
+                ),
+                format="json",
+            )
+        response = self.client.get("/toys/sessions/")
+        self.assertEqual(response.status_code, 200)
+        results = response.data["results"] if "results" in response.data else response.data
+        timestamps = [s["started_at"] for s in results]
+        self.assertEqual(timestamps, sorted(timestamps, reverse=True))
+
+    def test_empty_entries_rejected(self):
+        response = self.client.post(
+            "/toys/sessions/", self._session_payload([]), format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("entries", response.data)
+
+    def test_duplicate_toy_rejected(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [
+                    {"toy": self.toy_a, "involvement": "USED"},
+                    {"toy": self.toy_a, "involvement": "INSERTED"},
+                ]
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_involvement_rejected(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload([{"toy": self.toy_a, "involvement": "WHATEVER"}]),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_replaces_entries_and_started_at(self):
+        create = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [{"toy": self.toy_a, "involvement": "USED"}],
+                started_at="2026-01-01T10:00:00Z",
+            ),
+            format="json",
+        )
+        self.assertEqual(create.status_code, 201)
+        sid = create.data["id"]
+
+        response = self.client.put(
+            f"/toys/sessions/{sid}/",
+            self._session_payload(
+                [
+                    {"toy": self.toy_a, "involvement": "INSERTED"},
+                    {"toy": self.toy_b, "involvement": "FULLY_INSERTED"},
+                ],
+                started_at="2026-02-02T20:00:00Z",
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["started_at"], "2026-02-02T20:00:00Z")
+        kinds = {e["involvement"] for e in response.data["entries"]}
+        self.assertEqual(kinds, {"INSERTED", "FULLY_INSERTED"})
+        self.assertEqual(models.ToySessionEntry.objects.filter(session_id=sid).count(), 2)
+
+    def test_delete_session_succeeds(self):
+        create = self.client.post(
+            "/toys/sessions/",
+            self._session_payload([{"toy": self.toy_a, "involvement": "USED"}]),
+            format="json",
+        )
+        self.assertEqual(create.status_code, 201)
+        sid = create.data["id"]
+        response = self.client.delete(f"/toys/sessions/{sid}/")
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(models.Session.objects.filter(pk=sid).exists())
+
+    def test_toy_deletion_blocked_while_referenced_by_session(self):
+        create = self.client.post(
+            "/toys/sessions/",
+            self._session_payload([{"toy": self.toy_a, "involvement": "INSERTED"}]),
+            format="json",
+        )
+        self.assertEqual(create.status_code, 201)
+        sid = create.data["id"]
+
+        # Toy delete blocked.
+        response = self.client.delete(f"/toys/toys/{self.toy_a}/")
+        self.assertEqual(response.status_code, 409, response.content)
+        self.assertIn("detail", response.data)
+        self.assertIn("session", response.data["detail"].lower())
+        self.assertTrue(models.Toy.objects.filter(pk=self.toy_a).exists())
+
+        # After deleting the session, the toy can be deleted.
+        self.client.delete(f"/toys/sessions/{sid}/")
+        response = self.client.delete(f"/toys/toys/{self.toy_a}/")
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(models.Toy.objects.filter(pk=self.toy_a).exists())
