@@ -1,4 +1,9 @@
 import {
+  toysSessionsCreate,
+  toysSessionsDestroy,
+  toysSessionsList,
+  toysSessionsRetrieve,
+  toysSessionsUpdate,
   toysTokenCreate,
   toysToysCreate,
   toysToysDestroy,
@@ -9,8 +14,13 @@ import {
 } from './generated/sdk';
 import { API_CONFIG } from '../config';
 import { camelToSnake, snakeToCamel } from '../utils/case';
-import type { ExportEnvelopeRequest, PatchedToyRequest, ToyRequest as ApiToyRequest } from './generated/schemas';
-import { APIError, type TokenPair, type Toy, type ToyPayload } from './types';
+import type {
+  ExportEnvelopeRequest,
+  PatchedToyRequest,
+  SessionRequest as ApiSessionRequest,
+  ToyRequest as ApiToyRequest,
+} from './generated/schemas';
+import { APIError, type Session, type SessionPayload, type TokenPair, type Toy, type ToyPayload } from './types';
 
 // ---------- Token endpoints ----------
 
@@ -93,3 +103,27 @@ export const importFromFile = async (file: File): Promise<{ created: number }> =
   const { data } = await toysToysImportCreate(envelope);
   return data;
 };
+
+// ---------- Sessions ----------
+
+export const fetchSessions = async (): Promise<Session[]> => {
+  const { data } = await toysSessionsList();
+  return data.map((s) => snakeToCamel<Session>(s));
+};
+
+export const fetchSession = async (id: number): Promise<Session> => {
+  const { data } = await toysSessionsRetrieve(id);
+  return snakeToCamel<Session>(data);
+};
+
+export const createSession = async (payload: SessionPayload): Promise<Session> => {
+  const { data } = await toysSessionsCreate(camelToSnake<ApiSessionRequest>(payload));
+  return snakeToCamel<Session>(data);
+};
+
+export const updateSession = async (id: number, payload: SessionPayload): Promise<Session> => {
+  const { data } = await toysSessionsUpdate(id, camelToSnake<ApiSessionRequest>(payload));
+  return snakeToCamel<Session>(data);
+};
+
+export const deleteSession = (id: number) => toysSessionsDestroy(id);
