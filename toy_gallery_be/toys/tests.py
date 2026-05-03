@@ -438,11 +438,58 @@ class SessionTests(TestCase):
     def _session_payload(self, entries, started_at="2026-05-02T21:14:00Z"):
         return {"started_at": started_at, "entries": entries}
 
-    def test_peak_dimensions_only_count_inserted_toys(self):
-        # toy_a has insertable_length=170, max section circumference=220 (per
-        # _payload defaults). Same for toy_b. Make a session where toy_a is
-        # "used" (skipped) and toy_b is "fully inserted" → peaks come only
-        # from toy_b.
+    def test_used_contributes_neither_length_nor_circumference(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload([{"toy": self.toy_a, "involvement": "USED"}]),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertIsNone(response.data["max_insertable_length"])
+        self.assertIsNone(response.data["max_circumference"])
+
+    def test_inserted_contributes_circumference_but_not_length(self):
+        # toy_a has insertable_length=170, max section circumference=220.
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload([{"toy": self.toy_a, "involvement": "INSERTED"}]),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertIsNone(response.data["max_insertable_length"])
+        self.assertEqual(response.data["max_circumference"], 220)
+
+    def test_fully_inserted_contributes_both(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [{"toy": self.toy_a, "involvement": "FULLY_INSERTED"}]
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.data["max_insertable_length"], 170)
+        self.assertEqual(response.data["max_circumference"], 220)
+
+    def test_peak_length_only_from_fully_inserted_when_mixed(self):
+        # toy_a INSERTED → contributes circ but not length.
+        # toy_b FULLY_INSERTED → contributes both. Length should come from
+        # toy_b alone; circumference is a tie at 220.
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [
+                    {"toy": self.toy_a, "involvement": "INSERTED"},
+                    {"toy": self.toy_b, "involvement": "FULLY_INSERTED"},
+                ]
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.data["max_insertable_length"], 170)
+        self.assertEqual(response.data["max_circumference"], 220)
+
+    def test_used_and_fully_inserted_drops_used(self):
         response = self.client.post(
             "/toys/sessions/",
             self._session_payload(
@@ -456,16 +503,6 @@ class SessionTests(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         self.assertEqual(response.data["max_insertable_length"], 170)
         self.assertEqual(response.data["max_circumference"], 220)
-
-    def test_peak_dimensions_are_null_when_no_toys_inserted(self):
-        response = self.client.post(
-            "/toys/sessions/",
-            self._session_payload([{"toy": self.toy_a, "involvement": "USED"}]),
-            format="json",
-        )
-        self.assertEqual(response.status_code, 201, response.content)
-        self.assertIsNone(response.data["max_insertable_length"])
-        self.assertIsNone(response.data["max_circumference"])
 
     def test_create_with_mixed_involvement(self):
         response = self.client.post(
@@ -637,8 +674,11 @@ class SessionActivityTests(TestCase):
 
     def test_multiple_sessions_same_day_take_overall_max(self):
         now = self._timezone.now()
-        # Two sessions on the same day, both fully inserting toy_a (default
-        # length=170, circumference=220 from _payload).
+        # Both toys default to insertable_length=170 and section
+        # circumference=220 (from _payload). Session 1 fully-inserts toy_a
+        # (length + circ contribute); session 2 inserts toy_b (only circ
+        # contributes). Day length comes from session 1; day circ ties
+        # across both.
         self._make_session([{"toy": self.toy_a, "involvement": "FULLY_INSERTED"}], now)
         self._make_session([{"toy": self.toy_b, "involvement": "INSERTED"}], now)
         response = self.client.get("/toys/sessions/activity/")
