@@ -151,4 +151,10 @@ class ExportEnvelopeSerializer(serializers.Serializer):
 
 
 class ImportSummarySerializer(serializers.Serializer):
-    created = serializers.IntegerField()
+    toys_created = serializers.IntegerField()
+    sessions_created = serializers.IntegerField()
+
+
+class DeleteCollectionSummarySerializer(serializers.Serializer):
+    toys_deleted = serializers.IntegerField()
+    sessions_deleted = serializers.IntegerField()

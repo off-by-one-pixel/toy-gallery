@@ -7,6 +7,7 @@ import {
   toysSessionsUpdate,
   toysTokenCreate,
   toysToysCreate,
+  toysToysDeleteAllDestroy,
   toysToysDestroy,
   toysToysExportRetrieve,
   toysToysImportCreate,
@@ -106,10 +107,18 @@ export const downloadExport = async (): Promise<void> => {
   triggerBrowserDownload(data, EXPORT_FILENAME(date));
 };
 
-export const importFromFile = async (file: File): Promise<{ created: number }> => {
+export const importFromFile = async (file: File): Promise<{ toys_created: number; sessions_created: number }> => {
   const text = await file.text();
   const envelope = JSON.parse(text) as ExportEnvelopeRequest;
   const { data } = await toysToysImportCreate(envelope);
+  return data;
+};
+
+export const deleteCollection = async (): Promise<{
+  toys_deleted: number;
+  sessions_deleted: number;
+}> => {
+  const { data } = await toysToysDeleteAllDestroy();
   return data;
 };
 

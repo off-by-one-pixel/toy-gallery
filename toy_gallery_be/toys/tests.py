@@ -172,10 +172,11 @@ class CustomAttributesTests(TestCase):
 
 class ExportRegistryTests(TestCase):
     def test_latest_returns_highest_version(self):
-        self.assertIs(export_mod.latest(), export_mod.ExportV1)
+        self.assertIs(export_mod.latest(), export_mod.ExportV2)
 
     def test_for_version_returns_handler(self):
         self.assertIs(export_mod.for_version(1), export_mod.ExportV1)
+        self.assertIs(export_mod.for_version(2), export_mod.ExportV2)
 
     def test_for_version_rejects_unknown(self):
         from rest_framework.exceptions import ValidationError
@@ -206,13 +207,15 @@ class ExportImportTests(TestCase):
         response = self.client.get("/toys/toys/export/")
         self.assertEqual(response.status_code, 200, response.content)
         data = response.data
-        self.assertEqual(data["version"], 1)
+        self.assertEqual(data["version"], 2)
         self.assertIn("exported_at", data)
+        self.assertIn("sessions", data)
         self.assertEqual(len(data["toys"]), 1)
         toy = data["toys"][0]
         # Scalar mm shape (NOT the {mm, in} dict).
         self.assertEqual(toy["brand"], "Acme")
         self.assertEqual(toy["insertable_length"], 170)
+        self.assertEqual(toy["_id"], 0)
         section = toy["shape"]["sections"][1]
         self.assertEqual(section["circumference"], 220.0)
         self.assertNotIsInstance(section["height"], dict)
@@ -256,7 +259,7 @@ class ExportImportTests(TestCase):
             "/toys/toys/import/", exported, format="json"
         )
         self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(response.data, {"created": before})
+        self.assertEqual(response.data, {"toys_created": before, "sessions_created": 0})
         self.assertEqual(models.Toy.objects.count(), before * 2)
 
     def test_import_rejects_missing_version(self):
@@ -281,6 +284,139 @@ class ExportImportTests(TestCase):
         response = self.client.post("/toys/toys/import/", envelope, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(models.Toy.objects.count(), before)
+
+
+class ExportV2SessionsTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        self.toy_a = self._create_toy("A")
+        self.toy_b = self._create_toy("B")
+
+    def _create_toy(self, name):
+        payload = _payload(section_circumferences=(None, 220.0, None))
+        payload["name"] = name
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data["id"]
+
+    def _create_session(self, entries, started_at="2026-04-01T10:00:00Z"):
+        response = self.client.post(
+            "/toys/sessions/",
+            {"started_at": started_at, "entries": entries},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data["id"]
+
+    def test_v2_round_trip_includes_sessions(self):
+        self._create_session(
+            [
+                {"toy": self.toy_a, "involvement": "FULLY_INSERTED"},
+                {"toy": self.toy_b, "involvement": "USED"},
+            ],
+            started_at="2026-04-01T10:00:00Z",
+        )
+        exported = self.client.get("/toys/toys/export/").data
+        self.assertEqual(exported["version"], 2)
+        self.assertEqual(len(exported["sessions"]), 1)
+        local_ids = {t["_id"] for t in exported["toys"]}
+        self.assertEqual(local_ids, {0, 1})
+        for entry in exported["sessions"][0]["entries"]:
+            self.assertIn(entry["toy_id"], local_ids)
+
+        models.Session.objects.all().delete()
+        models.Toy.objects.all().delete()
+
+        response = self.client.post("/toys/toys/import/", exported, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(
+            response.data, {"toys_created": 2, "sessions_created": 1}
+        )
+        self.assertEqual(models.Toy.objects.count(), 2)
+        self.assertEqual(models.Session.objects.count(), 1)
+        session = models.Session.objects.get()
+        involvements = {e.involvement for e in session.entries.all()}
+        self.assertEqual(involvements, {"FULLY_INSERTED", "USED"})
+        toy_names = {e.toy.name for e in session.entries.all()}
+        self.assertEqual(toy_names, {"A", "B"})
+
+    def test_v2_import_rejects_unknown_toy_id_in_session_entry(self):
+        envelope = {
+            "version": 2,
+            "exported_at": "x",
+            "toys": [
+                {**_payload(section_circumferences=(None, 200.0, None)), "_id": 0},
+            ],
+            "sessions": [
+                {
+                    "started_at": "2026-04-01T10:00:00Z",
+                    "entries": [{"toy_id": 99, "involvement": "USED"}],
+                }
+            ],
+        }
+        before_toys = models.Toy.objects.count()
+        before_sessions = models.Session.objects.count()
+        response = self.client.post("/toys/toys/import/", envelope, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(models.Toy.objects.count(), before_toys)
+        self.assertEqual(models.Session.objects.count(), before_sessions)
+
+    def test_v1_envelope_still_imports_under_v2_codepath(self):
+        envelope = {
+            "version": 1,
+            "exported_at": "x",
+            "toys": [_payload(section_circumferences=(None, 200.0, None))],
+        }
+        response = self.client.post("/toys/toys/import/", envelope, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(
+            response.data, {"toys_created": 1, "sessions_created": 0}
+        )
+
+
+class DeleteCollectionTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+
+    def _create_toy(self, name="Demo"):
+        payload = _payload(section_circumferences=(None, 220.0, None))
+        payload["name"] = name
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data["id"]
+
+    def test_wipes_toys_and_sessions(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        self.client.post(
+            "/toys/sessions/",
+            {
+                "started_at": "2026-04-01T10:00:00Z",
+                "entries": [
+                    {"toy": toy_a, "involvement": "FULLY_INSERTED"},
+                    {"toy": toy_b, "involvement": "USED"},
+                ],
+            },
+            format="json",
+        )
+
+        response = self.client.delete("/toys/toys/delete_all/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data, {"toys_deleted": 2, "sessions_deleted": 1})
+        self.assertEqual(models.Toy.objects.count(), 0)
+        self.assertEqual(models.Session.objects.count(), 0)
+        self.assertEqual(models.ToySessionEntry.objects.count(), 0)
+        self.assertEqual(models.Shape.objects.count(), 0)
+        self.assertEqual(models.ShapeSection.objects.count(), 0)
+
+    def test_empty_collection_returns_zero_counts(self):
+        response = self.client.delete("/toys/toys/delete_all/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data, {"toys_deleted": 0, "sessions_deleted": 0})
 
 
 class SessionTests(TestCase):

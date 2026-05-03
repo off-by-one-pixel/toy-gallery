@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import timedelta
 
+from django.db import transaction
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -57,8 +58,24 @@ class ToyViewSet(viewsets.ModelViewSet):
                 "Payload must be an object with a 'version' field."
             )
         handler = export_mod.for_version(data["version"])
-        created = handler.import_(data)
-        return Response({"created": created}, status=201)
+        return Response(handler.import_(data), status=201)
+
+    @extend_schema(responses={200: serializers.DeleteCollectionSummarySerializer})
+    @action(detail=False, methods=["delete"], url_path="delete_all")
+    def delete_all(self, request):
+        with transaction.atomic():
+            sessions_deleted = models.Session.objects.count()
+            toys_deleted = models.Toy.objects.count()
+            # Sessions first — ToySessionEntry.toy is on_delete=PROTECT.
+            # Then toys, then shapes — Toy.shape is a OneToOneField that
+            # cascades from Shape to Toy, not the other way, so shapes are
+            # left orphaned by toy deletion and we wipe them explicitly.
+            models.Session.objects.all().delete()
+            models.Toy.objects.all().delete()
+            models.Shape.objects.all().delete()
+        return Response(
+            {"toys_deleted": toys_deleted, "sessions_deleted": sessions_deleted}
+        )
 
 
 ACTIVITY_WINDOW_DAYS = 365

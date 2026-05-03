@@ -353,6 +353,20 @@ paths:
       responses:
         '204':
           description: No response body
+  /toys/toys/delete_all/:
+    delete:
+      operationId: toys_toys_delete_all_destroy
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteCollectionSummary'
+          description: ''
   /toys/toys/export/:
     get:
       operationId: toys_toys_export_retrieve
@@ -425,6 +439,16 @@ components:
             $ref: '#/components/schemas/ActivityDay'
       required:
       - days
+    DeleteCollectionSummary:
+      type: object
+      properties:
+        toys_deleted:
+          type: integer
+        sessions_deleted:
+          type: integer
+      required:
+      - sessions_deleted
+      - toys_deleted
     ExportEnvelope:
       type: object
       properties:
@@ -461,10 +485,13 @@ components:
     ImportSummary:
       type: object
       properties:
-        created:
+        toys_created:
+          type: integer
+        sessions_created:
           type: integer
       required:
-      - created
+      - sessions_created
+      - toys_created
     InvolvementEnum:
       enum:
       - USED
