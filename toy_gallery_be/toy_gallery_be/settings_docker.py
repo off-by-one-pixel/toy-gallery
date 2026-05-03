@@ -19,8 +19,10 @@ DEBUG = False
 # the public origin once you front it with HTTPS.
 ALLOWED_HOSTS = ["*"]
 
+# /data is created by the Docker entrypoint before any python command runs;
+# this module stays import-side-effect free so a local sibling settings file
+# can `from .settings_docker import *` without needing /data to exist.
 DATA_DIR = Path("/data")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _resolve_secret_key() -> str:
