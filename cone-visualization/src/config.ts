@@ -20,3 +20,6 @@ export const API_CONFIG = {
     return resolveBaseUrl();
   },
 };
+
+export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? 'dev';
+export const APP_COMMIT_SHA = (process.env.NEXT_PUBLIC_APP_COMMIT_SHA ?? '').slice(0, 7);

@@ -1,4 +1,4 @@
-name: Build and publish Docker image
+name: Build edge Docker image
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and push to GHCR
+    name: Build and push :edge to GHCR
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,15 +30,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute short SHA
+        id: sha
+        run: echo "short=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
       - name: Extract image metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/toy-gallery
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=edge
             type=sha,prefix=sha-,format=short
-            type=ref,event=branch
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -48,5 +51,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=edge
+            APP_COMMIT_SHA=${{ steps.sha.outputs.short }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
