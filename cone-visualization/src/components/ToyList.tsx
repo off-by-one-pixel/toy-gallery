@@ -5,7 +5,7 @@ import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 
-import { ATTRIBUTES_HEADING, SHAPE_LABEL } from '../labels';
+import { ATTRIBUTES_HEADING, SHAPE_LABEL, TOY_CIRCUMFERENCE, TOY_CIRCUMFERENCE_SHORT } from '../labels';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
@@ -15,18 +15,21 @@ import AttributesPanel from './AttributesPanel';
 
 const DEFAULT_FILL = '#c7e4ee';
 
+// Action buttons are absolute-positioned over the row on hover — they don't
+// claim a grid column, so the brand/name column has more room and the grid
+// layout doesn't change between hover states.
 const GRID_COLS =
-  'grid-cols-[44px_2fr_1fr_1fr_40px] ' +
-  'min-[640px]:grid-cols-[48px_2fr_70px_1fr_1fr_76px] ' +
-  'min-[900px]:grid-cols-[56px_2fr_70px_100px_120px_100px_100px_76px]';
+  'grid-cols-[44px_3fr_1fr_1fr] ' +
+  'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr] ' +
+  'min-[900px]:grid-cols-[56px_1fr_70px_100px_120px_100px_110px]';
 
 // SortHeader buttons need `inline-flex` at the breakpoint so the chevron
 // stays inline; plain cells can use `block`.
 const HIDDEN_SIZE = 'hidden min-[640px]:block';
 const HIDDEN_LENGTH = 'hidden min-[900px]:block';
 const HIDDEN_DIAMETER = 'hidden min-[900px]:block';
-const HIDDEN_LENGTH_HEADER = 'hidden min-[900px]:inline-flex';
-const HIDDEN_DIAMETER_HEADER = 'hidden min-[900px]:inline-flex';
+const HIDDEN_LENGTH_HEADER = 'hidden! min-[900px]:inline-flex!';
+const HIDDEN_DIAMETER_HEADER = 'hidden! min-[900px]:inline-flex!';
 
 type Props = {
   toys: Toy[];
@@ -63,15 +66,22 @@ function ListHeader({ sort, onSort }: { sort: Sort | null; onSort: (column: Sort
   return (
     <div
       className={
-        `grid items-center gap-x-3 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400 min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
+        `grid items-center gap-x-3 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-neutral-400 min-[640px]:gap-x-3.5 min-[640px]:px-5 min-[640px]:text-[10px] min-[640px]:tracking-[0.08em] ` +
         GRID_COLS
       }
     >
       <span />
-      <SortHeader label="Brand / Model" column="name" sort={sort} onSort={onSort} />
+      <SortHeader label="Brand / Model" shortLabel="Model" column="name" sort={sort} onSort={onSort} />
       <span className={HIDDEN_SIZE}>Size</span>
-      <SortHeader label="Insertable" column="insertable" sort={sort} onSort={onSort} align="right" />
-      <SortHeader label="Circumference" column="circumference" sort={sort} onSort={onSort} align="right" />
+      <SortHeader label="Insertable" shortLabel="Ins" column="insertable" sort={sort} onSort={onSort} align="right" />
+      <SortHeader
+        label="Circumference"
+        shortLabel="Circ"
+        column="circumference"
+        sort={sort}
+        onSort={onSort}
+        align="right"
+      />
       <SortHeader
         label="Length"
         column="length"
@@ -88,13 +98,13 @@ function ListHeader({ sort, onSort }: { sort: Sort | null; onSort: (column: Sort
         align="right"
         className={HIDDEN_DIAMETER_HEADER}
       />
-      <span />
     </div>
   );
 }
 
 function SortHeader({
   label,
+  shortLabel,
   column,
   sort,
   onSort,
@@ -102,6 +112,7 @@ function SortHeader({
   className,
 }: {
   label: string;
+  shortLabel?: string;
   column: SortColumn;
   sort: Sort | null;
   onSort: (column: SortColumn) => void;
@@ -118,7 +129,14 @@ function SortHeader({
         active ? 'text-neutral-700' : ''
       } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`}
     >
-      <span className="whitespace-nowrap">{label}</span>
+      {shortLabel ? (
+        <>
+          <span className="whitespace-nowrap md:hidden">{shortLabel}</span>
+          <span className="hidden whitespace-nowrap md:inline">{label}</span>
+        </>
+      ) : (
+        <span className="whitespace-nowrap">{label}</span>
+      )}
       <ChevronDown
         size={8}
         strokeWidth={2.5}
@@ -158,7 +176,7 @@ function ToyRow({
           }
         }}
         className={
-          `group grid cursor-pointer items-center gap-x-3 border-b border-neutral-200 px-4 py-2.5 transition-colors hover:bg-neutral-50 min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
+          `group relative grid cursor-pointer items-center gap-x-3 border-b border-neutral-200 px-4 py-2.5 transition-colors hover:bg-neutral-50 min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
           GRID_COLS +
           (open ? ' bg-blue-50/50' : '')
         }
@@ -177,7 +195,7 @@ function ToyRow({
         <Metric value={toy.height} unit={unit} muted className={HIDDEN_LENGTH} />
         <Metric value={toy.diameter} unit={unit} muted className={HIDDEN_DIAMETER} />
         <div
-          className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-white/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
           onClick={(e) => e.stopPropagation()}
         >
           <Button variant="outline" size="sm" isIconOnly aria-label="Edit" onPress={onEdit}>
@@ -214,9 +232,11 @@ function Thumb({ toy }: { toy: Toy }) {
 function NameCol({ toy }: { toy: Toy }) {
   return (
     <div className="min-w-0">
-      <div className="truncate text-[11px] font-normal uppercase tracking-[0.06em] text-neutral-500">{toy.brand}</div>
+      <div className="truncate text-[10px] font-normal uppercase tracking-[0.06em] text-neutral-500 min-[640px]:text-[11px]">
+        {toy.brand}
+      </div>
       <div className="flex min-w-0 items-center gap-1.5">
-        <span className="truncate text-base font-semibold text-neutral-900">{toy.name}</span>
+        <span className="truncate text-sm font-semibold text-neutral-900 min-[640px]:text-base">{toy.name}</span>
         {toy.size && (
           <Chip size="sm" color="accent" className="shrink-0 min-[640px]:hidden">
             <Chip.Label>{toy.size}</Chip.Label>
@@ -258,7 +278,7 @@ function Metric({
 
 function ExpandedPanel({ toy }: { toy: Toy }) {
   return (
-    <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 pl-18 text-xs min-[640px]:px-5 min-[640px]:pl-19 min-[900px]:pl-21">
+    <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-xs min-[640px]:px-5">
       <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Top shape</dt>
         <dd className="text-neutral-900">{SHAPE_LABEL[toy.shape.topSectionShape ?? SectionShape.FLAT]}</dd>
@@ -299,10 +319,20 @@ function SectionLine({ n, d, h, c }: { n: number; d: number; h: number; c: numbe
   return (
     <>
       <span className="text-neutral-400">#{n}</span>
-      <span>{Math.round(d)} mm</span>
+      <span className="whitespace-nowrap">{Math.round(d)} mm</span>
       <span className="text-neutral-400">×</span>
-      <span>{Math.round(h)} mm</span>
-      <span className="text-neutral-600">{c != null ? `${Math.round(c)} mm circumference` : ''}</span>
+      <span className="whitespace-nowrap">{Math.round(h)} mm</span>
+      <span className="text-neutral-600">
+        {c != null ? (
+          <>
+            <span className="whitespace-nowrap">{Math.round(c)} mm</span>{' '}
+            <span className="sm:hidden">{TOY_CIRCUMFERENCE_SHORT}</span>
+            <span className="hidden sm:inline">{TOY_CIRCUMFERENCE}</span>
+          </>
+        ) : (
+          ''
+        )}
+      </span>
     </>
   );
 }

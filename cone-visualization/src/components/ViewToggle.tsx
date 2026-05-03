@@ -19,11 +19,11 @@ export default function ViewToggle() {
     >
       <ToggleButton id={ViewMode.cards} aria-label="Cards">
         <LayoutGrid size={13} strokeWidth={2} />
-        <span>Cards</span>
+        <span className="hidden sm:inline">Cards</span>
       </ToggleButton>
       <ToggleButton id={ViewMode.list} aria-label="List">
         <List size={13} strokeWidth={2} />
-        <span>List</span>
+        <span className="hidden sm:inline">List</span>
       </ToggleButton>
     </ToggleButtonGroup>
   );

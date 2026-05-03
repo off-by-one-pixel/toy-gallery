@@ -70,8 +70,8 @@ const ConeList = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
-        <div className="relative mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
+      <div className="bg-neutral-100/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-3 px-4 py-2.5 sm:px-6">
           <h1 className="m-0">
             <CollectionMenu
               onImported={updateLastChanged}
@@ -83,21 +83,23 @@ const ConeList = () => {
             />
           </h1>
           <SectionTabs />
-          <div className="pointer-events-none absolute left-1/2 -translate-x-1/2">
-            <div className="pointer-events-auto">
-              <SearchInput value={query} onChange={setQuery} />
-            </div>
+        </div>
+      </div>
+      <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
+          <div className="w-full sm:w-auto">
+            <SearchInput value={query} onChange={setQuery} />
           </div>
-          <div className="flex-1" />
           <ViewToggle />
           <UnitToggle />
+          <div className="flex-1" />
           <Button variant="outline" size="sm" onPress={() => router.push('/sessions/new')}>
             <CalendarClock size={14} strokeWidth={1.8} />
-            New session
+            <span className="hidden md:inline">New session</span>
           </Button>
           <Button variant="primary" size="sm" onPress={() => setEditorMode({ kind: 'new' })}>
             <Plus size={14} strokeWidth={2.2} />
-            New Toy
+            <span className="hidden md:inline">New Toy</span>
           </Button>
         </div>
       </header>

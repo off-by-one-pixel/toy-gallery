@@ -30,6 +30,9 @@ export const ATTRIBUTE_SAVE_ERROR = 'Could not save attributes';
 export const TOY_ITEM_SINGULAR = 'item';
 export const TOY_ITEM_PLURAL = 'items';
 
+export const TOY_CIRCUMFERENCE = 'circumference';
+export const TOY_CIRCUMFERENCE_SHORT = 'circ.';
+
 // ---- Sessions ----
 
 export const INVOLVEMENT_LABEL: Record<Involvement, string> = {
