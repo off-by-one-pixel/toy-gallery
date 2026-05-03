@@ -1,5 +1,6 @@
 import { InvolvementEnum, SectionShapeEnum } from './generated/schemas';
 import type {
+  ActivityDay as ApiActivityDay,
   Session as ApiSession,
   SessionRequest as ApiSessionRequest,
   Toy as ApiToy,
@@ -38,6 +39,8 @@ export const Involvement = InvolvementEnum;
 export type SessionEntry = SnakeToCamel<ApiSessionEntry>;
 export type Session = SnakeToCamel<ApiSession>;
 export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
+
+export type ActivityDay = SnakeToCamel<ApiActivityDay>;
 
 // ---------- Attribute editor row ----------
 

@@ -8,9 +8,16 @@ import { ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { fetchCones, fetchSessions } from '../services/api';
+import { fetchActivity, fetchCones, fetchSessions } from '../services/api';
 import { heightScale } from '../services/scaling';
-import { Involvement, SectionShape, type Session, type SessionEntry, type Toy } from '../services/types';
+import {
+  Involvement,
+  SectionShape,
+  type ActivityDay,
+  type Session,
+  type SessionEntry,
+  type Toy,
+} from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
 import { formatValue } from '../services/units';
@@ -22,12 +29,13 @@ import {
   SESSION_FILTER_ALL,
   SESSION_FILTER_MONTH,
   SESSION_FILTER_WEEK,
-  SESSION_PEAK_DIAMETER,
+  SESSION_PEAK_CIRCUMFERENCE,
   SESSION_PEAK_LENGTH,
   SESSION_TOY_DELETED,
   SESSIONS_NEW_BUTTON,
   SESSIONS_RECORDED,
 } from '../labels';
+import ActivityTracker from './ActivityTracker';
 import CollectionMenu from './CollectionMenu';
 import SectionTabs from './SectionTabs';
 
@@ -74,6 +82,7 @@ export default function SessionList() {
   const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
+  const [activity, setActivity] = useState<ActivityDay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
@@ -85,15 +94,16 @@ export default function SessionList() {
     let cancelled = false;
     runInline(
       async () => {
-        const [s, t] = await Promise.all([fetchSessions(), fetchCones()]);
-        return { sessions: s, toys: t };
+        const [s, t, a] = await Promise.all([fetchSessions(), fetchCones(), fetchActivity()]);
+        return { sessions: s, toys: t, activity: a };
       },
       {
         busy: setIsLoading,
-        onSuccess: ({ sessions, toys }) => {
+        onSuccess: ({ sessions, toys, activity }) => {
           if (cancelled) return;
           setSessions(sessions);
           setToys(toys);
+          setActivity(activity);
           setError(null);
         },
       },
@@ -155,6 +165,11 @@ export default function SessionList() {
           <Alert status="danger" className="mb-4">
             <Alert.Description>{error}</Alert.Description>
           </Alert>
+        )}
+        {!isLoading && (
+          <div className="mb-4">
+            <ActivityTracker days={activity} />
+          </div>
         )}
         {isLoading ? (
           <div className="flex justify-center py-20 text-neutral-500">
@@ -220,7 +235,7 @@ function SessionRow({
         </div>
         <div className="min-w-27.5 text-right shrink-0 sm:order-3">
           <PeakRow label={SESSION_PEAK_LENGTH} mm={session.maxInsertableLength} unit={unit} />
-          <PeakRow label={SESSION_PEAK_DIAMETER} mm={session.maxDiameter} unit={unit} />
+          <PeakRow label={SESSION_PEAK_CIRCUMFERENCE} mm={session.maxCircumference} unit={unit} />
         </div>
       </div>
     </div>

@@ -50,7 +50,7 @@ export const SESSION_FILTER_WEEK = 'This week';
 export const SESSION_FILTER_MONTH = 'This month';
 
 export const SESSION_PEAK_LENGTH = 'max len';
-export const SESSION_PEAK_DIAMETER = 'max dia';
+export const SESSION_PEAK_CIRCUMFERENCE = 'max circ';
 export const SESSION_TOY_DELETED = 'deleted';
 export const SESSION_EMPTY = 'No sessions yet — record your first one.';
 export const SESSION_EMPTY_FILTERED_PREFIX = 'No sessions in';
