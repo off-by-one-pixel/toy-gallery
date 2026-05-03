@@ -6,7 +6,7 @@ import type { StyleOption, Toy as EditorToy } from 'cone-editor';
 import { Alert, Button, ColorSwatchPicker, Modal, NumberField, useOverlayState } from '@heroui/react';
 import TextInput from './TextInput';
 import { ArrowLeft } from 'lucide-react';
-import { createToy, replaceToy } from '../services/api';
+import { createToy, patchToy } from '../services/api';
 import { SectionShape, type Toy, type ToyPayload } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
@@ -132,10 +132,16 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
         })),
       },
     };
-    await runAction(() => (mode.kind === 'edit' ? replaceToy(mode.toy.id, payload) : createToy(payload)), {
-      busy: setSaving,
-      onSuccess: onSaved,
-    });
+    await runAction(
+      async () => {
+        if (mode.kind === 'edit') await patchToy(mode.toy.id, payload);
+        else await createToy(payload);
+      },
+      {
+        busy: setSaving,
+        onSuccess: onSaved,
+      },
+    );
   };
 
   const title = isEdit

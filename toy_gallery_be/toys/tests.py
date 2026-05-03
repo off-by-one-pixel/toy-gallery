@@ -175,6 +175,110 @@ class CustomAttributesTests(TestCase):
         self.assertEqual(response.data["custom_attributes"], {"firmness": ""})
 
 
+class PatchToyShapeTests(TestCase):
+    """PATCH /toys/toys/<id>/ with a nested `shape` updates the toy in place
+    instead of forcing the frontend to do POST-then-DELETE. Same toy id,
+    same sessions intact, atomic — and it works on toys that are
+    referenced by sessions (the old codepath couldn't, because PROTECT
+    blocks delete)."""
+
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        self.toy = self.client.post(
+            "/toys/toys/",
+            _payload(section_circumferences=(None, 220.0, None)),
+            format="json",
+        ).data
+
+    def test_patch_replaces_shape_in_place(self):
+        new_shape = {
+            "top_section_shape": "CONE",
+            "sections": [
+                {"order": 0, "diameter": 100, "height": 50, "circumference": 314.16},
+                {"order": 1, "diameter": 60, "height": 40, "circumference": None},
+            ],
+        }
+        response = self.client.patch(
+            f"/toys/toys/{self.toy['id']}/",
+            {"shape": new_shape},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["id"], self.toy["id"])
+        self.assertEqual(response.data["shape"]["top_section_shape"], "CONE")
+        self.assertEqual(len(response.data["shape"]["sections"]), 2)
+        self.assertEqual(response.data["shape"]["sections"][0]["circumference"], 314.16)
+        self.assertEqual(models.Toy.objects.count(), 1)
+        # Sections are wholesale-replaced — no orphans hanging around.
+        self.assertEqual(models.ShapeSection.objects.count(), 2)
+
+    def test_patch_without_shape_leaves_sections_untouched(self):
+        original_section_ids = sorted(
+            s.id for s in models.Toy.objects.get(pk=self.toy["id"]).shape.sections.all()
+        )
+        response = self.client.patch(
+            f"/toys/toys/{self.toy['id']}/",
+            {"name": "Renamed"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["name"], "Renamed")
+        self.assertEqual(
+            sorted(s.id for s in models.Toy.objects.get(pk=self.toy["id"]).shape.sections.all()),
+            original_section_ids,
+        )
+
+    def test_patch_works_on_toy_referenced_by_session(self):
+        # Reproduces the old footgun: editing a toy that's in a session used
+        # to fail because the create-then-delete flow couldn't delete the
+        # original (PROTECT FK from ToySessionEntry).
+        session_response = self.client.post(
+            "/toys/sessions/",
+            {
+                "started_at": "2026-04-01T10:00:00Z",
+                "entries": [{"toy": self.toy["id"], "involvement": "FULLY_INSERTED"}],
+            },
+            format="json",
+        )
+        self.assertEqual(session_response.status_code, 201, session_response.content)
+
+        new_shape = {
+            "top_section_shape": "EGG",
+            "sections": [
+                {"order": 0, "diameter": 80, "height": 40, "circumference": 251.33},
+            ],
+        }
+        response = self.client.patch(
+            f"/toys/toys/{self.toy['id']}/",
+            {"shape": new_shape, "name": "Edited"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["id"], self.toy["id"])
+        # Session entry still points at the same toy.
+        entry = models.ToySessionEntry.objects.get()
+        self.assertEqual(entry.toy_id, self.toy["id"])
+
+    def test_patch_rejects_shape_with_no_circumferences(self):
+        response = self.client.patch(
+            f"/toys/toys/{self.toy['id']}/",
+            {
+                "shape": {
+                    "sections": [
+                        {"order": 0, "diameter": 50, "height": 30, "circumference": None},
+                    ],
+                }
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        # Original shape preserved on validation failure.
+        original = models.Toy.objects.get(pk=self.toy["id"])
+        self.assertEqual(original.shape.sections.count(), 3)
+
+
 class ExportRegistryTests(TestCase):
     def test_latest_returns_highest_version(self):
         self.assertIs(export_mod.latest(), export_mod.ExportV2)
