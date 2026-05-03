@@ -1,3 +1,6 @@
+from collections import defaultdict
+from datetime import timedelta
+
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -8,6 +11,7 @@ from rest_framework.response import Response
 
 from . import export as export_mod
 from . import models, serializers
+from .dimensions import SessionDimensions
 
 
 class ToyViewSet(viewsets.ModelViewSet):
@@ -57,9 +61,45 @@ class ToyViewSet(viewsets.ModelViewSet):
         return Response({"created": created}, status=201)
 
 
+ACTIVITY_WINDOW_DAYS = 365
+
+
 class SessionViewSet(viewsets.ModelViewSet):
     queryset = (
         models.Session.objects.prefetch_related("entries", "entries__toy")
         .order_by("-started_at")
     )
     serializer_class = serializers.SessionSerializer
+
+    @extend_schema(responses=serializers.ActivityResponseSerializer)
+    @action(detail=False, methods=["get"], url_path="activity")
+    def activity(self, request):
+        cutoff = timezone.now() - timedelta(days=ACTIVITY_WINDOW_DAYS - 1)
+        sessions = (
+            models.Session.objects.filter(started_at__gte=cutoff)
+            .prefetch_related("entries", "entries__toy", "entries__toy__shape__sections")
+        )
+
+        buckets: dict = defaultdict(list)
+        for session in sessions:
+            local_date = timezone.localtime(session.started_at).date()
+            buckets[local_date].append(session)
+
+        days = []
+        for day, day_sessions in sorted(buckets.items()):
+            lengths = [
+                v for v in (SessionDimensions.peak_length(s) for s in day_sessions) if v is not None
+            ]
+            circs = [
+                v for v in (SessionDimensions.peak_circumference(s) for s in day_sessions) if v is not None
+            ]
+            days.append(
+                {
+                    "date": day,
+                    "session_count": len(day_sessions),
+                    "max_insertable_length": max(lengths) if lengths else None,
+                    "max_circumference": max(circs) if circs else None,
+                }
+            )
+
+        return Response({"days": days})

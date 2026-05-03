@@ -144,6 +144,20 @@ paths:
       responses:
         '204':
           description: No response body
+  /toys/sessions/activity/:
+    get:
+      operationId: toys_sessions_activity_retrieve
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+          description: ''
   /toys/token/:
     post:
       operationId: toys_token_create
@@ -381,6 +395,36 @@ paths:
           description: ''
 components:
   schemas:
+    ActivityDay:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        session_count:
+          type: integer
+        max_insertable_length:
+          type: number
+          format: double
+          nullable: true
+        max_circumference:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - date
+      - max_circumference
+      - max_insertable_length
+      - session_count
+    ActivityResponse:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityDay'
+      required:
+      - days
     ExportEnvelope:
       type: object
       properties:
@@ -506,7 +550,7 @@ components:
           format: double
           nullable: true
           readOnly: true
-        max_diameter:
+        max_circumference:
           type: number
           format: double
           nullable: true
@@ -514,7 +558,7 @@ components:
       required:
       - entries
       - id
-      - max_diameter
+      - max_circumference
       - max_insertable_length
       - started_at
     SessionRequest:

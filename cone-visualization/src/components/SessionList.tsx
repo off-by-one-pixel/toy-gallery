@@ -8,9 +8,16 @@ import { ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { fetchCones, fetchSessions } from '../services/api';
+import { fetchActivity, fetchCones, fetchSessions } from '../services/api';
 import { heightScale } from '../services/scaling';
-import { Involvement, SectionShape, type Session, type SessionEntry, type Toy } from '../services/types';
+import {
+  Involvement,
+  SectionShape,
+  type ActivityDay,
+  type Session,
+  type SessionEntry,
+  type Toy,
+} from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
 import { formatValue } from '../services/units';
@@ -22,12 +29,13 @@ import {
   SESSION_FILTER_ALL,
   SESSION_FILTER_MONTH,
   SESSION_FILTER_WEEK,
-  SESSION_PEAK_DIAMETER,
+  SESSION_PEAK_CIRCUMFERENCE,
   SESSION_PEAK_LENGTH,
   SESSION_TOY_DELETED,
   SESSIONS_NEW_BUTTON,
   SESSIONS_RECORDED,
 } from '../labels';
+import ActivityTracker from './ActivityTracker';
 import CollectionMenu from './CollectionMenu';
 import SectionTabs from './SectionTabs';
 
@@ -74,6 +82,7 @@ export default function SessionList() {
   const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
+  const [activity, setActivity] = useState<ActivityDay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
@@ -85,15 +94,16 @@ export default function SessionList() {
     let cancelled = false;
     runInline(
       async () => {
-        const [s, t] = await Promise.all([fetchSessions(), fetchCones()]);
-        return { sessions: s, toys: t };
+        const [s, t, a] = await Promise.all([fetchSessions(), fetchCones(), fetchActivity()]);
+        return { sessions: s, toys: t, activity: a };
       },
       {
         busy: setIsLoading,
-        onSuccess: ({ sessions, toys }) => {
+        onSuccess: ({ sessions, toys, activity }) => {
           if (cancelled) return;
           setSessions(sessions);
           setToys(toys);
+          setActivity(activity);
           setError(null);
         },
       },
@@ -156,6 +166,11 @@ export default function SessionList() {
             <Alert.Description>{error}</Alert.Description>
           </Alert>
         )}
+        {!isLoading && (
+          <div className="mb-4">
+            <ActivityTracker days={activity} />
+          </div>
+        )}
         {isLoading ? (
           <div className="flex justify-center py-20 text-neutral-500">
             <Spinner />
@@ -163,7 +178,7 @@ export default function SessionList() {
         ) : visibleSessions.length === 0 ? (
           <EmptyState anyExist={sessions.length > 0} filterLabel={FILTERS.find((f) => f.key === filter)?.label ?? ''} />
         ) : (
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-3.5">
             {visibleSessions.map((session) => (
               <SessionRow key={session.id} session={session} toysById={toysById} unit={unit} />
             ))}
@@ -193,9 +208,9 @@ function SessionRow({
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white px-4 py-3.5 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[160px_1fr_auto_auto] sm:items-center sm:gap-4 sm:px-5">
+    <div className="rounded-xl border border-neutral-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5">
       <div className="flex items-center justify-between gap-3 sm:contents">
-        <div className="text-sm font-semibold tracking-tight text-neutral-900 sm:order-1">
+        <div className="text-base font-semibold tracking-tight text-neutral-900 sm:order-1">
           {formatWhen(session.startedAt)}
         </div>
         <Link
@@ -203,11 +218,11 @@ function SessionRow({
           aria-label={SESSION_EDIT_ARROW_LABEL}
           className="rounded-md p-1 text-neutral-300 transition-colors hover:bg-neutral-100 hover:text-blue-600 sm:order-4"
         >
-          <ChevronRight size={18} />
+          <ChevronRight size={20} />
         </Link>
       </div>
-      <div className="mt-2 flex items-center justify-between gap-3 sm:mt-0 sm:contents">
-        <div className="flex flex-wrap items-center gap-3.5 sm:order-2">
+      <div className="mt-3 flex items-center justify-between gap-4 sm:mt-0 sm:contents">
+        <div className="flex flex-wrap items-center gap-3 sm:order-2">
           {visibleEntries.map((entry) => {
             const toy = toysById.get(entry.toy);
             return <MiniToy key={entry.toy} entry={entry} toy={toy} heightRatio={scale(toy)} />;
@@ -218,9 +233,9 @@ function SessionRow({
             </span>
           )}
         </div>
-        <div className="min-w-27.5 text-right shrink-0 sm:order-3">
+        <div className="min-w-32 text-right shrink-0 sm:order-3">
           <PeakRow label={SESSION_PEAK_LENGTH} mm={session.maxInsertableLength} unit={unit} />
-          <PeakRow label={SESSION_PEAK_DIAMETER} mm={session.maxDiameter} unit={unit} />
+          <PeakRow label={SESSION_PEAK_CIRCUMFERENCE} mm={session.maxCircumference} unit={unit} />
         </div>
       </div>
     </div>
@@ -238,9 +253,9 @@ function MiniToy({
 }) {
   if (!toy) {
     return (
-      <div className="flex w-16 flex-col items-center gap-1 text-center">
-        <div className="h-11 w-8 rounded bg-neutral-200" />
-        <div className="truncate text-[11px] text-neutral-400">{SESSION_TOY_DELETED}</div>
+      <div className="flex w-20 flex-col items-center gap-1.5 text-center">
+        <div className="h-14 w-10 rounded bg-neutral-200" />
+        <div className="truncate text-xs text-neutral-400">{SESSION_TOY_DELETED}</div>
       </div>
     );
   }
@@ -258,8 +273,8 @@ function MiniToy({
   };
   const tooltip = [toy.brand, toy.name, toy.size].filter(Boolean).join(' ');
   return (
-    <div className="flex w-16 flex-col items-center gap-1 text-center" title={tooltip}>
-      <div className="relative h-11 w-full">
+    <div className="flex w-20 flex-col items-center gap-1.5 text-center" title={tooltip}>
+      <div className="relative h-14 w-full">
         <div
           className="absolute inset-x-0 bottom-0 flex items-end justify-center"
           style={{ top: `${(1 - heightRatio) * 100}%`, ...STATE_FILTER_STYLE[entry.involvement] }}
@@ -267,7 +282,7 @@ function MiniToy({
           <Render toy={editorToy} scaleFactor={0.18} style={silhouetteStyle} interactive={false} />
         </div>
       </div>
-      <div className="max-w-16 truncate text-[11px] text-neutral-900">
+      <div className="max-w-20 truncate text-sm text-neutral-900">
         {toy.name}
         {toy.size && <span className="text-neutral-500"> {toy.size}</span>}
       </div>
@@ -277,13 +292,14 @@ function MiniToy({
 
 function PeakRow({ label, mm, unit }: { label: string; mm: number | null; unit: ReturnType<typeof useUnit>['unit'] }) {
   return (
-    <div className="flex items-baseline justify-end gap-1.5">
-      <span className="text-[10px] uppercase tracking-wider text-neutral-400">{label}</span>
+    <div className="flex items-baseline justify-end gap-2 py-0.5">
+      <span className="text-[11px] uppercase tracking-wider text-neutral-400">{label}</span>
       {mm == null ? (
-        <span className="text-sm font-medium text-neutral-400">—</span>
+        <span className="text-[17px] font-medium text-neutral-400">—</span>
       ) : (
-        <span className="text-sm font-semibold tabular-nums text-neutral-900">
-          {formatValue(mm, unit)} {unit.id}
+        <span className="text-[17px] font-semibold tracking-tight tabular-nums text-neutral-900">
+          {formatValue(mm, unit)}
+          <span className="ml-1.5 text-[11px] font-medium text-neutral-500">{unit.id}</span>
         </span>
       )}
     </div>

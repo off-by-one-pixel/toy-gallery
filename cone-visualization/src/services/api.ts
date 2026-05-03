@@ -1,4 +1,5 @@
 import {
+  toysSessionsActivityRetrieve,
   toysSessionsCreate,
   toysSessionsDestroy,
   toysSessionsList,
@@ -20,7 +21,15 @@ import type {
   SessionRequest as ApiSessionRequest,
   ToyRequest as ApiToyRequest,
 } from './generated/schemas';
-import { APIError, type Session, type SessionPayload, type TokenPair, type Toy, type ToyPayload } from './types';
+import {
+  APIError,
+  type ActivityDay,
+  type Session,
+  type SessionPayload,
+  type TokenPair,
+  type Toy,
+  type ToyPayload,
+} from './types';
 
 // ---------- Token endpoints ----------
 
@@ -127,3 +136,8 @@ export const updateSession = async (id: number, payload: SessionPayload): Promis
 };
 
 export const deleteSession = (id: number) => toysSessionsDestroy(id);
+
+export const fetchActivity = async (): Promise<ActivityDay[]> => {
+  const { data } = await toysSessionsActivityRetrieve();
+  return data.days.map((d) => snakeToCamel<ActivityDay>(d));
+};

@@ -17,3 +17,26 @@ html {
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+/* Overrides for react-calendar-heatmap on the sessions activity tracker.
+   The library ships sensible defaults but its label text inherits a generic
+   sans-serif and sits flush against the grid; align it with the app's
+   typography and pull the weekday labels back a few pixels for breathing
+   room. Bolder month labels chunk the year into months without adding
+   structural lines. */
+.react-calendar-heatmap {
+  display: block;
+  overflow: visible;
+}
+
+.react-calendar-heatmap text {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  fill: #404040;
+  letter-spacing: normal;
+}
+
+.react-calendar-heatmap-weekday-label {
+  transform: translateX(-15px);
+}

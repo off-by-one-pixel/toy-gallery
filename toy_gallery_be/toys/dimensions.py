@@ -76,6 +76,10 @@ class SessionDimensions:
         return max(values) if values else None
 
     @classmethod
-    def peak_diameter(cls, session: "models.Session") -> Optional[float]:
-        values = [ToyDimensions.diameter(e.toy) for e in cls._inserted_entries(session)]
+    def peak_circumference(cls, session: "models.Session") -> Optional[float]:
+        values = [
+            c
+            for c in (ToyDimensions.circumference(e.toy) for e in cls._inserted_entries(session))
+            if c is not None
+        ]
         return max(values) if values else None

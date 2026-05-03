@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
-import '../styles/index.css';
 import 'cone-editor/styles.css';
+import 'react-calendar-heatmap/dist/styles.css';
+import '../styles/index.css';
 import { AuthProvider } from '../providers/AuthProvider';
 import { SortProvider } from '../providers/SortProvider';
 import { ToastProvider } from '../providers/ToastProvider';
