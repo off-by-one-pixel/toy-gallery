@@ -91,17 +91,17 @@ class ToySessionEntrySerializer(serializers.ModelSerializer):
 class SessionSerializer(serializers.ModelSerializer):
     entries = ToySessionEntrySerializer(many=True)
     max_insertable_length = serializers.SerializerMethodField()
-    max_diameter = serializers.SerializerMethodField()
+    max_circumference = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Session
-        fields = ["id", "started_at", "entries", "max_insertable_length", "max_diameter"]
+        fields = ["id", "started_at", "entries", "max_insertable_length", "max_circumference"]
 
     def get_max_insertable_length(self, obj) -> float | None:
         return SessionDimensions.peak_length(obj)
 
-    def get_max_diameter(self, obj) -> float | None:
-        return SessionDimensions.peak_diameter(obj)
+    def get_max_circumference(self, obj) -> float | None:
+        return SessionDimensions.peak_circumference(obj)
 
     def validate_entries(self, entries):
         if not entries:
@@ -131,6 +131,17 @@ class SessionSerializer(serializers.ModelSerializer):
                 [models.ToySessionEntry(session=instance, **e) for e in entries_data]
             )
         return instance
+
+
+class ActivityDaySerializer(serializers.Serializer):
+    date = serializers.DateField()
+    session_count = serializers.IntegerField()
+    max_insertable_length = serializers.FloatField(allow_null=True)
+    max_circumference = serializers.FloatField(allow_null=True)
+
+
+class ActivityResponseSerializer(serializers.Serializer):
+    days = ActivityDaySerializer(many=True)
 
 
 class ExportEnvelopeSerializer(serializers.Serializer):

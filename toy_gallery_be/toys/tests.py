@@ -303,9 +303,10 @@ class SessionTests(TestCase):
         return {"started_at": started_at, "entries": entries}
 
     def test_peak_dimensions_only_count_inserted_toys(self):
-        # toy_a has insertable_length=170, diameter=70 (per _payload defaults)
-        # toy_b same. Make a session where toy_a is "used" (skipped) and
-        # toy_b is "fully inserted" → peaks come only from toy_b.
+        # toy_a has insertable_length=170, max section circumference=220 (per
+        # _payload defaults). Same for toy_b. Make a session where toy_a is
+        # "used" (skipped) and toy_b is "fully inserted" → peaks come only
+        # from toy_b.
         response = self.client.post(
             "/toys/sessions/",
             self._session_payload(
@@ -318,7 +319,7 @@ class SessionTests(TestCase):
         )
         self.assertEqual(response.status_code, 201, response.content)
         self.assertEqual(response.data["max_insertable_length"], 170)
-        self.assertEqual(response.data["max_diameter"], 70)
+        self.assertEqual(response.data["max_circumference"], 220)
 
     def test_peak_dimensions_are_null_when_no_toys_inserted(self):
         response = self.client.post(
@@ -328,7 +329,7 @@ class SessionTests(TestCase):
         )
         self.assertEqual(response.status_code, 201, response.content)
         self.assertIsNone(response.data["max_insertable_length"])
-        self.assertIsNone(response.data["max_diameter"])
+        self.assertIsNone(response.data["max_circumference"])
 
     def test_create_with_mixed_involvement(self):
         response = self.client.post(
@@ -451,3 +452,72 @@ class SessionTests(TestCase):
         response = self.client.delete(f"/toys/toys/{self.toy_a}/")
         self.assertEqual(response.status_code, 204)
         self.assertFalse(models.Toy.objects.filter(pk=self.toy_a).exists())
+
+
+class SessionActivityTests(TestCase):
+    def setUp(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        self._timezone = timezone
+        self._timedelta = timedelta
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        self.toy_a = self._create_toy("A")
+        self.toy_b = self._create_toy("B")
+
+    def _create_toy(self, name):
+        payload = _payload(section_circumferences=(None, 220.0, None))
+        payload["name"] = name
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data["id"]
+
+    def _make_session(self, entries, started_at):
+        # Bypass the API so we can stamp arbitrary `started_at` (the API
+        # accepts it on create, but using the model directly is cleaner).
+        session = models.Session.objects.create(started_at=started_at)
+        for e in entries:
+            models.ToySessionEntry.objects.create(session=session, toy_id=e["toy"], involvement=e["involvement"])
+        return session
+
+    def test_empty_returns_no_days(self):
+        response = self.client.get("/toys/sessions/activity/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data, {"days": []})
+
+    def test_used_only_session_appears_with_null_peaks(self):
+        now = self._timezone.now()
+        self._make_session([{"toy": self.toy_a, "involvement": "USED"}], now)
+        response = self.client.get("/toys/sessions/activity/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(len(response.data["days"]), 1)
+        day = response.data["days"][0]
+        self.assertEqual(day["session_count"], 1)
+        self.assertIsNone(day["max_insertable_length"])
+        self.assertIsNone(day["max_circumference"])
+
+    def test_multiple_sessions_same_day_take_overall_max(self):
+        now = self._timezone.now()
+        # Two sessions on the same day, both fully inserting toy_a (default
+        # length=170, circumference=220 from _payload).
+        self._make_session([{"toy": self.toy_a, "involvement": "FULLY_INSERTED"}], now)
+        self._make_session([{"toy": self.toy_b, "involvement": "INSERTED"}], now)
+        response = self.client.get("/toys/sessions/activity/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(len(response.data["days"]), 1)
+        day = response.data["days"][0]
+        self.assertEqual(day["session_count"], 2)
+        self.assertEqual(day["max_insertable_length"], 170)
+        self.assertEqual(day["max_circumference"], 220)
+
+    def test_window_excludes_sessions_older_than_a_year(self):
+        now = self._timezone.now()
+        old = now - self._timedelta(days=400)
+        self._make_session([{"toy": self.toy_a, "involvement": "FULLY_INSERTED"}], old)
+        response = self.client.get("/toys/sessions/activity/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["days"], [])
+
