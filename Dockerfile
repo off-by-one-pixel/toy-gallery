@@ -17,6 +17,8 @@ RUN git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git . \
 
 # ----- Stage 2: build the Next.js static export --------------------------
 FROM node:22-alpine AS frontend
+ARG APP_VERSION=dev
+ARG APP_COMMIT_SHA=local
 COPY --from=cone_editor /cone_editor /workspace/cone_editor
 WORKDIR /workspace/cone-visualization
 COPY cone-visualization/package.json cone-visualization/package-lock.json ./
@@ -24,7 +26,11 @@ RUN npm ci
 COPY cone-visualization/ ./
 COPY toy_gallery_be/schema.yml /workspace/toy_gallery_be/schema.yml
 # Empty string flips the frontend into same-origin mode (see src/config.ts).
+# APP_VERSION + APP_COMMIT_SHA are inlined into the static bundle so the UI
+# can show what the user is running.
 ENV NEXT_PUBLIC_API_URL=""
+ENV NEXT_PUBLIC_APP_VERSION=$APP_VERSION
+ENV NEXT_PUBLIC_APP_COMMIT_SHA=$APP_COMMIT_SHA
 RUN npm run build
 
 # ----- Stage 3: install Python deps with uv ------------------------------
