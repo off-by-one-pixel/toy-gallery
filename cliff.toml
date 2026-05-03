@@ -1,0 +1,45 @@
+# git-cliff configuration. Drives auto-generated release notes for the
+# release workflow (.github/workflows/release.yml). Groups commits between
+# tags by Conventional Commits type.
+
+[changelog]
+# Header is stripped via --strip header so the release body starts cleanly.
+header = ""
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+
+{% for commit in commits %}
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}\
+{% endfor %}
+{% endfor %}\n
+"""
+trim = true
+footer = ""
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+filter_commits = true
+protect_breaking_commits = false
+split_commits = false
+tag_pattern = "[0-9]+.[0-9]+.*"
+skip_tags = ""
+ignore_tags = ""
+topo_order = false
+sort_commits = "newest"
+
+commit_parsers = [
+  { message = "^feat", group = "🚀 Features" },
+  { message = "^fix", group = "🐛 Bug fixes" },
+  { message = "^perf", group = "⚡ Performance" },
+  { message = "^refactor", group = "🛠️ Refactors" },
+  { message = "^docs", group = "📝 Documentation" },
+  { message = "^ci", group = "🧰 Build & CI" },
+  { message = "^build", group = "🧰 Build & CI" },
+  { message = "^test", skip = true },
+  { message = "^chore", skip = true },
+  { message = "^style", skip = true },
+  { message = "^revert", skip = true },
+  { message = "^Merge", skip = true },
+]
