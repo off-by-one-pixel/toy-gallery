@@ -2,10 +2,10 @@
 
 import { useRef, useState } from 'react';
 import { Dropdown, Toast } from '@heroui/react';
-import { ChevronDown, Download, LogOut, Upload } from 'lucide-react';
+import { ChevronDown, Download, LogOut, Trash2, Upload } from 'lucide-react';
 
 import { APP_COMMIT_SHA, APP_VERSION } from '../config';
-import { downloadExport, importFromFile } from '../services/api';
+import { deleteCollection, downloadExport, importFromFile } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../providers/AuthProvider';
 
@@ -29,11 +29,34 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
   const handleImportFile = (file: File) =>
     runAction(() => importFromFile(file), {
       busy: setBusy,
-      onSuccess: (result) => {
-        Toast.toast.success(`Imported ${result.created} ${result.created === 1 ? 'toy' : 'toys'}`);
+      onSuccess: ({ toys_created, sessions_created }) => {
+        const toys = `${toys_created} ${toys_created === 1 ? 'toy' : 'toys'}`;
+        const sessions =
+          sessions_created > 0 ? ` and ${sessions_created} ${sessions_created === 1 ? 'session' : 'sessions'}` : '';
+        Toast.toast.success(`Imported ${toys}${sessions}`);
         onImported();
       },
     });
+
+  const handleDeleteAll = () => {
+    if (
+      !confirm(
+        'Permanently delete the entire collection? All toys and sessions will be removed. This cannot be undone.',
+      )
+    ) {
+      return;
+    }
+    runAction(deleteCollection, {
+      busy: setBusy,
+      onSuccess: ({ toys_deleted, sessions_deleted }) => {
+        const toys = `${toys_deleted} ${toys_deleted === 1 ? 'toy' : 'toys'}`;
+        const sessions =
+          sessions_deleted > 0 ? ` and ${sessions_deleted} ${sessions_deleted === 1 ? 'session' : 'sessions'}` : '';
+        Toast.toast.success(`Deleted ${toys}${sessions}`);
+        onImported();
+      },
+    });
+  };
 
   return (
     <>
@@ -50,7 +73,7 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
           />
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom start">
-          <Dropdown.Menu disabledKeys={busy ? ['export', 'import'] : []}>
+          <Dropdown.Menu disabledKeys={busy ? ['export', 'import', 'delete'] : []}>
             <Dropdown.Item id="export" onAction={handleExport}>
               <MenuRow
                 icon={<Download size={14} strokeWidth={1.8} />}
@@ -63,6 +86,13 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
                 icon={<Upload size={14} strokeWidth={1.8} />}
                 label="Import collection"
                 description="Add toys from a JSON file"
+              />
+            </Dropdown.Item>
+            <Dropdown.Item id="delete" onAction={handleDeleteAll}>
+              <MenuRow
+                icon={<Trash2 size={14} strokeWidth={1.8} className="text-red-500" />}
+                label={<span className="text-red-600">Delete collection</span>}
+                description="Permanently remove all toys and sessions"
               />
             </Dropdown.Item>
             <Dropdown.Item id="logout" onAction={logout}>
@@ -95,7 +125,15 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
   );
 }
 
-function MenuRow({ icon, label, description }: { icon: React.ReactNode; label: string; description: string }) {
+function MenuRow({
+  icon,
+  label,
+  description,
+}: {
+  icon: React.ReactNode;
+  label: React.ReactNode;
+  description: string;
+}) {
   return (
     <span className="flex items-start gap-2.5">
       <span className="mt-0.5 text-neutral-500">{icon}</span>
