@@ -9,6 +9,7 @@ from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from . import export as export_mod
 from . import models, serializers
@@ -120,3 +121,17 @@ class SessionViewSet(viewsets.ModelViewSet):
             )
 
         return Response({"days": days})
+
+
+class ChangePasswordView(APIView):
+    @extend_schema(
+        request=serializers.ChangePasswordSerializer,
+        responses={204: None},
+    )
+    def post(self, request):
+        s = serializers.ChangePasswordSerializer(
+            data=request.data, context={"request": request}
+        )
+        s.is_valid(raise_exception=True)
+        s.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

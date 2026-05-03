@@ -3,6 +3,28 @@ info:
   title: Toy Gallery API
   version: 1.0.0
 paths:
+  /toys/change_password/:
+    post:
+      operationId: toys_change_password_create
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /toys/sessions/:
     get:
       operationId: toys_sessions_list
@@ -439,6 +461,20 @@ components:
             $ref: '#/components/schemas/ActivityDay'
       required:
       - days
+    ChangePasswordRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - current_password
+      - new_password
     DeleteCollectionSummary:
       type: object
       properties:
