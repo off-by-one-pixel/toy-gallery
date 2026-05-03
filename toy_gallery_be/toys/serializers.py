@@ -1,5 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from rest_framework import serializers
 
 from . import models
@@ -32,6 +33,21 @@ class ToyShapeSerializer(serializers.ModelSerializer):
         for s in sections_data:
             models.ShapeSection.objects.create(**s, shape=shape)
         return shape
+
+    def update(self, instance, validated_data):
+        # Sections are wholesale-replaced rather than reconciled by id —
+        # the editor doesn't track stable section ids on the client (the
+        # SVG editor uses its own row keys), and a full replace lets the
+        # client send the rendered list verbatim.
+        sections_data = validated_data.pop("sections", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if sections_data is not None:
+            instance.sections.all().delete()
+            for s in sections_data:
+                models.ShapeSection.objects.create(**s, shape=instance)
+        return instance
 
 
 class ToySerializer(serializers.ModelSerializer):
@@ -82,6 +98,16 @@ class ToySerializer(serializers.ModelSerializer):
         shape_serializer.is_valid()
         shape = shape_serializer.save()
         return models.Toy.objects.create(**validated_data, shape=shape)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        shape_data = validated_data.pop("shape", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if shape_data is not None:
+            self.fields["shape"].update(instance.shape, shape_data)
+        return instance
 
 
 class ToySessionEntrySerializer(serializers.ModelSerializer):

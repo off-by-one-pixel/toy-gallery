@@ -76,17 +76,6 @@ export const deleteToy = (id: number | string) => toysToysDestroy(Number(id));
 
 export const createToy = (toy: ToyPayload) => toysToysCreate(camelToSnake<ApiToyRequest>(toy));
 
-/**
- * The DRF serializer doesn't support in-place update of the nested shape, so
- * "edit" is implemented as create-new-then-delete-old. POST first so a
- * failure leaves the original intact.
- */
-export const replaceToy = async (originalId: number, toy: ToyPayload) => {
-  const created = await createToy(toy);
-  await deleteToy(originalId);
-  return created;
-};
-
 export const patchToy = async (id: number, changes: Partial<ToyPayload>): Promise<Toy> => {
   const { data } = await toysToysPartialUpdate(id, camelToSnake<PatchedToyRequest>(changes));
   return snakeToCamel<Toy>(data);
