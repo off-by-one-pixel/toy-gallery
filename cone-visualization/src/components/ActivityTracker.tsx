@@ -134,11 +134,7 @@ function DimensionHeatmap({ title, byDate, startDate, endDate, pickValue, min, m
   return (
     <div>
       <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">{title}</h3>
-      {/* react-calendar-heatmap's getHeight() overcounts by getWeekdayLabelSize()
-          (30 viewBox units) on horizontal layouts, leaving phantom whitespace at
-          the bottom of the SVG. Wrap in an aspect-ratio container that matches
-          the actual content (664/96) and clip the overflow. */}
-      <div className="overflow-hidden" style={{ aspectRatio: '664 / 96' }}>
+      <div>
         <CalendarHeatmap
           startDate={startDate}
           endDate={endDate}
@@ -157,7 +153,7 @@ function DimensionHeatmap({ title, byDate, startDate, endDate, pickValue, min, m
           }}
         />
       </div>
-      <div className="mt-2 ml-auto flex w-1/3 items-center gap-2 text-[10px] tabular-nums text-neutral-500">
+      <div className="-mt-4 ml-auto flex w-1/3 items-center gap-2 text-[10px] tabular-nums text-neutral-500">
         <span>{max > 0 ? `${formatValue(min, unit)} ${unit.id}` : '—'}</span>
         <span
           aria-hidden

@@ -26,16 +26,17 @@ html {
    structural lines. */
 .react-calendar-heatmap {
   display: block;
+  overflow: visible;
 }
 
 .react-calendar-heatmap text {
   font-family: inherit;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 500;
   fill: #404040;
   letter-spacing: normal;
 }
 
 .react-calendar-heatmap-weekday-label {
-  transform: translateX(-10px);
+  transform: translateX(-15px);
 }
