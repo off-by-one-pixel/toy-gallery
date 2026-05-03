@@ -1,4 +1,5 @@
 import {
+  toysChangePasswordCreate,
   toysSessionsActivityRetrieve,
   toysSessionsCreate,
   toysSessionsDestroy,
@@ -58,6 +59,10 @@ export const refreshTokens = async (refresh: string): Promise<TokenPair> => {
     throw new APIError('Refresh response missing access token', response.status, data);
   }
   return { access: data.access, refresh: data.refresh ?? refresh };
+};
+
+export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+  await toysChangePasswordCreate({ current_password: currentPassword, new_password: newPassword });
 };
 
 // ---------- Toy CRUD ----------

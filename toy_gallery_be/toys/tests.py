@@ -697,3 +697,61 @@ class SessionActivityTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.data["days"], [])
 
+
+class ChangePasswordTests(TestCase):
+    URL = "/toys/change_password/"
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="u", password="oldpassword42")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_changes_password_with_valid_current(self):
+        response = self.client.post(
+            self.URL,
+            {"current_password": "oldpassword42", "new_password": "BrandNewPwd987"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 204, response.content)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("BrandNewPwd987"))
+        self.assertFalse(self.user.check_password("oldpassword42"))
+
+    def test_rejects_wrong_current_password(self):
+        response = self.client.post(
+            self.URL,
+            {"current_password": "wrong", "new_password": "BrandNewPwd987"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("current_password", response.data)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("oldpassword42"))
+
+    def test_rejects_new_password_failing_validators(self):
+        # Django default validators reject passwords < 8 chars and overly common ones.
+        response = self.client.post(
+            self.URL,
+            {"current_password": "oldpassword42", "new_password": "short"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("new_password", response.data)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("oldpassword42"))
+
+    def test_requires_authentication(self):
+        anon = APIClient()
+        response = anon.post(
+            self.URL,
+            {"current_password": "oldpassword42", "new_password": "BrandNewPwd987"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_missing_fields_rejected(self):
+        response = self.client.post(self.URL, {}, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("current_password", response.data)
+        self.assertIn("new_password", response.data)
+
