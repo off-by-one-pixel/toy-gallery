@@ -20,6 +20,12 @@
 
 set -eu
 
+# Persistent state lives here (SQLite DB + auto-generated SECRET_KEY).
+# Mounted as a volume in production; created here so settings_docker stays
+# import-side-effect free and a sibling settings file can import it locally
+# without needing /data to exist.
+mkdir -p /data
+
 echo "[entrypoint] running migrations"
 python manage.py migrate --noinput
 

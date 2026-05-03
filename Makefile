@@ -1,8 +1,9 @@
-.PHONY: help be fe migrate test test-be test-fe schema
+.PHONY: help be be-prod fe migrate test test-be test-fe schema
 
 help:
 	@echo "Targets:"
 	@echo "  make be        Run Django backend on 0.0.0.0:8000 (Ctrl+C to stop)"
+	@echo "  make be-prod   Run Django the way it runs in Docker (gunicorn + WhiteNoise serving the bundled SPA)"
 	@echo "  make fe        Run Next.js frontend dev server (Ctrl+C to stop)"
 	@echo "  make migrate   Apply pending Django migrations to the dev database"
 	@echo "  make test      Run backend and frontend tests"
@@ -13,6 +14,18 @@ help:
 
 be:
 	cd toy_gallery_be && uv run python manage.py runserver 0.0.0.0:8000
+
+# Mirrors the Docker entrypoint: builds the Next.js export, runs the same
+# migrate + collectstatic + gunicorn sequence under settings_docker_local
+# (a thin override of settings_docker pointing WhiteNoise at the live
+# build and using the dev sqlite DB).
+PROD_SETTINGS = DJANGO_SETTINGS_MODULE=toy_gallery_be.settings_docker_local
+
+be-prod:
+	cd cone-visualization && npm run build
+	cd toy_gallery_be && $(PROD_SETTINGS) uv run python manage.py migrate --noinput
+	cd toy_gallery_be && $(PROD_SETTINGS) uv run python manage.py collectstatic --noinput
+	cd toy_gallery_be && $(PROD_SETTINGS) uv run gunicorn toy_gallery_be.wsgi:application --bind 0.0.0.0:8000
 
 migrate:
 	cd toy_gallery_be && uv run python manage.py migrate

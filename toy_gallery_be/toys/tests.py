@@ -1,6 +1,11 @@
+import tempfile
+from pathlib import Path
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
+
+from toy_gallery_be.urls import _resolve_spa_html
 
 from . import export as export_mod
 from . import models
@@ -754,4 +759,65 @@ class ChangePasswordTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("current_password", response.data)
         self.assertIn("new_password", response.data)
+
+
+class SpaIndexResolutionTests(TestCase):
+    """The catch-all has to find the right Next.js export file for a given
+    URL, otherwise deep-linking to /sessions ships the gallery HTML instead.
+    """
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.frontend = Path(self._tmp.name)
+        # Mirror the layout `next build` produces with output: 'export'.
+        (self.frontend / "index.html").write_text("<root>")
+        (self.frontend / "sessions.html").write_text("<sessions>")
+        (self.frontend / "login.html").write_text("<login>")
+        (self.frontend / "sessions").mkdir()
+        (self.frontend / "sessions" / "edit.html").write_text("<edit>")
+        (self.frontend / "sessions" / "new.html").write_text("<new>")
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_root_path_serves_index(self):
+        f = _resolve_spa_html("/", self.frontend)
+        self.assertEqual(f.read_text(), "<root>")
+
+    def test_top_level_route_serves_named_html(self):
+        # The bug: /sessions used to fall back to index.html → users saw
+        # the gallery instead of the sessions page after a hard refresh.
+        f = _resolve_spa_html("/sessions", self.frontend)
+        self.assertEqual(f.read_text(), "<sessions>")
+
+    def test_top_level_route_with_trailing_slash(self):
+        f = _resolve_spa_html("/sessions/", self.frontend)
+        self.assertEqual(f.read_text(), "<sessions>")
+
+    def test_nested_route_serves_named_html(self):
+        f = _resolve_spa_html("/sessions/edit", self.frontend)
+        self.assertEqual(f.read_text(), "<edit>")
+
+    def test_unknown_route_falls_back_to_index(self):
+        f = _resolve_spa_html("/some-unknown-spa-route", self.frontend)
+        self.assertEqual(f.read_text(), "<root>")
+
+    def test_path_traversal_rejected(self):
+        # A frontend dir with a sibling file outside it, the SPA must not
+        # reach via "..".
+        with tempfile.TemporaryDirectory() as outer:
+            outer_path = Path(outer)
+            secret = outer_path / "secret.html"
+            secret.write_text("<secret>")
+            inside = outer_path / "frontend"
+            inside.mkdir()
+            (inside / "index.html").write_text("<root>")
+            f = _resolve_spa_html("/../secret", inside)
+            # Either falls back to index or returns None — never the secret.
+            self.assertIsNotNone(f)
+            self.assertNotEqual(f.read_text(), "<secret>")
+
+    def test_returns_none_when_frontend_is_empty(self):
+        with tempfile.TemporaryDirectory() as empty:
+            self.assertIsNone(_resolve_spa_html("/", Path(empty)))
 
