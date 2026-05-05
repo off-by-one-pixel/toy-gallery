@@ -25,7 +25,7 @@ import ViewToggle from './ViewToggle';
 
 export type { Toy } from '../services/types';
 
-type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy };
+type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
 const ConeList = () => {
   const router = useRouter();
@@ -76,9 +76,7 @@ const ConeList = () => {
             <CollectionMenu
               onImported={updateLastChanged}
               subtitle={
-                isLoading
-                  ? null
-                  : `${cones.length} ${cones.length === 1 ? TOY_ITEM_SINGULAR : TOY_ITEM_PLURAL}`
+                isLoading ? null : `${cones.length} ${cones.length === 1 ? TOY_ITEM_SINGULAR : TOY_ITEM_PLURAL}`
               }
             />
           </h1>
@@ -120,6 +118,7 @@ const ConeList = () => {
             openToyId={openCardId}
             onToggleOpen={toggleOpen}
             onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
+            onCopy={(t) => setEditorMode({ kind: 'copy', toy: t })}
             onDelete={handleDelete}
           />
         ) : (
@@ -136,6 +135,7 @@ const ConeList = () => {
                   detailsOpen={openCardId === toy.id}
                   onToggleDetails={() => toggleOpen(toy.id)}
                   onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
+                  onCopy={(t) => setEditorMode({ kind: 'copy', toy: t })}
                   onDelete={handleDelete}
                 />
               ))}
@@ -157,11 +157,7 @@ const ConeList = () => {
       </main>
 
       {editorMode.kind !== 'closed' && (
-        <ToyEditModal
-          mode={editorMode.kind === 'new' ? { kind: 'new' } : { kind: 'edit', toy: editorMode.toy }}
-          onClose={() => setEditorMode({ kind: 'closed' })}
-          onSaved={handleEditorSaved}
-        />
+        <ToyEditModal mode={editorMode} onClose={() => setEditorMode({ kind: 'closed' })} onSaved={handleEditorSaved} />
       )}
     </>
   );

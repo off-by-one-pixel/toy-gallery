@@ -1,11 +1,19 @@
 'use client';
 
-import { Button, Chip } from '@heroui/react';
-import { ChevronDown, Pencil, Trash2 } from 'lucide-react';
+import { Button, Chip, Tooltip } from '@heroui/react';
+import { ChevronDown, Copy, Pencil, Trash2 } from 'lucide-react';
 import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 
-import { ATTRIBUTES_HEADING, SHAPE_LABEL, TOY_CIRCUMFERENCE, TOY_CIRCUMFERENCE_SHORT } from '../labels';
+import {
+  ATTRIBUTES_HEADING,
+  SHAPE_LABEL,
+  TOY_ACTION_COPY,
+  TOY_ACTION_DELETE,
+  TOY_ACTION_EDIT,
+  TOY_CIRCUMFERENCE,
+  TOY_CIRCUMFERENCE_SHORT,
+} from '../labels';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
@@ -36,10 +44,11 @@ type Props = {
   openToyId: number | null;
   onToggleOpen: (id: number) => void;
   onEdit: (toy: Toy) => void;
+  onCopy: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
 };
 
-export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onDelete }: Props) {
+export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
   const { sort, setSort } = useSort();
   const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
@@ -55,6 +64,7 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onDelet
           open={openToyId === toy.id}
           onToggle={() => onToggleOpen(toy.id)}
           onEdit={() => onEdit(toy)}
+          onCopy={() => onCopy(toy)}
           onDelete={() => onDelete(toy)}
         />
       ))}
@@ -154,6 +164,7 @@ function ToyRow({
   open,
   onToggle,
   onEdit,
+  onCopy,
   onDelete,
 }: {
   toy: Toy;
@@ -161,6 +172,7 @@ function ToyRow({
   open: boolean;
   onToggle: () => void;
   onEdit: () => void;
+  onCopy: () => void;
   onDelete: () => void;
 }) {
   return (
@@ -198,12 +210,24 @@ function ToyRow({
           className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-white/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <Button variant="outline" size="sm" isIconOnly aria-label="Edit" onPress={onEdit}>
-            <Pencil size={13} strokeWidth={1.8} />
-          </Button>
-          <Button variant="danger-soft" size="sm" isIconOnly aria-label="Delete" onPress={onDelete}>
-            <Trash2 size={13} strokeWidth={1.8} />
-          </Button>
+          <Tooltip delay={200}>
+            <Button variant="outline" size="sm" isIconOnly aria-label={TOY_ACTION_EDIT} onPress={onEdit}>
+              <Pencil size={13} strokeWidth={1.8} />
+            </Button>
+            <Tooltip.Content>{TOY_ACTION_EDIT}</Tooltip.Content>
+          </Tooltip>
+          <Tooltip delay={200}>
+            <Button variant="outline" size="sm" isIconOnly aria-label={TOY_ACTION_COPY} onPress={onCopy}>
+              <Copy size={13} strokeWidth={1.8} />
+            </Button>
+            <Tooltip.Content>{TOY_ACTION_COPY}</Tooltip.Content>
+          </Tooltip>
+          <Tooltip delay={200}>
+            <Button variant="danger-soft" size="sm" isIconOnly aria-label={TOY_ACTION_DELETE} onPress={onDelete}>
+              <Trash2 size={13} strokeWidth={1.8} />
+            </Button>
+            <Tooltip.Content>{TOY_ACTION_DELETE}</Tooltip.Content>
+          </Tooltip>
         </div>
       </div>
       {open && <ExpandedPanel toy={toy} />}
