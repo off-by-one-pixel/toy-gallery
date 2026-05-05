@@ -1,9 +1,10 @@
 'use client';
 
-import { Button, Chip } from '@heroui/react';
+import { Button, Chip, Tooltip } from '@heroui/react';
 import { Render } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Copy, Pencil, Trash2 } from 'lucide-react';
+import { TOY_ACTION_COPY, TOY_ACTION_DELETE, TOY_ACTION_EDIT } from '../labels';
 import { useUnit } from '../providers/UnitProvider';
 import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
@@ -15,12 +16,13 @@ type Props = {
   detailsOpen: boolean;
   onToggleDetails: () => void;
   onEdit: (toy: Toy) => void;
+  onCopy: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
 };
 
 const DEFAULT_FILL = '#c7e4ee';
 
-export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails, onEdit, onDelete }: Props) {
+export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
 
   const style = {
@@ -45,26 +47,45 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
     >
       <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-          <Button
-            variant="outline"
-            size="sm"
-            isIconOnly
-            aria-label="Edit"
-            onPress={() => onEdit(toy)}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Pencil size={13} strokeWidth={1.8} />
-          </Button>
-          <Button
-            variant="danger-soft"
-            size="sm"
-            isIconOnly
-            aria-label="Delete"
-            onPress={() => onDelete(toy)}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Trash2 size={13} strokeWidth={1.8} />
-          </Button>
+          <Tooltip delay={200}>
+            <Button
+              variant="outline"
+              size="sm"
+              isIconOnly
+              aria-label={TOY_ACTION_EDIT}
+              onPress={() => onEdit(toy)}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Pencil size={13} strokeWidth={1.8} />
+            </Button>
+            <Tooltip.Content>{TOY_ACTION_EDIT}</Tooltip.Content>
+          </Tooltip>
+          <Tooltip delay={200}>
+            <Button
+              variant="outline"
+              size="sm"
+              isIconOnly
+              aria-label={TOY_ACTION_COPY}
+              onPress={() => onCopy(toy)}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Copy size={13} strokeWidth={1.8} />
+            </Button>
+            <Tooltip.Content>{TOY_ACTION_COPY}</Tooltip.Content>
+          </Tooltip>
+          <Tooltip delay={200}>
+            <Button
+              variant="danger-soft"
+              size="sm"
+              isIconOnly
+              aria-label={TOY_ACTION_DELETE}
+              onPress={() => onDelete(toy)}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Trash2 size={13} strokeWidth={1.8} />
+            </Button>
+            <Tooltip.Content>{TOY_ACTION_DELETE}</Tooltip.Content>
+          </Tooltip>
         </div>
         <div
           className="absolute inset-x-0 flex items-end justify-center"

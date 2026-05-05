@@ -12,7 +12,7 @@ import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
 import { Unit, formatValue, fromMm, toMm } from '../services/units';
 
-type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy };
+type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
 type Props = {
   mode: Mode;
@@ -42,27 +42,26 @@ const NEW_TOY_MM: EditorToy = {
 
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const isEdit = mode.kind === 'edit';
+  const source = mode.kind === 'new' ? null : mode.toy;
   const { unit } = useUnit();
 
   const initial = useMemo<EditorToy>(
     () =>
-      mode.kind === 'edit'
+      source
         ? {
-            sections: mode.toy.shape.sections.map((s) => ({ ...s })),
-            topShape: mode.toy.shape.topSectionShape ?? SectionShape.FLAT,
-            bottomShape: mode.toy.shape.bottomSectionShape ?? SectionShape.FLAT,
+            sections: source.shape.sections.map((s) => ({ ...s })),
+            topShape: source.shape.topSectionShape ?? SectionShape.FLAT,
+            bottomShape: source.shape.bottomSectionShape ?? SectionShape.FLAT,
           }
         : NEW_TOY_MM,
-    [mode],
+    [source],
   );
 
-  const [brand, setBrand] = useState(isEdit ? mode.toy.brand : '');
-  const [name, setName] = useState(isEdit ? mode.toy.name : '');
-  const [size, setSize] = useState(isEdit ? mode.toy.size : '');
-  const [color, setColor] = useState(isEdit ? mode.toy.color || DEFAULT_FILL : DEFAULT_FILL);
-  const [insertableLengthMm, setInsertableLengthMm] = useState<number | null>(
-    isEdit ? (mode.toy.insertableLength ?? null) : null,
-  );
+  const [brand, setBrand] = useState(source?.brand ?? '');
+  const [name, setName] = useState(source?.name ?? '');
+  const [size, setSize] = useState(source?.size ?? '');
+  const [color, setColor] = useState(source?.color || DEFAULT_FILL);
+  const [insertableLengthMm, setInsertableLengthMm] = useState<number | null>(source?.insertableLength ?? null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const runAction = useAsyncAction(setError);
@@ -131,6 +130,13 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
           circumference: s.circumference ?? null,
         })),
       },
+      // Carry over fields not exposed in this form so a copy is a faithful
+      // duplicate, not a stripped-down version.
+      ...(mode.kind === 'copy' && {
+        datePurchased: mode.toy.datePurchased ?? null,
+        retired: mode.toy.retired,
+        customAttributes: mode.toy.customAttributes,
+      }),
     };
     await runAction(
       async () => {
@@ -144,9 +150,12 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     );
   };
 
+  const headerLabel = mode.kind === 'edit' ? 'Edit' : mode.kind === 'copy' ? 'Copy' : 'New toy';
   const title = isEdit
     ? `${mode.toy.brand} · ${mode.toy.name}${mode.toy.size ? ` · ${mode.toy.size}` : ''}`
-    : 'Untitled toy';
+    : mode.kind === 'copy'
+      ? `from ${mode.toy.brand} · ${mode.toy.name}`
+      : 'Untitled toy';
 
   const totalHeightMm = getTotalHeight();
   const maxDiameterMm = getMaxWidth();
@@ -161,7 +170,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                 <ArrowLeft size={14} strokeWidth={2} />
               </Button>
               <h2 className="text-sm font-semibold tracking-tight text-neutral-900">
-                {isEdit ? 'Edit' : 'New toy'}
+                {headerLabel}
                 <span className="ml-2 font-normal text-neutral-500">{title}</span>
               </h2>
               <div className="flex-1" />

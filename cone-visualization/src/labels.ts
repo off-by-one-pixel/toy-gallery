@@ -33,6 +33,10 @@ export const TOY_ITEM_PLURAL = 'items';
 export const TOY_CIRCUMFERENCE = 'circumference';
 export const TOY_CIRCUMFERENCE_SHORT = 'circ.';
 
+export const TOY_ACTION_EDIT = 'Edit';
+export const TOY_ACTION_COPY = 'Copy';
+export const TOY_ACTION_DELETE = 'Delete';
+
 // ---- Sessions ----
 
 export const INVOLVEMENT_LABEL: Record<Involvement, string> = {
