@@ -35,6 +35,12 @@ const formatTooltipDate = (key: string): string => {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
+const lightnessAt = (t: number): number =>
+  lerp(ACTIVITY_PALETTE.lightnessMax, ACTIVITY_PALETTE.lightnessMin, Math.pow(t, ACTIVITY_PALETTE.gamma));
+
+const hslAt = (hue: number, t: number): string =>
+  `hsl(${hue}, ${ACTIVITY_PALETTE.saturation}%, ${lightnessAt(t).toFixed(1)}%)`;
+
 function colorFor(
   value: number | null | undefined,
   min: number,
@@ -45,9 +51,17 @@ function colorFor(
   if (!hasSession) return ACTIVITY_PALETTE.empty;
   if (value == null) return ACTIVITY_PALETTE.usedOnly;
   const intensity = max > min ? (value - min) / (max - min) : 1;
-  const lightness = lerp(ACTIVITY_PALETTE.lightnessMax, ACTIVITY_PALETTE.lightnessMin, intensity);
-  return `hsl(${hue}, ${ACTIVITY_PALETTE.saturation}%, ${lightness.toFixed(1)}%)`;
+  return hslAt(hue, intensity);
 }
+
+const LEGEND_STOPS = 11;
+const legendGradient = (hue: number): string => {
+  const stops = Array.from({ length: LEGEND_STOPS }, (_, i) => {
+    const t = i / (LEGEND_STOPS - 1);
+    return `${hslAt(hue, t)} ${(t * 100).toFixed(1)}%`;
+  });
+  return `linear-gradient(to right, ${stops.join(', ')})`;
+};
 
 export default function ActivityTracker({ days }: Props) {
   const { byDate, startDate, endDate, lenMin, lenMax, circMin, circMax } = useMemo(() => {
@@ -155,13 +169,7 @@ function DimensionHeatmap({ title, byDate, startDate, endDate, pickValue, min, m
       </div>
       <div className="-mt-4 ml-auto flex w-1/3 items-center gap-2 text-[10px] tabular-nums text-neutral-500">
         <span>{max > 0 ? `${formatValue(min, unit)} ${unit.id}` : '—'}</span>
-        <span
-          aria-hidden
-          className="h-1.5 flex-1 rounded-full"
-          style={{
-            background: `linear-gradient(to right, hsl(${hue}, ${ACTIVITY_PALETTE.saturation}%, ${ACTIVITY_PALETTE.lightnessMax}%), hsl(${hue}, ${ACTIVITY_PALETTE.saturation}%, ${ACTIVITY_PALETTE.lightnessMin}%))`,
-          }}
-        />
+        <span aria-hidden className="h-1.5 flex-1 rounded-full" style={{ background: legendGradient(hue) }} />
         <span>{max > 0 ? `${formatValue(max, unit)} ${unit.id}` : '—'}</span>
       </div>
     </div>

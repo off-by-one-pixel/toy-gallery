@@ -17,6 +17,13 @@ export interface ActivityPalette {
   lightnessMax: number;
   /** Lightness percentage at full intensity (deepest). */
   lightnessMin: number;
+  /**
+   * Exponent applied to the normalized 0..1 intensity before mapping to
+   * lightness. > 1 compresses the low end and stretches the high end so
+   * small steps near a personal max are more visible than equal-size
+   * steps near the bottom of the range.
+   */
+  gamma: number;
 }
 
 export const ACTIVITY_PALETTE: ActivityPalette = {
@@ -27,4 +34,5 @@ export const ACTIVITY_PALETTE: ActivityPalette = {
   saturation: 65,
   lightnessMax: 90,
   lightnessMin: 40,
+  gamma: 3,
 };
