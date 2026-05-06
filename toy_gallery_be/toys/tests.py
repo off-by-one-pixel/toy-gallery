@@ -9,16 +9,23 @@ from toy_gallery_be.urls import _resolve_spa_html
 
 from . import export as export_mod
 from . import models
-from .dimensions import ShapeDimensions
 
 
-def _payload(*, section_circumferences=(220.0, 180.0, None)):
+def _payload(
+    *,
+    section_circumferences=(None, None, None),
+    insertable_length=170,
+    total_length=210,
+    circumference=220.0,
+):
     return {
         "brand": "Acme",
         "name": "Demo",
         "size": "M",
         "color": "#c4b5fd",
-        "insertable_length": 170,
+        "insertable_length": insertable_length,
+        "total_length": total_length,
+        "circumference": circumference,
         "shape": {
             "top_section_shape": "EGG",
             "sections": [
@@ -29,68 +36,41 @@ def _payload(*, section_circumferences=(220.0, 180.0, None)):
     }
 
 
-class DimensionsShapeTests(TestCase):
-    def setUp(self):
-        self.shape = models.Shape.objects.create(top_section_shape=models.Shape.EGG)
-
-    def test_circumference_max_across_set_values(self):
-        models.ShapeSection.objects.create(
-            shape=self.shape, order=0, diameter=50, height=30, circumference=160
-        )
-        models.ShapeSection.objects.create(
-            shape=self.shape, order=1, diameter=90, height=40, circumference=300
-        )
-        self.assertEqual(ShapeDimensions.circumference(self.shape), 300)
-
-    def test_circumference_ignores_nulls(self):
-        models.ShapeSection.objects.create(
-            shape=self.shape, order=0, diameter=50, height=30, circumference=None
-        )
-        models.ShapeSection.objects.create(
-            shape=self.shape, order=1, diameter=90, height=40, circumference=250
-        )
-        self.assertEqual(ShapeDimensions.circumference(self.shape), 250)
-
-    def test_circumference_none_when_all_null(self):
-        models.ShapeSection.objects.create(
-            shape=self.shape, order=0, diameter=50, height=30, circumference=None
-        )
-        self.assertIsNone(ShapeDimensions.circumference(self.shape))
-
-    def test_height_is_sum_and_diameter_is_max(self):
-        models.ShapeSection.objects.create(
-            shape=self.shape, order=0, diameter=50, height=30, circumference=160
-        )
-        models.ShapeSection.objects.create(
-            shape=self.shape, order=1, diameter=90, height=40, circumference=300
-        )
-        self.assertEqual(ShapeDimensions.height(self.shape), 70)
-        self.assertEqual(ShapeDimensions.diameter(self.shape), 90)
-
 class ToyCreateTests(TestCase):
     def setUp(self):
         user = User.objects.create_user(username="u", password="p")
         self.client = APIClient()
         self.client.force_authenticate(user=user)
 
-    def test_create_succeeds_with_one_section_circumference(self):
+    def test_create_persists_manufacturer_specs(self):
         response = self.client.post(
             "/toys/toys/",
-            _payload(section_circumferences=(None, 220.0, None)),
+            _payload(insertable_length=170, total_length=210, circumference=220.0),
             format="json",
         )
         self.assertEqual(response.status_code, 201, response.content)
         self.assertEqual(response.data["insertable_length"], 170)
+        self.assertEqual(response.data["total_length"], 210)
         self.assertEqual(response.data["circumference"], 220.0)
 
-    def test_create_rejects_when_no_section_has_circumference(self):
+    def test_create_succeeds_without_any_section_circumference(self):
         response = self.client.post(
             "/toys/toys/",
             _payload(section_circumferences=(None, None, None)),
             format="json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("sections", str(response.content))
+        self.assertEqual(response.status_code, 201, response.content)
+
+    def test_manufacturer_specs_are_optional(self):
+        response = self.client.post(
+            "/toys/toys/",
+            _payload(insertable_length=None, total_length=None, circumference=None),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertIsNone(response.data["insertable_length"])
+        self.assertIsNone(response.data["total_length"])
+        self.assertIsNone(response.data["circumference"])
 
     def test_response_has_scalar_mm_dimensions(self):
         response = self.client.post(
@@ -100,7 +80,7 @@ class ToyCreateTests(TestCase):
         )
         self.assertEqual(response.status_code, 201, response.content)
         data = response.data
-        for field in ("height", "diameter", "circumference", "insertable_length"):
+        for field in ("insertable_length", "total_length", "circumference"):
             self.assertIsInstance(data[field], (int, float), field)
         for section in data["shape"]["sections"]:
             for field in ("height", "diameter"):
@@ -261,23 +241,6 @@ class PatchToyShapeTests(TestCase):
         entry = models.ToySessionEntry.objects.get()
         self.assertEqual(entry.toy_id, self.toy["id"])
 
-    def test_patch_rejects_shape_with_no_circumferences(self):
-        response = self.client.patch(
-            f"/toys/toys/{self.toy['id']}/",
-            {
-                "shape": {
-                    "sections": [
-                        {"order": 0, "diameter": 50, "height": 30, "circumference": None},
-                    ],
-                }
-            },
-            format="json",
-        )
-        self.assertEqual(response.status_code, 400)
-        # Original shape preserved on validation failure.
-        original = models.Toy.objects.get(pk=self.toy["id"])
-        self.assertEqual(original.shape.sections.count(), 3)
-
 
 class ExportRegistryTests(TestCase):
     def test_latest_returns_highest_version(self):
@@ -385,9 +348,9 @@ class ExportImportTests(TestCase):
         self.assertIn("99", str(response.content))
 
     def test_import_is_atomic(self):
-        # Build an envelope where the second toy is invalid (all-null circ).
         good = _payload(section_circumferences=(None, 200.0, None))
-        bad = _payload(section_circumferences=(None, None, None))
+        bad = _payload()
+        bad.pop("brand")
         envelope = {"version": 1, "exported_at": "x", "toys": [good, bad]}
         before = models.Toy.objects.count()
         response = self.client.post("/toys/toys/import/", envelope, format="json")

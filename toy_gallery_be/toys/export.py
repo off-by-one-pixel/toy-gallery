@@ -49,6 +49,8 @@ def _toy_to_portable(toy: models.Toy) -> dict:
         "size": toy.size,
         "color": toy.color,
         "insertable_length": toy.insertable_length,
+        "total_length": toy.total_length,
+        "circumference": toy.circumference,
         "custom_attributes": toy.custom_attributes,
         "shape": {
             "top_section_shape": toy.shape.top_section_shape,

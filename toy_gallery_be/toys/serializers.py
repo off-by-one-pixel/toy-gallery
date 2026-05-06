@@ -4,7 +4,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from . import models
-from .dimensions import SessionDimensions, ToyDimensions
+from .dimensions import SessionDimensions
 
 
 class ToyShapeSectionSerializer(serializers.ModelSerializer):
@@ -19,13 +19,6 @@ class ToyShapeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Shape
         fields = ["top_section_shape", "bottom_section_shape", "sections"]
-
-    def validate_sections(self, sections):
-        if not any(s.get("circumference") is not None for s in sections):
-            raise serializers.ValidationError(
-                "At least one section must have a circumference."
-            )
-        return sections
 
     def create(self, validated_data):
         sections_data = validated_data.pop("sections")
@@ -52,16 +45,12 @@ class ToyShapeSerializer(serializers.ModelSerializer):
 
 class ToySerializer(serializers.ModelSerializer):
     shape = ToyShapeSerializer()
-    diameter = serializers.SerializerMethodField()
-    height = serializers.SerializerMethodField()
-    circumference = serializers.SerializerMethodField()
     custom_attributes = serializers.DictField(
         child=serializers.CharField(allow_blank=True),
         required=False,
     )
 
     def validate_custom_attributes(self, value):
-        """Drop entries with an empty key; trim keys. Empty values are kept."""
         return {k.strip(): v for k, v in value.items() if k.strip()}
 
     class Meta:
@@ -71,25 +60,15 @@ class ToySerializer(serializers.ModelSerializer):
             "brand",
             "name",
             "shape",
-            "diameter",
-            "height",
-            "circumference",
             "size",
             "date_purchased",
             "retired",
             "color",
             "insertable_length",
+            "total_length",
+            "circumference",
             "custom_attributes",
         ]
-
-    def get_diameter(self, obj) -> float:
-        return ToyDimensions.diameter(obj)
-
-    def get_height(self, obj) -> float:
-        return ToyDimensions.height(obj)
-
-    def get_circumference(self, obj) -> float | None:
-        return ToyDimensions.circumference(obj)
 
     def create(self, validated_data):
         shape_data = validated_data.pop("shape")
