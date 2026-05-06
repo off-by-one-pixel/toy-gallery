@@ -17,8 +17,13 @@ toy_gallery_be/staticfiles
 toy_gallery_be/**/__pycache__
 toy_gallery_be/**/*.pyc
 
-# Sibling / legacy projects not used by the Docker build
-cone_editor
+# cone_editor is a submodule that gets built in stage 1 of the all-in-one
+# Dockerfile — we need its source in the build context. Exclude only the
+# build outputs and tooling state.
+cone_editor/dist
+cone_editor/.devcontainer
+
+# Legacy sibling project not used by the Docker build
 toy-svg-editor
 
 # VCS / editor
