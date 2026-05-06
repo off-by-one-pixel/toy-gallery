@@ -29,9 +29,9 @@ type Props = {
  *  (ruler, reference guides, per-section editable labels, drag handles,
  *  remove buttons, total readout).
  *
- *  Layout, drag behaviour, and sync are owned by the corresponding
- *  hooks; this component is a thin composition layer that wires them
- *  together. The viewBox is sized to the SVG's actual pixel dimensions
+ *  Layout and drag behaviour are owned by the corresponding hooks;
+ *  this component is a thin composition layer that wires them together.
+ *  The viewBox is sized to the SVG's actual pixel dimensions
  *  (1 viewBox unit == 1 CSS pixel) so chrome elements use fixed pixel
  *  sizes that don't scale as the toy grows. */
 const EditorRender = ({ toy, style, ref, onSelect }: Props) => {

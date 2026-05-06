@@ -1,6 +1,5 @@
 import { useToyStore } from "../../toyMachine";
 import FloatingInput from "./FloatingInput";
-import { useCircumferenceSync } from "./hooks/useCircumferenceSync";
 import {
   CIRC_LABEL_GAP_PX,
   LABEL_INPUT_W_PX,
@@ -36,7 +35,7 @@ const SectionLabels = ({
 }: Props) => {
   const setDiameter = useToyStore((s) => s.setDiameter);
   const setHeight = useToyStore((s) => s.setHeight);
-  const { pushFromSection } = useCircumferenceSync();
+  const setCircumference = useToyStore((s) => s.setCircumference);
   const circumferenceX = diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX;
 
   return (
@@ -77,7 +76,7 @@ const SectionLabels = ({
           touched={meta.section.circumference != null}
           allowEmpty
           placeholder="—"
-          onChange={(v) => pushFromSection(meta.section.id, v)}
+          onChange={(v) => setCircumference(meta.section.id, v)}
         />
       ))}
     </>

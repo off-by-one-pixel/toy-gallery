@@ -1,6 +1,5 @@
 import { formatMm, parseMm } from "../util/fmt";
 import { useToyStore } from "../toyMachine";
-import { useCircumferenceSync } from "./editor/hooks/useCircumferenceSync";
 import { useEditorUnit } from "./unit";
 
 const KnownMeasurements = () => {
@@ -12,21 +11,13 @@ const KnownMeasurements = () => {
   const setKnownTotal = useToyStore((s) => s.setKnownTotal);
   const setKnownSize = useToyStore((s) => s.setKnownSize);
   const setSnap = useToyStore((s) => s.setSnapEnabled);
-  const { pushFromKnown } = useCircumferenceSync();
 
   // The Size field is always circumference. Internally `knownSize` is
   // stored as the canonical diameter (= circumference / π); display
-  // converts back via π. Editing Known Circumference also propagates
-  // onto the largest non-null section circumference (rule 4 in
-  // useCircumferenceSync).
+  // converts back via π.
   const knownCircumferenceMm = knownSize == null ? null : knownSize * Math.PI;
   const handleKnownCircumferenceChange = (mm: number | null) => {
-    if (mm == null) {
-      setKnownSize(null);
-      return;
-    }
-    setKnownSize(mm / Math.PI);
-    pushFromKnown(mm);
+    setKnownSize(mm == null ? null : mm / Math.PI);
   };
 
   return (
