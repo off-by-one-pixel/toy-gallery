@@ -475,6 +475,20 @@ components:
       required:
       - current_password
       - new_password
+    CurveAngleEnum:
+      enum:
+      - 0
+      - 45
+      - 90
+      - 135
+      - 180
+      type: integer
+      description: |-
+        * `0` - 0°
+        * `45` - 45°
+        * `90` - 90°
+        * `135` - 135°
+        * `180` - 180°
     DeleteCollectionSummary:
       type: object
       properties:
@@ -854,6 +868,16 @@ components:
           type: number
           format: double
           nullable: true
+        top_curve_angle:
+          allOf:
+          - $ref: '#/components/schemas/CurveAngleEnum'
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+        bottom_curve_angle:
+          allOf:
+          - $ref: '#/components/schemas/CurveAngleEnum'
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
       required:
       - diameter
       - height
@@ -877,6 +901,16 @@ components:
           type: number
           format: double
           nullable: true
+        top_curve_angle:
+          allOf:
+          - $ref: '#/components/schemas/CurveAngleEnum'
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+        bottom_curve_angle:
+          allOf:
+          - $ref: '#/components/schemas/CurveAngleEnum'
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
       required:
       - diameter
       - height

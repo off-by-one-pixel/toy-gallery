@@ -10,7 +10,15 @@ from .dimensions import SessionDimensions
 class ToyShapeSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ShapeSection
-        fields = ["id", "order", "height", "diameter", "circumference"]
+        fields = [
+            "id",
+            "order",
+            "height",
+            "diameter",
+            "circumference",
+            "top_curve_angle",
+            "bottom_curve_angle",
+        ]
 
 
 class ToyShapeSerializer(serializers.ModelSerializer):

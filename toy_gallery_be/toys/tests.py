@@ -89,6 +89,38 @@ class ToyCreateTests(TestCase):
         self.assertTrue(null_sections)
 
 
+class CurveAngleTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+
+    def test_create_defaults_curve_angles_when_omitted(self):
+        response = self.client.post("/toys/toys/", _payload(), format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        for section in response.data["shape"]["sections"]:
+            self.assertEqual(section["top_curve_angle"], 0)
+            self.assertEqual(section["bottom_curve_angle"], 180)
+
+    def test_create_persists_explicit_curve_angles(self):
+        payload = _payload()
+        payload["shape"]["sections"][0]["top_curve_angle"] = 90
+        payload["shape"]["sections"][1]["bottom_curve_angle"] = 45
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        sections = response.data["shape"]["sections"]
+        self.assertEqual(sections[0]["top_curve_angle"], 90)
+        self.assertEqual(sections[0]["bottom_curve_angle"], 180)
+        self.assertEqual(sections[1]["top_curve_angle"], 0)
+        self.assertEqual(sections[1]["bottom_curve_angle"], 45)
+
+    def test_rejects_curve_angle_outside_choices(self):
+        payload = _payload()
+        payload["shape"]["sections"][0]["top_curve_angle"] = 30  # not in [0,45,90,135,180]
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 400, response.content)
+
+
 class CustomAttributesTests(TestCase):
     def setUp(self):
         user = User.objects.create_user(username="u", password="p")
