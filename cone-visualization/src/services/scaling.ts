@@ -3,16 +3,15 @@
 // trick used by ToyCard / MiniToy to anchor the silhouette to the bottom
 // of its stage so smaller toys read as proportionally smaller.
 
+import { silhouetteHeight } from './dimensions';
+import type { Toy } from './types';
+
 const MIN_RATIO = 0.15;
 
-interface HasHeight {
-  height: number;
-}
-
 export const heightScale = (
-  toys: (HasHeight | null | undefined)[],
-): ((toy: HasHeight | null | undefined) => number) => {
-  const heights = toys.map((t) => t?.height ?? 0);
+  toys: (Toy | null | undefined)[],
+): ((toy: Toy | null | undefined) => number) => {
+  const heights = toys.map((t) => (t ? silhouetteHeight(t) : 0));
   const max = Math.max(1, ...heights);
-  return (toy) => (toy ? Math.max(MIN_RATIO, toy.height / max) : 1);
+  return (toy) => (toy ? Math.max(MIN_RATIO, silhouetteHeight(toy) / max) : 1);
 };

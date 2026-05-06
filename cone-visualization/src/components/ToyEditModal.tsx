@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
 import type { StyleOption, Toy as EditorToy } from 'cone-editor';
 import { Alert, Button, ColorSwatchPicker, Modal, useOverlayState } from '@heroui/react';
@@ -10,7 +10,7 @@ import { createToy, patchToy } from '../services/api';
 import { SectionShape, type Toy, type ToyPayload } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
-import { circumferenceToDiameter } from '../services/units';
+import { circumferenceToDiameter, diameterToCircumference } from '../services/units';
 
 type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
@@ -53,6 +53,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             topShape: source.shape.topSectionShape ?? SectionShape.FLAT,
             bottomShape: source.shape.bottomSectionShape ?? SectionShape.FLAT,
             insertableLengthMm: source.insertableLength ?? null,
+            knownTotalMm: source.totalLength ?? null,
             knownSizeMm: circumferenceToDiameter(source.circumference),
           }
         : NEW_TOY_MM,
@@ -70,11 +71,9 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const sections = useToyStore((s) => s.sections);
   const topShape = useToyStore((s) => s.topShape);
   const bottomShape = useToyStore((s) => s.bottomShape);
-  // Insertable length now lives in the editor store (driven by the editor's
-  // KnownMeasurements top strip) — read it here for save.
   const insertableLengthMm = useToyStore((s) => s.insertableLengthMm);
-
-  const svgRef = useRef<SVGSVGElement>(null);
+  const knownTotalMm = useToyStore((s) => s.knownTotalMm);
+  const knownSizeMm = useToyStore((s) => s.knownSizeMm);
 
   const overlayState = useOverlayState({
     defaultOpen: true,
@@ -99,16 +98,14 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       setError('At least one section is required.');
       return;
     }
-    if (!sections.some((s) => s.circumference != null)) {
-      setError('Set a circumference on at least one section.');
-      return;
-    }
     const payload: ToyPayload = {
       brand: brand.trim(),
       name: name.trim(),
       size: size.trim(),
       color,
       insertableLength: insertableLengthMm,
+      totalLength: knownTotalMm,
+      circumference: diameterToCircumference(knownSizeMm),
       shape: {
         topSectionShape: topShape,
         bottomSectionShape: bottomShape,
@@ -119,8 +116,6 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
           circumference: s.circumference ?? null,
         })),
       },
-      // Carry over fields not exposed in this form so a copy is a faithful
-      // duplicate, not a stripped-down version.
       ...(mode.kind === 'copy' && {
         datePurchased: mode.toy.datePurchased ?? null,
         retired: mode.toy.retired,
@@ -176,7 +171,6 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
 
             <div className="flex-1 min-h-0">
               <ToyEditor
-                ref={svgRef}
                 initialToy={initial}
                 style={style}
                 unit={unit}

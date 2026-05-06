@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
-import type { Sort, SortColumn } from '../services/sort';
+import { isSortColumn, type Sort } from '../services/sort';
 
 const STORAGE_KEY = 'gallery.sort';
 
@@ -15,11 +15,8 @@ const SortContext = createContext<SortContextValue | null>(null);
 const isValidSort = (v: unknown): v is Sort => {
   if (typeof v !== 'object' || v === null) return false;
   const s = v as { column?: unknown; direction?: unknown };
-  return isValidColumn(s.column) && (s.direction === 'asc' || s.direction === 'desc');
+  return isSortColumn(s.column) && (s.direction === 'asc' || s.direction === 'desc');
 };
-
-const VALID_COLUMNS: SortColumn[] = ['name', 'insertable', 'circumference', 'length', 'diameter'];
-const isValidColumn = (v: unknown): v is SortColumn => typeof v === 'string' && (VALID_COLUMNS as string[]).includes(v);
 
 export function SortProvider({ children }: { children: ReactNode }) {
   const [sort, setSortState] = useState<Sort | null>(null);

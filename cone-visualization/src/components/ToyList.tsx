@@ -26,18 +26,11 @@ const DEFAULT_FILL = '#c7e4ee';
 // Action buttons are absolute-positioned over the row on hover — they don't
 // claim a grid column, so the brand/name column has more room and the grid
 // layout doesn't change between hover states.
-const GRID_COLS =
-  'grid-cols-[44px_3fr_1fr_1fr] ' +
-  'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr] ' +
-  'min-[900px]:grid-cols-[56px_1fr_70px_100px_120px_100px_110px]';
+const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr]';
 
 // SortHeader buttons need `inline-flex` at the breakpoint so the chevron
 // stays inline; plain cells can use `block`.
 const HIDDEN_SIZE = 'hidden min-[640px]:block';
-const HIDDEN_LENGTH = 'hidden min-[900px]:block';
-const HIDDEN_DIAMETER = 'hidden min-[900px]:block';
-const HIDDEN_LENGTH_HEADER = 'hidden! min-[900px]:inline-flex!';
-const HIDDEN_DIAMETER_HEADER = 'hidden! min-[900px]:inline-flex!';
 
 type Props = {
   toys: Toy[];
@@ -91,22 +84,6 @@ function ListHeader({ sort, onSort }: { sort: Sort | null; onSort: (column: Sort
         sort={sort}
         onSort={onSort}
         align="right"
-      />
-      <SortHeader
-        label="Length"
-        column="length"
-        sort={sort}
-        onSort={onSort}
-        align="right"
-        className={HIDDEN_LENGTH_HEADER}
-      />
-      <SortHeader
-        label="Diameter"
-        column="diameter"
-        sort={sort}
-        onSort={onSort}
-        align="right"
-        className={HIDDEN_DIAMETER_HEADER}
       />
     </div>
   );
@@ -204,8 +181,6 @@ function ToyRow({
         </div>
         <Metric value={toy.insertableLength} unit={unit} />
         <Metric value={toy.circumference} unit={unit} />
-        <Metric value={toy.height} unit={unit} muted className={HIDDEN_LENGTH} />
-        <Metric value={toy.diameter} unit={unit} muted className={HIDDEN_DIAMETER} />
         <div
           className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-white/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
           onClick={(e) => e.stopPropagation()}
@@ -301,9 +276,22 @@ function Metric({
 }
 
 function ExpandedPanel({ toy }: { toy: Toy }) {
+  const { unit } = useUnit();
   return (
     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-xs min-[640px]:px-5">
       <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Total length</dt>
+        <dd className="text-neutral-900 tabular-nums">
+          {toy.totalLength == null ? (
+            <span className="font-normal text-neutral-300">—</span>
+          ) : (
+            <>
+              {formatValue(toy.totalLength, unit)}
+              <span className="ml-1 text-[10px] font-medium text-neutral-500">{unit.id}</span>
+            </>
+          )}
+        </dd>
+
         <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Top shape</dt>
         <dd className="text-neutral-900">{SHAPE_LABEL[toy.shape.topSectionShape ?? SectionShape.FLAT]}</dd>
 

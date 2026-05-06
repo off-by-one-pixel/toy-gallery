@@ -1,28 +1,42 @@
 import type { Toy } from './types';
 
-export type SortColumn = 'name' | 'insertable' | 'circumference' | 'length' | 'diameter';
+type ColumnConfig = {
+  label: string;
+  accessor: (t: Toy) => number | string;
+};
+
+const COLUMNS = {
+  name: {
+    label: 'Brand / Model',
+    accessor: (t) => `${t.brand} ${t.name}`.toLowerCase(),
+  },
+  insertable: {
+    label: 'Insertable',
+    accessor: (t) => t.insertableLength ?? -Infinity,
+  },
+  total: {
+    label: 'Total length',
+    accessor: (t) => t.totalLength ?? -Infinity,
+  },
+  circumference: {
+    label: 'Circumference',
+    accessor: (t) => t.circumference ?? -Infinity,
+  },
+} as const satisfies Record<string, ColumnConfig>;
+
+export type SortColumn = keyof typeof COLUMNS;
 export type SortDirection = 'asc' | 'desc';
 export type Sort = { column: SortColumn; direction: SortDirection };
 
-export const sortColumns: readonly SortColumn[] = [
-  'name',
-  'insertable',
-  'circumference',
-  'length',
-  'diameter',
-];
+export const sortColumns = Object.keys(COLUMNS) as SortColumn[];
 
-const accessors: Record<SortColumn, (t: Toy) => number | string> = {
-  name: (t) => `${t.brand} ${t.name}`.toLowerCase(),
-  insertable: (t) => t.insertableLength ?? -Infinity,
-  circumference: (t) => t.circumference ?? -Infinity,
-  length: (t) => t.height,
-  diameter: (t) => t.diameter,
-};
+export const sortColumnLabel = (column: SortColumn): string => COLUMNS[column].label;
+
+export const isSortColumn = (v: unknown): v is SortColumn => typeof v === 'string' && v in COLUMNS;
 
 export const sortToys = (toys: Toy[], sort: Sort | null): Toy[] => {
   if (!sort) return toys;
-  const accessor = accessors[sort.column];
+  const accessor = COLUMNS[sort.column].accessor;
   const mul = sort.direction === 'asc' ? 1 : -1;
   return toys.slice().sort((a, b) => {
     const av = accessor(a);
@@ -33,8 +47,8 @@ export const sortToys = (toys: Toy[], sort: Sort | null): Toy[] => {
   });
 };
 
-// Click-same-column → flip direction; click new column → asc.
+// Click-same-column → flip direction; click new column → keep current direction.
 export const cycleSort = (current: Sort | null, column: SortColumn): Sort =>
   current?.column === column
     ? { column, direction: current.direction === 'asc' ? 'desc' : 'asc' }
-    : { column, direction: 'asc' };
+    : { column, direction: current?.direction ?? 'asc' };
