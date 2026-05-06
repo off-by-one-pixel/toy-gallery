@@ -19,20 +19,20 @@ export type ToyTouched = {
 };
 
 /**
- * Side-wall control-point preset for a section's top or bottom edge,
+ * Side-wall control-point angle for a section's top or bottom edge,
  * expressed as a tangent angle in degrees from the screen-down axis,
  * mirrored at the left vs. right anchor of the section. 0° points the
  * control point straight down, 180° straight up, 90° horizontally
  * outward. Defaults reproduce the legacy smooth-S taper: top edge → 0°,
  * bottom edge → 180° (both control points pointing into the section).
  */
-export const RIM_PRESETS = [0, 45, 90, 135, 180] as const;
-export type RimPreset = (typeof RIM_PRESETS)[number];
-export const DEFAULT_TOP_PRESET: RimPreset = 0;
-export const DEFAULT_BOTTOM_PRESET: RimPreset = 180;
+export const CURVE_ANGLES = [0, 45, 90, 135, 180] as const;
+export type CurveAngle = (typeof CURVE_ANGLES)[number];
+export const DEFAULT_TOP_CURVE_ANGLE: CurveAngle = 0;
+export const DEFAULT_BOTTOM_CURVE_ANGLE: CurveAngle = 180;
 
-export const nextRimPreset = (p: RimPreset): RimPreset =>
-  RIM_PRESETS[(RIM_PRESETS.indexOf(p) + 1) % RIM_PRESETS.length];
+export const nextCurveAngle = (p: CurveAngle): CurveAngle =>
+  CURVE_ANGLES[(CURVE_ANGLES.indexOf(p) + 1) % CURVE_ANGLES.length];
 
 export interface ToySection {
   id: number;
@@ -46,16 +46,16 @@ export interface ToySection {
    *  fully touched on hydrate (loaded toys are by definition user-set) and
    *  fully untouched for sections inserted from scratch. */
   touched?: ToyTouched;
-  /** Side-wall preset at this section's top edge. Default 0° (down). */
-  topPreset?: RimPreset;
-  /** Side-wall preset at this section's bottom edge. Default 180° (up). */
-  bottomPreset?: RimPreset;
+  /** Side-wall angle at this section's top edge. Default 0° (down). */
+  topCurveAngle?: CurveAngle;
+  /** Side-wall angle at this section's bottom edge. Default 180° (up). */
+  bottomCurveAngle?: CurveAngle;
 }
 
-export const sectionTopPreset = (s: ToySection): RimPreset =>
-  s.topPreset ?? DEFAULT_TOP_PRESET;
-export const sectionBottomPreset = (s: ToySection): RimPreset =>
-  s.bottomPreset ?? DEFAULT_BOTTOM_PRESET;
+export const sectionTopCurveAngle = (s: ToySection): CurveAngle =>
+  s.topCurveAngle ?? DEFAULT_TOP_CURVE_ANGLE;
+export const sectionBottomCurveAngle = (s: ToySection): CurveAngle =>
+  s.bottomCurveAngle ?? DEFAULT_BOTTOM_CURVE_ANGLE;
 
 export const Shape = {
   CONE: "CONE",
@@ -121,10 +121,10 @@ interface ToyStore extends Toy {
 
   setTopShape: (shape: Shape) => void;
   setBottomShape: (shape: Shape) => void;
-  setTopPreset: (id: number, preset: RimPreset) => void;
-  setBottomPreset: (id: number, preset: RimPreset) => void;
-  cycleTopPreset: (id: number) => void;
-  cycleBottomPreset: (id: number) => void;
+  setTopCurveAngle: (id: number, angle: CurveAngle) => void;
+  setBottomCurveAngle: (id: number, angle: CurveAngle) => void;
+  cycleTopCurveAngle: (id: number) => void;
+  cycleBottomCurveAngle: (id: number) => void;
   moveSection: (id: number, direction: number) => void;
   reorderSection: (fromId: number, toId: number, position: "before" | "after") => void;
   setStyle: (style: Partial<StyleOption>) => void;
@@ -275,29 +275,29 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   },
   setTopShape: (shape) => set({ topShape: shape }),
   setBottomShape: (shape) => set({ bottomShape: shape }),
-  setTopPreset: (id, preset) => {
+  setTopCurveAngle: (id, angle) => {
     set((state) => ({
       sections: state.sections.map((section) =>
-        section.id === id ? { ...section, topPreset: preset } : section,
+        section.id === id ? { ...section, topCurveAngle: angle } : section,
       ),
     }));
   },
-  setBottomPreset: (id, preset) => {
+  setBottomCurveAngle: (id, angle) => {
     set((state) => ({
       sections: state.sections.map((section) =>
-        section.id === id ? { ...section, bottomPreset: preset } : section,
+        section.id === id ? { ...section, bottomCurveAngle: angle } : section,
       ),
     }));
   },
-  cycleTopPreset: (id) => {
+  cycleTopCurveAngle: (id) => {
     const section = get().sections.find((s) => s.id === id);
     if (!section) return;
-    get().setTopPreset(id, nextRimPreset(sectionTopPreset(section)));
+    get().setTopCurveAngle(id, nextCurveAngle(sectionTopCurveAngle(section)));
   },
-  cycleBottomPreset: (id) => {
+  cycleBottomCurveAngle: (id) => {
     const section = get().sections.find((s) => s.id === id);
     if (!section) return;
-    get().setBottomPreset(id, nextRimPreset(sectionBottomPreset(section)));
+    get().setBottomCurveAngle(id, nextCurveAngle(sectionBottomCurveAngle(section)));
   },
   moveSection: (id, direction) => {
     const index = get().sections.findIndex((section) => section.id === id);

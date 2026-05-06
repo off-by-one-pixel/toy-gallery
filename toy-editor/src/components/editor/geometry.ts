@@ -1,4 +1,4 @@
-import { type RimPreset } from "../../toyMachine";
+import { type CurveAngle } from "../../toyMachine";
 import type { EditorLayout } from "./hooks/useEditorLayout";
 import {
   BAND_HALF_H_PX,
@@ -69,7 +69,7 @@ export const diameterRowGeometry = (
   return { inputY, leaderD };
 };
 
-// ─── Rim preset buttons ────────────────────────────────────────────────
+// ─── Rim angle buttons ────────────────────────────────────────────────
 
 const RIM_TICK_R_PX = RIM_BUTTON_R_PX - 2;
 const RIM_INSET_PX = RIM_BUTTON_R_PX + 4;
@@ -96,13 +96,13 @@ export const rimButtonsGeometry = (
 
 export type RimTickLine = { x1: number; y1: number; x2: number; y2: number };
 
-/** Full <line> attributes for the directional tick inside a preset button. */
+/** Full <line> attributes for the directional tick inside a angle button. */
 export const rimTickLine = (
   cx: number,
   cy: number,
-  preset: RimPreset,
+  angle: CurveAngle,
 ): RimTickLine => {
-  const r = (preset * Math.PI) / 180;
+  const r = (angle * Math.PI) / 180;
   return {
     x1: cx,
     y1: cy,

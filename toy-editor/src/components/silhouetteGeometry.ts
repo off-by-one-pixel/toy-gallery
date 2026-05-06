@@ -1,7 +1,7 @@
 import {
   Shape,
-  sectionBottomPreset,
-  sectionTopPreset,
+  sectionBottomCurveAngle,
+  sectionTopCurveAngle,
   type ToySection,
 } from "../toyMachine";
 
@@ -15,7 +15,7 @@ export type SectionBodyGeometry = {
 };
 
 /** Geometry for a body section: cubic-Bézier sides with control points
- *  derived from the section's top/bottom rim presets. Default presets
+ *  derived from the section's top/bottom rim angles. Default angles
  *  (top=0°, bottom=180°) reproduce the legacy h/2 vertical taper. */
 export const sectionBodyGeometry = (
   section: ToySection,
@@ -32,10 +32,10 @@ export const sectionBodyGeometry = (
   const diff = Math.max(0, prevDiameter - diameter) / 2;
 
   // Side-wall control-point magnitude — kept at h/2 to match the legacy
-  // smooth-S taper at default presets.
+  // smooth-S taper at default angles.
   const m = height / 2;
-  const θTop = (sectionTopPreset(section) * Math.PI) / 180;
-  const θBot = (sectionBottomPreset(section) * Math.PI) / 180;
+  const θTop = (sectionTopCurveAngle(section) * Math.PI) / 180;
+  const θBot = (sectionBottomCurveAngle(section) * Math.PI) / 180;
   const sinTop = Math.sin(θTop);
   const cosTop = Math.cos(θTop);
   const sinBot = Math.sin(θBot);
@@ -49,7 +49,7 @@ export const sectionBodyGeometry = (
   const xBL = diff;
   const xBR = diameter + diff;
 
-  // CP placement: at a left anchor (xL, y), preset θ → CP at
+  // CP placement: at a left anchor (xL, y), angle θ → CP at
   // (xL − sin(θ)·m, y + cos(θ)·m). Right anchor mirrors the x term.
   const cpTopLeftX = xTL - sinTop * m;
   const cpTopLeftY = cosTop * m;

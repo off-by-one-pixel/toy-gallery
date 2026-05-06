@@ -5,7 +5,7 @@ import Silhouette from "../Silhouette";
 import SvgRoot from "../SvgRoot";
 import DragLayer from "./DragLayer";
 import Guides from "./Guides";
-import RimPresetButtons from "./RimPresetButtons";
+import CurveAngleButtons from "./CurveAngleButtons";
 import { EditorLayoutProvider } from "./EditorLayoutContext";
 import { useEditorUiStore } from "./editorUiStore";
 import Ruler from "./Ruler";
@@ -57,7 +57,7 @@ const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
           <g className="cone-editor-chrome">
             <SectionLabels />
             <DragLayer handlers={handlers} />
-            <RimPresetButtons />
+            <CurveAngleButtons />
           </g>
         </EditorLayoutProvider>
       )}

@@ -1,9 +1,9 @@
 import {
   Shape,
-  sectionBottomPreset,
-  sectionTopPreset,
+  sectionBottomCurveAngle,
+  sectionTopCurveAngle,
   useToyStore,
-  type RimPreset,
+  type CurveAngle,
 } from "../../toyMachine";
 import { useEditorLayoutCtx } from "./EditorLayoutContext";
 import { useEditorUiStore } from "./editorUiStore";
@@ -11,12 +11,12 @@ import { rimButtonsGeometry, rimTickLine, type RimButtonPos } from "./geometry";
 import { RIM_BUTTON_R_PX } from "./layout";
 
 type ButtonProps = RimButtonPos & {
-  preset: RimPreset;
+  angle: CurveAngle;
   ariaLabel: string;
   onClick: () => void;
 };
 
-const PresetButton = ({ cx, cy, preset, ariaLabel, onClick }: ButtonProps) => (
+const CycleButton = ({ cx, cy, angle, ariaLabel, onClick }: ButtonProps) => (
   <g
     className="cone-editor-rim-btn"
     role="button"
@@ -27,15 +27,15 @@ const PresetButton = ({ cx, cy, preset, ariaLabel, onClick }: ButtonProps) => (
     }}
   >
     <circle cx={cx} cy={cy} r={RIM_BUTTON_R_PX} />
-    <line {...rimTickLine(cx, cy, preset)} />
+    <line {...rimTickLine(cx, cy, angle)} />
   </g>
 );
 
-const RimPresetButtons = () => {
+const CurveAngleButtons = () => {
   const layout = useEditorLayoutCtx();
   const bottomShape = useToyStore((s) => s.bottomShape);
-  const cycleTop = useToyStore((s) => s.cycleTopPreset);
-  const cycleBot = useToyStore((s) => s.cycleBottomPreset);
+  const cycleTop = useToyStore((s) => s.cycleTopCurveAngle);
+  const cycleBot = useToyStore((s) => s.cycleBottomCurveAngle);
   const hoveredSectionId = useEditorUiStore((s) => s.hoveredSectionId);
   const setHoveredSectionId = useEditorUiStore((s) => s.setHoveredSectionId);
 
@@ -45,28 +45,28 @@ const RimPresetButtons = () => {
   if (meta.isFirst || isCappedLast) return null;
 
   const { top: topPos, bot: botPos } = rimButtonsGeometry(meta, layout);
-  const top = sectionTopPreset(meta.section);
-  const bot = sectionBottomPreset(meta.section);
+  const top = sectionTopCurveAngle(meta.section);
+  const bot = sectionBottomCurveAngle(meta.section);
 
   return (
     <g
       onMouseEnter={() => setHoveredSectionId(meta.section.id)}
       onMouseLeave={() => setHoveredSectionId(null)}
     >
-      <PresetButton
+      <CycleButton
         {...topPos}
-        preset={top}
-        ariaLabel={`Section ${meta.index + 1} top preset (${top}°)`}
+        angle={top}
+        ariaLabel={`Section ${meta.index + 1} top angle (${top}°)`}
         onClick={() => cycleTop(meta.section.id)}
       />
-      <PresetButton
+      <CycleButton
         {...botPos}
-        preset={bot}
-        ariaLabel={`Section ${meta.index + 1} bottom preset (${bot}°)`}
+        angle={bot}
+        ariaLabel={`Section ${meta.index + 1} bottom angle (${bot}°)`}
         onClick={() => cycleBot(meta.section.id)}
       />
     </g>
   );
 };
 
-export default RimPresetButtons;
+export default CurveAngleButtons;

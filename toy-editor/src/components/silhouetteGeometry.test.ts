@@ -28,7 +28,7 @@ describe("sectionBodyGeometry", () => {
     expect(x).toBe(50); // (200 - 100) / 2
   });
 
-  it("default presets reproduce the legacy h/2 vertical CPs", () => {
+  it("default angles reproduce the legacy h/2 vertical CPs", () => {
     const { d } = sectionBodyGeometry({ ...baseSection, diameter: 100 }, 1, 100, 100);
     const nums = parseNumbers(d);
     // Equal previous & current diameter → diff_prev = diff = 0.
@@ -44,9 +44,9 @@ describe("sectionBodyGeometry", () => {
     expected.forEach((v, i) => expectClose(nums[i], v));
   });
 
-  it("topPreset=180 lifts the top CPs above the rim", () => {
+  it("topCurveAngle=180 lifts the top CPs above the rim", () => {
     const { d } = sectionBodyGeometry(
-      { ...baseSection, topPreset: 180 },
+      { ...baseSection, topCurveAngle: 180 },
       1,
       100,
       100,
@@ -56,9 +56,9 @@ describe("sectionBodyGeometry", () => {
     expectClose(nums[13], -25);
   });
 
-  it("topPreset=90 places top CPs horizontally outward at y=0", () => {
+  it("topCurveAngle=90 places top CPs horizontally outward at y=0", () => {
     const { d } = sectionBodyGeometry(
-      { ...baseSection, topPreset: 90 },
+      { ...baseSection, topCurveAngle: 90 },
       1,
       100,
       100,
@@ -70,9 +70,9 @@ describe("sectionBodyGeometry", () => {
     expectClose(nums[13], 0); // top-right CP y
   });
 
-  it("bottomPreset=0 pushes bottom CPs below the rim", () => {
+  it("bottomCurveAngle=0 pushes bottom CPs below the rim", () => {
     const { d } = sectionBodyGeometry(
-      { ...baseSection, bottomPreset: 0 },
+      { ...baseSection, bottomCurveAngle: 0 },
       1,
       100,
       100,
