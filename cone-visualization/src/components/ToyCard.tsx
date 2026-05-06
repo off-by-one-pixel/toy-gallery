@@ -124,11 +124,11 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         }
         onClick={(e) => e.stopPropagation()}
       >
-        <AttrRow label="Length" value={`${formatValue(toy.height, unit)} ${unit.id}`} />
-        <AttrRow label="Diameter" value={`${formatValue(toy.diameter, unit)} ${unit.id}`} />
-        <div className="mt-2 border-t border-neutral-200 pt-2.5">
-          <AttributesPanel toy={toy} />
-        </div>
+        <AttrRow
+          label="Total length"
+          value={toy.totalLength == null ? '—' : `${formatValue(toy.totalLength, unit)} ${unit.id}`}
+        />
+        <AttributesPanel toy={toy} />
       </div>
     </article>
   );
@@ -158,9 +158,10 @@ function Metric({
 
 function AttrRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[80px_1fr] items-center gap-3">
-      <span className="text-[10px] uppercase tracking-wider text-neutral-400">{label}</span>
-      <span className="text-sm tabular-nums text-neutral-900">{value}</span>
+    <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+      <span className="px-1.5 py-0.5 text-xs text-neutral-700">{label}</span>
+      <span className="px-1.5 py-0.5 text-xs tabular-nums text-neutral-900">{value}</span>
+      <span aria-hidden className="w-3" />
     </div>
   );
 }

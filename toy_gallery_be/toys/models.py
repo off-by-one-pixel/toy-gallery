@@ -52,6 +52,8 @@ class Toy(models.Model):
     shape = models.OneToOneField(Shape, on_delete=models.CASCADE)
     color = models.CharField(max_length=50, null=True, blank=True)
     insertable_length = models.FloatField(null=True, blank=True)
+    total_length = models.FloatField(null=True, blank=True)
+    circumference = models.FloatField(null=True, blank=True)
     custom_attributes = models.JSONField(default=dict, blank=True)
 
 
