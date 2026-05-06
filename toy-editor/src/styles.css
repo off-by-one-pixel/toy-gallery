@@ -171,9 +171,9 @@
   pointer-events: none;
   transition: opacity 140ms ease;
 }
-.cone-editor-canvas:hover .cone-editor-cap-row,
-.cone-editor-canvas:hover .cone-editor-canvas-actions,
-.cone-editor-canvas:hover .cone-editor-chrome {
+.cone-editor-main:hover .cone-editor-cap-row,
+.cone-editor-main:hover .cone-editor-canvas-actions,
+.cone-editor-main:hover .cone-editor-chrome {
   opacity: 1;
   pointer-events: auto;
 }

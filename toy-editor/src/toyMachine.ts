@@ -70,6 +70,7 @@ interface ToyStore extends Toy {
   knownTotalMm: number | null;
   knownSizeMm: number | null;
   snapEnabled: boolean;
+  showSectionCircumference: boolean;
 
   getMaxWidth: () => number;
   getTotalHeight: () => number;
@@ -106,6 +107,7 @@ interface ToyStore extends Toy {
   setKnownTotal: (mm: number | null) => void;
   setKnownSize: (mm: number | null) => void;
   setSnapEnabled: (enabled: boolean) => void;
+  setShowSectionCircumference: (v: boolean) => void;
 
   hydrate: (toy: Toy) => void;
 }
@@ -137,6 +139,7 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   knownTotalMm: null,
   knownSizeMm: null,
   snapEnabled: true,
+  showSectionCircumference: false,
 
   setRef: (r) => set({ ref: r }),
   setSelected: (id) => set({ selectedId: id }),
@@ -270,6 +273,7 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   setKnownTotal: (mm) => set({ knownTotalMm: mm }),
   setKnownSize: (mm) => set({ knownSizeMm: mm }),
   setSnapEnabled: (enabled) => set({ snapEnabled: enabled }),
+  setShowSectionCircumference: (v) => set({ showSectionCircumference: v }),
   hydrate: (toy) => {
     const maxId = toy.sections.reduce((a, s) => Math.max(a, s.id), 0);
     set({
@@ -288,6 +292,7 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
       knownTotalMm: toy.knownTotalMm ?? null,
       knownSizeMm: toy.knownSizeMm ?? null,
       snapEnabled: toy.snapEnabled ?? true,
+      showSectionCircumference: toy.sections.some((s) => s.circumference != null),
     });
   },
 }));

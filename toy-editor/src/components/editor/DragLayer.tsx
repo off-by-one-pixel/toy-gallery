@@ -44,6 +44,7 @@ const DragLayer = ({
   handlers,
 }: Props) => {
   const removeSection = useToyStore((s) => s.removeSection);
+  const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
   const sectionsLen = sections.length;
   const bandWidth = silhouetteW + 16;
   const bandX = silhouetteX - 8;
@@ -130,9 +131,10 @@ const DragLayer = ({
           follows them there. */}
       {sectionsLen > 1 &&
         sections.map((meta) => {
-          const circRight =
-            diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX + LABEL_INPUT_W_PX;
-          const cx = circRight + REMOVE_R_PX + 2;
+          const lastInputRight = showSectionCirc
+            ? diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX + LABEL_INPUT_W_PX
+            : diameterLabelX + LABEL_INPUT_W_PX;
+          const cx = lastInputRight + REMOVE_R_PX + 2;
           const cy = meta.isLast
             ? silhouetteY + meta.bottomMm * silhouetteScale + BOTTOM_INPUT_OFFSET_PX
             : silhouetteY + meta.midMm * silhouetteScale;
