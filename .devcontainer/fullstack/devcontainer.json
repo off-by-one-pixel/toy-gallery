@@ -6,10 +6,9 @@
   },
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
-  "forwardPorts": [3000, 3001, 8000],
+  "forwardPorts": [3000, 8000],
   "portsAttributes": {
     "3000": { "label": "Frontend (cone-visualization)" },
-    "3001": { "label": "Frontend (toy-svg-editor)" },
     "8000": { "label": "Django Backend" }
   },
   "customizations": {
@@ -31,6 +30,6 @@
       }
     }
   },
-  "postCreateCommand": "cd toy_gallery_be && uv sync && cd ../cone-visualization && npm install && cd ../toy-svg-editor && npm install",
+  "postCreateCommand": "cd toy_gallery_be && uv sync && cd ../cone-visualization && npm install",
   "remoteUser": "vscode"
 }
