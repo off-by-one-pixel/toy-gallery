@@ -16,10 +16,13 @@
   --cone-editor-bg: #f3f4f6;
   --cone-editor-canvas-a: #fafaff;
   --cone-editor-canvas-b: #f0fdfa;
+  --cone-editor-guide: #d97706;
+  --cone-editor-guide-soft: rgba(217, 119, 6, 0.18);
+  --cone-editor-warn: #d97706;
 
   display: flex;
+  flex-direction: row;
   gap: 0;
-  align-items: stretch;
   font-family: inherit;
   color: var(--cone-editor-ink);
   height: 100%;
@@ -28,46 +31,176 @@
   background: var(--cone-editor-surface);
 }
 
+/* ---------- Layout: main editing area + side panel for app fields ---------- */
+
+.cone-editor-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cone-editor-side {
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 18px;
+  border-left: 1px solid var(--cone-editor-line);
+  background: var(--cone-editor-surface);
+  overflow-y: auto;
+}
+.cone-editor-known {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cone-editor-line);
+  background: var(--cone-editor-surface);
+}
+.cone-editor-known-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.cone-editor-known-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--cone-editor-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cone-editor-known-field-label {
+  white-space: nowrap;
+}
+.cone-editor-known-field-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border: 1px solid var(--cone-editor-line);
+  border-radius: 6px;
+  background: var(--cone-editor-surface);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.cone-editor-known-field-input:focus-within {
+  border-color: var(--cone-editor-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.cone-editor-known-field-input input {
+  width: 60px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  color: var(--cone-editor-ink);
+  text-align: right;
+  text-transform: none;
+}
+.cone-editor-known-field-input input:focus { outline: none; }
+.cone-editor-known-field-unit {
+  font-size: 10px;
+  color: var(--cone-editor-ink-soft);
+  text-transform: uppercase;
+}
+
+.cone-editor-display-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 12px;
+  color: var(--cone-editor-ink);
+}
+.cone-editor-display-mode-legend {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--cone-editor-ink-soft);
+  text-transform: uppercase;
+  margin-right: 4px;
+  padding: 0;
+}
+.cone-editor-display-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.cone-editor-snap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--cone-editor-ink);
+  cursor: pointer;
+}
+
 /* ---------- Canvas ---------- */
 
 .cone-editor-canvas {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   display: flex;
+  flex-direction: column;
   align-items: stretch;
-  justify-content: stretch;
   background: linear-gradient(135deg, var(--cone-editor-canvas-a), var(--cone-editor-canvas-b));
-  padding: 48px 32px 32px;
+  padding: 14px 24px 18px;
   overflow: hidden;
 }
+
+/* Editor chrome (cap selectors, add-section button, in-SVG ruler / handles /
+ * inputs) only appears when the canvas is hovered, so the silhouette has
+ * the spotlight when the user isn't actively editing. */
+.cone-editor-cap-row,
+.cone-editor-canvas-actions,
+.cone-editor-chrome {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+.cone-editor-canvas:hover .cone-editor-cap-row,
+.cone-editor-canvas:hover .cone-editor-canvas-actions,
+.cone-editor-canvas:hover .cone-editor-chrome {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cone-editor-cap-row {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
 .cone-editor-stage {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   align-items: stretch;
   justify-content: center;
   min-width: 0;
   min-height: 0;
 }
+.cone-editor-canvas-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
 .cone-editor-svg {
   max-width: 100%;
   max-height: 100%;
   display: block;
   user-select: none;
-}
-.cone-editor-hint {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  font-size: 11px;
-  color: var(--cone-editor-ink-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--cone-editor-line);
 }
 
 /* ---------- Silhouette parts (clickable) ---------- */
@@ -86,65 +219,198 @@
   stroke-dasharray: 5 3;
   vector-effect: non-scaling-stroke;
 }
+
+/* ---------- Reference guides ---------- */
+
+.cone-editor-guide {
+  fill: none;
+  stroke: var(--cone-editor-guide);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+}
+.cone-editor-guide-label {
+  fill: var(--cone-editor-guide);
+  font-size: 10px;
+  font-weight: 600;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ---------- Ruler ---------- */
+
+.cone-editor-ruler-axis {
+  stroke: var(--cone-editor-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.cone-editor-ruler-tick {
+  stroke: var(--cone-editor-ink-muted);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.cone-editor-ruler-label,
+.cone-editor-ruler-unit,
+.cone-editor-ruler-bottom {
+  fill: var(--cone-editor-ink-muted);
+  font-size: 10px;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+.cone-editor-ruler-bottom { font-weight: 600; }
+.cone-editor-total-readout {
+  fill: var(--cone-editor-ink);
+  font-size: 13px;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ---------- Floating value labels (foreignObject inputs) ---------- */
+
+.cone-editor-floating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  padding: 0 4px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid transparent;
+  color: var(--cone-editor-ink);
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1;
+  box-sizing: border-box;
+}
+.cone-editor-floating:hover {
+  border-color: var(--cone-editor-line-strong);
+  background: var(--cone-editor-surface);
+}
+.cone-editor-floating:focus-within {
+  border-color: var(--cone-editor-accent);
+  background: var(--cone-editor-surface);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.cone-editor-floating.is-touched {
+  font-weight: 700;
+  color: var(--cone-editor-ink);
+}
+.cone-editor-floating.is-default {
+  font-weight: 400;
+  color: var(--cone-editor-ink-soft);
+  font-style: italic;
+}
+.cone-editor-floating-prefix {
+  color: var(--cone-editor-ink-soft);
+  font-size: 10px;
+  font-weight: 500;
+  font-style: normal;
+}
+.cone-editor-floating input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: right;
+  padding: 0;
+}
+.cone-editor-floating input:focus { outline: none; }
+.cone-editor-floating-warn {
+  color: var(--cone-editor-warn);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  cursor: help;
+}
+
+/* leader lines from silhouette to diameter labels */
+.cone-editor-leader {
+  fill: none;
+  stroke: var(--cone-editor-line-strong);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+.cone-editor-leader.is-touched { stroke: var(--cone-editor-ink-soft); }
+.cone-editor-leader.is-default { stroke-dasharray: 2 2; }
+
+/* ---------- Drag handles ---------- */
+
 .cone-editor-handle {
   fill: var(--cone-editor-surface);
   stroke: var(--cone-editor-accent);
   stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+  transition: r 0.1s ease;
 }
-.cone-editor-handle-diameter { cursor: ew-resize; }
+.cone-editor-handle-diameter {
+  cursor: ew-resize;
+}
+.cone-editor-handle-diameter:hover { r: 7; }
 .cone-editor-handle-height { cursor: ns-resize; }
 
-/* ---------- Right panel ---------- */
-
-.cone-editor-controls {
-  flex: 0 0 340px;
-  border-left: 1px solid var(--cone-editor-line);
-  background: var(--cone-editor-surface);
-  padding: 22px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-height: 0;
-  overflow: hidden;
+.cone-editor-handle-boundary {
+  fill: rgba(37, 99, 235, 0);
+  stroke: rgba(37, 99, 235, 0);
+  cursor: ns-resize;
+  transition:
+    fill 0.1s ease,
+    stroke 0.1s ease;
+}
+.cone-editor-handle-boundary:hover {
+  fill: rgba(37, 99, 235, 0.08);
+  stroke: rgba(37, 99, 235, 0.45);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
 }
 
-.cone-editor-group { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-.cone-editor-group-title {
-  margin: 0;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--cone-editor-ink-soft);
+/* ---------- Per-section remove button (× chip) ---------- */
+
+.cone-editor-remove {
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.cone-editor-remove:hover,
+.cone-editor-chrome:hover .cone-editor-remove { opacity: 1; }
+.cone-editor-remove circle {
+  fill: var(--cone-editor-surface);
+  stroke: var(--cone-editor-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.cone-editor-remove:hover circle {
+  fill: #fef2f2;
+  stroke: #fca5a5;
+}
+.cone-editor-remove text {
+  fill: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  pointer-events: none;
 }
 
-/* Shape selects laid out side by side */
-.cone-editor-shape-row {
-  display: flex;
-  gap: 12px;
-}
-.cone-editor-shape-row > .cone-editor-group {
-  flex: 1;
-  min-width: 0;
-}
-.cone-editor-shape-row .cone-editor-shape-select {
-  width: 100%;
-}
+/* ---------- Cap-shape selectors (above / below silhouette) ---------- */
 
 .cone-editor-shape-select {
   appearance: none;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--cone-editor-ink);
-  background: var(--cone-editor-surface, #fff);
-  padding: 8px 28px 8px 10px;
+  background: var(--cone-editor-surface);
+  padding: 5px 24px 5px 10px;
   border: 1px solid var(--cone-editor-line);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M3 5 L6 8 L9 5' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
   background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 12px 12px;
+  background-position: right 6px center;
+  background-size: 11px 11px;
   transition: border-color 0.15s ease;
 }
 .cone-editor-shape-select:hover { border-color: var(--cone-editor-line-strong); }
@@ -154,122 +420,8 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Sections list — takes remaining height, scrolls internally. */
-.cone-editor-sections-group {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.cone-editor-sections {
-  list-style: none;
-  margin: 0;
-  padding: 2px 6px 2px 2px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1 1 auto;
-  min-height: 60px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--cone-editor-line-strong) transparent;
-}
-.cone-editor-sections::-webkit-scrollbar { width: 8px; }
-.cone-editor-sections::-webkit-scrollbar-thumb {
-  background: var(--cone-editor-line-strong);
-  border-radius: 4px;
-  border: 2px solid var(--cone-editor-surface);
-  background-clip: padding-box;
-}
-.cone-editor-sections::-webkit-scrollbar-track { background: transparent; }
+/* ---------- Buttons ---------- */
 
-.cone-editor-section {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 8px 5px 4px;
-  border: 1px solid var(--cone-editor-line);
-  border-radius: 8px;
-  cursor: grab;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    opacity 0.15s ease;
-  background: var(--cone-editor-surface);
-}
-.cone-editor-section:active { cursor: grabbing; }
-.cone-editor-section:hover {
-  border-color: var(--cone-editor-line-strong);
-  background: var(--cone-editor-bg);
-}
-.cone-editor-section-selected {
-  border-color: var(--cone-editor-accent);
-  background: var(--cone-editor-accent-soft);
-}
-.cone-editor-section-dragging {
-  opacity: 0.4;
-}
-.cone-editor-section-drop-before {
-  box-shadow: 0 -4px 0 -1px var(--cone-editor-accent);
-}
-.cone-editor-section-drop-after {
-  box-shadow: 0 4px 0 -1px var(--cone-editor-accent);
-}
-
-.cone-editor-drag-handle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  letter-spacing: -1.5px;
-  color: var(--cone-editor-ink-soft);
-  font-size: 11px;
-  line-height: 1;
-  user-select: none;
-  cursor: grab;
-}
-.cone-editor-section:active .cone-editor-drag-handle { cursor: grabbing; }
-
-.cone-editor-section-vals {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--cone-editor-ink);
-  font-variant-numeric: tabular-nums;
-  min-width: 0;
-}
-.cone-editor-section-vals input {
-  width: 48px;
-  padding: 3px 6px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  font: inherit;
-  color: var(--cone-editor-ink);
-  background: transparent;
-  text-align: right;
-}
-.cone-editor-section-vals input:hover {
-  border-color: var(--cone-editor-line);
-  background: var(--cone-editor-surface);
-}
-.cone-editor-section-vals input:focus {
-  outline: none;
-  border-color: var(--cone-editor-accent);
-  background: var(--cone-editor-surface);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-.cone-editor-section-sep { color: var(--cone-editor-ink-soft); }
-.cone-editor-section-unit {
-  color: var(--cone-editor-ink-soft);
-  font-size: 11px;
-  margin-left: 2px;
-  margin-right: 10px;
-}
-
-/* Buttons */
 .cone-editor-btn {
   appearance: none;
   display: inline-flex;
@@ -278,10 +430,10 @@
   gap: 6px;
   font: inherit;
   font-weight: 500;
-  font-size: 13px;
-  padding: 6px 12px;
+  font-size: 12px;
+  padding: 6px 14px;
   border: 1px solid var(--cone-editor-line);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--cone-editor-surface);
   color: var(--cone-editor-ink);
   cursor: pointer;
@@ -302,36 +454,24 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
-.cone-editor-btn-icon {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border-radius: 6px;
-  font-size: 12px;
-}
-.cone-editor-btn-danger {
-  color: #b91c1c;
-  border-color: transparent;
-  background: transparent;
-}
-.cone-editor-btn-danger:hover:not(:disabled) {
-  color: #7f1d1d;
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
 .cone-editor-add {
-  flex-shrink: 0;
-  padding: 8px 12px;
-  background: transparent;
-  border: 1px dashed var(--cone-editor-line-strong);
-  border-radius: 8px;
-  font-size: 12px;
+  background: var(--cone-editor-surface);
+  border: 1px dashed var(--cone-editor-ink-soft);
   color: var(--cone-editor-ink-muted);
-  text-align: center;
 }
 .cone-editor-add:hover:not(:disabled) {
   color: var(--cone-editor-accent);
   border-color: var(--cone-editor-accent);
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--cone-editor-accent-soft);
+}
+
+/* ---------- Group title (used by KnownMeasurements) ---------- */
+
+.cone-editor-group-title {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cone-editor-ink-soft);
 }
