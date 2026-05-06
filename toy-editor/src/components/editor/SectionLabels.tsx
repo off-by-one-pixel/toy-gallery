@@ -36,6 +36,7 @@ const SectionLabels = ({
   const setDiameter = useToyStore((s) => s.setDiameter);
   const setHeight = useToyStore((s) => s.setHeight);
   const setCircumference = useToyStore((s) => s.setCircumference);
+  const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
   const circumferenceX = diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX;
 
   return (
@@ -65,20 +66,21 @@ const SectionLabels = ({
         />
       ))}
 
-      {sections.map((meta) => (
-        <FloatingInput
-          key={`c-${meta.section.id}`}
-          x={circumferenceX}
-          yCenter={sectionInputY(meta, silhouetteScale, silhouetteY)}
-          prefix="C"
-          ariaLabel={`Circumference of section ${meta.index + 1}`}
-          value={meta.section.circumference ?? null}
-          touched={meta.section.circumference != null}
-          allowEmpty
-          placeholder="—"
-          onChange={(v) => setCircumference(meta.section.id, v)}
-        />
-      ))}
+      {showSectionCirc &&
+        sections.map((meta) => (
+          <FloatingInput
+            key={`c-${meta.section.id}`}
+            x={circumferenceX}
+            yCenter={sectionInputY(meta, silhouetteScale, silhouetteY)}
+            prefix="C"
+            ariaLabel={`Circumference of section ${meta.index + 1}`}
+            value={meta.section.circumference ?? null}
+            touched={meta.section.circumference != null}
+            allowEmpty
+            placeholder="—"
+            onChange={(v) => setCircumference(meta.section.id, v)}
+          />
+        ))}
     </>
   );
 };

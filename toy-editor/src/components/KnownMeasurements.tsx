@@ -7,10 +7,12 @@ const KnownMeasurements = () => {
   const knownTotal = useToyStore((s) => s.knownTotalMm);
   const knownSize = useToyStore((s) => s.knownSizeMm);
   const snap = useToyStore((s) => s.snapEnabled);
+  const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
   const setInsertable = useToyStore((s) => s.setInsertableLength);
   const setKnownTotal = useToyStore((s) => s.setKnownTotal);
   const setKnownSize = useToyStore((s) => s.setKnownSize);
   const setSnap = useToyStore((s) => s.setSnapEnabled);
+  const setShowSectionCirc = useToyStore((s) => s.setShowSectionCircumference);
 
   // The Size field is always circumference. Internally `knownSize` is
   // stored as the canonical diameter (= circumference / π); display
@@ -40,6 +42,14 @@ const KnownMeasurements = () => {
             onChange={(e) => setSnap(e.target.checked)}
           />
           Snap
+        </label>
+        <label className="cone-editor-snap">
+          <input
+            type="checkbox"
+            checked={showSectionCirc}
+            onChange={(e) => setShowSectionCirc(e.target.checked)}
+          />
+          Section circumferences
         </label>
       </div>
     </section>
