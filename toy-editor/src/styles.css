@@ -367,6 +367,34 @@
   vector-effect: non-scaling-stroke;
 }
 
+/* ---------- Per-section rim preset cycle button ---------- */
+
+.cone-editor-rim-btn {
+  cursor: pointer;
+}
+.cone-editor-rim-btn circle {
+  fill: var(--cone-editor-surface);
+  stroke: var(--cone-editor-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition:
+    fill 0.12s ease,
+    stroke 0.12s ease;
+}
+.cone-editor-rim-btn line {
+  stroke: var(--cone-editor-ink-muted);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.cone-editor-rim-btn:hover circle {
+  fill: var(--cone-editor-accent-soft);
+  stroke: var(--cone-editor-accent);
+}
+.cone-editor-rim-btn:hover line {
+  stroke: var(--cone-editor-accent);
+}
+
 /* ---------- Per-section remove button (× chip) ---------- */
 
 .cone-editor-remove {

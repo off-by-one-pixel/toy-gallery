@@ -18,6 +18,22 @@ export type ToyTouched = {
   height: boolean;
 };
 
+/**
+ * Side-wall control-point preset for a section's top or bottom edge,
+ * expressed as a tangent angle in degrees from the screen-down axis,
+ * mirrored at the left vs. right anchor of the section. 0° points the
+ * control point straight down, 180° straight up, 90° horizontally
+ * outward. Defaults reproduce the legacy smooth-S taper: top edge → 0°,
+ * bottom edge → 180° (both control points pointing into the section).
+ */
+export const RIM_PRESETS = [0, 45, 90, 135, 180] as const;
+export type RimPreset = (typeof RIM_PRESETS)[number];
+export const DEFAULT_TOP_PRESET: RimPreset = 0;
+export const DEFAULT_BOTTOM_PRESET: RimPreset = 180;
+
+export const nextRimPreset = (p: RimPreset): RimPreset =>
+  RIM_PRESETS[(RIM_PRESETS.indexOf(p) + 1) % RIM_PRESETS.length];
+
 export interface ToySection {
   id: number;
   diameter: number;
@@ -30,7 +46,16 @@ export interface ToySection {
    *  fully touched on hydrate (loaded toys are by definition user-set) and
    *  fully untouched for sections inserted from scratch. */
   touched?: ToyTouched;
+  /** Side-wall preset at this section's top edge. Default 0° (down). */
+  topPreset?: RimPreset;
+  /** Side-wall preset at this section's bottom edge. Default 180° (up). */
+  bottomPreset?: RimPreset;
 }
+
+export const sectionTopPreset = (s: ToySection): RimPreset =>
+  s.topPreset ?? DEFAULT_TOP_PRESET;
+export const sectionBottomPreset = (s: ToySection): RimPreset =>
+  s.bottomPreset ?? DEFAULT_BOTTOM_PRESET;
 
 export const Shape = {
   CONE: "CONE",
@@ -96,6 +121,10 @@ interface ToyStore extends Toy {
 
   setTopShape: (shape: Shape) => void;
   setBottomShape: (shape: Shape) => void;
+  setTopPreset: (id: number, preset: RimPreset) => void;
+  setBottomPreset: (id: number, preset: RimPreset) => void;
+  cycleTopPreset: (id: number) => void;
+  cycleBottomPreset: (id: number) => void;
   moveSection: (id: number, direction: number) => void;
   reorderSection: (fromId: number, toId: number, position: "before" | "after") => void;
   setStyle: (style: Partial<StyleOption>) => void;
@@ -246,6 +275,30 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   },
   setTopShape: (shape) => set({ topShape: shape }),
   setBottomShape: (shape) => set({ bottomShape: shape }),
+  setTopPreset: (id, preset) => {
+    set((state) => ({
+      sections: state.sections.map((section) =>
+        section.id === id ? { ...section, topPreset: preset } : section,
+      ),
+    }));
+  },
+  setBottomPreset: (id, preset) => {
+    set((state) => ({
+      sections: state.sections.map((section) =>
+        section.id === id ? { ...section, bottomPreset: preset } : section,
+      ),
+    }));
+  },
+  cycleTopPreset: (id) => {
+    const section = get().sections.find((s) => s.id === id);
+    if (!section) return;
+    get().setTopPreset(id, nextRimPreset(sectionTopPreset(section)));
+  },
+  cycleBottomPreset: (id) => {
+    const section = get().sections.find((s) => s.id === id);
+    if (!section) return;
+    get().setBottomPreset(id, nextRimPreset(sectionBottomPreset(section)));
+  },
   moveSection: (id, direction) => {
     const index = get().sections.findIndex((section) => section.id === id);
     const newIndex = index + direction;
