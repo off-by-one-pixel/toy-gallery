@@ -36,11 +36,19 @@ class Shape(models.Model):
 
 
 class ShapeSection(models.Model):
+    # Side-wall control-point angle in degrees (from screen-down, mirrored
+    # at left/right anchors). Defaults reproduce the legacy smooth-S
+    # taper: top points the CP straight down, bottom straight up — both
+    # into the section interior.
+    CURVE_ANGLE_CHOICES = [(0, "0°"), (45, "45°"), (90, "90°"), (135, "135°"), (180, "180°")]
+
     shape = models.ForeignKey(Shape, on_delete=models.CASCADE, related_name="sections")
     diameter = models.FloatField()
     height = models.FloatField()
     order = models.IntegerField()
     circumference = models.FloatField(null=True, blank=True)
+    top_curve_angle = models.IntegerField(choices=CURVE_ANGLE_CHOICES, default=0)
+    bottom_curve_angle = models.IntegerField(choices=CURVE_ANGLE_CHOICES, default=180)
 
 
 class Toy(models.Model):

@@ -144,6 +144,7 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "ENUM_NAME_OVERRIDES": {
         "SectionShapeEnum": "toys.models.Shape.CAP_SHAPE_CHOICES",
+        "CurveAngleEnum": "toys.models.ShapeSection.CURVE_ANGLE_CHOICES",
     },
 }
 
