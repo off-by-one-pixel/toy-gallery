@@ -7,12 +7,29 @@ export type StyleOption = {
   color: string;
 };
 
+/**
+ * Tracks whether each numeric value on a section was set by the user
+ * (true) or is still a template default that hasn't been touched yet
+ * (false). Used purely as a visual cue (bold vs. lighter typography);
+ * has no behavioral effect — we never auto-rescale.
+ */
+export type ToyTouched = {
+  diameter: boolean;
+  height: boolean;
+};
+
 export interface ToySection {
   id: number;
   diameter: number;
   height: number;
-  /** Optional measured circumference in the same units as diameter. */
+  /** Optional measured circumference in the same units as diameter.
+   *  Preserved for backward compatibility with consumers that persist it
+   *  per-section (notably the toy_gallery_be backend). */
   circumference?: number | null;
+  /** Visual-only flag: was each dimension touched by the user? Defaults to
+   *  fully touched on hydrate (loaded toys are by definition user-set) and
+   *  fully untouched for sections inserted from scratch. */
+  touched?: ToyTouched;
 }
 
 export const Shape = {
@@ -23,11 +40,24 @@ export const Shape = {
 } as const;
 export type Shape = (typeof Shape)[keyof typeof Shape];
 
+export type SizeDisplayMode = "diameter" | "circumference";
+
 export interface Toy {
   sections: ToySection[];
   topShape: Shape;
   bottomShape: Shape;
   ref?: RefObject<SVGSVGElement | null>;
+  /** Manufacturer-stated insertable length. Reuses the persisted
+   *  `insertable_length` field on the toy. Drawn as a horizontal reference
+   *  guide on the canvas. */
+  insertableLengthMm?: number | null;
+  /** Manufacturer-stated total length. Session-only — not persisted. */
+  knownTotalMm?: number | null;
+  /** Manufacturer-stated size (interpreted as diameter or circumference
+   *  depending on `sizeDisplayMode`). Session-only — not persisted. */
+  knownSizeMm?: number | null;
+  sizeDisplayMode?: SizeDisplayMode;
+  snapEnabled?: boolean;
 }
 
 interface ToyStore extends Toy {
@@ -35,6 +65,15 @@ interface ToyStore extends Toy {
   nextId: number;
   style: StyleOption;
   selectedId: number | null;
+
+  // Reference guide state (always defined inside the store; the optional
+  // markers on Toy are for the public API surface).
+  insertableLengthMm: number | null;
+  knownTotalMm: number | null;
+  knownSizeMm: number | null;
+  sizeDisplayMode: SizeDisplayMode;
+  snapEnabled: boolean;
+
   getMaxWidth: () => number;
   getTotalHeight: () => number;
   newSection: () => void;
@@ -43,9 +82,20 @@ interface ToyStore extends Toy {
   getXOffset: (id: number) => number;
   getYOffset: (id: number) => number;
   getToy: () => Toy;
+
+  // Section value setters — typing or dragging marks the dimension as user-touched.
   setDiameter: (id: number, diameter: number) => void;
   setHeight: (id: number, height: number) => void;
   setCircumference: (id: number, circumference: number | null) => void;
+
+  /**
+   * Move the boundary between two sections. `aboveId` is the section above
+   * the boundary; `delta` is the change in mm (positive = boundary moves
+   * down, growing the upper section and shrinking the one below).
+   * Both adjacent sections are marked height-touched.
+   */
+  setBoundaryDelta: (aboveId: number, delta: number) => void;
+
   setTopShape: (shape: Shape) => void;
   setBottomShape: (shape: Shape) => void;
   moveSection: (id: number, direction: number) => void;
@@ -53,11 +103,28 @@ interface ToyStore extends Toy {
   setStyle: (style: Partial<StyleOption>) => void;
   setRef: (ref: RefObject<SVGSVGElement | null>) => void;
   setSelected: (id: number | null) => void;
+
+  // Reference guides + display-mode + snap
+  setInsertableLength: (mm: number | null) => void;
+  setKnownTotal: (mm: number | null) => void;
+  setKnownSize: (mm: number | null) => void;
+  setSizeDisplayMode: (mode: SizeDisplayMode) => void;
+  setSnapEnabled: (enabled: boolean) => void;
+
   hydrate: (toy: Toy) => void;
 }
 
+const MIN_SECTION_HEIGHT = 1;
+const FULL_TOUCHED: ToyTouched = { diameter: true, height: true };
+const FRESH_TOUCHED: ToyTouched = { diameter: false, height: false };
+
+const withTouched = (s: ToySection, touched: Partial<ToyTouched>): ToySection => ({
+  ...s,
+  touched: { ...(s.touched ?? FULL_TOUCHED), ...touched },
+});
+
 export const useToyStore = create<ToyStore>()((set, get) => ({
-  sections: [{ id: 0, diameter: 100, height: 50 }],
+  sections: [{ id: 0, diameter: 100, height: 50, touched: { ...FRESH_TOUCHED } }],
   style: {
     borderWidth: 2,
     borderColor: "#000",
@@ -69,6 +136,13 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   ref: undefined,
   nextId: 1,
   selectedId: null,
+
+  insertableLengthMm: null,
+  knownTotalMm: null,
+  knownSizeMm: null,
+  sizeDisplayMode: "circumference",
+  snapEnabled: true,
+
   setRef: (r) => set({ ref: r }),
   setSelected: (id) => set({ selectedId: id }),
   getMaxWidth: () => {
@@ -84,7 +158,10 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     const id = get().nextId;
     set((state) => ({
       nextId: id + 1,
-      sections: [...state.sections, { id, diameter: 100, height: 50 }],
+      sections: [
+        ...state.sections,
+        { id, diameter: 100, height: 50, touched: { ...FRESH_TOUCHED } },
+      ],
     }));
   },
   removeSection: (id) => {
@@ -122,18 +199,23 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     topShape: get().topShape,
     bottomShape: get().bottomShape,
     ref: get().ref,
+    insertableLengthMm: get().insertableLengthMm,
+    knownTotalMm: get().knownTotalMm,
+    knownSizeMm: get().knownSizeMm,
+    sizeDisplayMode: get().sizeDisplayMode,
+    snapEnabled: get().snapEnabled,
   }),
   setDiameter: (id, diameter) => {
     set((state) => ({
       sections: state.sections.map((section) =>
-        section.id === id ? { ...section, diameter } : section,
+        section.id === id ? withTouched({ ...section, diameter }, { diameter: true }) : section,
       ),
     }));
   },
   setHeight: (id, height) => {
     set((state) => ({
       sections: state.sections.map((section) =>
-        section.id === id ? { ...section, height } : section,
+        section.id === id ? withTouched({ ...section, height }, { height: true }) : section,
       ),
     }));
   },
@@ -143,6 +225,27 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
         section.id === id ? { ...section, circumference } : section,
       ),
     }));
+  },
+  setBoundaryDelta: (aboveId, delta) => {
+    set((state) => {
+      const idx = state.sections.findIndex((s) => s.id === aboveId);
+      if (idx < 0 || idx >= state.sections.length - 1) return {};
+      const above = state.sections[idx];
+      const below = state.sections[idx + 1];
+      const newAbove = above.height + delta;
+      const newBelow = below.height - delta;
+      // Refuse adjustments that would push either section below the floor
+      // — drag is purely geometric and we don't want to silently absorb the
+      // overflow somewhere else.
+      if (newAbove < MIN_SECTION_HEIGHT || newBelow < MIN_SECTION_HEIGHT) return {};
+      return {
+        sections: state.sections.map((s, i) => {
+          if (i === idx) return withTouched({ ...s, height: newAbove }, { height: true });
+          if (i === idx + 1) return withTouched({ ...s, height: newBelow }, { height: true });
+          return s;
+        }),
+      };
+    });
   },
   setTopShape: (shape) => set({ topShape: shape }),
   setBottomShape: (shape) => set({ bottomShape: shape }),
@@ -169,14 +272,30 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     });
   },
   setStyle: (style) => set({ style: { ...get().style, ...style } }),
+  setInsertableLength: (mm) => set({ insertableLengthMm: mm }),
+  setKnownTotal: (mm) => set({ knownTotalMm: mm }),
+  setKnownSize: (mm) => set({ knownSizeMm: mm }),
+  setSizeDisplayMode: (mode) => set({ sizeDisplayMode: mode }),
+  setSnapEnabled: (enabled) => set({ snapEnabled: enabled }),
   hydrate: (toy) => {
     const maxId = toy.sections.reduce((a, s) => Math.max(a, s.id), 0);
     set({
-      sections: toy.sections.map((s) => ({ ...s })),
+      // Hydrated sections are by definition user-set (they were saved),
+      // so default `touched` to fully true unless the caller explicitly
+      // marked them otherwise.
+      sections: toy.sections.map((s) => ({
+        ...s,
+        touched: s.touched ?? { ...FULL_TOUCHED },
+      })),
       topShape: toy.topShape,
       bottomShape: toy.bottomShape,
       nextId: maxId + 1,
       selectedId: null,
+      insertableLengthMm: toy.insertableLengthMm ?? null,
+      knownTotalMm: toy.knownTotalMm ?? null,
+      knownSizeMm: toy.knownSizeMm ?? null,
+      sizeDisplayMode: toy.sizeDisplayMode ?? "circumference",
+      snapEnabled: toy.snapEnabled ?? true,
     });
   },
 }));
