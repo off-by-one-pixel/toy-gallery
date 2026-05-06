@@ -1,7 +1,7 @@
 'use client';
 
 import { Chip } from '@heroui/react';
-import { Render } from 'cone-editor';
+import { ThumbnailRender } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 import { Check } from 'lucide-react';
 
@@ -91,7 +91,7 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
           </div>
         )}
         <div className="absolute inset-x-0 top-2 bottom-2 flex items-end justify-center">
-          <Render toy={editorToy} scaleFactor={1} style={silhouetteStyle} interactive={false} />
+          <ThumbnailRender toy={editorToy} scaleFactor={1} style={silhouetteStyle} />
         </div>
       </div>
       <div className="px-3 py-2.5">

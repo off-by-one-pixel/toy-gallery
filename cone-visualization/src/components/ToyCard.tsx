@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Chip, Tooltip } from '@heroui/react';
-import { Render } from 'cone-editor';
+import { ThumbnailRender } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 import { Copy, Pencil, Trash2 } from 'lucide-react';
 import { TOY_ACTION_COPY, TOY_ACTION_DELETE, TOY_ACTION_EDIT } from '../labels';
@@ -94,7 +94,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
             bottom: '8px',
           }}
         >
-          <Render toy={editorToy} scaleFactor={1} style={style} interactive={false} />
+          <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />
         </div>
       </div>
       <div className="px-3.5 py-3">

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
-import { Render } from 'cone-editor';
+import { ThumbnailRender } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
 import { ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -279,7 +279,7 @@ function MiniToy({
           className="absolute inset-x-0 bottom-0 flex items-end justify-center"
           style={{ top: `${(1 - heightRatio) * 100}%`, ...STATE_FILTER_STYLE[entry.involvement] }}
         >
-          <Render toy={editorToy} scaleFactor={0.18} style={silhouetteStyle} interactive={false} />
+          <ThumbnailRender toy={editorToy} scaleFactor={0.18} style={silhouetteStyle} />
         </div>
       </div>
       <div className="max-w-20 truncate text-sm text-neutral-900">

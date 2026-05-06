@@ -3,14 +3,14 @@
 import { useMemo, useRef, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
 import type { StyleOption, Toy as EditorToy } from 'cone-editor';
-import { Alert, Button, ColorSwatchPicker, Modal, NumberField, useOverlayState } from '@heroui/react';
+import { Alert, Button, ColorSwatchPicker, Modal, useOverlayState } from '@heroui/react';
 import TextInput from './TextInput';
 import { ArrowLeft } from 'lucide-react';
 import { createToy, patchToy } from '../services/api';
 import { SectionShape, type Toy, type ToyPayload } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
-import { Unit, formatValue, fromMm, toMm } from '../services/units';
+import { circumferenceToDiameter } from '../services/units';
 
 type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
@@ -52,6 +52,8 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             sections: source.shape.sections.map((s) => ({ ...s })),
             topShape: source.shape.topSectionShape ?? SectionShape.FLAT,
             bottomShape: source.shape.bottomSectionShape ?? SectionShape.FLAT,
+            insertableLengthMm: source.insertableLength ?? null,
+            knownSizeMm: circumferenceToDiameter(source.circumference),
           }
         : NEW_TOY_MM,
     [source],
@@ -61,7 +63,6 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const [name, setName] = useState(source?.name ?? '');
   const [size, setSize] = useState(source?.size ?? '');
   const [color, setColor] = useState(source?.color || DEFAULT_FILL);
-  const [insertableLengthMm, setInsertableLengthMm] = useState<number | null>(source?.insertableLength ?? null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const runAction = useAsyncAction(setError);
@@ -69,21 +70,9 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const sections = useToyStore((s) => s.sections);
   const topShape = useToyStore((s) => s.topShape);
   const bottomShape = useToyStore((s) => s.bottomShape);
-  const setCircumference = useToyStore((s) => s.setCircumference);
-  const getTotalHeight = useToyStore((s) => s.getTotalHeight);
-  const getMaxWidth = useToyStore((s) => s.getMaxWidth);
-
-  const circumferenceValues = sections.map((s) => s.circumference).filter((v): v is number => v != null);
-  const toyCircumferenceMm = circumferenceValues.length ? Math.max(...circumferenceValues) : null;
-  const hasCircumference = toyCircumferenceMm != null;
-
-  // Widest-diameter section owns the toy-level circumference value; ties go
-  // to the first in document order.
-  const handleToyCircumferenceMmChange = (mm: number | null) => {
-    if (sections.length === 0) return;
-    const widest = sections.reduce((a, s) => (s.diameter > a.diameter ? s : a));
-    setCircumference(widest.id, mm);
-  };
+  // Insertable length now lives in the editor store (driven by the editor's
+  // KnownMeasurements top strip) — read it here for save.
+  const insertableLengthMm = useToyStore((s) => s.insertableLengthMm);
 
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -110,7 +99,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       setError('At least one section is required.');
       return;
     }
-    if (!hasCircumference) {
+    if (!sections.some((s) => s.circumference != null)) {
       setError('Set a circumference on at least one section.');
       return;
     }
@@ -157,9 +146,6 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       ? `from ${mode.toy.brand} · ${mode.toy.name}`
       : 'Untitled toy';
 
-  const totalHeightMm = getTotalHeight();
-  const maxDiameterMm = getMaxWidth();
-
   return (
     <Modal.Root state={overlayState}>
       <Modal.Backdrop>
@@ -177,7 +163,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
               <Button variant="outline" size="sm" isDisabled={saving} onPress={() => overlayState.close()}>
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" isDisabled={saving || !hasCircumference} onPress={handleSave}>
+              <Button variant="primary" size="sm" isDisabled={saving} onPress={handleSave}>
                 {saving ? 'Saving…' : 'Save'}
               </Button>
             </header>
@@ -200,17 +186,10 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                     name={name}
                     size={size}
                     color={color}
-                    insertableLengthMm={insertableLengthMm}
-                    circumferenceMm={toyCircumferenceMm}
-                    unit={unit}
                     onBrand={setBrand}
                     onName={setName}
                     onSize={setSize}
                     onColor={setColor}
-                    onInsertableLengthMm={setInsertableLengthMm}
-                    onCircumferenceMm={handleToyCircumferenceMmChange}
-                    totalHeightMm={totalHeightMm}
-                    maxDiameterMm={maxDiameterMm}
                   />
                 }
               />
@@ -227,17 +206,10 @@ type IdentificationProps = {
   name: string;
   size: string;
   color: string;
-  insertableLengthMm: number | null;
-  circumferenceMm: number | null;
-  unit: Unit;
   onBrand: (v: string) => void;
   onName: (v: string) => void;
   onSize: (v: string) => void;
   onColor: (v: string) => void;
-  onInsertableLengthMm: (v: number | null) => void;
-  onCircumferenceMm: (v: number | null) => void;
-  totalHeightMm: number;
-  maxDiameterMm: number;
 };
 
 function IdentificationGroup({
@@ -245,95 +217,27 @@ function IdentificationGroup({
   name,
   size,
   color,
-  insertableLengthMm,
-  circumferenceMm,
-  unit,
   onBrand,
   onName,
   onSize,
   onColor,
-  onInsertableLengthMm,
-  onCircumferenceMm,
-  totalHeightMm,
-  maxDiameterMm,
 }: IdentificationProps) {
   return (
-    <>
-      <section className="flex flex-col gap-2.5">
-        <h2 className="m-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">Identification</h2>
-        <FormField label="Brand">
-          <TextInput size="sm" value={brand} onChange={onBrand} aria-label="Brand" />
-        </FormField>
-        <FormField label="Model">
-          <TextInput size="sm" value={name} onChange={onName} aria-label="Model" />
-        </FormField>
-        <FormField label="Size">
-          <TextInput size="sm" value={size} onChange={onSize} aria-label="Size" />
-        </FormField>
-        <FormField label="Color">
-          <ColorPicker value={color} onChange={onColor} />
-        </FormField>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-4">
-          <DimInput label="Insertable" valueMm={insertableLengthMm} unit={unit} onChangeMm={onInsertableLengthMm} />
-          <DimInput label="Circumference" valueMm={circumferenceMm} unit={unit} onChangeMm={onCircumferenceMm} />
-        </div>
-        <div className="flex items-center gap-3 border-t border-neutral-200 pt-2.5 text-[11px] uppercase tracking-wider text-neutral-400">
-          <span>
-            Length{' '}
-            <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">
-              {formatValue(totalHeightMm, unit)}
-            </b>{' '}
-            {unit.id}
-          </span>
-          <span className="opacity-40">·</span>
-          <span>
-            Diameter{' '}
-            <b className="ml-1 font-semibold tabular-nums text-neutral-600 normal-case">
-              {formatValue(maxDiameterMm, unit)}
-            </b>{' '}
-            {unit.id}
-          </span>
-        </div>
-      </section>
-    </>
-  );
-}
-
-function DimInput({
-  label,
-  valueMm,
-  unit,
-  onChangeMm,
-}: {
-  label: string;
-  valueMm: number | null;
-  unit: Unit;
-  onChangeMm: (v: number | null) => void;
-}) {
-  const step = 10 ** -unit.decimals;
-  const displayValue = valueMm == null ? NaN : fromMm(valueMm, unit);
-  return (
-    <div className="flex flex-col gap-1">
-      <NumberField
-        value={displayValue}
-        step={step}
-        minValue={0}
-        onChange={(v) => onChangeMm(Number.isNaN(v) ? null : toMm(Math.max(0, v), unit))}
-        aria-label={label}
-      >
-        <NumberField.Group>
-          <NumberField.Input />
-          <NumberField.DecrementButton>−</NumberField.DecrementButton>
-          <NumberField.IncrementButton>+</NumberField.IncrementButton>
-        </NumberField.Group>
-      </NumberField>
-      <span className="text-[10px] uppercase tracking-wider text-neutral-400">
-        {label} <span className="normal-case text-neutral-500">({unit.id})</span>
-      </span>
-    </div>
+    <section className="flex flex-col gap-2.5">
+      <h2 className="m-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">Identification</h2>
+      <FormField label="Brand">
+        <TextInput size="sm" value={brand} onChange={onBrand} aria-label="Brand" />
+      </FormField>
+      <FormField label="Model">
+        <TextInput size="sm" value={name} onChange={onName} aria-label="Model" />
+      </FormField>
+      <FormField label="Size">
+        <TextInput size="sm" value={size} onChange={onSize} aria-label="Size" />
+      </FormField>
+      <FormField label="Color">
+        <ColorPicker value={color} onChange={onColor} />
+      </FormField>
+    </section>
   );
 }
 
@@ -361,9 +265,8 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
         ))}
       </ColorSwatchPicker>
       <label
-        className={`relative inline-flex h-6 w-6 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white ring-1 transition-transform hover:scale-110 ${
-          isPreset ? 'ring-neutral-200' : 'ring-2 ring-blue-500'
-        }`}
+        className={`relative inline-flex h-6 w-6 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white ring-1 transition-transform hover:scale-110 ${isPreset ? 'ring-neutral-200' : 'ring-2 ring-blue-500'
+          }`}
         style={{
           background: isPreset
             ? 'conic-gradient(from 0deg, #fca5a5, #fbbf24, #bbf7d0, #bae6fd, #c4b5fd, #fca5a5)'
