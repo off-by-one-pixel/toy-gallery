@@ -3,6 +3,7 @@ import {
   DEFAULT_BOTTOM_PRESET,
   DEFAULT_TOP_PRESET,
   RIM_PRESETS,
+  type RimPreset,
   nextRimPreset,
   sectionBottomPreset,
   sectionTopPreset,
@@ -35,7 +36,7 @@ describe("rim preset accessors", () => {
 describe("nextRimPreset", () => {
   it("cycles through the five presets in order and wraps", () => {
     const seen: number[] = [];
-    let p = RIM_PRESETS[0];
+    let p: RimPreset = RIM_PRESETS[0];
     for (let i = 0; i < RIM_PRESETS.length + 1; i++) {
       seen.push(p);
       p = nextRimPreset(p);
