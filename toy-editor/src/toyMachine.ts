@@ -40,8 +40,6 @@ export const Shape = {
 } as const;
 export type Shape = (typeof Shape)[keyof typeof Shape];
 
-export type SizeDisplayMode = "diameter" | "circumference";
-
 export interface Toy {
   sections: ToySection[];
   topShape: Shape;
@@ -53,10 +51,10 @@ export interface Toy {
   insertableLengthMm?: number | null;
   /** Manufacturer-stated total length. Session-only — not persisted. */
   knownTotalMm?: number | null;
-  /** Manufacturer-stated size (interpreted as diameter or circumference
-   *  depending on `sizeDisplayMode`). Session-only — not persisted. */
+  /** Manufacturer-stated size, expressed as a canonical diameter
+   *  (= circumference / π for inputs typed in circumference). Session-only
+   *  — not persisted. */
   knownSizeMm?: number | null;
-  sizeDisplayMode?: SizeDisplayMode;
   snapEnabled?: boolean;
 }
 
@@ -71,7 +69,6 @@ interface ToyStore extends Toy {
   insertableLengthMm: number | null;
   knownTotalMm: number | null;
   knownSizeMm: number | null;
-  sizeDisplayMode: SizeDisplayMode;
   snapEnabled: boolean;
 
   getMaxWidth: () => number;
@@ -104,11 +101,10 @@ interface ToyStore extends Toy {
   setRef: (ref: RefObject<SVGSVGElement | null>) => void;
   setSelected: (id: number | null) => void;
 
-  // Reference guides + display-mode + snap
+  // Reference guides + snap
   setInsertableLength: (mm: number | null) => void;
   setKnownTotal: (mm: number | null) => void;
   setKnownSize: (mm: number | null) => void;
-  setSizeDisplayMode: (mode: SizeDisplayMode) => void;
   setSnapEnabled: (enabled: boolean) => void;
 
   hydrate: (toy: Toy) => void;
@@ -140,7 +136,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   insertableLengthMm: null,
   knownTotalMm: null,
   knownSizeMm: null,
-  sizeDisplayMode: "circumference",
   snapEnabled: true,
 
   setRef: (r) => set({ ref: r }),
@@ -202,7 +197,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     insertableLengthMm: get().insertableLengthMm,
     knownTotalMm: get().knownTotalMm,
     knownSizeMm: get().knownSizeMm,
-    sizeDisplayMode: get().sizeDisplayMode,
     snapEnabled: get().snapEnabled,
   }),
   setDiameter: (id, diameter) => {
@@ -275,7 +269,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   setInsertableLength: (mm) => set({ insertableLengthMm: mm }),
   setKnownTotal: (mm) => set({ knownTotalMm: mm }),
   setKnownSize: (mm) => set({ knownSizeMm: mm }),
-  setSizeDisplayMode: (mode) => set({ sizeDisplayMode: mode }),
   setSnapEnabled: (enabled) => set({ snapEnabled: enabled }),
   hydrate: (toy) => {
     const maxId = toy.sections.reduce((a, s) => Math.max(a, s.id), 0);
@@ -294,7 +287,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
       insertableLengthMm: toy.insertableLengthMm ?? null,
       knownTotalMm: toy.knownTotalMm ?? null,
       knownSizeMm: toy.knownSizeMm ?? null,
-      sizeDisplayMode: toy.sizeDisplayMode ?? "circumference",
       snapEnabled: toy.snapEnabled ?? true,
     });
   },

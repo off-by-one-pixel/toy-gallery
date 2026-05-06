@@ -1,4 +1,6 @@
+import { formatMm, parseMm } from "../util/fmt";
 import { useToyStore } from "../toyMachine";
+import { useCircumferenceSync } from "./editor/hooks/useCircumferenceSync";
 import { useEditorUnit } from "./unit";
 
 const KnownMeasurements = () => {
@@ -9,36 +11,22 @@ const KnownMeasurements = () => {
   const setInsertable = useToyStore((s) => s.setInsertableLength);
   const setKnownTotal = useToyStore((s) => s.setKnownTotal);
   const setKnownSize = useToyStore((s) => s.setKnownSize);
-  const setCircumference = useToyStore((s) => s.setCircumference);
   const setSnap = useToyStore((s) => s.setSnapEnabled);
+  const { pushFromKnown } = useCircumferenceSync();
 
   // The Size field is always circumference. Internally `knownSize` is
   // stored as the canonical diameter (= circumference / π); display
-  // converts back via π.
+  // converts back via π. Editing Known Circumference also propagates
+  // onto the largest non-null section circumference (rule 4 in
+  // useCircumferenceSync).
   const knownCircumferenceMm = knownSize == null ? null : knownSize * Math.PI;
-
   const handleKnownCircumferenceChange = (mm: number | null) => {
     if (mm == null) {
       setKnownSize(null);
       return;
     }
     setKnownSize(mm / Math.PI);
-    // Mirror onto the section with the largest already-set circumference
-    // (by circumference, not by diameter). If no section has a
-    // circumference, don't propagate — the user hasn't claimed any
-    // section has a measured value yet.
-    const sections = useToyStore.getState().sections;
-    let widestId: number | null = null;
-    let widestCirc = -Infinity;
-    for (const s of sections) {
-      if (s.circumference != null && s.circumference > widestCirc) {
-        widestCirc = s.circumference;
-        widestId = s.id;
-      }
-    }
-    if (widestId != null) {
-      setCircumference(widestId, mm);
-    }
+    pushFromKnown(mm);
   };
 
   return (
@@ -46,16 +34,8 @@ const KnownMeasurements = () => {
       <h3 className="cone-editor-group-title">Known measurements</h3>
 
       <div className="cone-editor-known-row">
-        <NumberField
-          label="Insertable"
-          mm={insertable}
-          onChangeMm={setInsertable}
-        />
-        <NumberField
-          label="Total"
-          mm={knownTotal}
-          onChangeMm={setKnownTotal}
-        />
+        <NumberField label="Insertable" mm={insertable} onChangeMm={setInsertable} />
+        <NumberField label="Total" mm={knownTotal} onChangeMm={setKnownTotal} />
         <NumberField
           label="Circumference"
           mm={knownCircumferenceMm}
@@ -84,7 +64,7 @@ type NumberFieldProps = {
 const NumberField = ({ label, mm, onChangeMm }: NumberFieldProps) => {
   const unit = useEditorUnit();
   const step = 10 ** -unit.decimals;
-  const display = mm == null ? "" : (mm / unit.factor).toFixed(unit.decimals);
+  const display = formatMm(mm, unit);
 
   return (
     <label className="cone-editor-known-field">
@@ -96,14 +76,9 @@ const NumberField = ({ label, mm, onChangeMm }: NumberFieldProps) => {
           step={step}
           min={0}
           onChange={(e) => {
-            const raw = e.target.value;
-            if (raw === "") {
-              onChangeMm(null);
-              return;
-            }
-            const parsed = Number(raw);
-            if (Number.isNaN(parsed)) return;
-            onChangeMm(Math.max(0, parsed) * unit.factor);
+            const parsed = parseMm(e.target.value, unit);
+            if (parsed === undefined) return;
+            onChangeMm(parsed);
           }}
         />
         <span className="cone-editor-known-field-unit">{unit.id}</span>

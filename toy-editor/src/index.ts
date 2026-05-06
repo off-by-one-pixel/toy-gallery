@@ -1,5 +1,5 @@
 export { default as ToyEditor } from "./components/ToyEditor";
-export { Render } from "./components/Render";
+export { default as ThumbnailRender } from "./components/thumbnail/ThumbnailRender";
 export { useToyStore } from "./toyMachine";
 export type {
   Toy,
@@ -7,5 +7,4 @@ export type {
   ToyTouched,
   StyleOption,
   Shape,
-  SizeDisplayMode,
 } from "./toyMachine";
