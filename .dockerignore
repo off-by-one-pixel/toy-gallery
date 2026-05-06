@@ -23,9 +23,6 @@ toy_gallery_be/**/*.pyc
 cone_editor/dist
 cone_editor/.devcontainer
 
-# Legacy sibling project not used by the Docker build
-toy-svg-editor
-
 # VCS / editor
 .git
 .gitignore
