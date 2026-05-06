@@ -2,12 +2,12 @@ export { default as ToyEditor } from "./components/ToyEditor";
 export { default as ThumbnailRender } from "./components/thumbnail/ThumbnailRender";
 export {
   useToyStore,
-  RIM_PRESETS,
-  DEFAULT_TOP_PRESET,
-  DEFAULT_BOTTOM_PRESET,
-  nextRimPreset,
-  sectionTopPreset,
-  sectionBottomPreset,
+  CURVE_ANGLES,
+  DEFAULT_TOP_CURVE_ANGLE,
+  DEFAULT_BOTTOM_CURVE_ANGLE,
+  nextCurveAngle,
+  sectionTopCurveAngle,
+  sectionBottomCurveAngle,
 } from "./toyMachine";
 export type {
   Toy,
@@ -15,5 +15,5 @@ export type {
   ToyTouched,
   StyleOption,
   Shape,
-  RimPreset,
+  CurveAngle,
 } from "./toyMachine";
