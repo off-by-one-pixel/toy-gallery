@@ -10,6 +10,7 @@ type Props = {
   maxDiameter: number;
   style: StyleOption;
   onSelect?: (id: number) => void;
+  onHover?: (id: number | null) => void;
   interactive: boolean;
 };
 
@@ -24,6 +25,7 @@ const Silhouette = ({
   maxDiameter,
   style,
   onSelect,
+  onHover,
   interactive,
 }: Props) => {
   let yOffset = 0;
@@ -79,6 +81,7 @@ const Silhouette = ({
               totalWidth={maxDiameter}
               style={style}
               onSelect={onSelect}
+              onHover={onHover}
               interactive={interactive}
             />
           );

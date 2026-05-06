@@ -1,10 +1,11 @@
-import { useImperativeHandle } from "react";
+import { useImperativeHandle, useState } from "react";
 import type { RefObject } from "react";
 import type { StyleOption, Toy } from "../../toyMachine";
 import Silhouette from "../Silhouette";
 import SvgRoot from "../SvgRoot";
 import DragLayer from "./DragLayer";
 import Guides from "./Guides";
+import RimPresetButtons from "./RimPresetButtons";
 import {
   DIAMETER_LABEL_GAP_PX,
   HEIGHT_LABEL_GAP_PX,
@@ -37,6 +38,7 @@ type Props = {
 const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
   const layout = useEditorLayout(toy);
   const handlers = useDragHandlers(layout);
+  const [hoveredSectionId, setHoveredSectionId] = useState<number | null>(null);
   useImperativeHandle(ref, () => layout.ref.current as SVGSVGElement, [layout.ref]);
 
   const {
@@ -88,6 +90,7 @@ const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
               maxDiameter={silhouetteW}
               style={style}
               onSelect={onSelect}
+              onHover={setHoveredSectionId}
               interactive
             />
           </g>
@@ -128,6 +131,15 @@ const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
               bottomShape={toy.bottomShape}
               diameterLabelX={diameterLabelX}
               handlers={handlers}
+            />
+            <RimPresetButtons
+              sections={sectionMeta}
+              silhouetteScale={silhouetteScale}
+              silhouetteCenter={silhouetteCenter}
+              silhouetteY={silhouetteY}
+              bottomShape={toy.bottomShape}
+              hoveredSectionId={hoveredSectionId}
+              onHover={setHoveredSectionId}
             />
           </g>
         </>
