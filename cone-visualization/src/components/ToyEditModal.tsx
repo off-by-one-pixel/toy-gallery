@@ -109,10 +109,9 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       shape: {
         topSectionShape: topShape,
         bottomSectionShape: bottomShape,
-        sections: sections.map((s, idx) => ({
+        sections: sections.map(({ id: _id, touched: _touched, ...s }, idx) => ({
+          ...s,
           order: idx,
-          height: s.height,
-          diameter: s.diameter,
           circumference: s.circumference ?? null,
         })),
       },
