@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Toy } from "../../../toyMachine";
 import {
   buildSectionMeta,
+  DIAMETER_LABEL_GAP_PX,
+  HEIGHT_LABEL_GAP_PX,
+  LABEL_INPUT_W_PX,
   LABEL_WIDTH_PX,
   RULER_WIDTH_PX,
   type SectionMeta,
@@ -25,6 +28,8 @@ export type EditorLayout = {
   totalHeightMm: number;
   maxDiameterMm: number;
   sectionMeta: SectionMeta[];
+  heightLabelX: number;
+  diameterLabelX: number;
   /** True once the SVG has been measured at least once. */
   ready: boolean;
   /** Freeze the silhouette scale at its current value. Used by the
@@ -77,6 +82,12 @@ export const useEditorLayout = (toy: Toy): EditorLayout => {
     [toy.sections],
   );
 
+  const heightLabelX = Math.max(
+    4,
+    silhouetteX - HEIGHT_LABEL_GAP_PX - LABEL_INPUT_W_PX,
+  );
+  const diameterLabelX = silhouetteX + silhouetteW + DIAMETER_LABEL_GAP_PX;
+
   return {
     ref,
     size,
@@ -89,8 +100,13 @@ export const useEditorLayout = (toy: Toy): EditorLayout => {
     totalHeightMm,
     maxDiameterMm,
     sectionMeta,
+    heightLabelX,
+    diameterLabelX,
     ready: size.w > 0 && size.h > 0,
-    freezeScale: () => setFrozenScale(silhouetteScale),
-    unfreezeScale: () => setFrozenScale(null),
+    freezeScale: useCallback(
+      () => setFrozenScale(silhouetteScale),
+      [silhouetteScale],
+    ),
+    unfreezeScale: useCallback(() => setFrozenScale(null), []),
   };
 };

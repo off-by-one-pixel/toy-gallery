@@ -1,41 +1,26 @@
 import { fmtUnitNum } from "../../util/fmt";
 import { useEditorUnit } from "../unit";
-import type { SectionMeta } from "./layout";
+import { useEditorLayoutCtx } from "./EditorLayoutContext";
+import { mmToY, rulerGeometry } from "./geometry";
 
-type Props = {
-  sections: SectionMeta[];
-  silhouetteScale: number;
-  silhouetteY: number;
-  silhouetteH: number;
-  rulerAxisX: number;
-};
-
-/** Vertical mm ruler at the left of the canvas: axis line + tick marks
- *  at section boundaries + numeric labels in the active display unit. */
-const Ruler = ({
-  sections,
-  silhouetteScale,
-  silhouetteY,
-  silhouetteH,
-  rulerAxisX,
-}: Props) => {
+const Ruler = () => {
+  const layout = useEditorLayoutCtx();
   const unit = useEditorUnit();
-  const tickInner = rulerAxisX + 6;
-  const tickOuter = rulerAxisX - 6;
-  const labelX = rulerAxisX - 10;
-  const ticks = [{ mm: 0 }, ...sections.map((s) => ({ mm: s.bottomMm }))];
+  const { axisX, axisY1, axisY2, tickInner, tickOuter, labelX, unitY } =
+    rulerGeometry(layout);
+  const ticks = [0, ...layout.sectionMeta.map((s) => s.bottomMm)];
 
   return (
     <g className="cone-editor-ruler" aria-hidden>
       <line
         className="cone-editor-ruler-axis"
-        x1={rulerAxisX}
-        x2={rulerAxisX}
-        y1={silhouetteY}
-        y2={silhouetteY + silhouetteH}
+        x1={axisX}
+        x2={axisX}
+        y1={axisY1}
+        y2={axisY2}
       />
-      {ticks.map((t, i) => {
-        const y = silhouetteY + t.mm * silhouetteScale;
+      {ticks.map((mm, i) => {
+        const y = mmToY(mm, layout);
         return (
           <g key={i}>
             <line
@@ -51,7 +36,7 @@ const Ruler = ({
               y={y + 4}
               textAnchor="end"
             >
-              {fmtUnitNum(t.mm, unit)}
+              {fmtUnitNum(mm, unit)}
             </text>
           </g>
         );
@@ -59,7 +44,7 @@ const Ruler = ({
       <text
         className="cone-editor-ruler-unit"
         x={labelX}
-        y={silhouetteY - 8}
+        y={unitY}
         textAnchor="end"
       >
         {unit.id}

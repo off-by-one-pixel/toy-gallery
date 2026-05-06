@@ -1,19 +1,18 @@
 import { fmtUnit } from "../../util/fmt";
 import { useEditorUnit } from "../unit";
+import { useEditorLayoutCtx } from "./EditorLayoutContext";
+import { totalReadoutPosition } from "./geometry";
 
-type Props = {
-  x: number;
-  y: number;
-  totalHeightMm: number;
-  maxDiameterMm: number;
-};
-
-/** Compact summary line under the silhouette: `total NN <unit>  ·  Ø NN <unit>`. */
-const TotalReadout = ({ x, y, totalHeightMm, maxDiameterMm }: Props) => {
+const TotalReadout = () => {
+  const layout = useEditorLayoutCtx();
   const unit = useEditorUnit();
   return (
-    <text className="cone-editor-total-readout" x={x} y={y} textAnchor="middle">
-      total {fmtUnit(totalHeightMm, unit)}  ·  Ø {fmtUnit(maxDiameterMm, unit)}
+    <text
+      className="cone-editor-total-readout"
+      {...totalReadoutPosition(layout)}
+      textAnchor="middle"
+    >
+      total {fmtUnit(layout.totalHeightMm, unit)}  ·  Ø {fmtUnit(layout.maxDiameterMm, unit)}
     </text>
   );
 };

@@ -1,38 +1,22 @@
 import { useToyStore } from "../../toyMachine";
+import { useEditorLayoutCtx } from "./EditorLayoutContext";
+import type { EditorLayout } from "./hooks/useEditorLayout";
 import FloatingInput from "./FloatingInput";
+import {
+  diameterRowGeometry,
+  heightRowGeometry,
+} from "./geometry";
 import {
   CIRC_LABEL_GAP_PX,
   LABEL_INPUT_W_PX,
-  LEADER_LEAD_OUT_PX,
   type SectionMeta,
-  sectionEdgeLeftAtBottom,
-  sectionEdgeLeftAtTop,
-  sectionEdgeRight,
   sectionInputY,
 } from "./layout";
 
-type Props = {
-  sections: SectionMeta[];
-  silhouetteScale: number;
-  silhouetteCenter: number;
-  silhouetteY: number;
-  heightLabelX: number;
-  diameterLabelX: number;
-  knownSizeMm: number | null;
-};
-
-/** Per-section editable labels: height (with bracket leader on the left),
- *  diameter (with Z-leader to the bottom-right corner), and an
- *  independent circumference (no leader, sits beside the diameter input). */
-const SectionLabels = ({
-  sections,
-  silhouetteScale,
-  silhouetteCenter,
-  silhouetteY,
-  heightLabelX,
-  diameterLabelX,
-  knownSizeMm,
-}: Props) => {
+const SectionLabels = () => {
+  const layout = useEditorLayoutCtx();
+  const { sectionMeta, diameterLabelX, heightLabelX, silhouetteScale, silhouetteY } =
+    layout;
   const setDiameter = useToyStore((s) => s.setDiameter);
   const setHeight = useToyStore((s) => s.setHeight);
   const setCircumference = useToyStore((s) => s.setCircumference);
@@ -41,33 +25,28 @@ const SectionLabels = ({
 
   return (
     <>
-      {sections.map((meta) => (
+      {sectionMeta.map((meta) => (
         <HeightRow
           key={`h-${meta.section.id}`}
           meta={meta}
-          silhouetteScale={silhouetteScale}
-          silhouetteCenter={silhouetteCenter}
-          silhouetteY={silhouetteY}
+          layout={layout}
           x={heightLabelX}
           onChange={(mm) => mm != null && setHeight(meta.section.id, mm)}
         />
       ))}
 
-      {sections.map((meta) => (
+      {sectionMeta.map((meta) => (
         <DiameterRow
           key={`d-${meta.section.id}`}
           meta={meta}
-          silhouetteScale={silhouetteScale}
-          silhouetteCenter={silhouetteCenter}
-          silhouetteY={silhouetteY}
+          layout={layout}
           x={diameterLabelX}
-          knownSizeMm={knownSizeMm}
           onChange={(mm) => mm != null && setDiameter(meta.section.id, mm)}
         />
       ))}
 
       {showSectionCirc &&
-        sections.map((meta) => (
+        sectionMeta.map((meta) => (
           <FloatingInput
             key={`c-${meta.section.id}`}
             x={circumferenceX}
@@ -85,41 +64,16 @@ const SectionLabels = ({
   );
 };
 
-// ─── Height row: bracket leader + foreign-object input ─────────────────
-
-type HeightRowProps = {
+type RowProps = {
   meta: SectionMeta;
-  silhouetteScale: number;
-  silhouetteCenter: number;
-  silhouetteY: number;
+  layout: EditorLayout;
   x: number;
   onChange: (mm: number | null) => void;
 };
 
-const HeightRow = ({
-  meta,
-  silhouetteScale,
-  silhouetteCenter,
-  silhouetteY,
-  x,
-  onChange,
-}: HeightRowProps) => {
+const HeightRow = ({ meta, layout, x, onChange }: RowProps) => {
   const touched = meta.section.touched?.height ?? true;
-  const yTop = silhouetteY + meta.topMm * silhouetteScale;
-  const yMid = silhouetteY + meta.midMm * silhouetteScale;
-  const yBottom = silhouetteY + meta.bottomMm * silhouetteScale;
-  const inputRight = x + LABEL_INPUT_W_PX;
-  const bendX = inputRight + LEADER_LEAD_OUT_PX;
-  const sectionLeftAtTop = sectionEdgeLeftAtTop(meta, silhouetteScale, silhouetteCenter);
-  const sectionLeftAtBottom = sectionEdgeLeftAtBottom(meta, silhouetteScale, silhouetteCenter);
-  // Mirror of the diameter Z-leader: lead-out from the input's right edge,
-  // then a vertical bracket spanning the section's full height with
-  // horizontal extension lines reaching the silhouette's left edge at top
-  // and bottom.
-  const leaderD = [
-    `M ${inputRight + 2} ${yMid} L ${bendX} ${yMid}`,
-    `M ${sectionLeftAtTop} ${yTop} L ${bendX} ${yTop} L ${bendX} ${yBottom} L ${sectionLeftAtBottom} ${yBottom}`,
-  ].join(" ");
+  const { yMid, leaderD } = heightRowGeometry(meta, layout, x);
   return (
     <g>
       <path
@@ -139,38 +93,12 @@ const HeightRow = ({
   );
 };
 
-// ─── Diameter row: Z-leader + foreign-object input ─────────────────────
-
-type DiameterRowProps = {
-  meta: SectionMeta;
-  silhouetteScale: number;
-  silhouetteCenter: number;
-  silhouetteY: number;
-  x: number;
-  knownSizeMm: number | null;
-  onChange: (mm: number | null) => void;
-};
-
-const DiameterRow = ({
-  meta,
-  silhouetteScale,
-  silhouetteCenter,
-  silhouetteY,
-  x,
-  knownSizeMm,
-  onChange,
-}: DiameterRowProps) => {
+const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
+  const knownSizeMm = useToyStore((s) => s.knownSizeMm);
   const touched = meta.section.touched?.diameter ?? true;
-  const yBottom = silhouetteY + meta.bottomMm * silhouetteScale;
-  const inputY = sectionInputY(meta, silhouetteScale, silhouetteY);
-  const sectionEdgeX = sectionEdgeRight(meta, silhouetteScale, silhouetteCenter);
+  const { inputY, leaderD } = diameterRowGeometry(meta, layout, x);
   const overshoots =
     knownSizeMm != null && meta.section.diameter > knownSizeMm + 0.5;
-  // Z-shaped leader: a short horizontal lead-out from the input, a
-  // vertical drop, then a horizontal run into the section's
-  // bottom-right corner.
-  const bendX = x - 2 - LEADER_LEAD_OUT_PX;
-  const leaderD = `M ${x - 2} ${inputY} L ${bendX} ${inputY} L ${bendX} ${yBottom} L ${sectionEdgeX} ${yBottom}`;
   return (
     <g>
       <path
