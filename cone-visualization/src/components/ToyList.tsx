@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { Button, Chip, Tooltip } from '@heroui/react';
 import { ChevronDown, Copy, Pencil, Trash2 } from 'lucide-react';
 import { ThumbnailRender } from 'cone-editor';
@@ -112,9 +113,8 @@ function SortHeader({
     <button
       type="button"
       onClick={() => onSort(column)}
-      className={`inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-neutral-500 ${
-        active ? 'text-neutral-700' : ''
-      } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`}
+      className={`inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-neutral-500 ${active ? 'text-neutral-700' : ''
+        } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`}
     >
       {shortLabel ? (
         <>
@@ -152,12 +152,17 @@ function ToyRow({
   onCopy: () => void;
   onDelete: () => void;
 }) {
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const handleRowClick = (e: React.MouseEvent) => {
+    if (actionsRef.current?.contains(e.target as Node)) return;
+    onToggle();
+  };
   return (
     <>
       <div
         role="button"
         tabIndex={0}
-        onClick={onToggle}
+        onClick={handleRowClick}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -182,8 +187,8 @@ function ToyRow({
         <Metric value={toy.insertableLength} unit={unit} />
         <Metric value={toy.circumference} unit={unit} />
         <div
+          ref={actionsRef}
           className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-white/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
-          onClick={(e) => e.stopPropagation()}
         >
           <Tooltip delay={200}>
             <Button variant="outline" size="sm" isIconOnly aria-label={TOY_ACTION_EDIT} onPress={onEdit}>
@@ -259,9 +264,8 @@ function Metric({
 }) {
   return (
     <div
-      className={`text-right text-[17px] font-semibold tracking-tight tabular-nums ${
-        muted ? 'font-medium text-neutral-500' : 'text-neutral-900'
-      } ${className ?? ''}`}
+      className={`text-right text-[17px] font-semibold tracking-tight tabular-nums ${muted ? 'font-medium text-neutral-500' : 'text-neutral-900'
+        } ${className ?? ''}`}
     >
       {value == null ? (
         <span className="font-normal text-neutral-300">—</span>
