@@ -45,7 +45,12 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   };
 
   return (
-    <article
+    // Wrapper is a <div role="button"> rather than <article role="button">
+    // because Sonar (and jsx-a11y) forbid putting interactive roles on
+    // sectioning elements. We can't use a real <button> either — the
+    // card already contains <Button> action chips, and nested buttons
+    // are invalid HTML.
+    <div
       className={
         'group relative bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer ' +
         (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
@@ -146,7 +151,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         />
         <AttributesPanel toy={toy} />
       </div>
-    </article>
+    </div>
   );
 }
 
