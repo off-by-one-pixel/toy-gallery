@@ -14,11 +14,11 @@ import { circumferenceToDiameter, diameterToCircumference } from '../services/un
 
 type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
-type Props = {
+type Props = Readonly<{
   mode: Mode;
   onClose: () => void;
   onSaved: () => void;
-};
+}>;
 
 const PRESET_COLORS: { name: string; hex: string }[] = [
   { name: 'Purple', hex: '#c4b5fd' },
@@ -194,7 +194,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   );
 }
 
-type IdentificationProps = {
+type IdentificationProps = Readonly<{
   brand: string;
   name: string;
   size: string;
@@ -203,18 +203,9 @@ type IdentificationProps = {
   onName: (v: string) => void;
   onSize: (v: string) => void;
   onColor: (v: string) => void;
-};
+}>;
 
-function IdentificationGroup({
-  brand,
-  name,
-  size,
-  color,
-  onBrand,
-  onName,
-  onSize,
-  onColor,
-}: IdentificationProps) {
+function IdentificationGroup({ brand, name, size, color, onBrand, onName, onSize, onColor }: IdentificationProps) {
   return (
     <section className="flex flex-col gap-2.5">
       <h2 className="m-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">Identification</h2>
@@ -234,7 +225,7 @@ function IdentificationGroup({
   );
 }
 
-function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+function FormField({ label, children }: Readonly<{ label: string; children: React.ReactNode }>) {
   return (
     // `div`, not `label` — a wrapping label would bubble swatch clicks to the
     // hidden <input type="color"> in the Color row and open the native picker.
@@ -245,7 +236,7 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function ColorPicker({ value, onChange }: Readonly<{ value: string; onChange: (v: string) => void }>) {
   const isPreset = PRESET_COLORS.some((p) => p.hex.toLowerCase() === value.toLowerCase());
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -259,8 +250,9 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
       </ColorSwatchPicker>
       <label
         aria-label="Custom color"
-        className={`relative inline-flex h-6 w-6 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white ring-1 transition-transform hover:scale-110 ${isPreset ? 'ring-neutral-200' : 'ring-2 ring-blue-500'
-          }`}
+        className={`relative inline-flex h-6 w-6 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white ring-1 transition-transform hover:scale-110 ${
+          isPreset ? 'ring-neutral-200' : 'ring-2 ring-blue-500'
+        }`}
         style={{
           background: isPreset
             ? 'conic-gradient(from 0deg, #fca5a5, #fbbf24, #bbf7d0, #bae6fd, #c4b5fd, #fca5a5)'

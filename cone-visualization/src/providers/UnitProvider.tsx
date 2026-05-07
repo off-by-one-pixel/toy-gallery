@@ -12,7 +12,7 @@ interface UnitContextValue {
 
 const UnitContext = createContext<UnitContextValue | null>(null);
 
-export function UnitProvider({ children }: { children: ReactNode }) {
+export function UnitProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [unitState, setUnitState] = useState<Unit>(defaultUnit);
 
   useEffect(() => {

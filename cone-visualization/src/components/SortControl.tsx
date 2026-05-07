@@ -46,7 +46,7 @@ export default function SortControl() {
   );
 }
 
-function SortRow({ label, direction }: { label: string; direction: 'asc' | 'desc' | null }) {
+function SortRow({ label, direction }: Readonly<{ label: string; direction: 'asc' | 'desc' | null }>) {
   const Arrow = direction === 'desc' ? ArrowDown : direction === 'asc' ? ArrowUp : null;
   return (
     <span className="flex w-full items-center justify-between gap-3">

@@ -11,7 +11,7 @@ import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
 import AttributesPanel from './AttributesPanel';
 
-type Props = {
+type Props = Readonly<{
   toy: Toy;
   heightRatio: number;
   detailsOpen: boolean;
@@ -19,7 +19,7 @@ type Props = {
   onEdit: (toy: Toy) => void;
   onCopy: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
-};
+}>;
 
 const DEFAULT_FILL = '#c7e4ee';
 
@@ -155,12 +155,12 @@ function Metric({
   value,
   unit,
   bordered,
-}: {
+}: Readonly<{
   label: string;
   value: number | null | undefined;
   unit: Unit;
   bordered?: boolean;
-}) {
+}>) {
   return (
     <div className={bordered ? 'pl-3 border-l border-neutral-200' : ''}>
       <div className="text-[22px] font-semibold leading-none tracking-tight text-neutral-900 tabular-nums">
@@ -172,7 +172,7 @@ function Metric({
   );
 }
 
-function AttrRow({ label, value }: { label: string; value: string }) {
+function AttrRow({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
       <span className="px-1.5 py-0.5 text-xs text-neutral-700">{label}</span>

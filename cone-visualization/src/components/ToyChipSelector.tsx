@@ -8,11 +8,11 @@ import { Check } from 'lucide-react';
 import { INVOLVEMENT_LABEL } from '../labels';
 import { Involvement, SectionShape, type Toy } from '../services/types';
 
-type Props = {
+type Props = Readonly<{
   toy: Toy;
   state: Involvement | null;
   onChange: (next: Involvement | null) => void;
-};
+}>;
 
 const STATE_ORDER: Involvement[] = [Involvement.USED, Involvement.INSERTED, Involvement.FULLY_INSERTED];
 
@@ -34,12 +34,7 @@ const SEG_ACTIVE: Record<Involvement, string> = {
   [Involvement.FULLY_INSERTED]: 'bg-blue-700 text-white shadow-xs',
 };
 
-const STATE_CYCLE: (Involvement | null)[] = [
-  null,
-  Involvement.USED,
-  Involvement.INSERTED,
-  Involvement.FULLY_INSERTED,
-];
+const STATE_CYCLE: (Involvement | null)[] = [null, Involvement.USED, Involvement.INSERTED, Involvement.FULLY_INSERTED];
 
 const nextInCycle = (current: Involvement | null): Involvement | null => {
   const idx = STATE_CYCLE.indexOf(current);

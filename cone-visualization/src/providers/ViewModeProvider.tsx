@@ -17,7 +17,7 @@ interface ViewModeContextValue {
 
 const ViewModeContext = createContext<ViewModeContextValue | null>(null);
 
-export function ViewModeProvider({ children }: { children: ReactNode }) {
+export function ViewModeProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [viewState, setViewState] = useState<ViewMode>(ViewMode.cards);
 
   useEffect(() => {

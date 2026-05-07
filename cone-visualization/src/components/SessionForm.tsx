@@ -34,7 +34,7 @@ const formatLocal = (d: Date): string => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
-export default function SessionForm({ mode }: { mode: SessionFormMode }) {
+export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const router = useRouter();
   const [toys, setToys] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,9 +64,7 @@ export default function SessionForm({ mode }: { mode: SessionFormMode }) {
           setToys(loadedToys);
           if (loadedSession) {
             setStartedAt(formatLocal(new Date(loadedSession.startedAt)));
-            setSelections(
-              new Map(loadedSession.entries.map((e) => [e.toy, e.involvement])),
-            );
+            setSelections(new Map(loadedSession.entries.map((e) => [e.toy, e.involvement])));
           }
           setError(null);
         },

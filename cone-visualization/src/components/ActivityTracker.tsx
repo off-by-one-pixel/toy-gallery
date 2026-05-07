@@ -11,9 +11,9 @@ import type { ActivityDay } from '../services/types';
 const WINDOW_DAYS = 365;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-type Props = {
+type Props = Readonly<{
   days: ActivityDay[];
-};
+}>;
 
 type DayCell = {
   date: string;
@@ -64,14 +64,10 @@ const legendGradient = (hue: number): string => {
 };
 
 const extent = (values: number[]): { min: number; max: number } =>
-  values.length === 0
-    ? { min: 0, max: 0 }
-    : { min: Math.min(...values), max: Math.max(...values) };
+  values.length === 0 ? { min: 0, max: 0 } : { min: Math.min(...values), max: Math.max(...values) };
 
-const pluck = (
-  days: ActivityDay[],
-  pick: (d: ActivityDay) => number | null | undefined,
-): number[] => days.map(pick).filter((v): v is number => v != null);
+const pluck = (days: ActivityDay[], pick: (d: ActivityDay) => number | null | undefined): number[] =>
+  days.map(pick).filter((v): v is number => v != null);
 
 export default function ActivityTracker({ days }: Props) {
   const { byDate, startDate, endDate, lenMin, lenMax, circMin, circMax } = useMemo(() => {
@@ -118,7 +114,7 @@ export default function ActivityTracker({ days }: Props) {
   );
 }
 
-type DimensionHeatmapProps = {
+type DimensionHeatmapProps = Readonly<{
   title: string;
   byDate: SessionDayMap;
   startDate: Date;
@@ -127,7 +123,7 @@ type DimensionHeatmapProps = {
   min: number;
   max: number;
   hue: number;
-};
+}>;
 
 function DimensionHeatmap({ title, byDate, startDate, endDate, pickValue, min, max, hue }: DimensionHeatmapProps) {
   const { unit } = useUnit();

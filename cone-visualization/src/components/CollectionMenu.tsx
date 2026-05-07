@@ -10,10 +10,10 @@ import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../providers/AuthProvider';
 import ChangePasswordModal from './ChangePasswordModal';
 
-type Props = {
+type Props = Readonly<{
   onImported: () => void;
   subtitle?: React.ReactNode;
-};
+}>;
 
 export default function CollectionMenu({ onImported, subtitle }: Props) {
   const [busy, setBusy] = useState(false);
@@ -140,11 +140,11 @@ function MenuRow({
   icon,
   label,
   description,
-}: {
+}: Readonly<{
   icon: React.ReactNode;
   label: React.ReactNode;
   description: string;
-}) {
+}>) {
   return (
     <span className="flex items-start gap-2.5">
       <span className="mt-0.5 text-neutral-500">{icon}</span>

@@ -4,15 +4,17 @@ import { forwardRef, type ReactNode } from 'react';
 
 type Size = 'sm' | 'md';
 
-type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'size'> & {
-  value: string;
-  onChange: (value: string) => void;
-  size?: Size;
-  /** Rendered inside the bordered container, before the input. */
-  leading?: ReactNode;
-  /** Rendered inside the bordered container, after the input. */
-  trailing?: ReactNode;
-};
+type Props = Readonly<
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'size'> & {
+    value: string;
+    onChange: (value: string) => void;
+    size?: Size;
+    /** Rendered inside the bordered container, before the input. */
+    leading?: ReactNode;
+    /** Rendered inside the bordered container, after the input. */
+    trailing?: ReactNode;
+  }
+>;
 
 const wrapperBase =
   'flex w-full items-center gap-2 rounded-xl border border-neutral-200 bg-white text-neutral-900 ' +
