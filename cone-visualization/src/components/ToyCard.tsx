@@ -45,7 +45,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   };
 
   return (
-    <article
+    <div
       className={
         'group relative bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer ' +
         (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
@@ -146,7 +146,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         />
         <AttributesPanel toy={toy} />
       </div>
-    </article>
+    </div>
   );
 }
 
