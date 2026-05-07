@@ -193,15 +193,13 @@ function SessionRow({
   session,
   toysById,
   unit,
-}: {
+}: Readonly<{
   session: Session;
   toysById: Map<number, Toy>;
   unit: ReturnType<typeof useUnit>['unit'];
-}) {
+}>) {
   const STRIP_LIMIT = 5;
-  const orderedEntries = [...session.entries].sort(
-    (a, b) => STATE_RANK[a.involvement] - STATE_RANK[b.involvement],
-  );
+  const orderedEntries = [...session.entries].sort((a, b) => STATE_RANK[a.involvement] - STATE_RANK[b.involvement]);
   const visibleEntries = orderedEntries.slice(0, STRIP_LIMIT);
   const overflow = orderedEntries.length - visibleEntries.length;
 
@@ -246,11 +244,11 @@ function MiniToy({
   entry,
   toy,
   heightRatio,
-}: {
+}: Readonly<{
   entry: SessionEntry;
   toy: Toy | undefined;
   heightRatio: number;
-}) {
+}>) {
   if (!toy) {
     return (
       <div className="flex w-20 flex-col items-center gap-1.5 text-center">
@@ -290,7 +288,11 @@ function MiniToy({
   );
 }
 
-function PeakRow({ label, mm, unit }: { label: string; mm: number | null; unit: ReturnType<typeof useUnit>['unit'] }) {
+function PeakRow({
+  label,
+  mm,
+  unit,
+}: Readonly<{ label: string; mm: number | null; unit: ReturnType<typeof useUnit>['unit'] }>) {
   return (
     <div className="flex items-baseline justify-end gap-2 py-0.5">
       <span className="text-[11px] uppercase tracking-wider text-neutral-400">{label}</span>
@@ -306,7 +308,7 @@ function PeakRow({ label, mm, unit }: { label: string; mm: number | null; unit: 
   );
 }
 
-function EmptyState({ anyExist, filterLabel }: { anyExist: boolean; filterLabel: string }) {
+function EmptyState({ anyExist, filterLabel }: Readonly<{ anyExist: boolean; filterLabel: string }>) {
   if (anyExist) {
     return (
       <div className="rounded-xl border border-dashed border-neutral-300 bg-white py-12 text-center text-sm text-neutral-500">

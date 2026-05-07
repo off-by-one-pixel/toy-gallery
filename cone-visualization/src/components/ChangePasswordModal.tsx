@@ -8,9 +8,9 @@ import { useAsyncAction } from '../hooks/useAsyncAction';
 import { changePassword } from '../services/api';
 import TextInput from './TextInput';
 
-type Props = {
+type Props = Readonly<{
   onClose: () => void;
-};
+}>;
 
 export default function ChangePasswordModal({ onClose }: Props) {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -108,7 +108,7 @@ export default function ChangePasswordModal({ onClose }: Props) {
   );
 }
 
-function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
+function Field({ label, htmlFor, children }: Readonly<{ label: string; htmlFor: string; children: React.ReactNode }>) {
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={htmlFor} className="text-[13px] font-medium text-neutral-900">

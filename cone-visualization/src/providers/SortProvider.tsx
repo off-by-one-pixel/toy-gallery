@@ -18,7 +18,7 @@ const isValidSort = (v: unknown): v is Sort => {
   return isSortColumn(s.column) && (s.direction === 'asc' || s.direction === 'desc');
 };
 
-export function SortProvider({ children }: { children: ReactNode }) {
+export function SortProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [sortState, setSortState] = useState<Sort | null>(null);
 
   useEffect(() => {

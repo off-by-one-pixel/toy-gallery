@@ -81,7 +81,7 @@ const LoginPage = () => {
   );
 };
 
-function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
+function Field({ label, htmlFor, children }: Readonly<{ label: string; htmlFor: string; children: React.ReactNode }>) {
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={htmlFor} className="text-[13px] font-medium text-neutral-900">
@@ -163,7 +163,7 @@ function GalleryMontage() {
   );
 }
 
-function MontageTile({ tile, staggered }: { tile: Tile; staggered: boolean }) {
+function MontageTile({ tile, staggered }: Readonly<{ tile: Tile; staggered: boolean }>) {
   return (
     <div
       className={

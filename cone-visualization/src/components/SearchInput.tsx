@@ -4,11 +4,11 @@ import { Search, X } from 'lucide-react';
 
 import TextInput from './TextInput';
 
-type Props = {
+type Props = Readonly<{
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-};
+}>;
 
 const SearchInput = ({ value, onChange, placeholder = 'Search toys…' }: Props) => (
   <TextInput

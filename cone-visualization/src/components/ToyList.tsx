@@ -33,14 +33,14 @@ const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px
 // stays inline; plain cells can use `block`.
 const HIDDEN_SIZE = 'hidden min-[640px]:block';
 
-type Props = {
+type Props = Readonly<{
   toys: Toy[];
   openToyId: number | null;
   onToggleOpen: (id: number) => void;
   onEdit: (toy: Toy) => void;
   onCopy: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
-};
+}>;
 
 export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
@@ -66,7 +66,7 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy,
   );
 }
 
-function ListHeader({ sort, onSort }: { sort: Sort | null; onSort: (column: SortColumn) => void }) {
+function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (column: SortColumn) => void }>) {
   return (
     <div
       className={
@@ -98,7 +98,7 @@ function SortHeader({
   onSort,
   align,
   className,
-}: {
+}: Readonly<{
   label: string;
   shortLabel?: string;
   column: SortColumn;
@@ -106,15 +106,16 @@ function SortHeader({
   onSort: (column: SortColumn) => void;
   align?: 'right';
   className?: string;
-}) {
+}>) {
   const active = sort?.column === column;
   const dir = active ? sort.direction : null;
   return (
     <button
       type="button"
       onClick={() => onSort(column)}
-      className={`inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-neutral-500 ${active ? 'text-neutral-700' : ''
-        } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`}
+      className={`inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-neutral-500 ${
+        active ? 'text-neutral-700' : ''
+      } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`}
     >
       {shortLabel ? (
         <>
@@ -143,7 +144,7 @@ function ToyRow({
   onEdit,
   onCopy,
   onDelete,
-}: {
+}: Readonly<{
   toy: Toy;
   unit: Unit;
   open: boolean;
@@ -151,7 +152,7 @@ function ToyRow({
   onEdit: () => void;
   onCopy: () => void;
   onDelete: () => void;
-}) {
+}>) {
   const actionsRef = useRef<HTMLDivElement>(null);
   const handleRowClick = (e: React.MouseEvent) => {
     if (actionsRef.current?.contains(e.target as Node)) return;
@@ -215,7 +216,7 @@ function ToyRow({
   );
 }
 
-function Thumb({ toy }: { toy: Toy }) {
+function Thumb({ toy }: Readonly<{ toy: Toy }>) {
   const style = {
     borderWidth: 1,
     borderColor: '#1f2937',
@@ -233,7 +234,7 @@ function Thumb({ toy }: { toy: Toy }) {
   );
 }
 
-function NameCol({ toy }: { toy: Toy }) {
+function NameCol({ toy }: Readonly<{ toy: Toy }>) {
   return (
     <div className="min-w-0">
       <div className="truncate text-[10px] font-normal uppercase tracking-[0.06em] text-neutral-500 min-[640px]:text-[11px]">
@@ -256,16 +257,17 @@ function Metric({
   unit,
   muted,
   className,
-}: {
+}: Readonly<{
   value: number | null | undefined;
   unit: Unit;
   muted?: boolean;
   className?: string;
-}) {
+}>) {
   return (
     <div
-      className={`text-right text-[17px] font-semibold tracking-tight tabular-nums ${muted ? 'font-medium text-neutral-500' : 'text-neutral-900'
-        } ${className ?? ''}`}
+      className={`text-right text-[17px] font-semibold tracking-tight tabular-nums ${
+        muted ? 'font-medium text-neutral-500' : 'text-neutral-900'
+      } ${className ?? ''}`}
     >
       {value == null ? (
         <span className="font-normal text-neutral-300">—</span>
@@ -279,7 +281,7 @@ function Metric({
   );
 }
 
-function ExpandedPanel({ toy }: { toy: Toy }) {
+function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
   const { unit } = useUnit();
   return (
     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-xs min-[640px]:px-5">
@@ -331,7 +333,7 @@ function ExpandedPanel({ toy }: { toy: Toy }) {
   );
 }
 
-function SectionLine({ n, d, h, c }: { n: number; d: number; h: number; c: number | null }) {
+function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number; c: number | null }>) {
   return (
     <>
       <span className="text-neutral-400">#{n}</span>

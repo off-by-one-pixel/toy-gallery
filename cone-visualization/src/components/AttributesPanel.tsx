@@ -11,9 +11,8 @@ import {
 import { useAttributesEditor } from '../hooks/useAttributesEditor';
 import type { Toy } from '../services/types';
 
-export default function AttributesPanel({ toy }: { toy: Toy }) {
-  const { rows, updateKey, updateValue, removeRow, addRow, commitChanges } =
-    useAttributesEditor(toy);
+export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
+  const { rows, updateKey, updateValue, removeRow, addRow, commitChanges } = useAttributesEditor(toy);
 
   return (
     <div>
