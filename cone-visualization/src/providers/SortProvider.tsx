@@ -19,7 +19,7 @@ const isValidSort = (v: unknown): v is Sort => {
 };
 
 export function SortProvider({ children }: { children: ReactNode }) {
-  const [sort, setSortState] = useState<Sort | null>(null);
+  const [sortState, setSortState] = useState<Sort | null>(null);
 
   useEffect(() => {
     if (globalThis.window === undefined) return;
@@ -40,7 +40,7 @@ export function SortProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  const value = useMemo(() => ({ sort, setSort }), [sort, setSort]);
+  const value = useMemo(() => ({ sort: sortState, setSort }), [sortState, setSort]);
 
   return <SortContext.Provider value={value}>{children}</SortContext.Provider>;
 }

@@ -27,7 +27,7 @@ export default function ChangePasswordModal({ onClose }: Props) {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     if (newPassword !== confirmPassword) {
@@ -51,9 +51,7 @@ export default function ChangePasswordModal({ onClose }: Props) {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
               <header>
                 <h2 className="text-base font-semibold tracking-tight text-neutral-900">Change password</h2>
-                <p className="mt-1 text-[13px] text-neutral-500">
-                  Enter your current password and pick a new one.
-                </p>
+                <p className="mt-1 text-[13px] text-neutral-500">Enter your current password and pick a new one.</p>
               </header>
 
               {error && (
