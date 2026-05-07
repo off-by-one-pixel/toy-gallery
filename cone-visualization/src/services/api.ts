@@ -72,9 +72,14 @@ export const fetchCones = async (): Promise<Toy[]> => {
   return data.map((t) => snakeToCamel<Toy>(t));
 };
 
-export const deleteToy = (id: number | string) => toysToysDestroy(Number(id));
+export const deleteToy = async (id: number | string): Promise<void> => {
+  await toysToysDestroy(Number(id));
+};
 
-export const createToy = (toy: ToyPayload) => toysToysCreate(camelToSnake<ApiToyRequest>(toy));
+export const createToy = async (toy: ToyPayload): Promise<Toy> => {
+  const { data } = await toysToysCreate(camelToSnake<ApiToyRequest>(toy));
+  return snakeToCamel<Toy>(data);
+};
 
 export const patchToy = async (id: number, changes: Partial<ToyPayload>): Promise<Toy> => {
   const { data } = await toysToysPartialUpdate(id, camelToSnake<PatchedToyRequest>(changes));
