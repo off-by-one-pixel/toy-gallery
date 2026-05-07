@@ -54,7 +54,10 @@ out/
 coverage/
 *.cover
 *.coverage
+.coverage
 .coverage.*
+coverage.xml
+htmlcov/
 
 # Test output
 junit.xml

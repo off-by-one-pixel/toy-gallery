@@ -1,0 +1,76 @@
+name: SonarQube
+
+# SonarQube Community Edition only supports single-branch (main) analysis.
+# Trigger only on pushes to main — PR analysis would overwrite main's
+# project view since there's no per-PR scope at this edition.
+on:
+  push:
+    branches: [main]
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Sonar uses git history for blame data on new-code highlighting.
+          fetch-depth: 0
+          submodules: false
+
+      # ─── Backend (Django) coverage ──────────────────────────────────
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v4
+      - name: Install BE dependencies
+        run: cd toy_gallery_be && uv sync --frozen
+      - name: Run BE tests with coverage
+        run: |
+          cd toy_gallery_be
+          uv run coverage run --source=toys manage.py test toys
+          uv run coverage xml -o coverage.xml
+          # `coverage xml` writes paths relative to its cwd (here:
+          # toy_gallery_be), so filenames look like `toys/models.py`.
+          # Sonar's project root is the repo root, where the same files
+          # live at `toy_gallery_be/toys/models.py`. Rewrite both the
+          # <source> tag (point it at the repo root) and the filenames
+          # (prefix toy_gallery_be/) so Sonar can resolve them.
+          sed -i \
+            -e "s|<source>.*</source>|<source>$GITHUB_WORKSPACE</source>|" \
+            -e 's|filename="toys/|filename="toy_gallery_be/toys/|g' \
+            coverage.xml
+
+      # ─── Frontend (Next.js) coverage ────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cone-visualization/package-lock.json
+      - name: Install FE dependencies
+        run: cd cone-visualization && npm ci
+      - name: Run FE tests with coverage
+        run: |
+          cd cone-visualization
+          npm test -- --coverage
+          # Same path fix as the BE: vitest emits `SF:src/...` paths
+          # rooted at cone-visualization/, but Sonar indexes from repo
+          # root, so prefix every source path.
+          sed -i 's|^SF:src/|SF:cone-visualization/src/|' coverage/lcov.info
+
+      # ─── SonarQube scan + Quality Gate ──────────────────────────────
+      # SonarQube Community Edition doesn't support PR analysis
+      # (sonar.pullrequest.* needs Developer Edition or higher).
+      # Every scan goes against the main project; PR decoration via
+      # the GitHub App won't render per-PR reports.
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
