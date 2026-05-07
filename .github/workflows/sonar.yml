@@ -15,6 +15,10 @@ jobs:
           # Sonar uses git history for blame data on new-code highlighting.
           fetch-depth: 0
           submodules: false
+          # On `pull_request` events GitHub checks out a synthetic merge
+          # commit by default, which makes Sonar's inline PR comments
+          # land on the wrong SHA. Use the real PR head instead.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       # ─── Backend (Django) coverage ──────────────────────────────────
       - uses: actions/setup-python@v5
@@ -28,6 +32,15 @@ jobs:
           cd toy_gallery_be
           uv run coverage run --source=toys manage.py test toys
           uv run coverage xml -o coverage.xml
+          # `coverage xml` writes paths relative to its cwd (here:
+          # toy_gallery_be), so filenames look like `toys/models.py`.
+          # Sonar resolves them against the repo root, where the same
+          # file lives at `toy_gallery_be/toys/models.py`. Rewrite the
+          # XML to match Sonar's index, otherwise coverage reports 0%.
+          sed -i \
+            -e 's|<source>.*</source>|<source>.</source>|' \
+            -e 's|filename="toys/|filename="toy_gallery_be/toys/|g' \
+            coverage.xml
 
       # ─── Frontend (Next.js) coverage ────────────────────────────────
       - uses: actions/setup-node@v4
@@ -38,7 +51,13 @@ jobs:
       - name: Install FE dependencies
         run: cd cone-visualization && npm ci
       - name: Run FE tests with coverage
-        run: cd cone-visualization && npm test -- --coverage
+        run: |
+          cd cone-visualization
+          npm test -- --coverage
+          # Same path fix as the BE: vitest emits `SF:src/...` paths
+          # rooted at cone-visualization/, but Sonar indexes from repo
+          # root, so prefix every source path.
+          sed -i 's|^SF:src/|SF:cone-visualization/src/|' coverage/lcov.info
 
       # ─── SonarQube scan + Quality Gate ──────────────────────────────
       - name: SonarQube Scan
@@ -46,6 +65,14 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            ${{ github.event_name == 'pull_request' && format(
+              '-Dsonar.pullrequest.key={0} -Dsonar.pullrequest.branch={1} -Dsonar.pullrequest.base={2}',
+              github.event.pull_request.number,
+              github.head_ref,
+              github.base_ref
+            ) || '' }}
 
       - name: SonarQube Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
