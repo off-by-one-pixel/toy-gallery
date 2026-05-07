@@ -1,0 +1,55 @@
+name: SonarQube
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Sonar uses git history for blame data on new-code highlighting.
+          fetch-depth: 0
+          submodules: false
+
+      # ─── Backend (Django) coverage ──────────────────────────────────
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v4
+      - name: Install BE dependencies
+        run: cd toy_gallery_be && uv sync --frozen
+      - name: Run BE tests with coverage
+        run: |
+          cd toy_gallery_be
+          uv run coverage run --source=toys manage.py test toys
+          uv run coverage xml -o coverage.xml
+
+      # ─── Frontend (Next.js) coverage ────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: cone-visualization/package-lock.json
+      - name: Install FE dependencies
+        run: cd cone-visualization && npm ci
+      - name: Run FE tests with coverage
+        run: cd cone-visualization && npm test -- --coverage
+
+      # ─── SonarQube scan + Quality Gate ──────────────────────────────
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
