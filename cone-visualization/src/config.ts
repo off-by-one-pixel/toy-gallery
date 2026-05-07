@@ -10,7 +10,7 @@
 function resolveBaseUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl === '') {
-    return typeof globalThis.window !== 'undefined' ? globalThis.window.location.origin : '';
+    return globalThis.window !== undefined ? globalThis.window.location.origin : '';
   }
   return envUrl || 'http://localhost:8000';
 }

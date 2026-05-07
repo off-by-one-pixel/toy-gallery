@@ -21,13 +21,13 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
   const [view, setViewState] = useState<ViewMode>(ViewMode.cards);
 
   useEffect(() => {
-    const stored = typeof globalThis.window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+    const stored = globalThis.window !== undefined ? localStorage.getItem(STORAGE_KEY) : null;
     if (stored === ViewMode.cards || stored === ViewMode.list) setViewState(stored);
   }, []);
 
   const setView = useCallback((next: ViewMode) => {
     setViewState(next);
-    if (typeof globalThis.window !== 'undefined') localStorage.setItem(STORAGE_KEY, next);
+    if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
   return <ViewModeContext.Provider value={{ view, setView }}>{children}</ViewModeContext.Provider>;
