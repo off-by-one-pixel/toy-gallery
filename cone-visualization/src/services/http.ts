@@ -8,7 +8,7 @@ const ACCESS_KEY = 'auth.access';
 const REFRESH_KEY = 'auth.refresh';
 const USERNAME_KEY = 'auth.username';
 
-const isBrowser = (): boolean => typeof window !== 'undefined';
+const isBrowser = (): boolean => typeof globalThis.window !== 'undefined';
 
 export const tokenStorage = {
   getAccess: (): string | null => (isBrowser() ? localStorage.getItem(ACCESS_KEY) : null),

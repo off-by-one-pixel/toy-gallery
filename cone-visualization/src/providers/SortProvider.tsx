@@ -22,7 +22,7 @@ export function SortProvider({ children }: { children: ReactNode }) {
   const [sort, setSortState] = useState<Sort | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof globalThis.window === 'undefined') return;
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return;
     try {
@@ -35,7 +35,7 @@ export function SortProvider({ children }: { children: ReactNode }) {
 
   const setSort = useCallback((next: Sort | null) => {
     setSortState(next);
-    if (typeof window === 'undefined') return;
+    if (typeof globalThis.window === 'undefined') return;
     if (next) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     else localStorage.removeItem(STORAGE_KEY);
   }, []);
