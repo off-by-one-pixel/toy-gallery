@@ -32,11 +32,13 @@ jobs:
           # `coverage xml` writes paths relative to its cwd (here:
           # toy_gallery_be), so filenames look like `toys/models.py`.
           # Sonar's project root is the repo root, where the same files
-          # live at `toy_gallery_be/toys/models.py`. Rewrite both the
-          # <source> tag (point it at the repo root) and the filenames
-          # (prefix toy_gallery_be/) so Sonar can resolve them.
+          # live at `toy_gallery_be/toys/models.py`. Prefix the filenames
+          # so they're relative to the project root, and point <source>
+          # at "." — the scanner runs inside a Docker container where
+          # $GITHUB_WORKSPACE (a host path) doesn't exist, but a relative
+          # path resolves against sonar.projectBaseDir.
           sed -i \
-            -e "s|<source>.*</source>|<source>$GITHUB_WORKSPACE</source>|" \
+            -e 's|<source>.*</source>|<source>.</source>|' \
             -e 's|filename="toys/|filename="toy_gallery_be/toys/|g' \
             coverage.xml
 
