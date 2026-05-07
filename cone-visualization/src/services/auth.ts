@@ -1,7 +1,7 @@
 import { login as apiLogin } from './api';
 import { tokenStorage } from './http';
 
-export { tokenStorage };
+export { tokenStorage } from './http';
 export type { TokenPair } from './types';
 
 /** Log in and persist tokens. Resolves on success; throws on bad credentials. */

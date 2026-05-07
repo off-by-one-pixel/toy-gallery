@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { isSortColumn, type Sort } from '../services/sort';
 
 const STORAGE_KEY = 'gallery.sort';
@@ -19,7 +19,7 @@ const isValidSort = (v: unknown): v is Sort => {
 };
 
 export function SortProvider({ children }: { children: ReactNode }) {
-  const [sort, setSortState] = useState<Sort | null>(null);
+  const [sortState, setSortState] = useState<Sort | null>(null);
 
   useEffect(() => {
     if (globalThis.window === undefined) return;
@@ -40,7 +40,9 @@ export function SortProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  return <SortContext.Provider value={{ sort, setSort }}>{children}</SortContext.Provider>;
+  const value = useMemo(() => ({ sort: sortState, setSort }), [sortState, setSort]);
+
+  return <SortContext.Provider value={value}>{children}</SortContext.Provider>;
 }
 
 export function useSort(): SortContextValue {

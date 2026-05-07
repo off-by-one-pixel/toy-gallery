@@ -108,7 +108,7 @@ function SortHeader({
   className?: string;
 }) {
   const active = sort?.column === column;
-  const dir = active ? sort!.direction : null;
+  const dir = active ? sort.direction : null;
   return (
     <button
       type="button"

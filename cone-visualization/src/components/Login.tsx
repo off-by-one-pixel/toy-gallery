@@ -156,7 +156,7 @@ function GalleryMontage() {
         style={{ gridTemplateColumns: 'repeat(3, 120px)', gridAutoRows: '150px' }}
       >
         {TILES.map((tile, i) => (
-          <MontageTile key={i} tile={tile} staggered={i >= 3} />
+          <MontageTile key={tile.color} tile={tile} staggered={i >= 3} />
         ))}
       </div>
     </div>

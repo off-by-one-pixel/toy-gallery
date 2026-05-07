@@ -63,7 +63,7 @@ describe('convertSections', () => {
   });
 
   it('does not mutate the input', () => {
-    const before = JSON.parse(JSON.stringify(sections));
+    const before = structuredClone(sections);
     convertSections(sections, Unit.mm, Unit.in);
     expect(sections).toEqual(before);
   });
