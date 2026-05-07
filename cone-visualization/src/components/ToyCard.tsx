@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { Button, Chip, Tooltip } from '@heroui/react';
 import { ThumbnailRender } from 'cone-editor';
 import type { Toy as EditorToy } from 'cone-editor';
@@ -24,6 +25,7 @@ const DEFAULT_FILL = '#c7e4ee';
 
 export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
+  const detailsRef = useRef<HTMLDivElement>(null);
 
   const style = {
     borderWidth: 1.25,
@@ -37,13 +39,27 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
     bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (detailsRef.current?.contains(e.target as Node)) return;
+    onToggleDetails();
+  };
+
   return (
     <article
       className={
         'group relative bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer ' +
         (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
       }
-      onClick={onToggleDetails}
+      role="button"
+      tabIndex={0}
+      aria-expanded={detailsOpen}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggleDetails();
+        }
+      }}
     >
       <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
@@ -118,11 +134,11 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
       </div>
 
       <div
+        ref={detailsRef}
         className={
           'absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-white px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 ' +
           (detailsOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0 pointer-events-none')
         }
-        onClick={(e) => e.stopPropagation()}
       >
         <AttrRow
           label="Total length"

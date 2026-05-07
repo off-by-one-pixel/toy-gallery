@@ -258,6 +258,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
         ))}
       </ColorSwatchPicker>
       <label
+        aria-label="Custom color"
         className={`relative inline-flex h-6 w-6 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white ring-1 transition-transform hover:scale-110 ${isPreset ? 'ring-neutral-200' : 'ring-2 ring-blue-500'
           }`}
         style={{
@@ -272,6 +273,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 h-full w-full cursor-pointer border-0 p-0 opacity-0"
+          aria-label="Custom color"
         />
       </label>
     </div>

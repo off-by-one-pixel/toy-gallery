@@ -148,7 +148,7 @@ const ConeList = () => {
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white text-lg leading-none">
                     +
                   </span>
-                  New toy
+                  <span>New toy</span>
                 </span>
               </button>
             </div>
