@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { Unit, defaultUnit, unitById } from '../services/units';
 
 const STORAGE_KEY = 'units';
@@ -26,7 +26,9 @@ export function UnitProvider({ children }: { children: ReactNode }) {
     if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next.id);
   }, []);
 
-  return <UnitContext.Provider value={{ unit, setUnit }}>{children}</UnitContext.Provider>;
+  const value = useMemo(() => ({ unit, setUnit }), [unit, setUnit]);
+
+  return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>;
 }
 
 export function useUnit(): UnitContextValue {

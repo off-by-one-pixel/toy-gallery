@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { login as authLogin, tokenStorage } from '../services/auth';
 
 interface AuthState {
@@ -41,11 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ username: null, isAuthenticated: false, isHydrated: true });
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = useMemo(() => ({ ...state, login, logout }), [state, login, logout]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

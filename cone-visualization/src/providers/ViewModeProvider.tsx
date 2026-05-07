@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 
 export const ViewMode = {
   cards: 'cards',
@@ -30,7 +30,9 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
     if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
-  return <ViewModeContext.Provider value={{ view, setView }}>{children}</ViewModeContext.Provider>;
+  const value = useMemo(() => ({ view, setView }), [view, setView]);
+
+  return <ViewModeContext.Provider value={value}>{children}</ViewModeContext.Provider>;
 }
 
 export function useViewMode(): ViewModeContextValue {
