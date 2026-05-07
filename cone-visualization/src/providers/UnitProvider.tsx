@@ -16,14 +16,14 @@ export function UnitProvider({ children }: { children: ReactNode }) {
   const [unit, setUnitState] = useState<Unit>(defaultUnit);
 
   useEffect(() => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+    const stored = typeof globalThis.window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
     const restored = stored ? unitById(stored) : undefined;
     if (restored) setUnitState(restored);
   }, []);
 
   const setUnit = useCallback((next: Unit) => {
     setUnitState(next);
-    if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, next.id);
+    if (typeof globalThis.window !== 'undefined') localStorage.setItem(STORAGE_KEY, next.id);
   }, []);
 
   return <UnitContext.Provider value={{ unit, setUnit }}>{children}</UnitContext.Provider>;
