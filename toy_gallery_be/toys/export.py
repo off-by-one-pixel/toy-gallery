@@ -81,17 +81,11 @@ class ExportV1(ExportVersion):
 
     @classmethod
     def import_(cls, payload: dict) -> dict:
-        toys = payload.get("toys")
-        if not isinstance(toys, list):
-            raise drf_serializers.ValidationError("Expected a 'toys' array.")
+        toys = _require_list(payload, "toys")
         with transaction.atomic():
-            created = 0
             for item in toys:
-                s = ToySerializer(data=item)
-                s.is_valid(raise_exception=True)
-                s.save()
-                created += 1
-        return {"toys_created": created, "sessions_created": 0}
+                _save_toy(item)
+        return {"toys_created": len(toys), "sessions_created": 0}
 
 
 class ExportV2(ExportVersion):
@@ -143,57 +137,63 @@ class ExportV2(ExportVersion):
 
     @classmethod
     def import_(cls, payload: dict) -> dict:
-        toys = payload.get("toys")
-        if not isinstance(toys, list):
-            raise drf_serializers.ValidationError("Expected a 'toys' array.")
-        sessions = payload.get("sessions", [])
-        if not isinstance(sessions, list):
-            raise drf_serializers.ValidationError("Expected a 'sessions' array.")
-
+        toys = _require_list(payload, "toys")
+        sessions = _require_list(payload, "sessions", optional=True)
         with transaction.atomic():
             id_map: dict[int, int] = {}
-            toys_created = 0
             for item in toys:
-                local_id = item.get("_id")
-                if not isinstance(local_id, int):
-                    raise drf_serializers.ValidationError(
-                        "Each v2 toy must have an integer '_id'."
-                    )
-                payload_for_toy = {k: v for k, v in item.items() if k != "_id"}
-                s = ToySerializer(data=payload_for_toy)
-                s.is_valid(raise_exception=True)
-                toy = s.save()
-                id_map[local_id] = toy.pk
-                toys_created += 1
+                cls._import_toy(item, id_map)
+            sessions_created = sum(cls._import_session(s, id_map) for s in sessions)
+        return {"toys_created": len(id_map), "sessions_created": sessions_created}
 
-            sessions_created = 0
-            for session in sessions:
-                started_at = session.get("started_at")
-                entries = session.get("entries")
-                if not started_at or not isinstance(entries, list) or not entries:
-                    raise drf_serializers.ValidationError(
-                        "Each session must have 'started_at' and a non-empty 'entries' array."
-                    )
-                resolved_entries = []
-                for entry in entries:
-                    local = entry.get("toy_id")
-                    if local not in id_map:
-                        raise drf_serializers.ValidationError(
-                            f"Session entry references unknown toy_id {local!r}."
-                        )
-                    resolved_entries.append(
-                        models.ToySessionEntry(
-                            toy_id=id_map[local],
-                            involvement=entry.get("involvement"),
-                        )
-                    )
-                new_session = models.Session.objects.create(started_at=started_at)
-                for e in resolved_entries:
-                    e.session = new_session
-                models.ToySessionEntry.objects.bulk_create(resolved_entries)
-                sessions_created += 1
+    @staticmethod
+    def _import_toy(item: dict, id_map: dict[int, int]) -> None:
+        local_id = item.get("_id")
+        if not isinstance(local_id, int):
+            raise drf_serializers.ValidationError("Each v2 toy must have an integer '_id'.")
+        payload_for_toy = {k: v for k, v in item.items() if k != "_id"}
+        toy = _save_toy(payload_for_toy)
+        id_map[local_id] = toy.pk
 
-        return {"toys_created": toys_created, "sessions_created": sessions_created}
+    @staticmethod
+    def _import_session(session: dict, id_map: dict[int, int]) -> int:
+        started_at = session.get("started_at")
+        entries = session.get("entries")
+        if not started_at or not isinstance(entries, list) or not entries:
+            raise drf_serializers.ValidationError(
+                "Each session must have 'started_at' and a non-empty 'entries' array."
+            )
+        resolved = [ExportV2._resolve_entry(e, id_map) for e in entries]
+        new_session = models.Session.objects.create(started_at=started_at)
+        for e in resolved:
+            e.session = new_session
+        models.ToySessionEntry.objects.bulk_create(resolved)
+        return 1
+
+    @staticmethod
+    def _resolve_entry(entry: dict, id_map: dict[int, int]) -> models.ToySessionEntry:
+        local = entry.get("toy_id")
+        if local not in id_map:
+            raise drf_serializers.ValidationError(
+                f"Session entry references unknown toy_id {local!r}."
+            )
+        return models.ToySessionEntry(
+            toy_id=id_map[local],
+            involvement=entry.get("involvement"),
+        )
+
+
+def _require_list(payload: dict, key: str, optional: bool = False) -> list:
+    value = payload.get(key, [] if optional else None)
+    if not isinstance(value, list):
+        raise drf_serializers.ValidationError(f"Expected a '{key}' array.")
+    return value
+
+
+def _save_toy(payload: dict) -> models.Toy:
+    s = ToySerializer(data=payload)
+    s.is_valid(raise_exception=True)
+    return s.save()
 
 
 def latest() -> type[ExportVersion]:
