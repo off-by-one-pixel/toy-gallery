@@ -63,34 +63,32 @@ const legendGradient = (hue: number): string => {
   return `linear-gradient(to right, ${stops.join(', ')})`;
 };
 
+const extent = (values: number[]): { min: number; max: number } =>
+  values.length === 0
+    ? { min: 0, max: 0 }
+    : { min: Math.min(...values), max: Math.max(...values) };
+
+const pluck = (
+  days: ActivityDay[],
+  pick: (d: ActivityDay) => number | null | undefined,
+): number[] => days.map(pick).filter((v): v is number => v != null);
+
 export default function ActivityTracker({ days }: Props) {
   const { byDate, startDate, endDate, lenMin, lenMax, circMin, circMax } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const start = new Date(today.getTime() - (WINDOW_DAYS - 1) * MS_PER_DAY);
     const map: SessionDayMap = new Map(days.map((d) => [d.date, d]));
-    let lMax = 0;
-    let cMax = 0;
-    let lMin = Infinity;
-    let cMin = Infinity;
-    for (const d of days) {
-      if (d.maxInsertableLength != null) {
-        if (d.maxInsertableLength > lMax) lMax = d.maxInsertableLength;
-        if (d.maxInsertableLength < lMin) lMin = d.maxInsertableLength;
-      }
-      if (d.maxCircumference != null) {
-        if (d.maxCircumference > cMax) cMax = d.maxCircumference;
-        if (d.maxCircumference < cMin) cMin = d.maxCircumference;
-      }
-    }
+    const lengthRange = extent(pluck(days, (d) => d.maxInsertableLength));
+    const circRange = extent(pluck(days, (d) => d.maxCircumference));
     return {
       byDate: map,
       startDate: start,
       endDate: today,
-      lenMin: Number.isFinite(lMin) ? lMin : 0,
-      lenMax: lMax,
-      circMin: Number.isFinite(cMin) ? cMin : 0,
-      circMax: cMax,
+      lenMin: lengthRange.min,
+      lenMax: lengthRange.max,
+      circMin: circRange.min,
+      circMax: circRange.max,
     };
   }, [days]);
 
