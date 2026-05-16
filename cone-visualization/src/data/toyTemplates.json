@@ -1,0 +1,88 @@
+[
+  {
+    "id": "minimal",
+    "name": "Minimal",
+    "description": "Straight cylinder. A blank slate already at the right size.",
+    "totalLength": 120,
+    "insertableLength": 120,
+    "circumference": 125.66,
+    "shape": {
+      "topSectionShape": "FLAT",
+      "bottomSectionShape": "FLAT",
+      "sections": [
+        { "id": 0, "order": 0, "diameter": 40, "height": 120 }
+      ]
+    }
+  },
+  {
+    "id": "slim-cone",
+    "name": "Slim cone",
+    "description": "Tapered from a wide base to a narrow tip.",
+    "totalLength": 130,
+    "insertableLength": 120,
+    "circumference": 125.66,
+    "shape": {
+      "topSectionShape": "CONE",
+      "bottomSectionShape": "FLAT",
+      "sections": [
+        { "id": 0, "order": 0, "diameter": 40, "height": 40 },
+        { "id": 1, "order": 1, "diameter": 32, "height": 50 },
+        { "id": 2, "order": 2, "diameter": 20, "height": 30 }
+      ]
+    }
+  },
+  {
+    "id": "bulbous",
+    "name": "Bulbous",
+    "description": "Pronounced widest point mid-height, tapered both ends.",
+    "totalLength": 135,
+    "insertableLength": 120,
+    "circumference": 125.66,
+    "shape": {
+      "topSectionShape": "EGG",
+      "bottomSectionShape": "FLAT",
+      "sections": [
+        { "id": 0, "order": 0, "diameter": 26, "height": 25 },
+        { "id": 1, "order": 1, "diameter": 32, "height": 30 },
+        { "id": 2, "order": 2, "diameter": 40, "height": 35 },
+        { "id": 3, "order": 3, "diameter": 26, "height": 30 }
+      ]
+    }
+  },
+  {
+    "id": "egg-tip",
+    "name": "Egg tip",
+    "description": "Slim shaft with a bulbous, rounded head.",
+    "totalLength": 130,
+    "insertableLength": 120,
+    "circumference": 125.66,
+    "shape": {
+      "topSectionShape": "EGG",
+      "bottomSectionShape": "FLAT",
+      "sections": [
+        { "id": 0, "order": 0, "diameter": 30, "height": 40 },
+        { "id": 1, "order": 1, "diameter": 32, "height": 50 },
+        { "id": 2, "order": 2, "diameter": 40, "height": 30 }
+      ]
+    }
+  },
+  {
+    "id": "stepped",
+    "name": "Stepped",
+    "description": "Alternating wider and narrower segments along the shaft.",
+    "totalLength": 130,
+    "insertableLength": 120,
+    "circumference": 125.66,
+    "shape": {
+      "topSectionShape": "EGG",
+      "bottomSectionShape": "FLAT",
+      "sections": [
+        { "id": 0, "order": 0, "diameter": 40, "height": 25 },
+        { "id": 1, "order": 1, "diameter": 28, "height": 25 },
+        { "id": 2, "order": 2, "diameter": 40, "height": 25 },
+        { "id": 3, "order": 3, "diameter": 28, "height": 25 },
+        { "id": 4, "order": 4, "diameter": 32, "height": 20 }
+      ]
+    }
+  }
+]

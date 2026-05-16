@@ -3,10 +3,13 @@
 import { useMemo, useState } from 'react';
 import { ToyEditor, useToyStore } from 'cone-editor';
 import type { StyleOption, Toy as EditorToy } from 'cone-editor';
-import { Alert, Button, ColorSwatchPicker, Modal, useOverlayState } from '@heroui/react';
+import { Alert, Button, ColorSwatchPicker, Dropdown, Modal, useOverlayState } from '@heroui/react';
 import TextInput from './TextInput';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowDownToLine, ArrowLeft, ArrowUpFromLine, MoreHorizontal } from 'lucide-react';
+import NewToyTemplateStep from './NewToyTemplateStep';
+import TemplateJsonDialog from './TemplateJsonDialog';
 import { createToy, patchToy } from '../services/api';
+import { buildTemplateJson, parseTemplateJson } from '../services/templateIO';
 import { SectionShape, type Toy, type ToyPayload } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
@@ -40,12 +43,14 @@ const NEW_TOY_MM: EditorToy = {
   bottomShape: SectionShape.FLAT,
 };
 
+type Stage = { kind: 'template' } | { kind: 'editor'; initial: EditorToy };
+
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const isEdit = mode.kind === 'edit';
   const source = mode.kind === 'new' ? null : mode.toy;
   const { unit } = useUnit();
 
-  const initial = useMemo<EditorToy>(
+  const sourceInitial = useMemo<EditorToy | null>(
     () =>
       source
         ? {
@@ -56,8 +61,12 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             knownTotalMm: source.totalLength ?? null,
             knownSizeMm: circumferenceToDiameter(source.circumference),
           }
-        : NEW_TOY_MM,
+        : null,
     [source],
+  );
+
+  const [stage, setStage] = useState<Stage>(() =>
+    sourceInitial ? { kind: 'editor', initial: sourceInitial } : { kind: 'template' },
   );
 
   const [brand, setBrand] = useState(source?.brand ?? '');
@@ -74,6 +83,29 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const insertableLengthMm = useToyStore((s) => s.insertableLengthMm);
   const knownTotalMm = useToyStore((s) => s.knownTotalMm);
   const knownSizeMm = useToyStore((s) => s.knownSizeMm);
+  const hydrate = useToyStore((s) => s.hydrate);
+
+  type JsonDialogState = { kind: 'closed' } | { kind: 'export'; text: string } | { kind: 'import' };
+  const [jsonDialog, setJsonDialog] = useState<JsonDialogState>({ kind: 'closed' });
+
+  const openExportJson = () =>
+    setJsonDialog({
+      kind: 'export',
+      text: buildTemplateJson({
+        sections,
+        topShape,
+        bottomShape,
+        insertableLengthMm,
+        knownTotalMm,
+        knownSizeMm,
+      }),
+    });
+
+  const handleJsonImport = (text: string) => {
+    const initial = parseTemplateJson(text);
+    setStage({ kind: 'editor', initial });
+    hydrate(initial);
+  };
 
   const overlayState = useOverlayState({
     defaultOpen: true,
@@ -138,7 +170,11 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     ? `${mode.toy.brand} · ${mode.toy.name}${mode.toy.size ? ` · ${mode.toy.size}` : ''}`
     : mode.kind === 'copy'
       ? `from ${mode.toy.brand} · ${mode.toy.name}`
-      : 'Untitled toy';
+      : stage.kind === 'template'
+        ? 'Pick a starting shape'
+        : 'Untitled toy';
+
+  const isPickingTemplate = stage.kind === 'template';
 
   return (
     <Modal.Root state={overlayState}>
@@ -154,12 +190,41 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                 <span className="ml-2 font-normal text-neutral-500">{title}</span>
               </h2>
               <div className="flex-1" />
+              {!isPickingTemplate && (
+                <Dropdown>
+                  <Dropdown.Trigger>
+                    <Button variant="outline" size="sm" isIconOnly aria-label="More actions" isDisabled={saving}>
+                      <MoreHorizontal size={14} strokeWidth={2} />
+                    </Button>
+                  </Dropdown.Trigger>
+                  <Dropdown.Popover placement="bottom end">
+                    <Dropdown.Menu>
+                      <Dropdown.Item id="export-json" onAction={openExportJson}>
+                        <ActionRow
+                          icon={<ArrowDownToLine size={14} strokeWidth={1.8} />}
+                          label="Export JSON"
+                          description="Copy a template entry for toyTemplates.json"
+                        />
+                      </Dropdown.Item>
+                      <Dropdown.Item id="import-json" onAction={() => setJsonDialog({ kind: 'import' })}>
+                        <ActionRow
+                          icon={<ArrowUpFromLine size={14} strokeWidth={1.8} />}
+                          label="Import JSON"
+                          description="Paste a template entry to replace the current toy"
+                        />
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown.Popover>
+                </Dropdown>
+              )}
               <Button variant="outline" size="sm" isDisabled={saving} onPress={() => overlayState.close()}>
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" isDisabled={saving} onPress={handleSave}>
-                {saving ? 'Saving…' : 'Save'}
-              </Button>
+              {!isPickingTemplate && (
+                <Button variant="primary" size="sm" isDisabled={saving} onPress={handleSave}>
+                  {saving ? 'Saving…' : 'Save'}
+                </Button>
+              )}
             </header>
 
             {error && (
@@ -169,27 +234,48 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             )}
 
             <div className="flex-1 min-h-0">
-              <ToyEditor
-                initialToy={initial}
-                style={style}
-                unit={unit}
-                leadingSlot={
-                  <IdentificationGroup
-                    brand={brand}
-                    name={name}
-                    size={size}
-                    color={color}
-                    onBrand={setBrand}
-                    onName={setName}
-                    onSize={setSize}
-                    onColor={setColor}
-                  />
-                }
-              />
+              {stage.kind === 'template' ? (
+                <NewToyTemplateStep
+                  onPick={(initial) => setStage({ kind: 'editor', initial })}
+                  onSkip={() => setStage({ kind: 'editor', initial: NEW_TOY_MM })}
+                />
+              ) : (
+                <ToyEditor
+                  initialToy={stage.initial}
+                  style={style}
+                  unit={unit}
+                  leadingSlot={
+                    <IdentificationGroup
+                      brand={brand}
+                      name={name}
+                      size={size}
+                      color={color}
+                      onBrand={setBrand}
+                      onName={setName}
+                      onSize={setSize}
+                      onColor={setColor}
+                    />
+                  }
+                />
+              )}
             </div>
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
+      {jsonDialog.kind === 'export' && (
+        <TemplateJsonDialog
+          mode="export"
+          initialText={jsonDialog.text}
+          onClose={() => setJsonDialog({ kind: 'closed' })}
+        />
+      )}
+      {jsonDialog.kind === 'import' && (
+        <TemplateJsonDialog
+          mode="import"
+          onClose={() => setJsonDialog({ kind: 'closed' })}
+          onImport={handleJsonImport}
+        />
+      )}
     </Modal.Root>
   );
 }
@@ -222,6 +308,26 @@ function IdentificationGroup({ brand, name, size, color, onBrand, onName, onSize
         <ColorPicker value={color} onChange={onColor} />
       </FormField>
     </section>
+  );
+}
+
+function ActionRow({
+  icon,
+  label,
+  description,
+}: Readonly<{
+  icon: React.ReactNode;
+  label: React.ReactNode;
+  description: string;
+}>) {
+  return (
+    <span className="flex items-start gap-2.5">
+      <span className="mt-0.5 text-neutral-500">{icon}</span>
+      <span className="flex flex-col">
+        <span className="font-medium">{label}</span>
+        <span className="text-[11px] text-neutral-500">{description}</span>
+      </span>
+    </span>
   );
 }
 
