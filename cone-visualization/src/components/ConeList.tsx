@@ -7,16 +7,18 @@ import { useRouter } from 'next/navigation';
 import { deleteToy, fetchCones } from '../services/api';
 import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { usePasswordModalNav } from '../hooks/nav/usePasswordModalNav';
+import { useToyEditorWizardNav } from '../hooks/nav/useToyEditorWizardNav';
+import { useToyModalNav } from '../hooks/nav/useToyModalNav';
 import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { TOY_ITEM_PLURAL, TOY_ITEM_SINGULAR } from '../labels';
 import { filterToys } from '../services/search';
 import { heightScale } from '../services/scaling';
 import { sortToys } from '../services/sort';
-import CollectionMenu from './CollectionMenu';
 import SearchInput from './SearchInput';
-import SectionTabs from './SectionTabs';
 import SortControl from './SortControl';
+import TopBar from './TopBar';
 import ToyCard from './ToyCard';
 import ToyEditModal from './ToyEditModal';
 import ToyList from './ToyList';
@@ -29,22 +31,33 @@ type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: To
 
 const ConeList = () => {
   const router = useRouter();
+  const toyModal = useToyModalNav();
+  const wizard = useToyEditorWizardNav();
+  const password = usePasswordModalNav();
+
   const [cones, setCones] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastChanged, setLastChanged] = useState(0);
-  const [editorMode, setEditorMode] = useState<EditorMode>({ kind: 'closed' });
-  const [openCardId, setOpenCardId] = useState<number | null>(null);
   const [query, setQuery] = useState('');
+  const [openCardId, setOpenCardId] = useState<number | null>(null);
+  const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
   const { view } = useViewMode();
   const { sort } = useSort();
   const sortedCones = useMemo(() => sortToys(filterToys(cones, query), sort), [cones, sort, query]);
 
+  const editorMode = useMemo<EditorMode>(() => {
+    if (toyModal.kind === 'new') return { kind: 'new' };
+    if ((toyModal.kind === 'edit' || toyModal.kind === 'copy') && toyModal.toyId != null) {
+      const toy = cones.find((t) => t.id === toyModal.toyId);
+      if (toy) return { kind: toyModal.kind, toy };
+    }
+    return { kind: 'closed' };
+  }, [toyModal.kind, toyModal.toyId, cones]);
+
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
-
-  const toggleOpen = (id: number) => setOpenCardId((cur) => (cur === id ? null : id));
 
   const scale = useMemo(() => heightScale(sortedCones), [sortedCones]);
 
@@ -64,25 +77,17 @@ const ConeList = () => {
   };
 
   const handleEditorSaved = () => {
-    setEditorMode({ kind: 'closed' });
+    toyModal.close();
     updateLastChanged();
   };
 
   return (
     <>
-      <div className="bg-neutral-100/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-3 px-4 py-2.5 sm:px-6">
-          <h1 className="m-0">
-            <CollectionMenu
-              onImported={updateLastChanged}
-              subtitle={
-                isLoading ? null : `${cones.length} ${cones.length === 1 ? TOY_ITEM_SINGULAR : TOY_ITEM_PLURAL}`
-              }
-            />
-          </h1>
-          <SectionTabs />
-        </div>
-      </div>
+      <TopBar
+        subtitle={isLoading ? null : `${cones.length} ${cones.length === 1 ? TOY_ITEM_SINGULAR : TOY_ITEM_PLURAL}`}
+        onImported={updateLastChanged}
+        onChangePassword={password.open}
+      />
       <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <div className="w-full sm:w-auto">
@@ -95,7 +100,7 @@ const ConeList = () => {
             <CalendarClock size={14} strokeWidth={1.8} />
             <span className="hidden md:inline">New session</span>
           </Button>
-          <Button variant="primary" size="sm" onPress={() => setEditorMode({ kind: 'new' })}>
+          <Button variant="primary" size="sm" onPress={toyModal.openNew}>
             <Plus size={14} strokeWidth={2.2} />
             <span className="hidden md:inline">New Toy</span>
           </Button>
@@ -117,8 +122,8 @@ const ConeList = () => {
             toys={sortedCones}
             openToyId={openCardId}
             onToggleOpen={toggleOpen}
-            onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
-            onCopy={(t) => setEditorMode({ kind: 'copy', toy: t })}
+            onEdit={(t) => toyModal.openEdit(t.id)}
+            onCopy={(t) => toyModal.openCopy(t.id)}
             onDelete={handleDelete}
           />
         ) : (
@@ -134,14 +139,14 @@ const ConeList = () => {
                   heightRatio={scale(toy)}
                   detailsOpen={openCardId === toy.id}
                   onToggleDetails={() => toggleOpen(toy.id)}
-                  onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
-                  onCopy={(t) => setEditorMode({ kind: 'copy', toy: t })}
+                  onEdit={(t) => toyModal.openEdit(t.id)}
+                  onCopy={(t) => toyModal.openCopy(t.id)}
                   onDelete={handleDelete}
                 />
               ))}
               <button
                 type="button"
-                onClick={() => setEditorMode({ kind: 'new' })}
+                onClick={toyModal.openNew}
                 className="flex min-h-90 items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 text-neutral-500 transition-colors hover:border-blue-500 hover:bg-blue-50/40 hover:text-blue-700"
               >
                 <span className="inline-flex items-center gap-2 font-medium">
@@ -157,7 +162,17 @@ const ConeList = () => {
       </main>
 
       {editorMode.kind !== 'closed' && (
-        <ToyEditModal mode={editorMode} onClose={() => setEditorMode({ kind: 'closed' })} onSaved={handleEditorSaved} />
+        <ToyEditModal
+          mode={editorMode}
+          stage={wizard.stage}
+          step={wizard.step}
+          dialog={wizard.dialog}
+          onStageChange={wizard.goToStage}
+          onStepChange={wizard.goToStep}
+          onDialogChange={(d) => (d ? wizard.openDialog(d) : wizard.closeDialog())}
+          onClose={toyModal.close}
+          onSaved={handleEditorSaved}
+        />
       )}
     </>
   );

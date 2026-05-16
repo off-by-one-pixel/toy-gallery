@@ -23,16 +23,18 @@ import {
   TEMPLATE_SIZE_TITLE,
   templateStepAriaLabel,
 } from '../labels';
+import type { WizardStep } from '../hooks/nav/useToyEditorWizardNav';
 import { templateToEditor } from '../services/converters/template';
 import { TOY_TEMPLATES } from '../services/toyTemplates';
 import type { ToyTemplate } from '../services/types';
 import { circumferenceToDiameter, diameterToCircumference, fromMm, toMm, type Unit } from '../services/units';
 import { useUnit } from '../providers/UnitProvider';
 
-type Step = 'template' | 'size';
 type SizeMode = 'diameter' | 'circumference';
 
 type Props = Readonly<{
+  step: WizardStep;
+  onStepChange: (next: WizardStep) => void;
   onPick: (initial: EditorToy) => void;
   onSkip: () => void;
 }>;
@@ -57,10 +59,9 @@ const parseToMm = (raw: string, unit: Unit): number | null => {
   return v == null ? null : toMm(v, unit);
 };
 
-export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
+export default function NewToyTemplateStep({ step, onStepChange, onPick, onSkip }: Props) {
   const { unit } = useUnit();
 
-  const [step, setStep] = useState<Step>('template');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [totalInput, setTotalInput] = useState('');
   const [insertableInput, setInsertableInput] = useState('');
@@ -118,7 +119,7 @@ export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
       if (canonicalSize != null) setSizeInput(formatForInput(canonicalSize, unit));
     }
     setSelectedId(id);
-    setStep('size');
+    onStepChange('size');
   };
 
   const handleContinue = () => {
@@ -147,7 +148,7 @@ export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
           onInsertableChange={handleInsertableChange}
           onSizeChange={setSizeInput}
           onSizeModeChange={handleSizeMode}
-          onBack={() => setStep('template')}
+          onBack={() => onStepChange('template')}
           onContinue={handleContinue}
         />
       )}
@@ -155,7 +156,7 @@ export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
   );
 }
 
-function StepHeader({ step }: Readonly<{ step: Step }>) {
+function StepHeader({ step }: Readonly<{ step: WizardStep }>) {
   const stepNumber = step === 'template' ? 1 : 2;
   const title = step === 'template' ? TEMPLATE_PICKER_TITLE : TEMPLATE_SIZE_TITLE;
   const subtitle = step === 'template' ? TEMPLATE_PICKER_SUBTITLE : TEMPLATE_SIZE_SUBTITLE;

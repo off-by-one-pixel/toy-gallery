@@ -12,6 +12,7 @@ import { toyShapeToEditor } from '../services/converters/toyShape';
 import { heightScale } from '../services/scaling';
 import { Involvement, type ActivityDay, type Session, type SessionEntry, type Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { usePasswordModalNav } from '../hooks/nav/usePasswordModalNav';
 import { useUnit } from '../providers/UnitProvider';
 import { formatValue } from '../services/units';
 import UnitToggle from './UnitToggle';
@@ -29,8 +30,7 @@ import {
   SESSIONS_RECORDED,
 } from '../labels';
 import ActivityTracker from './ActivityTracker';
-import CollectionMenu from './CollectionMenu';
-import SectionTabs from './SectionTabs';
+import TopBar from './TopBar';
 
 type FilterKey = 'all' | 'week' | 'month';
 
@@ -73,6 +73,7 @@ const isWithin = (iso: string, days: number) => {
 
 export default function SessionList() {
   const router = useRouter();
+  const password = usePasswordModalNav();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
   const [activity, setActivity] = useState<ActivityDay[]>([]);
@@ -116,17 +117,11 @@ export default function SessionList() {
 
   return (
     <>
-      <div className="bg-neutral-100/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-3 px-4 py-2.5 sm:px-6">
-          <h1 className="m-0">
-            <CollectionMenu
-              onImported={() => {}}
-              subtitle={isLoading ? null : `${sessions.length} ${SESSIONS_RECORDED}`}
-            />
-          </h1>
-          <SectionTabs />
-        </div>
-      </div>
+      <TopBar
+        subtitle={isLoading ? null : `${sessions.length} ${SESSIONS_RECORDED}`}
+        onImported={() => {}}
+        onChangePassword={password.open}
+      />
       <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <div className="inline-flex gap-0.5 rounded-lg bg-neutral-200/70 p-0.5">

@@ -8,16 +8,15 @@ import { APP_COMMIT_SHA, APP_VERSION } from '../config';
 import { deleteCollection, downloadExport, importFromFile } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../providers/AuthProvider';
-import ChangePasswordModal from './ChangePasswordModal';
 
 type Props = Readonly<{
   onImported: () => void;
+  onChangePassword: () => void;
   subtitle?: React.ReactNode;
 }>;
 
-export default function CollectionMenu({ onImported, subtitle }: Props) {
+export default function CollectionMenu({ onImported, onChangePassword, subtitle }: Props) {
   const [busy, setBusy] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const runAction = useAsyncAction();
   const { username, logout } = useAuth();
@@ -97,7 +96,7 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
                 description="Permanently remove all toys and sessions"
               />
             </Dropdown.Item>
-            <Dropdown.Item id="change-password" onAction={() => setChangingPassword(true)}>
+            <Dropdown.Item id="change-password" onAction={onChangePassword}>
               <MenuRow
                 icon={<KeyRound size={14} strokeWidth={1.8} />}
                 label="Change password"
@@ -130,8 +129,6 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
           if (file) handleImportFile(file);
         }}
       />
-
-      {changingPassword && <ChangePasswordModal onClose={() => setChangingPassword(false)} />}
     </>
   );
 }
