@@ -23,7 +23,7 @@ import {
   TEMPLATE_SIZE_TITLE,
   templateStepAriaLabel,
 } from '../labels';
-import { scaleTemplate } from '../services/templateScaling';
+import { templateToEditor } from '../services/converters/template';
 import { TOY_TEMPLATES } from '../services/toyTemplates';
 import type { ToyTemplate } from '../services/types';
 import { circumferenceToDiameter, diameterToCircumference, fromMm, toMm, type Unit } from '../services/units';
@@ -123,7 +123,7 @@ export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
 
   const handleContinue = () => {
     if (!selectedTemplate || totalMm == null || maxDiameterMm == null) return;
-    onPick(scaleTemplate(selectedTemplate, totalMm, maxDiameterMm));
+    onPick(templateToEditor({ template: selectedTemplate, totalMm, maxDiameterMm }));
   };
 
   return (
@@ -250,7 +250,12 @@ type TemplateCardProps = Readonly<{
 
 function TemplateCard({ template, selected, onSelect }: TemplateCardProps) {
   const previewToy = useMemo<EditorToy>(
-    () => scaleTemplate(template, template.totalLength, circumferenceToDiameter(template.circumference) ?? 1),
+    () =>
+      templateToEditor({
+        template,
+        totalMm: template.totalLength,
+        maxDiameterMm: circumferenceToDiameter(template.circumference) ?? 1,
+      }),
     [template],
   );
 
@@ -321,7 +326,7 @@ function SizeForm({
 }: SizeFormProps) {
   const previewToy = useMemo<EditorToy | null>(() => {
     if (!template || totalMm == null || maxDiameterMm == null) return null;
-    return scaleTemplate(template, totalMm, maxDiameterMm);
+    return templateToEditor({ template, totalMm, maxDiameterMm });
   }, [template, totalMm, maxDiameterMm]);
 
   const canContinue = template != null && totalMm != null && insertableMm != null && maxDiameterMm != null;

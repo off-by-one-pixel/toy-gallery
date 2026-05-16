@@ -17,11 +17,12 @@ import {
   TEMPLATE_NEW_TOY_HEADER_TITLE,
 } from '../labels';
 import { createToy, patchToy } from '../services/api';
-import { buildTemplateJson, parseTemplateJson } from '../services/templateIO';
-import { SectionShape, type Toy, type ToyPayload } from '../services/types';
+import { editorToPayload, editorToTemplateJson } from '../services/converters/editor';
+import { templateJsonToEditor } from '../services/converters/templateJson';
+import { toyToEditor } from '../services/converters/toy';
+import { SectionShape, type Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
-import { circumferenceToDiameter, diameterToCircumference } from '../services/units';
 
 type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
@@ -58,20 +59,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const source = mode.kind === 'new' ? null : mode.toy;
   const { unit } = useUnit();
 
-  const sourceInitial = useMemo<EditorToy | null>(
-    () =>
-      source
-        ? {
-            sections: source.shape.sections.map((s) => ({ ...s })),
-            topShape: source.shape.topSectionShape ?? SectionShape.FLAT,
-            bottomShape: source.shape.bottomSectionShape ?? SectionShape.FLAT,
-            insertableLengthMm: source.insertableLength ?? null,
-            knownTotalMm: source.totalLength ?? null,
-            knownSizeMm: circumferenceToDiameter(source.circumference),
-          }
-        : null,
-    [source],
-  );
+  const sourceInitial = useMemo<EditorToy | null>(() => (source ? toyToEditor(source) : null), [source]);
 
   const [stage, setStage] = useState<Stage>(() =>
     sourceInitial ? { kind: 'editor', initial: sourceInitial } : { kind: 'template' },
@@ -96,21 +84,19 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   type JsonDialogState = { kind: 'closed' } | { kind: 'export'; text: string } | { kind: 'import' };
   const [jsonDialog, setJsonDialog] = useState<JsonDialogState>({ kind: 'closed' });
 
-  const openExportJson = () =>
-    setJsonDialog({
-      kind: 'export',
-      text: buildTemplateJson({
-        sections,
-        topShape,
-        bottomShape,
-        insertableLengthMm,
-        knownTotalMm,
-        knownSizeMm,
-      }),
-    });
+  const editorState = {
+    sections,
+    topShape,
+    bottomShape,
+    insertableLengthMm,
+    knownTotalMm,
+    knownSizeMm,
+  };
+
+  const openExportJson = () => setJsonDialog({ kind: 'export', text: editorToTemplateJson(editorState) });
 
   const handleJsonImport = (text: string) => {
-    const initial = parseTemplateJson(text);
+    const initial = templateJsonToEditor(text);
     setStage({ kind: 'editor', initial });
     hydrate(initial);
   };
@@ -138,29 +124,23 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
       setError('At least one section is required.');
       return;
     }
-    const payload: ToyPayload = {
-      brand: brand.trim(),
-      name: name.trim(),
-      size: size.trim(),
-      color,
-      insertableLength: insertableLengthMm,
-      totalLength: knownTotalMm,
-      circumference: diameterToCircumference(knownSizeMm),
-      shape: {
-        topSectionShape: topShape,
-        bottomSectionShape: bottomShape,
-        sections: sections.map(({ id: _id, touched: _touched, ...s }, idx) => ({
-          ...s,
-          order: idx,
-          circumference: s.circumference ?? null,
-        })),
+    const payload = editorToPayload({
+      state: editorState,
+      identity: {
+        brand: brand.trim(),
+        name: name.trim(),
+        size: size.trim(),
+        color,
       },
-      ...(mode.kind === 'copy' && {
-        datePurchased: mode.toy.datePurchased ?? null,
-        retired: mode.toy.retired,
-        customAttributes: mode.toy.customAttributes,
-      }),
-    };
+      extras:
+        mode.kind === 'copy'
+          ? {
+              datePurchased: mode.toy.datePurchased ?? null,
+              retired: mode.toy.retired,
+              customAttributes: mode.toy.customAttributes,
+            }
+          : undefined,
+    });
     await runAction(
       async () => {
         if (mode.kind === 'edit') await patchToy(mode.toy.id, payload);
