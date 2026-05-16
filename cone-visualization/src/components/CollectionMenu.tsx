@@ -7,21 +7,18 @@ import { ChevronDown, Download, KeyRound, LogOut, Trash2, Upload } from 'lucide-
 import { APP_COMMIT_SHA, APP_VERSION } from '../config';
 import { deleteCollection, downloadExport, importFromFile } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
-import { useEnumParam, useUrlUpdate } from '../hooks/useUrlNav';
 import { useAuth } from '../providers/AuthProvider';
-import ChangePasswordModal from './ChangePasswordModal';
 
 type Props = Readonly<{
   onImported: () => void;
+  onChangePassword: () => void;
   subtitle?: React.ReactNode;
 }>;
 
-export default function CollectionMenu({ onImported, subtitle }: Props) {
+export default function CollectionMenu({ onImported, onChangePassword, subtitle }: Props) {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const runAction = useAsyncAction();
-  const updateUrl = useUrlUpdate();
-  const changingPassword = useEnumParam('modal', ['password'] as const) === 'password';
   const { username, logout } = useAuth();
 
   const handleExport = () =>
@@ -99,7 +96,7 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
                 description="Permanently remove all toys and sessions"
               />
             </Dropdown.Item>
-            <Dropdown.Item id="change-password" onAction={() => updateUrl({ modal: 'password' })}>
+            <Dropdown.Item id="change-password" onAction={onChangePassword}>
               <MenuRow
                 icon={<KeyRound size={14} strokeWidth={1.8} />}
                 label="Change password"
@@ -132,8 +129,6 @@ export default function CollectionMenu({ onImported, subtitle }: Props) {
           if (file) handleImportFile(file);
         }}
       />
-
-      {changingPassword && <ChangePasswordModal onClose={() => updateUrl({ modal: null })} />}
     </>
   );
 }

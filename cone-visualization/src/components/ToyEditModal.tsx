@@ -22,13 +22,19 @@ import { templateJsonToEditor } from '../services/converters/templateJson';
 import { toyToEditor } from '../services/converters/toy';
 import { SectionShape, type Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
-import { useEnumParam, useUrlUpdate } from '../hooks/useUrlNav';
+import type { WizardDialog, WizardStage, WizardStep } from '../hooks/nav/useToyEditorWizardNav';
 import { useUnit } from '../providers/UnitProvider';
 
 type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
 type Props = Readonly<{
   mode: Mode;
+  stage: WizardStage;
+  step: WizardStep;
+  dialog: WizardDialog | null;
+  onStageChange: (next: WizardStage) => void;
+  onStepChange: (next: WizardStep) => void;
+  onDialogChange: (next: WizardDialog | null) => void;
   onClose: () => void;
   onSaved: () => void;
 }>;
@@ -53,25 +59,26 @@ const NEW_TOY_MM: EditorToy = {
   bottomShape: SectionShape.FLAT,
 };
 
-const STAGE_VALUES = ['template', 'editor'] as const;
-type StageKind = (typeof STAGE_VALUES)[number];
-const DIALOG_VALUES = ['export', 'import'] as const;
-type DialogKind = (typeof DIALOG_VALUES)[number];
-
-export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
+export default function ToyEditModal({
+  mode,
+  stage,
+  step,
+  dialog,
+  onStageChange,
+  onStepChange,
+  onDialogChange,
+  onClose,
+  onSaved,
+}: Props) {
   const isEdit = mode.kind === 'edit';
   const source = mode.kind === 'new' ? null : mode.toy;
   const { unit } = useUnit();
-  const updateUrl = useUrlUpdate();
 
   const sourceInitial = useMemo<EditorToy | null>(() => (source ? toyToEditor(source) : null), [source]);
 
-  // For new mode the stage is URL-driven (browser back navigates between
-  // template-picker and editor). Edit / copy modes always sit in the
-  // editor stage — the picker doesn't apply.
-  const urlStage = useEnumParam<StageKind>('stage', STAGE_VALUES);
-  const stageKind: StageKind = mode.kind === 'new' ? (urlStage ?? 'template') : 'editor';
-  const dialog = useEnumParam<DialogKind>('dialog', DIALOG_VALUES);
+  // Edit / copy modes always sit in the editor stage — the picker
+  // doesn't apply, so we ignore an inbound `stage` other than 'editor'.
+  const effectiveStage: WizardStage = mode.kind === 'new' ? stage : 'editor';
 
   // Initial seed for the editor: source toy on edit/copy; otherwise the
   // last thing the user picked in the template wizard (template, blank,
@@ -107,18 +114,20 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
 
   const goToEditor = (next: EditorToy) => {
     setPickedInitial(next);
-    updateUrl({ stage: 'editor', step: null, dialog: null });
+    onStageChange('editor');
+    onDialogChange(null);
   };
 
-  const openExportJson = () => updateUrl({ dialog: 'export' });
-  const openImportJson = () => updateUrl({ dialog: 'import' });
-  const closeJsonDialog = () => updateUrl({ dialog: null });
+  const openExportJson = () => onDialogChange('export');
+  const openImportJson = () => onDialogChange('import');
+  const closeJsonDialog = () => onDialogChange(null);
 
   const handleJsonImport = (text: string) => {
     const next = templateJsonToEditor(text);
     setPickedInitial(next);
     hydrate(next);
-    updateUrl({ stage: 'editor', step: null, dialog: null });
+    onStageChange('editor');
+    onDialogChange(null);
   };
 
   const exportText = useMemo(
@@ -186,11 +195,11 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     ? `${mode.toy.brand} · ${mode.toy.name}${mode.toy.size ? ` · ${mode.toy.size}` : ''}`
     : mode.kind === 'copy'
       ? `from ${mode.toy.brand} · ${mode.toy.name}`
-      : stageKind === 'template'
+      : effectiveStage === 'template'
         ? TEMPLATE_NEW_TOY_HEADER_TITLE
         : 'Untitled toy';
 
-  const isPickingTemplate = stageKind === 'template';
+  const isPickingTemplate = effectiveStage === 'template';
 
   return (
     <Modal.Root state={overlayState}>
@@ -252,8 +261,13 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             )}
 
             <div className="flex-1 min-h-0">
-              {stageKind === 'template' ? (
-                <NewToyTemplateStep onPick={goToEditor} onSkip={() => goToEditor(NEW_TOY_MM)} />
+              {effectiveStage === 'template' ? (
+                <NewToyTemplateStep
+                  step={step}
+                  onStepChange={onStepChange}
+                  onPick={goToEditor}
+                  onSkip={() => goToEditor(NEW_TOY_MM)}
+                />
               ) : (
                 <ToyEditor
                   initialToy={initial}
