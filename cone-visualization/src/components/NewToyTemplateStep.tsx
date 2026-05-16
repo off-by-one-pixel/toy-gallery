@@ -23,13 +23,15 @@ import {
   TEMPLATE_SIZE_TITLE,
   templateStepAriaLabel,
 } from '../labels';
+import { useEnumParam, useUrlUpdate } from '../hooks/useUrlNav';
 import { templateToEditor } from '../services/converters/template';
 import { TOY_TEMPLATES } from '../services/toyTemplates';
 import type { ToyTemplate } from '../services/types';
 import { circumferenceToDiameter, diameterToCircumference, fromMm, toMm, type Unit } from '../services/units';
 import { useUnit } from '../providers/UnitProvider';
 
-type Step = 'template' | 'size';
+const STEP_VALUES = ['template', 'size'] as const;
+type Step = (typeof STEP_VALUES)[number];
 type SizeMode = 'diameter' | 'circumference';
 
 type Props = Readonly<{
@@ -59,8 +61,9 @@ const parseToMm = (raw: string, unit: Unit): number | null => {
 
 export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
   const { unit } = useUnit();
+  const updateUrl = useUrlUpdate();
+  const step: Step = useEnumParam<Step>('step', STEP_VALUES) ?? 'template';
 
-  const [step, setStep] = useState<Step>('template');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [totalInput, setTotalInput] = useState('');
   const [insertableInput, setInsertableInput] = useState('');
@@ -118,7 +121,7 @@ export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
       if (canonicalSize != null) setSizeInput(formatForInput(canonicalSize, unit));
     }
     setSelectedId(id);
-    setStep('size');
+    updateUrl({ step: 'size' });
   };
 
   const handleContinue = () => {
@@ -147,7 +150,7 @@ export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
           onInsertableChange={handleInsertableChange}
           onSizeChange={setSizeInput}
           onSizeModeChange={handleSizeMode}
-          onBack={() => setStep('template')}
+          onBack={() => updateUrl({ step: 'template' })}
           onContinue={handleContinue}
         />
       )}

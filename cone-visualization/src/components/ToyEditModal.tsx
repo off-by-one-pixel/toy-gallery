@@ -22,6 +22,7 @@ import { templateJsonToEditor } from '../services/converters/templateJson';
 import { toyToEditor } from '../services/converters/toy';
 import { SectionShape, type Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useEnumParam, useUrlUpdate } from '../hooks/useUrlNav';
 import { useUnit } from '../providers/UnitProvider';
 
 type Mode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
@@ -52,18 +53,32 @@ const NEW_TOY_MM: EditorToy = {
   bottomShape: SectionShape.FLAT,
 };
 
-type Stage = { kind: 'template' } | { kind: 'editor'; initial: EditorToy };
+const STAGE_VALUES = ['template', 'editor'] as const;
+type StageKind = (typeof STAGE_VALUES)[number];
+const DIALOG_VALUES = ['export', 'import'] as const;
+type DialogKind = (typeof DIALOG_VALUES)[number];
 
 export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const isEdit = mode.kind === 'edit';
   const source = mode.kind === 'new' ? null : mode.toy;
   const { unit } = useUnit();
+  const updateUrl = useUrlUpdate();
 
   const sourceInitial = useMemo<EditorToy | null>(() => (source ? toyToEditor(source) : null), [source]);
 
-  const [stage, setStage] = useState<Stage>(() =>
-    sourceInitial ? { kind: 'editor', initial: sourceInitial } : { kind: 'template' },
-  );
+  // For new mode the stage is URL-driven (browser back navigates between
+  // template-picker and editor). Edit / copy modes always sit in the
+  // editor stage — the picker doesn't apply.
+  const urlStage = useEnumParam<StageKind>('stage', STAGE_VALUES);
+  const stageKind: StageKind = mode.kind === 'new' ? (urlStage ?? 'template') : 'editor';
+  const dialog = useEnumParam<DialogKind>('dialog', DIALOG_VALUES);
+
+  // Initial seed for the editor: source toy on edit/copy; otherwise the
+  // last thing the user picked in the template wizard (template, blank,
+  // or imported JSON), falling back to the legacy three-section default
+  // on a fresh deep-link to stage=editor.
+  const [pickedInitial, setPickedInitial] = useState<EditorToy | null>(null);
+  const initial: EditorToy = sourceInitial ?? pickedInitial ?? NEW_TOY_MM;
 
   const [brand, setBrand] = useState(source?.brand ?? '');
   const [name, setName] = useState(source?.name ?? '');
@@ -81,9 +96,6 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const knownSizeMm = useToyStore((s) => s.knownSizeMm);
   const hydrate = useToyStore((s) => s.hydrate);
 
-  type JsonDialogState = { kind: 'closed' } | { kind: 'export'; text: string } | { kind: 'import' };
-  const [jsonDialog, setJsonDialog] = useState<JsonDialogState>({ kind: 'closed' });
-
   const editorState = {
     sections,
     topShape,
@@ -93,13 +105,29 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     knownSizeMm,
   };
 
-  const openExportJson = () => setJsonDialog({ kind: 'export', text: editorToTemplateJson(editorState) });
+  const goToEditor = (next: EditorToy) => {
+    setPickedInitial(next);
+    updateUrl({ stage: 'editor', step: null, dialog: null });
+  };
+
+  const openExportJson = () => updateUrl({ dialog: 'export' });
+  const openImportJson = () => updateUrl({ dialog: 'import' });
+  const closeJsonDialog = () => updateUrl({ dialog: null });
 
   const handleJsonImport = (text: string) => {
-    const initial = templateJsonToEditor(text);
-    setStage({ kind: 'editor', initial });
-    hydrate(initial);
+    const next = templateJsonToEditor(text);
+    setPickedInitial(next);
+    hydrate(next);
+    updateUrl({ stage: 'editor', step: null, dialog: null });
   };
+
+  const exportText = useMemo(
+    () => (dialog === 'export' ? editorToTemplateJson(editorState) : ''),
+    // editorState is rebuilt every render; the underlying store fields
+    // are the real dependency set.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dialog, sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm],
+  );
 
   const overlayState = useOverlayState({
     defaultOpen: true,
@@ -158,11 +186,11 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     ? `${mode.toy.brand} · ${mode.toy.name}${mode.toy.size ? ` · ${mode.toy.size}` : ''}`
     : mode.kind === 'copy'
       ? `from ${mode.toy.brand} · ${mode.toy.name}`
-      : stage.kind === 'template'
+      : stageKind === 'template'
         ? TEMPLATE_NEW_TOY_HEADER_TITLE
         : 'Untitled toy';
 
-  const isPickingTemplate = stage.kind === 'template';
+  const isPickingTemplate = stageKind === 'template';
 
   return (
     <Modal.Root state={overlayState}>
@@ -196,7 +224,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                           description={TEMPLATE_EXPORT_MENU_DESCRIPTION}
                         />
                       </Dropdown.Item>
-                      <Dropdown.Item id="import-json" onAction={() => setJsonDialog({ kind: 'import' })}>
+                      <Dropdown.Item id="import-json" onAction={openImportJson}>
                         <ActionRow
                           icon={<ArrowUpFromLine size={14} strokeWidth={1.8} />}
                           label={TEMPLATE_IMPORT_MENU_LABEL}
@@ -224,14 +252,11 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
             )}
 
             <div className="flex-1 min-h-0">
-              {stage.kind === 'template' ? (
-                <NewToyTemplateStep
-                  onPick={(initial) => setStage({ kind: 'editor', initial })}
-                  onSkip={() => setStage({ kind: 'editor', initial: NEW_TOY_MM })}
-                />
+              {stageKind === 'template' ? (
+                <NewToyTemplateStep onPick={goToEditor} onSkip={() => goToEditor(NEW_TOY_MM)} />
               ) : (
                 <ToyEditor
-                  initialToy={stage.initial}
+                  initialToy={initial}
                   style={style}
                   unit={unit}
                   leadingSlot={
@@ -252,19 +277,9 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
-      {jsonDialog.kind === 'export' && (
-        <TemplateJsonDialog
-          mode="export"
-          initialText={jsonDialog.text}
-          onClose={() => setJsonDialog({ kind: 'closed' })}
-        />
-      )}
-      {jsonDialog.kind === 'import' && (
-        <TemplateJsonDialog
-          mode="import"
-          onClose={() => setJsonDialog({ kind: 'closed' })}
-          onImport={handleJsonImport}
-        />
+      {dialog === 'export' && <TemplateJsonDialog mode="export" initialText={exportText} onClose={closeJsonDialog} />}
+      {dialog === 'import' && (
+        <TemplateJsonDialog mode="import" onClose={closeJsonDialog} onImport={handleJsonImport} />
       )}
     </Modal.Root>
   );

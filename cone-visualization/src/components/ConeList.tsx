@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { deleteToy, fetchCones } from '../services/api';
 import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useEnumParam, useIntParam, useUrlUpdate } from '../hooks/useUrlNav';
 import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { TOY_ITEM_PLURAL, TOY_ITEM_SINGULAR } from '../labels';
@@ -27,24 +28,54 @@ export type { Toy } from '../services/types';
 
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
+const TOY_MODAL_KINDS = ['new', 'edit', 'copy'] as const;
+type ToyModalKind = (typeof TOY_MODAL_KINDS)[number];
+
+// Keys that together describe an open ToyEditModal. Cleared en bloc when
+// the modal closes so browser-back returns to a clean URL.
+const MODAL_KEYS: Record<string, string | null> = {
+  modal: null,
+  toyId: null,
+  stage: null,
+  step: null,
+  dialog: null,
+};
+
 const ConeList = () => {
   const router = useRouter();
+  const updateUrl = useUrlUpdate();
+  const modalKind = useEnumParam<ToyModalKind>('modal', TOY_MODAL_KINDS);
+  const modalToyId = useIntParam('toyId');
+  const openCardId = useIntParam('details');
+
   const [cones, setCones] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastChanged, setLastChanged] = useState(0);
-  const [editorMode, setEditorMode] = useState<EditorMode>({ kind: 'closed' });
-  const [openCardId, setOpenCardId] = useState<number | null>(null);
   const [query, setQuery] = useState('');
   const { view } = useViewMode();
   const { sort } = useSort();
   const sortedCones = useMemo(() => sortToys(filterToys(cones, query), sort), [cones, sort, query]);
 
+  const editorMode = useMemo<EditorMode>(() => {
+    if (modalKind === 'new') return { kind: 'new' };
+    if ((modalKind === 'edit' || modalKind === 'copy') && modalToyId != null) {
+      const toy = cones.find((t) => t.id === modalToyId);
+      if (toy) return { kind: modalKind, toy };
+    }
+    return { kind: 'closed' };
+  }, [modalKind, modalToyId, cones]);
+
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
 
-  const toggleOpen = (id: number) => setOpenCardId((cur) => (cur === id ? null : id));
+  const openNew = () => updateUrl({ ...MODAL_KEYS, modal: 'new', stage: 'template', step: 'template' });
+  const openEdit = (t: Toy) => updateUrl({ ...MODAL_KEYS, modal: 'edit', toyId: String(t.id) });
+  const openCopy = (t: Toy) => updateUrl({ ...MODAL_KEYS, modal: 'copy', toyId: String(t.id) });
+  const closeModal = () => updateUrl(MODAL_KEYS);
+
+  const toggleOpen = (id: number) => updateUrl({ details: openCardId === id ? null : String(id) });
 
   const scale = useMemo(() => heightScale(sortedCones), [sortedCones]);
 
@@ -64,7 +95,7 @@ const ConeList = () => {
   };
 
   const handleEditorSaved = () => {
-    setEditorMode({ kind: 'closed' });
+    closeModal();
     updateLastChanged();
   };
 
@@ -95,7 +126,7 @@ const ConeList = () => {
             <CalendarClock size={14} strokeWidth={1.8} />
             <span className="hidden md:inline">New session</span>
           </Button>
-          <Button variant="primary" size="sm" onPress={() => setEditorMode({ kind: 'new' })}>
+          <Button variant="primary" size="sm" onPress={openNew}>
             <Plus size={14} strokeWidth={2.2} />
             <span className="hidden md:inline">New Toy</span>
           </Button>
@@ -117,8 +148,8 @@ const ConeList = () => {
             toys={sortedCones}
             openToyId={openCardId}
             onToggleOpen={toggleOpen}
-            onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
-            onCopy={(t) => setEditorMode({ kind: 'copy', toy: t })}
+            onEdit={openEdit}
+            onCopy={openCopy}
             onDelete={handleDelete}
           />
         ) : (
@@ -134,14 +165,14 @@ const ConeList = () => {
                   heightRatio={scale(toy)}
                   detailsOpen={openCardId === toy.id}
                   onToggleDetails={() => toggleOpen(toy.id)}
-                  onEdit={(t) => setEditorMode({ kind: 'edit', toy: t })}
-                  onCopy={(t) => setEditorMode({ kind: 'copy', toy: t })}
+                  onEdit={openEdit}
+                  onCopy={openCopy}
                   onDelete={handleDelete}
                 />
               ))}
               <button
                 type="button"
-                onClick={() => setEditorMode({ kind: 'new' })}
+                onClick={openNew}
                 className="flex min-h-90 items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 text-neutral-500 transition-colors hover:border-blue-500 hover:bg-blue-50/40 hover:text-blue-700"
               >
                 <span className="inline-flex items-center gap-2 font-medium">
@@ -157,7 +188,7 @@ const ConeList = () => {
       </main>
 
       {editorMode.kind !== 'closed' && (
-        <ToyEditModal mode={editorMode} onClose={() => setEditorMode({ kind: 'closed' })} onSaved={handleEditorSaved} />
+        <ToyEditModal mode={editorMode} onClose={closeModal} onSaved={handleEditorSaved} />
       )}
     </>
   );
