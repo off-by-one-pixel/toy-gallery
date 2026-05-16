@@ -7,6 +7,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { buildActivityHeatmap } from '../services/activity';
 import { fetchActivity, fetchCones, fetchSessions } from '../services/api';
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { heightScale } from '../services/scaling';
@@ -83,6 +84,7 @@ export default function SessionList() {
 
   const runInline = useAsyncAction(setError);
   const { unit } = useUnit();
+  const heatmap = useMemo(() => buildActivityHeatmap(activity, unit), [activity, unit]);
 
   useEffect(() => {
     let cancelled = false;
@@ -156,7 +158,7 @@ export default function SessionList() {
         )}
         {!isLoading && (
           <div className="mb-4">
-            <ActivityTracker days={activity} />
+            <ActivityTracker heatmap={heatmap} />
           </div>
         )}
         {isLoading ? (
