@@ -42,6 +42,22 @@ export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
 
 export type ActivityDay = SnakeToCamel<ApiActivityDay>;
 
+// ---------- Toy shape templates ----------
+
+/** Predefined starter shape shown in the "new toy" wizard. The author
+ *  declares canonical `totalLength`, `insertableLength`, and `circumference`
+ *  — the scaler stretches `shape.sections` to the user's target size using
+ *  these as denominators. */
+export type ToyTemplate = Readonly<{
+  id: string;
+  name: string;
+  description?: string;
+  shape: Shape;
+  totalLength: number;
+  insertableLength: number;
+  circumference: number;
+}>;
+
 // ---------- Attribute editor row ----------
 
 /** A single editable row in the custom-attributes editor. `fromSaved`
