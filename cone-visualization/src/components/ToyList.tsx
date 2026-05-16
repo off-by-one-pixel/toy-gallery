@@ -4,7 +4,6 @@ import { useRef } from 'react';
 import { Button, Chip, Tooltip } from '@heroui/react';
 import { ChevronDown, Copy, Pencil, Trash2 } from 'lucide-react';
 import { ThumbnailRender } from 'cone-editor';
-import type { Toy as EditorToy } from 'cone-editor';
 
 import {
   ATTRIBUTES_HEADING,
@@ -17,6 +16,7 @@ import {
 } from '../labels';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
+import { toyShapeToEditor } from '../services/converters/toyShape';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
 import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
@@ -222,11 +222,7 @@ function Thumb({ toy }: Readonly<{ toy: Toy }>) {
     borderColor: '#1f2937',
     color: toy.color || DEFAULT_FILL,
   };
-  const editorToy: EditorToy = {
-    sections: toy.shape.sections,
-    topShape: toy.shape.topSectionShape ?? SectionShape.FLAT,
-    bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
-  };
+  const editorToy = toyShapeToEditor(toy.shape);
   return (
     <div className="flex h-15 w-12 items-end justify-center rounded-md border border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa] p-1">
       <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />

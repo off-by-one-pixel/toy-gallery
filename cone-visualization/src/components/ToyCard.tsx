@@ -3,12 +3,12 @@
 import { useRef } from 'react';
 import { Button, Chip, Tooltip } from '@heroui/react';
 import { ThumbnailRender } from 'cone-editor';
-import type { Toy as EditorToy } from 'cone-editor';
 import { Copy, Pencil, Trash2 } from 'lucide-react';
 import { TOY_ACTION_COPY, TOY_ACTION_DELETE, TOY_ACTION_EDIT } from '../labels';
 import { useUnit } from '../providers/UnitProvider';
+import { toyShapeToEditor } from '../services/converters/toyShape';
 import { formatValue, type Unit } from '../services/units';
-import { SectionShape, type Toy } from '../services/types';
+import { type Toy } from '../services/types';
 import AttributesPanel from './AttributesPanel';
 
 type Props = Readonly<{
@@ -33,11 +33,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
     color: toy.color || DEFAULT_FILL,
   };
 
-  const editorToy: EditorToy = {
-    sections: toy.shape.sections,
-    topShape: toy.shape.topSectionShape ?? SectionShape.FLAT,
-    bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
-  };
+  const editorToy = toyShapeToEditor(toy.shape);
 
   const handleClick = (e: React.MouseEvent) => {
     if (detailsRef.current?.contains(e.target as Node)) return;

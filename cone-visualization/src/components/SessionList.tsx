@@ -3,21 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
 import { ThumbnailRender } from 'cone-editor';
-import type { Toy as EditorToy } from 'cone-editor';
 import { ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { fetchActivity, fetchCones, fetchSessions } from '../services/api';
+import { toyShapeToEditor } from '../services/converters/toyShape';
 import { heightScale } from '../services/scaling';
-import {
-  Involvement,
-  SectionShape,
-  type ActivityDay,
-  type Session,
-  type SessionEntry,
-  type Toy,
-} from '../services/types';
+import { Involvement, type ActivityDay, type Session, type SessionEntry, type Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useUnit } from '../providers/UnitProvider';
 import { formatValue } from '../services/units';
@@ -257,11 +250,7 @@ function MiniToy({
       </div>
     );
   }
-  const editorToy: EditorToy = {
-    sections: toy.shape.sections,
-    topShape: toy.shape.topSectionShape ?? SectionShape.FLAT,
-    bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
-  };
+  const editorToy = toyShapeToEditor(toy.shape);
   const fill = toy.color || '#c7e4ee';
   const isUsed = entry.involvement === Involvement.USED;
   const silhouetteStyle = {

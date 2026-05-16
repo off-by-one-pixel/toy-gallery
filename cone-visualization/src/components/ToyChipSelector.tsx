@@ -2,11 +2,11 @@
 
 import { Chip } from '@heroui/react';
 import { ThumbnailRender } from 'cone-editor';
-import type { Toy as EditorToy } from 'cone-editor';
 import { Check } from 'lucide-react';
 
 import { INVOLVEMENT_LABEL } from '../labels';
-import { Involvement, SectionShape, type Toy } from '../services/types';
+import { toyShapeToEditor } from '../services/converters/toyShape';
+import { Involvement, type Toy } from '../services/types';
 
 type Props = Readonly<{
   toy: Toy;
@@ -42,11 +42,7 @@ const nextInCycle = (current: Involvement | null): Involvement | null => {
 };
 
 export default function ToyChipSelector({ toy, state, onChange }: Props) {
-  const editorToy: EditorToy = {
-    sections: toy.shape.sections,
-    topShape: toy.shape.topSectionShape ?? SectionShape.FLAT,
-    bottomShape: toy.shape.bottomSectionShape ?? SectionShape.FLAT,
-  };
+  const editorToy = toyShapeToEditor(toy.shape);
 
   const silhouetteStyle = {
     borderWidth: 1.25,
