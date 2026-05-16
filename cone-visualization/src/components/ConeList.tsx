@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { deleteToy, fetchCones } from '../services/api';
 import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
-import { useExpandedCardNav } from '../hooks/nav/useExpandedCardNav';
 import { usePasswordModalNav } from '../hooks/nav/usePasswordModalNav';
 import { useToyEditorWizardNav } from '../hooks/nav/useToyEditorWizardNav';
 import { useToyModalNav } from '../hooks/nav/useToyModalNav';
@@ -34,7 +33,6 @@ const ConeList = () => {
   const router = useRouter();
   const toyModal = useToyModalNav();
   const wizard = useToyEditorWizardNav();
-  const cards = useExpandedCardNav();
   const password = usePasswordModalNav();
 
   const [cones, setCones] = useState<Toy[]>([]);
@@ -42,6 +40,8 @@ const ConeList = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastChanged, setLastChanged] = useState(0);
   const [query, setQuery] = useState('');
+  const [openCardId, setOpenCardId] = useState<number | null>(null);
+  const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
   const { view } = useViewMode();
   const { sort } = useSort();
   const sortedCones = useMemo(() => sortToys(filterToys(cones, query), sort), [cones, sort, query]);
@@ -120,8 +120,8 @@ const ConeList = () => {
         ) : view === ViewMode.list ? (
           <ToyList
             toys={sortedCones}
-            openToyId={cards.openCardId}
-            onToggleOpen={cards.toggle}
+            openToyId={openCardId}
+            onToggleOpen={toggleOpen}
             onEdit={(t) => toyModal.openEdit(t.id)}
             onCopy={(t) => toyModal.openCopy(t.id)}
             onDelete={handleDelete}
@@ -137,8 +137,8 @@ const ConeList = () => {
                   key={toy.id}
                   toy={toy}
                   heightRatio={scale(toy)}
-                  detailsOpen={cards.openCardId === toy.id}
-                  onToggleDetails={() => cards.toggle(toy.id)}
+                  detailsOpen={openCardId === toy.id}
+                  onToggleDetails={() => toggleOpen(toy.id)}
                   onEdit={(t) => toyModal.openEdit(t.id)}
                   onCopy={(t) => toyModal.openCopy(t.id)}
                   onDelete={handleDelete}
