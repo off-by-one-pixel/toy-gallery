@@ -6,7 +6,7 @@ import type { StyleOption, Toy as EditorToy } from 'cone-editor';
 import { Alert, Button, ColorSwatchPicker, Dropdown, Modal, useOverlayState } from '@heroui/react';
 import TextInput from './TextInput';
 import { ArrowDownToLine, ArrowLeft, ArrowUpFromLine, MoreHorizontal } from 'lucide-react';
-import NewToyTemplateStep from './NewToyTemplateStep';
+import NewToyTemplateStep from './template/NewToyTemplateStep';
 import TemplateJsonDialog from './TemplateJsonDialog';
 import {
   TEMPLATE_EXPORT_MENU_DESCRIPTION,
