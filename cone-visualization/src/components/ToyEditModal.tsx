@@ -8,6 +8,14 @@ import TextInput from './TextInput';
 import { ArrowDownToLine, ArrowLeft, ArrowUpFromLine, MoreHorizontal } from 'lucide-react';
 import NewToyTemplateStep from './NewToyTemplateStep';
 import TemplateJsonDialog from './TemplateJsonDialog';
+import {
+  TEMPLATE_EXPORT_MENU_DESCRIPTION,
+  TEMPLATE_EXPORT_MENU_LABEL,
+  TEMPLATE_IMPORT_MENU_DESCRIPTION,
+  TEMPLATE_IMPORT_MENU_LABEL,
+  TEMPLATE_MORE_ACTIONS_LABEL,
+  TEMPLATE_NEW_TOY_HEADER_TITLE,
+} from '../labels';
 import { createToy, patchToy } from '../services/api';
 import { buildTemplateJson, parseTemplateJson } from '../services/templateIO';
 import { SectionShape, type Toy, type ToyPayload } from '../services/types';
@@ -171,7 +179,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
     : mode.kind === 'copy'
       ? `from ${mode.toy.brand} · ${mode.toy.name}`
       : stage.kind === 'template'
-        ? 'Pick a starting shape'
+        ? TEMPLATE_NEW_TOY_HEADER_TITLE
         : 'Untitled toy';
 
   const isPickingTemplate = stage.kind === 'template';
@@ -194,7 +202,7 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                 <Dropdown>
                   <Dropdown.Trigger
                     className="button button--outline button--sm button--icon-only inline-flex items-center justify-center"
-                    aria-label="More actions"
+                    aria-label={TEMPLATE_MORE_ACTIONS_LABEL}
                     isDisabled={saving}
                   >
                     <MoreHorizontal size={14} strokeWidth={2} />
@@ -204,15 +212,15 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
                       <Dropdown.Item id="export-json" onAction={openExportJson}>
                         <ActionRow
                           icon={<ArrowDownToLine size={14} strokeWidth={1.8} />}
-                          label="Export JSON"
-                          description="Copy a template entry for toyTemplates.json"
+                          label={TEMPLATE_EXPORT_MENU_LABEL}
+                          description={TEMPLATE_EXPORT_MENU_DESCRIPTION}
                         />
                       </Dropdown.Item>
                       <Dropdown.Item id="import-json" onAction={() => setJsonDialog({ kind: 'import' })}>
                         <ActionRow
                           icon={<ArrowUpFromLine size={14} strokeWidth={1.8} />}
-                          label="Import JSON"
-                          description="Paste a template entry to replace the current toy"
+                          label={TEMPLATE_IMPORT_MENU_LABEL}
+                          description={TEMPLATE_IMPORT_MENU_DESCRIPTION}
                         />
                       </Dropdown.Item>
                     </Dropdown.Menu>

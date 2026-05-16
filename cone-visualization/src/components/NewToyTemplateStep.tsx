@@ -7,6 +7,22 @@ import type { StyleOption, Toy as EditorToy } from 'cone-editor';
 import { ArrowLeft, Check, Plus } from 'lucide-react';
 
 import TextInput from './TextInput';
+import {
+  TEMPLATE_BACK,
+  TEMPLATE_BLANK_DESCRIPTION,
+  TEMPLATE_BLANK_NAME,
+  TEMPLATE_CONTINUE,
+  TEMPLATE_FIELD_CIRCUMFERENCE,
+  TEMPLATE_FIELD_INSERTABLE_LENGTH,
+  TEMPLATE_FIELD_MAX_DIAMETER,
+  TEMPLATE_FIELD_TOTAL_LENGTH,
+  TEMPLATE_PICKED_SHAPE_PREFIX,
+  TEMPLATE_PICKER_SUBTITLE,
+  TEMPLATE_PICKER_TITLE,
+  TEMPLATE_SIZE_SUBTITLE,
+  TEMPLATE_SIZE_TITLE,
+  templateStepAriaLabel,
+} from '../labels';
 import { scaleTemplate } from '../services/templateScaling';
 import { TOY_TEMPLATES } from '../services/toyTemplates';
 import type { ToyTemplate } from '../services/types';
@@ -141,11 +157,8 @@ export default function NewToyTemplateStep({ onPick, onSkip }: Props) {
 
 function StepHeader({ step }: Readonly<{ step: Step }>) {
   const stepNumber = step === 'template' ? 1 : 2;
-  const title = step === 'template' ? 'Choose a starting shape' : 'Set the dimensions';
-  const subtitle =
-    step === 'template'
-      ? "We'll scale your pick to the size you enter next."
-      : "We'll scale the shape you picked to these dimensions.";
+  const title = step === 'template' ? TEMPLATE_PICKER_TITLE : TEMPLATE_SIZE_TITLE;
+  const subtitle = step === 'template' ? TEMPLATE_PICKER_SUBTITLE : TEMPLATE_SIZE_SUBTITLE;
   return (
     <div className="border-b border-neutral-200 bg-white px-4 pt-5 pb-4 sm:px-6">
       <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
@@ -159,7 +172,7 @@ function StepHeader({ step }: Readonly<{ step: Step }>) {
 
 function StepIndicator({ current, total }: Readonly<{ current: number; total: number }>) {
   return (
-    <ol className="flex items-center gap-2" aria-label={`Step ${current} of ${total}`}>
+    <ol className="flex items-center gap-2" aria-label={templateStepAriaLabel(current, total)}>
       {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
         const active = n === current;
         const done = n < current;
@@ -222,10 +235,8 @@ function BlankCard({ onClick }: Readonly<{ onClick: () => void }>) {
         </span>
       </div>
       <div className="border-t border-neutral-200 px-3 py-2.5">
-        <div className="text-sm font-semibold text-neutral-900">Start blank</div>
-        <div className="mt-0.5 line-clamp-2 text-xs text-neutral-500">
-          Skip the wizard and start from the default toy.
-        </div>
+        <div className="text-sm font-semibold text-neutral-900">{TEMPLATE_BLANK_NAME}</div>
+        <div className="mt-0.5 line-clamp-2 text-xs text-neutral-500">{TEMPLATE_BLANK_DESCRIPTION}</div>
       </div>
     </button>
   );
@@ -314,7 +325,7 @@ function SizeForm({
   }, [template, totalMm, maxDiameterMm]);
 
   const canContinue = template != null && totalMm != null && insertableMm != null && maxDiameterMm != null;
-  const sizeFieldLabel = sizeMode === 'diameter' ? 'Max diameter' : 'Circumference';
+  const sizeFieldLabel = sizeMode === 'diameter' ? TEMPLATE_FIELD_MAX_DIAMETER : TEMPLATE_FIELD_CIRCUMFERENCE;
 
   return (
     <>
@@ -322,7 +333,7 @@ function SizeForm({
         <div className="mx-auto flex max-w-md flex-col gap-5">
           {template && (
             <div className="text-center text-xs uppercase tracking-[0.08em] text-neutral-500">
-              Shape · <span className="text-neutral-700">{template.name}</span>
+              {TEMPLATE_PICKED_SHAPE_PREFIX} · <span className="text-neutral-700">{template.name}</span>
             </div>
           )}
 
@@ -331,9 +342,9 @@ function SizeForm({
           </div>
 
           <div className="flex flex-col gap-3">
-            <SizeField label="Total length" value={totalInput} onChange={onTotalChange} unit={unit} />
+            <SizeField label={TEMPLATE_FIELD_TOTAL_LENGTH} value={totalInput} onChange={onTotalChange} unit={unit} />
             <SizeField
-              label="Insertable length"
+              label={TEMPLATE_FIELD_INSERTABLE_LENGTH}
               value={insertableInput}
               onChange={onInsertableChange}
               unit={unit}
@@ -352,11 +363,11 @@ function SizeForm({
       <footer className="flex items-center gap-2 border-t border-neutral-200 bg-white px-4 py-3 sm:px-6">
         <Button variant="outline" size="sm" onPress={onBack}>
           <ArrowLeft size={14} strokeWidth={2} />
-          Back
+          {TEMPLATE_BACK}
         </Button>
         <div className="flex-1" />
         <Button variant="primary" size="sm" isDisabled={!canContinue} onPress={onContinue}>
-          Continue
+          {TEMPLATE_CONTINUE}
         </Button>
       </footer>
     </>

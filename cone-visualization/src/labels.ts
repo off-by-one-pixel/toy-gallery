@@ -61,3 +61,49 @@ export const SESSION_CANCEL = 'Cancel';
 export const SESSION_SAVE = 'Save session';
 export const SESSION_SAVED_TOAST = 'Session saved';
 export const SESSION_EDIT_ARROW_LABEL = 'Edit session';
+
+// ---- Toy shape template wizard ----
+
+export const TEMPLATE_PICKER_TITLE = 'Choose a starting shape';
+export const TEMPLATE_PICKER_SUBTITLE = "We'll scale your pick to the size you enter next.";
+export const TEMPLATE_SIZE_TITLE = 'Set the dimensions';
+export const TEMPLATE_SIZE_SUBTITLE = "We'll scale the shape you picked to these dimensions.";
+export const templateStepAriaLabel = (current: number, total: number): string => `Step ${current} of ${total}`;
+
+export const TEMPLATE_BLANK_NAME = 'Start blank';
+export const TEMPLATE_BLANK_DESCRIPTION = 'Skip the wizard and start from the default toy.';
+
+export const TEMPLATE_PICKED_SHAPE_PREFIX = 'Shape';
+
+export const TEMPLATE_FIELD_TOTAL_LENGTH = 'Total length';
+export const TEMPLATE_FIELD_INSERTABLE_LENGTH = 'Insertable length';
+export const TEMPLATE_FIELD_MAX_DIAMETER = 'Max diameter';
+export const TEMPLATE_FIELD_CIRCUMFERENCE = 'Circumference';
+
+export const TEMPLATE_BACK = 'Back';
+export const TEMPLATE_CONTINUE = 'Continue';
+
+// ---- Toy edit modal: template-related strings ----
+
+export const TEMPLATE_NEW_TOY_HEADER_TITLE = 'Pick a starting shape';
+export const TEMPLATE_MORE_ACTIONS_LABEL = 'More actions';
+export const TEMPLATE_EXPORT_MENU_LABEL = 'Export JSON';
+export const TEMPLATE_EXPORT_MENU_DESCRIPTION = 'Copy a template entry for toyTemplates.json';
+export const TEMPLATE_IMPORT_MENU_LABEL = 'Import JSON';
+export const TEMPLATE_IMPORT_MENU_DESCRIPTION = 'Paste a template entry to replace the current toy';
+
+// ---- Template JSON dialog ----
+
+export const TEMPLATE_EXPORT_DIALOG_TITLE = 'Export toy as template JSON';
+export const TEMPLATE_EXPORT_DIALOG_DESCRIPTION =
+  'Copy this JSON into src/data/toyTemplates.json. Fill in id, name, and description before committing.';
+export const TEMPLATE_IMPORT_DIALOG_TITLE = 'Import template JSON';
+export const TEMPLATE_IMPORT_DIALOG_DESCRIPTION =
+  'Paste a ToyTemplate entry and load it into the editor. The current toy is replaced.';
+export const TEMPLATE_IMPORT_PLACEHOLDER = '{ "id": "...", "shape": { ... } }';
+export const TEMPLATE_CLIPBOARD_ERROR = 'Could not access clipboard — select the text and copy manually.';
+export const TEMPLATE_DIALOG_CLOSE = 'Close';
+export const TEMPLATE_DIALOG_CANCEL = 'Cancel';
+export const TEMPLATE_DIALOG_COPY = 'Copy';
+export const TEMPLATE_DIALOG_COPIED = 'Copied';
+export const TEMPLATE_DIALOG_LOAD = 'Load';

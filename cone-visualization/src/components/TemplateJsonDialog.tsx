@@ -4,6 +4,20 @@ import { useState } from 'react';
 import { Alert, Button, Modal, useOverlayState } from '@heroui/react';
 import { Check, Copy } from 'lucide-react';
 
+import {
+  TEMPLATE_CLIPBOARD_ERROR,
+  TEMPLATE_DIALOG_CANCEL,
+  TEMPLATE_DIALOG_CLOSE,
+  TEMPLATE_DIALOG_COPIED,
+  TEMPLATE_DIALOG_COPY,
+  TEMPLATE_DIALOG_LOAD,
+  TEMPLATE_EXPORT_DIALOG_DESCRIPTION,
+  TEMPLATE_EXPORT_DIALOG_TITLE,
+  TEMPLATE_IMPORT_DIALOG_DESCRIPTION,
+  TEMPLATE_IMPORT_DIALOG_TITLE,
+  TEMPLATE_IMPORT_PLACEHOLDER,
+} from '../labels';
+
 type Props = Readonly<{
   mode: 'export' | 'import';
   initialText?: string;
@@ -31,7 +45,7 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      setError('Could not access clipboard — select the text and copy manually.');
+      setError(TEMPLATE_CLIPBOARD_ERROR);
     }
   };
 
@@ -52,12 +66,10 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
           <Modal.Dialog className="flex max-h-[80vh] flex-col overflow-hidden">
             <header className="border-b border-neutral-200 px-4 py-3">
               <h3 className="text-sm font-semibold text-neutral-900">
-                {isExport ? 'Export toy as template JSON' : 'Import template JSON'}
+                {isExport ? TEMPLATE_EXPORT_DIALOG_TITLE : TEMPLATE_IMPORT_DIALOG_TITLE}
               </h3>
               <p className="mt-0.5 text-xs text-neutral-500">
-                {isExport
-                  ? 'Copy this JSON into src/data/toyTemplates.json. Fill in id, name, and description before committing.'
-                  : 'Paste a ToyTemplate entry and load it into the editor. The current toy is replaced.'}
+                {isExport ? TEMPLATE_EXPORT_DIALOG_DESCRIPTION : TEMPLATE_IMPORT_DIALOG_DESCRIPTION}
               </p>
             </header>
 
@@ -73,24 +85,24 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 readOnly={isExport}
-                placeholder={isExport ? undefined : '{ "id": "...", "shape": { ... } }'}
+                placeholder={isExport ? undefined : TEMPLATE_IMPORT_PLACEHOLDER}
                 spellCheck={false}
               />
             </div>
 
             <footer className="flex items-center gap-2 border-t border-neutral-200 px-4 py-3">
               <Button variant="outline" size="sm" onPress={() => overlayState.close()}>
-                {isExport ? 'Close' : 'Cancel'}
+                {isExport ? TEMPLATE_DIALOG_CLOSE : TEMPLATE_DIALOG_CANCEL}
               </Button>
               <div className="flex-1" />
               {isExport ? (
                 <Button variant="primary" size="sm" onPress={handleCopy}>
                   {copied ? <Check size={14} strokeWidth={2.5} /> : <Copy size={14} strokeWidth={2} />}
-                  {copied ? 'Copied' : 'Copy'}
+                  {copied ? TEMPLATE_DIALOG_COPIED : TEMPLATE_DIALOG_COPY}
                 </Button>
               ) : (
                 <Button variant="primary" size="sm" isDisabled={!text.trim()} onPress={handleLoad}>
-                  Load
+                  {TEMPLATE_DIALOG_LOAD}
                 </Button>
               )}
             </footer>
