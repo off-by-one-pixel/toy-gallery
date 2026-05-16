@@ -192,10 +192,12 @@ export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
               <div className="flex-1" />
               {!isPickingTemplate && (
                 <Dropdown>
-                  <Dropdown.Trigger>
-                    <Button variant="outline" size="sm" isIconOnly aria-label="More actions" isDisabled={saving}>
-                      <MoreHorizontal size={14} strokeWidth={2} />
-                    </Button>
+                  <Dropdown.Trigger
+                    className="button button--outline button--sm button--icon-only inline-flex items-center justify-center"
+                    aria-label="More actions"
+                    isDisabled={saving}
+                  >
+                    <MoreHorizontal size={14} strokeWidth={2} />
                   </Dropdown.Trigger>
                   <Dropdown.Popover placement="bottom end">
                     <Dropdown.Menu>
