@@ -8,12 +8,15 @@ import { APP_COMMIT_SHA, APP_VERSION } from '../config';
 import { deleteCollection, downloadExport, importFromFile } from '../services/api';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../providers/AuthProvider';
+import ActionDropdownMenu, { type ActionMenuItem } from './ActionDropdownMenu';
 
 type Props = Readonly<{
   onImported: () => void;
   onChangePassword: () => void;
   subtitle?: React.ReactNode;
 }>;
+
+type MenuItem = ActionMenuItem & Readonly<{ disabledWhenBusy?: boolean }>;
 
 export default function CollectionMenu({ onImported, onChangePassword, subtitle }: Props) {
   const [busy, setBusy] = useState(false);
@@ -59,6 +62,50 @@ export default function CollectionMenu({ onImported, onChangePassword, subtitle 
     });
   };
 
+  const items: MenuItem[] = [
+    {
+      id: 'export',
+      icon: Download,
+      label: 'Export collection',
+      description: 'Download the gallery as JSON',
+      onAction: handleExport,
+      disabledWhenBusy: true,
+    },
+    {
+      id: 'import',
+      icon: Upload,
+      label: 'Import collection',
+      description: 'Add toys from a JSON file',
+      onAction: () => fileRef.current?.click(),
+      disabledWhenBusy: true,
+    },
+    {
+      id: 'delete',
+      icon: Trash2,
+      label: 'Delete collection',
+      description: 'Permanently remove all toys and sessions',
+      onAction: handleDeleteAll,
+      danger: true,
+      disabledWhenBusy: true,
+    },
+    {
+      id: 'change-password',
+      icon: KeyRound,
+      label: 'Change password',
+      description: 'Set a new sign-in password',
+      onAction: onChangePassword,
+    },
+    {
+      id: 'logout',
+      icon: LogOut,
+      label: 'Sign out',
+      description: username ? `Signed in as ${username}` : 'End your session',
+      onAction: logout,
+    },
+  ];
+
+  const disabledKeys = busy ? items.filter((i) => i.disabledWhenBusy).map((i) => i.id) : [];
+
   return (
     <>
       <Dropdown>
@@ -74,43 +121,7 @@ export default function CollectionMenu({ onImported, onChangePassword, subtitle 
           />
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom start">
-          <Dropdown.Menu disabledKeys={busy ? ['export', 'import', 'delete'] : []}>
-            <Dropdown.Item id="export" onAction={handleExport}>
-              <MenuRow
-                icon={<Download size={14} strokeWidth={1.8} />}
-                label="Export collection"
-                description="Download the gallery as JSON"
-              />
-            </Dropdown.Item>
-            <Dropdown.Item id="import" onAction={() => fileRef.current?.click()}>
-              <MenuRow
-                icon={<Upload size={14} strokeWidth={1.8} />}
-                label="Import collection"
-                description="Add toys from a JSON file"
-              />
-            </Dropdown.Item>
-            <Dropdown.Item id="delete" onAction={handleDeleteAll}>
-              <MenuRow
-                icon={<Trash2 size={14} strokeWidth={1.8} className="text-red-500" />}
-                label={<span className="text-red-600">Delete collection</span>}
-                description="Permanently remove all toys and sessions"
-              />
-            </Dropdown.Item>
-            <Dropdown.Item id="change-password" onAction={onChangePassword}>
-              <MenuRow
-                icon={<KeyRound size={14} strokeWidth={1.8} />}
-                label="Change password"
-                description="Set a new sign-in password"
-              />
-            </Dropdown.Item>
-            <Dropdown.Item id="logout" onAction={logout}>
-              <MenuRow
-                icon={<LogOut size={14} strokeWidth={1.8} />}
-                label="Sign out"
-                description={username ? `Signed in as ${username}` : 'End your session'}
-              />
-            </Dropdown.Item>
-          </Dropdown.Menu>
+          <ActionDropdownMenu items={items} disabledKeys={disabledKeys} />
           <div className="px-3 py-1.5 text-center font-mono text-[10px] text-neutral-400">
             {APP_VERSION}
             {APP_COMMIT_SHA && ` · ${APP_COMMIT_SHA}`}
@@ -130,25 +141,5 @@ export default function CollectionMenu({ onImported, onChangePassword, subtitle 
         }}
       />
     </>
-  );
-}
-
-function MenuRow({
-  icon,
-  label,
-  description,
-}: Readonly<{
-  icon: React.ReactNode;
-  label: React.ReactNode;
-  description: string;
-}>) {
-  return (
-    <span className="flex items-start gap-2.5">
-      <span className="mt-0.5 text-neutral-500">{icon}</span>
-      <span className="flex flex-col">
-        <span className="font-medium">{label}</span>
-        <span className="text-[11px] text-neutral-500">{description}</span>
-      </span>
-    </span>
   );
 }
