@@ -13,7 +13,7 @@ export default function BlankCard({ onClick }: Props) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex flex-col overflow-hidden rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50/40 text-left transition-colors hover:border-blue-500 hover:bg-blue-50/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50/40 text-left transition-colors hover:border-blue-500 hover:bg-blue-50/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
     >
       <div className="flex h-44 items-center justify-center">
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-neutral-300 text-neutral-400 transition-colors group-hover:border-blue-500 group-hover:text-blue-600">

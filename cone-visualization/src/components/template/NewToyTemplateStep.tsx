@@ -44,7 +44,7 @@ export default function NewToyTemplateStep({ step, onStepChange, onPick, onSkip 
       <StepHeader step={step} />
 
       {step === 'template' ? (
-        <TemplatePicker selectedId={form.state.selectedId} onSelect={handleSelectTemplate} onSkip={onSkip} />
+        <TemplatePicker onSelect={handleSelectTemplate} onSkip={onSkip} />
       ) : (
         <SizeForm form={form} onBack={() => onStepChange('template')} onContinue={handleContinue} />
       )}

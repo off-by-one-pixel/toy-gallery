@@ -19,13 +19,23 @@ type Props = Readonly<{
   mode: ToyEditMode;
   effectiveStage: WizardStage;
   saving: boolean;
+  onBack: () => void;
   onClose: () => void;
   onSave: () => void;
   onOpenExport: () => void;
   onOpenImport: () => void;
 }>;
 
-export default function Header({ mode, effectiveStage, saving, onClose, onSave, onOpenExport, onOpenImport }: Props) {
+export default function Header({
+  mode,
+  effectiveStage,
+  saving,
+  onBack,
+  onClose,
+  onSave,
+  onOpenExport,
+  onOpenImport,
+}: Props) {
   const isPickingTemplate = effectiveStage === 'template';
   const headerLabel = mode.kind === 'edit' ? 'Edit' : mode.kind === 'copy' ? 'Copy' : 'New toy';
   const title =
@@ -39,7 +49,7 @@ export default function Header({ mode, effectiveStage, saving, onClose, onSave, 
 
   return (
     <header className="flex items-center gap-2 border-b border-neutral-200 px-4 py-2.5">
-      <Button variant="outline" size="sm" isIconOnly aria-label="Back" onPress={onClose}>
+      <Button variant="outline" size="sm" isIconOnly aria-label="Back" onPress={onBack}>
         <ArrowLeft size={14} strokeWidth={2} />
       </Button>
       <h2 className="text-sm font-semibold tracking-tight text-neutral-900">

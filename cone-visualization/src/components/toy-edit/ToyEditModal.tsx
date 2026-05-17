@@ -48,7 +48,6 @@ export default function ToyEditModal({
   const goToEditor = (next: typeof NEW_TOY_MM) => {
     form.setPickedInitial(next);
     onStageChange('editor');
-    onDialogChange(null);
   };
 
   const handleJsonImport = (text: string) => {
@@ -56,7 +55,6 @@ export default function ToyEditModal({
     form.setPickedInitial(next);
     form.hydrate(next);
     onStageChange('editor');
-    onDialogChange(null);
   };
 
   const overlayState = useOverlayState({
@@ -81,6 +79,11 @@ export default function ToyEditModal({
               mode={mode}
               effectiveStage={effectiveStage}
               saving={form.saving}
+              onBack={
+                effectiveStage === 'template' && step === 'size'
+                  ? () => onStepChange('template')
+                  : () => overlayState.close()
+              }
               onClose={() => overlayState.close()}
               onSave={() => form.save(mode, onSaved)}
               onOpenExport={() => onDialogChange('export')}
