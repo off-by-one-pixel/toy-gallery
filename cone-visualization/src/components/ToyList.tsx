@@ -1,19 +1,11 @@
 'use client';
 
 import { useRef } from 'react';
-import { Button, Chip, Tooltip } from '@heroui/react';
-import { ChevronDown, Copy, Pencil, Trash2 } from 'lucide-react';
+import { Chip } from '@heroui/react';
+import { ChevronDown } from 'lucide-react';
 import { ThumbnailRender } from 'cone-editor';
 
-import {
-  ATTRIBUTES_HEADING,
-  SHAPE_LABEL,
-  TOY_ACTION_COPY,
-  TOY_ACTION_DELETE,
-  TOY_ACTION_EDIT,
-  TOY_CIRCUMFERENCE,
-  TOY_CIRCUMFERENCE_SHORT,
-} from '../labels';
+import { ATTRIBUTES_HEADING, SHAPE_LABEL, TOY_CIRCUMFERENCE, TOY_CIRCUMFERENCE_SHORT } from '../labels';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
@@ -21,6 +13,7 @@ import { cycleSort, type Sort, type SortColumn } from '../services/sort';
 import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
 import AttributesPanel from './AttributesPanel';
+import ToyActionButtons from './ToyActionButtons';
 
 const DEFAULT_FILL = '#c7e4ee';
 
@@ -191,24 +184,7 @@ function ToyRow({
           ref={actionsRef}
           className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-white/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
         >
-          <Tooltip delay={200}>
-            <Button variant="outline" size="sm" isIconOnly aria-label={TOY_ACTION_EDIT} onPress={onEdit}>
-              <Pencil size={13} strokeWidth={1.8} />
-            </Button>
-            <Tooltip.Content>{TOY_ACTION_EDIT}</Tooltip.Content>
-          </Tooltip>
-          <Tooltip delay={200}>
-            <Button variant="outline" size="sm" isIconOnly aria-label={TOY_ACTION_COPY} onPress={onCopy}>
-              <Copy size={13} strokeWidth={1.8} />
-            </Button>
-            <Tooltip.Content>{TOY_ACTION_COPY}</Tooltip.Content>
-          </Tooltip>
-          <Tooltip delay={200}>
-            <Button variant="danger-soft" size="sm" isIconOnly aria-label={TOY_ACTION_DELETE} onPress={onDelete}>
-              <Trash2 size={13} strokeWidth={1.8} />
-            </Button>
-            <Tooltip.Content>{TOY_ACTION_DELETE}</Tooltip.Content>
-          </Tooltip>
+          <ToyActionButtons onEdit={onEdit} onCopy={onCopy} onDelete={onDelete} />
         </div>
       </div>
       {open && <ExpandedPanel toy={toy} />}

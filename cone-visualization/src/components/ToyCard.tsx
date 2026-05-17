@@ -1,15 +1,14 @@
 'use client';
 
 import { useRef } from 'react';
-import { Button, Chip, Tooltip } from '@heroui/react';
+import { Chip } from '@heroui/react';
 import { ThumbnailRender } from 'cone-editor';
-import { Copy, Pencil, Trash2 } from 'lucide-react';
-import { TOY_ACTION_COPY, TOY_ACTION_DELETE, TOY_ACTION_EDIT } from '../labels';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { formatValue, type Unit } from '../services/units';
 import { type Toy } from '../services/types';
 import AttributesPanel from './AttributesPanel';
+import ToyActionButtons from './ToyActionButtons';
 
 type Props = Readonly<{
   toy: Toy;
@@ -59,45 +58,12 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
     >
       <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-          <Tooltip delay={200}>
-            <Button
-              variant="outline"
-              size="sm"
-              isIconOnly
-              aria-label={TOY_ACTION_EDIT}
-              onPress={() => onEdit(toy)}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Pencil size={13} strokeWidth={1.8} />
-            </Button>
-            <Tooltip.Content>{TOY_ACTION_EDIT}</Tooltip.Content>
-          </Tooltip>
-          <Tooltip delay={200}>
-            <Button
-              variant="outline"
-              size="sm"
-              isIconOnly
-              aria-label={TOY_ACTION_COPY}
-              onPress={() => onCopy(toy)}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Copy size={13} strokeWidth={1.8} />
-            </Button>
-            <Tooltip.Content>{TOY_ACTION_COPY}</Tooltip.Content>
-          </Tooltip>
-          <Tooltip delay={200}>
-            <Button
-              variant="danger-soft"
-              size="sm"
-              isIconOnly
-              aria-label={TOY_ACTION_DELETE}
-              onPress={() => onDelete(toy)}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Trash2 size={13} strokeWidth={1.8} />
-            </Button>
-            <Tooltip.Content>{TOY_ACTION_DELETE}</Tooltip.Content>
-          </Tooltip>
+          <ToyActionButtons
+            onEdit={() => onEdit(toy)}
+            onCopy={() => onCopy(toy)}
+            onDelete={() => onDelete(toy)}
+            stopPropagation
+          />
         </div>
         <div
           className="absolute inset-x-0 flex items-end justify-center"
