@@ -20,7 +20,7 @@ import SearchInput from './SearchInput';
 import SortControl from './SortControl';
 import TopBar from './TopBar';
 import ToyCard from './ToyCard';
-import ToyEditModal from './ToyEditModal';
+import ToyEditModal from './toy-edit/ToyEditModal';
 import ToyList from './ToyList';
 import UnitToggle from './UnitToggle';
 import ViewToggle from './ViewToggle';
