@@ -1,71 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { patchToy } from '../services/api';
+import { newRow, reconcileRows, sameDict, toDict, toRows } from '../services/attributesEditor';
 import type { AttributeRow, Toy } from '../services/types';
 import { useReportError } from './useAsyncAction';
-
-// ---------- Pure row/dict helpers ----------
-
-let nextRowId = 0;
-const freshRowId = (): number => ++nextRowId;
-
-const toRows = (attrs: Record<string, string> | undefined): AttributeRow[] =>
-  Object.entries(attrs ?? {}).map(([key, value]) => ({
-    rowId: freshRowId(),
-    key,
-    value,
-    fromSaved: true,
-  }));
-
-/** A row is ready to be sent to the server when it has a non-empty key
- *  AND either originated on the server (so clearing the value is a valid
- *  edit) or has a non-empty value (so a half-typed new row stays draft). */
-const isRowReady = (row: AttributeRow): boolean =>
-  row.key.trim() !== '' && (row.fromSaved || row.value !== '');
-
-const toDict = (rows: AttributeRow[]): Record<string, string> => {
-  const out: Record<string, string> = {};
-  for (const row of rows) {
-    if (isRowReady(row)) out[row.key.trim()] = row.value;
-  }
-  return out;
-};
-
-const sameDict = (a: Record<string, string>, b: Record<string, string>): boolean => {
-  const ak = Object.keys(a);
-  if (ak.length !== Object.keys(b).length) return false;
-  return ak.every((k) => a[k] === b[k]);
-};
-
-/** Mirror server state in the UI rows. Reuses rowIds for keys that survived
- *  (so React doesn't unmount inputs the user is still editing), then appends
- *  any user-added rows whose key isn't yet on the server. */
-const reconcileRows = (
-  current: AttributeRow[],
-  serverDict: Record<string, string>,
-): AttributeRow[] => {
-  const byKey = new Map(
-    current.filter((r) => r.fromSaved).map((r) => [r.key.trim(), r] as const),
-  );
-  const out: AttributeRow[] = [];
-  for (const [key, value] of Object.entries(serverDict)) {
-    const existing = byKey.get(key);
-    out.push({ rowId: existing?.rowId ?? freshRowId(), key, value, fromSaved: true });
-  }
-  for (const r of current) {
-    if (!r.fromSaved && serverDict[r.key.trim()] === undefined) out.push(r);
-  }
-  return out;
-};
-
-const newRow = (): AttributeRow => ({
-  rowId: freshRowId(),
-  key: '',
-  value: '',
-  fromSaved: false,
-});
-
-// ---------- Hook ----------
 
 export interface AttributesEditor {
   rows: AttributeRow[];
@@ -85,8 +23,13 @@ export interface AttributesEditor {
  * source of truth.
  */
 export function useAttributesEditor(toy: Toy): AttributesEditor {
+  // Per-instance row id counter — used as React keys, must be stable
+  // across renders for the same logical row.
+  const nextRowId = useRef(0);
+  const freshRowId = useCallback(() => ++nextRowId.current, []);
+
   const initial = toy.customAttributes ?? {};
-  const [rows, setRows] = useState<AttributeRow[]>(() => toRows(initial));
+  const [rows, setRows] = useState<AttributeRow[]>(() => toRows(initial, freshRowId));
 
   const rowsRef = useRef(rows);
   const savedRef = useRef<Record<string, string>>(initial);
@@ -98,9 +41,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   // Mutators write to both state and ref so the next commit reads the
   // latest value even if React hasn't flushed the render yet (typical case
   // when blur fires immediately after onChange).
-  const setRowsSync = (
-    update: AttributeRow[] | ((prev: AttributeRow[]) => AttributeRow[]),
-  ): void => {
+  const setRowsSync = (update: AttributeRow[] | ((prev: AttributeRow[]) => AttributeRow[])): void => {
     const next = typeof update === 'function' ? update(rowsRef.current) : update;
     rowsRef.current = next;
     setRows(next);
@@ -108,16 +49,15 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
 
   // ---------- Save pipeline ----------
 
-  const hasUnsavedChanges = (): boolean =>
-    !sameDict(toDict(rowsRef.current), savedRef.current);
+  const hasUnsavedChanges = (): boolean => !sameDict(toDict(rowsRef.current), savedRef.current);
 
   const applyServerResponse = (fresh: Record<string, string>): void => {
     savedRef.current = fresh;
-    setRowsSync((rs) => reconcileRows(rs, fresh));
+    setRowsSync((rs) => reconcileRows(rs, fresh, freshRowId));
   };
 
   const revertToLastSaved = (): void => {
-    setRowsSync(toRows(savedRef.current));
+    setRowsSync(toRows(savedRef.current, freshRowId));
   };
 
   const commitSave = async (): Promise<void> => {
@@ -149,7 +89,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   const hydrateFromToy = (): void => {
     const fresh = toy.customAttributes ?? {};
     savedRef.current = fresh;
-    setRowsSync(toRows(fresh));
+    setRowsSync(toRows(fresh, freshRowId));
   };
 
   // Re-hydrate when the parent swaps in a different toy. Same-id re-renders
@@ -185,7 +125,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
       void commitSave();
     },
     addRow: () => {
-      setRowsSync((rs) => [...rs, newRow()]);
+      setRowsSync((rs) => [...rs, newRow(freshRowId)]);
     },
     commitChanges: () => {
       void commitSave();
