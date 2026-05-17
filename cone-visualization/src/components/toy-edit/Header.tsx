@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { Button, Dropdown } from '@heroui/react';
 import { ArrowDownToLine, ArrowLeft, ArrowUpFromLine, MoreHorizontal } from 'lucide-react';
 
@@ -14,6 +13,7 @@ import {
 } from '../../labels';
 import type { ToyEditMode } from '../../services/toyEditForm';
 import type { WizardStage } from '../../hooks/nav/useToyEditorWizardNav';
+import ActionDropdownMenu, { type ActionMenuItem } from '../ActionDropdownMenu';
 
 type Props = Readonly<{
   mode: ToyEditMode;
@@ -47,6 +47,23 @@ export default function Header({
           ? TEMPLATE_NEW_TOY_HEADER_TITLE
           : 'Untitled toy';
 
+  const dropdownItems: ActionMenuItem[] = [
+    {
+      id: 'export-json',
+      icon: ArrowDownToLine,
+      label: TEMPLATE_EXPORT_MENU_LABEL,
+      description: TEMPLATE_EXPORT_MENU_DESCRIPTION,
+      onAction: onOpenExport,
+    },
+    {
+      id: 'import-json',
+      icon: ArrowUpFromLine,
+      label: TEMPLATE_IMPORT_MENU_LABEL,
+      description: TEMPLATE_IMPORT_MENU_DESCRIPTION,
+      onAction: onOpenImport,
+    },
+  ];
+
   return (
     <header className="flex items-center gap-2 border-b border-neutral-200 px-4 py-2.5">
       <Button variant="outline" size="sm" isIconOnly aria-label="Back" onPress={onBack}>
@@ -67,22 +84,7 @@ export default function Header({
             <MoreHorizontal size={14} strokeWidth={2} />
           </Dropdown.Trigger>
           <Dropdown.Popover placement="bottom end">
-            <Dropdown.Menu>
-              <Dropdown.Item id="export-json" onAction={onOpenExport}>
-                <ActionRow
-                  icon={<ArrowDownToLine size={14} strokeWidth={1.8} />}
-                  label={TEMPLATE_EXPORT_MENU_LABEL}
-                  description={TEMPLATE_EXPORT_MENU_DESCRIPTION}
-                />
-              </Dropdown.Item>
-              <Dropdown.Item id="import-json" onAction={onOpenImport}>
-                <ActionRow
-                  icon={<ArrowUpFromLine size={14} strokeWidth={1.8} />}
-                  label={TEMPLATE_IMPORT_MENU_LABEL}
-                  description={TEMPLATE_IMPORT_MENU_DESCRIPTION}
-                />
-              </Dropdown.Item>
-            </Dropdown.Menu>
+            <ActionDropdownMenu items={dropdownItems} />
           </Dropdown.Popover>
         </Dropdown>
       )}
@@ -95,25 +97,5 @@ export default function Header({
         </Button>
       )}
     </header>
-  );
-}
-
-function ActionRow({
-  icon,
-  label,
-  description,
-}: Readonly<{
-  icon: ReactNode;
-  label: ReactNode;
-  description: string;
-}>) {
-  return (
-    <span className="flex items-start gap-2.5">
-      <span className="mt-0.5 text-neutral-500">{icon}</span>
-      <span className="flex flex-col">
-        <span className="font-medium">{label}</span>
-        <span className="text-[11px] text-neutral-500">{description}</span>
-      </span>
-    </span>
   );
 }
