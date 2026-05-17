@@ -64,8 +64,17 @@ jobs:
       # (sonar.pullrequest.* needs Developer Edition or higher).
       # Every scan goes against the main project; PR decoration via
       # the GitHub App won't render per-PR reports.
+      #
+      # `sonar.projectVersion=<commit SHA>` stamps each scan with a
+      # unique version so SonarQube's "Previous version" New Code Period
+      # treats every push to main as a fresh boundary. Set the period
+      # mode to "Previous version" in the Sonar UI (Admin → New Code →
+      # Project settings) for this to take effect.
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v3
+        with:
+          args: >
+            -Dsonar.projectVersion=${{ github.sha }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
