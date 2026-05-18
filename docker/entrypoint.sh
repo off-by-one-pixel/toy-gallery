@@ -6,8 +6,9 @@
 #   docker run -p 8000:8000 -v ./data:/data ghcr.io/off-by-one-pixel/toy-gallery
 #
 # All env vars are optional:
-#   DB_URL             database connection string; default sqlite:////data/db.sqlite3
-#   SECRET_KEY         auto-generated to /data/.django_secret_key if unset
+#   DATA_DIR           directory for persistent state (SQLite DB, secret key,
+#                      and migration safety gate archives); default /data
+#   SECRET_KEY         auto-generated to <DATA_DIR>/.django_secret_key if unset
 #   TRUSTED_ORIGINS    comma-separated public origins, e.g. https://your.domain
 #   INITIAL_USERNAME   with INITIAL_PASSWORD bootstraps an admin on first run
 #   INITIAL_PASSWORD   see above
@@ -20,14 +21,13 @@
 
 set -eu
 
-# Persistent state lives here (SQLite DB + auto-generated SECRET_KEY).
-# Mounted as a volume in production; created here so settings_docker stays
-# import-side-effect free and a sibling settings file can import it locally
-# without needing /data to exist.
-mkdir -p /data
+DATA_DIR="${DATA_DIR:-/data}"
+export DATA_DIR
+# Created here so settings_docker can stay import-side-effect free.
+mkdir -p "$DATA_DIR"
 
-echo "[entrypoint] running migrations"
-python manage.py migrate --noinput
+echo "[entrypoint] running migration safety gate"
+python manage.py safe_migrate
 
 echo "[entrypoint] collecting Django static files"
 python manage.py collectstatic --noinput
@@ -35,8 +35,8 @@ python manage.py collectstatic --noinput
 echo "[entrypoint] checking superuser"
 python /app/docker/init_superuser.py
 
-SSL_CERT_PATH="${SSL_CERT_PATH:-/data/certs/cert.pem}"
-SSL_KEY_PATH="${SSL_KEY_PATH:-/data/certs/key.pem}"
+SSL_CERT_PATH="${SSL_CERT_PATH:-$DATA_DIR/certs/cert.pem}"
+SSL_KEY_PATH="${SSL_KEY_PATH:-$DATA_DIR/certs/key.pem}"
 
 if [ -f "$SSL_CERT_PATH" ] && [ -f "$SSL_KEY_PATH" ]; then
   echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} (HTTPS)"

@@ -28,7 +28,7 @@ docker run -d \
 
 Open <http://localhost:8000> and sign in.
 
-### `docker-compose.yml` — SQLite
+### `docker-compose.yml`
 
 ```yaml
 services:
@@ -46,43 +46,11 @@ services:
     restart: unless-stopped
 ```
 
-### `docker-compose.yml` — Postgres
+The container uses an embedded SQLite database; everything it needs to persist lives inside the volume you mount. No separate database container is needed.
 
-```yaml
-services:
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: toys
-      POSTGRES_USER: toys
-      POSTGRES_PASSWORD: toys-pw
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
+### Safe upgrades
 
-  toy-gallery:
-    image: ghcr.io/off-by-one-pixel/toy-gallery:latest
-    depends_on: [db]
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./data:/data
-    environment:
-      DB_URL: postgres://toys:toys-pw@db:5432/toys
-      INITIAL_USERNAME: admin
-      INITIAL_PASSWORD: change-me
-    restart: unless-stopped
-
-volumes:
-  pgdata:
-```
-
-### Supported databases
-
-| Database   | Example `DB_URL`                              |
-|------------|-----------------------------------------------|
-| SQLite     | `sqlite:////data/db.sqlite3` (the default)    |
-| PostgreSQL | `postgres://user:pw@host:5432/dbname`         |
+When you pull a newer image tag, the container runs database migrations automatically on startup behind a safety gate: migrations are applied to a working copy of your database first, and only swapped into place if everything passes. If a migration fails, your live database is untouched — pulling the previous image tag will start normally because nothing changed. See [docs/migration-safety.md](docs/migration-safety.md) for the full contract.
 
 ### Environment variables
 
@@ -90,20 +58,20 @@ All optional — set only what you need.
 
 | Variable           | Default                              | What it does                                                                              |
 |--------------------|--------------------------------------|-------------------------------------------------------------------------------------------|
-| `DB_URL`           | a built-in database in `/data`       | Point at your own database (see _Supported databases_ above for example URLs).            |
+| `DATA_DIR`         | `/data`                              | Where the SQLite database, secret key, and migration archives live inside the container. Change this if you mount your volume somewhere other than `/data`. |
 | `INITIAL_USERNAME` | unset                                | Together with `INITIAL_PASSWORD`, creates an admin account the first time the app starts. |
 | `INITIAL_PASSWORD` | unset                                | Password for the admin above. Change it after first login.                                |
 | `INITIAL_EMAIL`    | empty                                | Optional email for the admin account.                                                     |
 | `TRUSTED_ORIGINS`  | empty                                | Public URLs you'll reach the app from once it's behind HTTPS (comma-separated).           |
-| `SECRET_KEY`       | generated automatically and stored in `/data` | Set this if you'd rather manage the key yourself.                                  |
+| `SECRET_KEY`       | generated automatically and stored in `DATA_DIR` | Set this if you'd rather manage the key yourself.                              |
 | `PORT`             | `8000`                               | Port the app listens on inside the container.                                             |
 | `WORKERS`          | `3`                                  | How many web workers to run. Bump it on bigger machines.                                  |
-| `SSL_CERT_PATH`    | `/data/certs/cert.pem`               | Path inside the container to a TLS certificate. If both this and the key are present, the app serves HTTPS. |
-| `SSL_KEY_PATH`     | `/data/certs/key.pem`                | Path inside the container to the private key matching the certificate above.              |
+| `SSL_CERT_PATH`    | `$DATA_DIR/certs/cert.pem`           | Path inside the container to a TLS certificate. If both this and the key are present, the app serves HTTPS. |
+| `SSL_KEY_PATH`     | `$DATA_DIR/certs/key.pem`            | Path inside the container to the private key matching the certificate above.              |
 
 ### Serving over HTTPS
 
-Drop a certificate and key into a `certs` folder next to your data folder, then start the container as usual:
+Drop a certificate and key into a `certs` folder inside your data folder, then start the container as usual:
 
 ```
 ./data/
