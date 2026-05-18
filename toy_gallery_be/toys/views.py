@@ -109,7 +109,9 @@ class SessionViewSet(viewsets.ModelViewSet):
                 v for v in (SessionDimensions.peak_length(s) for s in day_sessions) if v is not None
             ]
             circs = [
-                v for v in (SessionDimensions.peak_circumference(s) for s in day_sessions) if v is not None
+                v
+                for v in (SessionDimensions.peak_circumference(s) for s in day_sessions)
+                if v is not None
             ]
             days.append(
                 {

@@ -757,7 +757,9 @@ class SessionActivityTests(TestCase):
         # accepts it on create, but using the model directly is cleaner).
         session = models.Session.objects.create(started_at=started_at)
         for e in entries:
-            models.ToySessionEntry.objects.create(session=session, toy_id=e["toy"], involvement=e["involvement"])
+            models.ToySessionEntry.objects.create(
+                session=session, toy_id=e["toy"], involvement=e["involvement"]
+            )
         return session
 
     def test_empty_returns_no_days(self):

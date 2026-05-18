@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import models
@@ -20,20 +20,20 @@ class SessionDimensions:
     """
 
     @staticmethod
-    def _length_entries(session: "models.Session"):
+    def _length_entries(session: models.Session):
         from .models import ToySessionEntry
 
         return [e for e in session.entries.all() if e.involvement == ToySessionEntry.FULLY_INSERTED]
 
     @staticmethod
-    def _circumference_entries(session: "models.Session"):
+    def _circumference_entries(session: models.Session):
         from .models import ToySessionEntry
 
         contributing = (ToySessionEntry.INSERTED, ToySessionEntry.FULLY_INSERTED)
         return [e for e in session.entries.all() if e.involvement in contributing]
 
     @classmethod
-    def peak_length(cls, session: "models.Session") -> Optional[float]:
+    def peak_length(cls, session: models.Session) -> float | None:
         values = [
             e.toy.insertable_length
             for e in cls._length_entries(session)
@@ -42,7 +42,7 @@ class SessionDimensions:
         return max(values) if values else None
 
     @classmethod
-    def peak_circumference(cls, session: "models.Session") -> Optional[float]:
+    def peak_circumference(cls, session: models.Session) -> float | None:
         values = [
             e.toy.circumference
             for e in cls._circumference_entries(session)
