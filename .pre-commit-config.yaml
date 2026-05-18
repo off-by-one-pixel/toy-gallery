@@ -1,0 +1,27 @@
+# Pre-commit hooks run on every `git commit`. Install once per clone with
+# `pre-commit install` (the devcontainer's postCreateCommand handles this).
+#
+# Two scopes:
+#   - Backend Python (toy_gallery_be/) → Ruff lint with auto-fix.
+#   - Frontend TS/TSX (cone-visualization/src/) → Prettier auto-format.
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.4
+    hooks:
+      - id: ruff
+        name: ruff lint (backend)
+        args: [--fix]
+        files: ^toy_gallery_be/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier (frontend)
+        # Run prettier from the project's own node_modules so the version
+        # matches what the dev runs locally via `npm run format`. Prettier
+        # auto-discovers cone-visualization/.prettierrc.json.
+        entry: cone-visualization/node_modules/.bin/prettier --write
+        language: system
+        files: ^cone-visualization/src/.*\.(ts|tsx)$
+        pass_filenames: true
