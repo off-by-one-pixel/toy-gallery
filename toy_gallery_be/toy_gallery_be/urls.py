@@ -16,7 +16,6 @@ Including another URLconf
 """
 
 from pathlib import Path
-from typing import Optional
 
 from django.conf import settings
 from django.contrib import admin
@@ -29,7 +28,7 @@ def health(_request):
     return JsonResponse({"status": "ok"})
 
 
-def _resolve_spa_html(url_path: str, frontend: Path) -> Optional[Path]:
+def _resolve_spa_html(url_path: str, frontend: Path) -> Path | None:
     """Find the static HTML produced by Next.js for an SPA route.
 
     Next.js's `output: 'export'` writes per-route files: ``/sessions`` becomes

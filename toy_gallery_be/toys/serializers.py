@@ -190,7 +190,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         try:
             validate_password(value, user=user)
         except DjangoValidationError as exc:
-            raise serializers.ValidationError(list(exc.messages))
+            raise serializers.ValidationError(list(exc.messages)) from exc
         return value
 
     def save(self, **kwargs):

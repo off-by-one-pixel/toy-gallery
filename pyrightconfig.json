@@ -1,0 +1,20 @@
+{
+  "include": ["toy_gallery_be"],
+  "exclude": [
+    "**/__pycache__",
+    "**/.venv",
+    "**/node_modules",
+    "cone-visualization",
+    "cone_editor"
+  ],
+  "extraPaths": ["toy_gallery_be"],
+  "venvPath": "toy_gallery_be",
+  "venv": ".venv",
+  "pythonVersion": "3.13",
+
+  "reportUnusedImport": "warning",
+  "reportUnusedVariable": "warning",
+  "reportUnusedFunction": "warning",
+  "reportUnusedClass": "warning",
+  "reportUnusedExpression": "warning"
+}

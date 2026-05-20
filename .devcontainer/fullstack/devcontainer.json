@@ -21,7 +21,9 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "bradlc.vscode-tailwindcss",
-        "dsznajder.es7-react-js-snippets"
+        "dsznajder.es7-react-js-snippets",
+        "SonarSource.sonarlint-vscode",
+        "charliermarsh.ruff"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -30,6 +32,6 @@
       }
     }
   },
-  "postCreateCommand": "cd toy_gallery_be && uv sync && cd ../cone-visualization && npm install",
+  "postCreateCommand": "cd toy_gallery_be && uv sync && cd ../cone-visualization && npm install && cd /workspace && pre-commit install",
   "remoteUser": "vscode"
 }

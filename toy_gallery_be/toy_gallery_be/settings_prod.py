@@ -1,6 +1,8 @@
-import dj_database_url
-from .settings import *
 import os
+
+import dj_database_url
+
+from .settings import *
 
 DEBUG = False
 

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,19 +31,39 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "toys",
+]
+
+THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
     "drf_spectacular",
 ]
+
+LOCAL_APPS = [
+    "toys",
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
+# Read endpoints the migration safety gate's smoke test exercises in-process
+# (layer 4). Each is GET'd; any 5xx aborts the deploy. Pick the main list
+# views of each project app — they exercise the serializer + view + ORM
+# surface against the new schema.
+MIGRATION_SMOKE_TEST_PATHS = [
+    "/toys/toys/",
+    "/toys/sessions/",
+]
+
+# Number of recent archives the migration safety gate retains after pruning.
+MIGRATION_ARCHIVE_RETAIN = 5
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -147,8 +168,6 @@ SPECTACULAR_SETTINGS = {
         "CurveAngleEnum": "toys.models.ShapeSection.CURVE_ANGLE_CHOICES",
     },
 }
-
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),

@@ -8,7 +8,8 @@ so adding a new version is just dropping another class in this file.
 
 from __future__ import annotations
 
-from typing import ClassVar, Iterable
+from collections.abc import Iterable
+from typing import ClassVar
 
 from django.db import transaction
 from django.utils import timezone
@@ -17,7 +18,7 @@ from rest_framework import serializers as drf_serializers
 from . import models
 from .serializers import ToySerializer
 
-_REGISTRY: dict[int, type["ExportVersion"]] = {}
+_REGISTRY: dict[int, type[ExportVersion]] = {}
 
 
 class ExportVersion:

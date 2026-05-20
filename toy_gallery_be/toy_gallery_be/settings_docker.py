@@ -1,28 +1,18 @@
-"""Settings for the all-in-one self-hosted Docker image.
-
-The operator brings their own DB and (optionally) admin credentials via env
-vars; everything else is preconfigured. Persistent state — SQLite DB and the
-auto-generated SECRET_KEY — lives under /data, expected to be a volume mount.
-"""
+"""Settings for the all-in-one self-hosted Docker image."""
 
 import os
 from pathlib import Path
-
-import dj_database_url
 
 from .settings import *  # noqa: F401, F403
 
 DEBUG = False
 
-# Single-tenant container — the operator owns the reverse proxy in front, so
-# the container itself accepts any Host header. Set CSRF_TRUSTED_ORIGINS to
-# the public origin once you front it with HTTPS.
+# Container is single-tenant behind the operator's reverse proxy, so accept
+# any Host header. Set CSRF_TRUSTED_ORIGINS to the public origin once fronted
+# by HTTPS.
 ALLOWED_HOSTS = ["*"]
 
-# /data is created by the Docker entrypoint before any python command runs;
-# this module stays import-side-effect free so a local sibling settings file
-# can `from .settings_docker import *` without needing /data to exist.
-DATA_DIR = Path("/data")
+DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 
 
 def _resolve_secret_key() -> str:
@@ -58,10 +48,12 @@ WHITENOISE_ROOT = BASE_DIR / "frontend"  # noqa: F405
 WHITENOISE_INDEX_FILE = True
 MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405
 
+# `_MIGRATION_GATE_DB_OVERRIDE` is set internally by the migration safety
+# gate (toys/migration_gate/) when it spawns a subprocess against a candidate
+# DB; it is not a public configuration surface.
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DB_URL", f"sqlite:///{DATA_DIR}/db.sqlite3"),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.environ.get("_MIGRATION_GATE_DB_OVERRIDE", str(DATA_DIR / "db.sqlite3")),
+    }
 }
