@@ -22,8 +22,9 @@ export const formatMm = (mm: number | null | undefined, unit: Unit): string =>
  *  - `undefined` if the input is non-numeric (caller should ignore)
  *  - a non-negative mm value otherwise */
 export const parseMm = (raw: string, unit: Unit): number | null | undefined => {
-  if (raw === "") return null;
-  const parsed = Number(raw);
+  const trimmed = raw.trim();
+  if (trimmed === "") return null;
+  const parsed = Number(trimmed);
   if (Number.isNaN(parsed)) return undefined;
   return Math.max(0, parsed) * unit.factor;
 };

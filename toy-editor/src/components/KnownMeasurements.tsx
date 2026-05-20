@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { formatMm, parseMm } from "../util/fmt";
 import { useToyStore } from "../toyMachine";
 import { useEditorUnit } from "./unit";
@@ -64,23 +65,25 @@ type NumberFieldProps = {
 
 const NumberField = ({ label, mm, onChangeMm }: NumberFieldProps) => {
   const unit = useEditorUnit();
-  const step = 10 ** -unit.decimals;
-  const display = formatMm(mm, unit);
+  const [draft, setDraft] = useState<string | null>(null);
+  const display = draft ?? formatMm(mm, unit);
 
   return (
     <label className="cone-editor-known-field">
       <span className="cone-editor-known-field-label">{label}</span>
       <span className="cone-editor-known-field-input">
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           value={display}
-          step={step}
-          min={0}
           onChange={(e) => {
-            const parsed = parseMm(e.target.value, unit);
+            const raw = e.target.value;
+            setDraft(raw);
+            const parsed = parseMm(raw, unit);
             if (parsed === undefined) return;
             onChangeMm(parsed);
           }}
+          onBlur={() => setDraft(null)}
         />
         <span className="cone-editor-known-field-unit">{unit.id}</span>
       </span>
