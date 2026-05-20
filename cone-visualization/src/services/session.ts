@@ -1,4 +1,10 @@
-import { SESSION_FILTER_ALL, SESSION_FILTER_MONTH, SESSION_FILTER_WEEK } from '../labels';
+import {
+  SESSION_FILTER_ALL,
+  SESSION_FILTER_MONTH,
+  SESSION_FILTER_MONTH_SHORT,
+  SESSION_FILTER_WEEK,
+  SESSION_FILTER_WEEK_SHORT,
+} from '../labels';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -32,14 +38,16 @@ export type FilterKey = 'all' | 'week' | 'month';
 export type FilterOption = Readonly<{
   key: FilterKey;
   label: string;
+  /** Compact label used on narrow viewports; falls back to `label` when absent. */
+  shortLabel?: string;
   /** Number of days the filter accepts. `null` means no upper bound. */
   days: number | null;
 }>;
 
 export const FILTERS: readonly FilterOption[] = [
   { key: 'all', label: SESSION_FILTER_ALL, days: null },
-  { key: 'week', label: SESSION_FILTER_WEEK, days: 7 },
-  { key: 'month', label: SESSION_FILTER_MONTH, days: 30 },
+  { key: 'week', label: SESSION_FILTER_WEEK, shortLabel: SESSION_FILTER_WEEK_SHORT, days: 7 },
+  { key: 'month', label: SESSION_FILTER_MONTH, shortLabel: SESSION_FILTER_MONTH_SHORT, days: 30 },
 ];
 
 /** Filter sessions by recency. Pass `now` for deterministic tests. */

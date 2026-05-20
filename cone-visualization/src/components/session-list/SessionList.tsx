@@ -43,7 +43,14 @@ export default function SessionList() {
                     : 'text-neutral-500 hover:text-neutral-900')
                 }
               >
-                {f.label}
+                {f.shortLabel ? (
+                  <>
+                    <span className="sm:hidden">{f.shortLabel}</span>
+                    <span className="hidden sm:inline">{f.label}</span>
+                  </>
+                ) : (
+                  f.label
+                )}
               </button>
             ))}
           </div>

@@ -42,7 +42,9 @@ export const SESSIONS_RECORDED = 'recorded';
 
 export const SESSION_FILTER_ALL = 'All';
 export const SESSION_FILTER_WEEK = 'This week';
+export const SESSION_FILTER_WEEK_SHORT = 'Week';
 export const SESSION_FILTER_MONTH = 'This month';
+export const SESSION_FILTER_MONTH_SHORT = 'Month';
 
 export const SESSION_PEAK_LENGTH = 'max len';
 export const SESSION_PEAK_CIRCUMFERENCE = 'max circ';
