@@ -285,8 +285,9 @@ class SmokeTestLayersTests(TestCase):
 
     @override_settings(MIGRATION_SMOKE_TEST_PATHS=["/toys/toys/"])
     def test_layer_4_runs_when_superuser_exists(self):
-        User = get_user_model()
-        User.objects.create_superuser("admin", "admin@example.com", "pw1234567890")
+        get_user_model().objects.create_superuser(
+            "admin", "admin@example.com", "pw1234567890"
+        )
         out = StringIO()
         call_command("migration_smoke_test", stdout=out)
         self.assertIn("GET /toys/toys/", out.getvalue())

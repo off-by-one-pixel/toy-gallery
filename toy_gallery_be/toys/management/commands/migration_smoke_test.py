@@ -89,8 +89,7 @@ class Command(BaseCommand):
             )
             return
 
-        User = get_user_model()
-        superuser = User.objects.filter(is_superuser=True).first()
+        superuser = get_user_model().objects.filter(is_superuser=True).first()
         if superuser is None:
             # First deploy hasn't bootstrapped the admin account yet.
             self.stdout.write(
