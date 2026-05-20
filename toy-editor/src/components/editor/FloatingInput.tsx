@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { formatMm, parseMm } from "../../util/fmt";
 import { useEditorUnit } from "../unit";
 import { LABEL_INPUT_H_PX, LABEL_INPUT_W_PX } from "./layout";
@@ -47,7 +47,8 @@ const FloatingInput = ({
   onChange,
 }: Props) => {
   const unit = useEditorUnit();
-  const display = formatMm(value, unit);
+  const [draft, setDraft] = useState<string | null>(null);
+  const display = draft ?? formatMm(value, unit);
   const stateClass = touched ? "is-touched" : "is-default";
   return (
     <foreignObject
@@ -62,18 +63,20 @@ const FloatingInput = ({
       >
         <span className="cone-editor-floating-prefix">{prefix}</span>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           aria-label={ariaLabel}
-          step={10 ** -unit.decimals}
-          min={0}
           value={display}
           placeholder={placeholder}
           onChange={(e) => {
-            const parsed = parseMm(e.target.value, unit);
+            const raw = e.target.value;
+            setDraft(raw);
+            const parsed = parseMm(raw, unit);
             if (parsed === undefined) return;
             if (parsed === null && !allowEmpty) return;
             onChange(parsed);
           }}
+          onBlur={() => setDraft(null)}
           onClick={(e) => e.stopPropagation()}
         />
         {trailing}

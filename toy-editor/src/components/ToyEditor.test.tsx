@@ -14,8 +14,8 @@ describe("ToyEditor", () => {
     expect(screen.getByRole("button", { name: /add section/i })).toBeInTheDocument();
 
     // Known measurements row
-    expect(screen.getByRole("spinbutton", { name: /insertable/i })).toBeInTheDocument();
-    expect(screen.getByRole("spinbutton", { name: /total/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /insertable/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /total/i })).toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: /snap/i })).toBeInTheDocument();
 
     // The silhouette + chrome render inside <svg>, but the editor chrome
