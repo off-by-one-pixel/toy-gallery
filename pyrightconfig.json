@@ -4,7 +4,7 @@
     "**/__pycache__",
     "**/.venv",
     "**/node_modules",
-    "cone-visualization",
+    "web",
     "toy-editor"
   ],
   "extraPaths": ["api"],

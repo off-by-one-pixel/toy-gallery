@@ -1,13 +1,13 @@
 # Build context is the repo root, shared by both Dockerfiles:
-#   - cone-visualization/Dockerfile (FE-only static server)
+#   - web/Dockerfile (FE-only static server)
 #   - Dockerfile                    (all-in-one Django + bundled FE export)
 
 # Node / Next.js outputs
 **/node_modules
 **/.next
 **/out
-cone-visualization/build
-cone-visualization/src/services/generated
+web/build
+web/src/services/generated
 
 # Python / Django local state (the all-in-one image installs deps fresh
 # from pyproject.toml + uv.lock, so the local venv and dev DB are noise).

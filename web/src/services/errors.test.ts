@@ -3,8 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { APIError } from './types';
 import { formatError } from './errors';
 
-const apiError = (status: number, data: unknown, message = 'API request failed') =>
-  new APIError(message, status, data);
+const apiError = (status: number, data: unknown, message = 'API request failed') => new APIError(message, status, data);
 
 describe('formatError', () => {
   it('returns a file-hint for SyntaxError', () => {
@@ -34,9 +33,7 @@ describe('formatError', () => {
   it('walks nested DRF field errors', () => {
     // Shape that a nested ToyShapeSerializer validation produces.
     const body = { shape: { sections: ['At least one section must have a circumference.'] } };
-    expect(formatError(apiError(400, body))).toBe(
-      'At least one section must have a circumference.',
-    );
+    expect(formatError(apiError(400, body))).toBe('At least one section must have a circumference.');
   });
 
   it('joins multiple nested messages with newlines, in document order', () => {
@@ -56,9 +53,7 @@ describe('formatError', () => {
   });
 
   it('falls back to APIError.message when data has no strings', () => {
-    expect(formatError(apiError(500, { something: 42 }, 'Internal error'))).toBe(
-      'Internal error',
-    );
+    expect(formatError(apiError(500, { something: 42 }, 'Internal error'))).toBe('Internal error');
   });
 
   it('falls back to generic message when APIError has no useful text', () => {

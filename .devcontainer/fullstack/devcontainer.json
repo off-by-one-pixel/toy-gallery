@@ -8,7 +8,7 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
   "forwardPorts": [3000, 8000],
   "portsAttributes": {
-    "3000": { "label": "Frontend (cone-visualization)" },
+    "3000": { "label": "Frontend (web)" },
     "8000": { "label": "Django Backend" }
   },
   "customizations": {
@@ -32,6 +32,6 @@
       }
     }
   },
-  "postCreateCommand": "cd api && uv sync && cd ../cone-visualization && npm install && cd /workspace && pre-commit install",
+  "postCreateCommand": "cd api && uv sync && cd ../web && npm install && cd /workspace && pre-commit install",
   "remoteUser": "vscode"
 }

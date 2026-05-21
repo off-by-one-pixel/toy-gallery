@@ -8,9 +8,7 @@ import type { Toy } from './types';
 
 const MIN_RATIO = 0.15;
 
-export const heightScale = (
-  toys: (Toy | null | undefined)[],
-): ((toy: Toy | null | undefined) => number) => {
+export const heightScale = (toys: (Toy | null | undefined)[]): ((toy: Toy | null | undefined) => number) => {
   const heights = toys.map((t) => (t ? silhouetteHeight(t) : 0));
   const max = Math.max(1, ...heights);
   return (toy) => (toy ? Math.max(MIN_RATIO, silhouetteHeight(toy) / max) : 1);

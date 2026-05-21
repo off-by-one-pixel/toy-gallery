@@ -95,7 +95,7 @@ This repo is a multi-project monorepo. Each directory is an independent project 
 ### [`api/`](api/) — Django backend
 REST API (Django 5 + DRF) with JWT auth. Stores toys and their shape data (ordered cylindrical sections + top-shape enum). Serves the gallery and editor frontends.
 
-### [`cone-visualization/`](cone-visualization/) — gallery frontend (primary app)
+### [`web/`](web/) — gallery frontend (primary app)
 Next.js 16 + HeroUI v3 + Tailwind 4. The main Toy Gallery UI — browse, search, sort, group, edit attributes inline, and pin fields. Talks to the Django backend.
 
 ### [`toy-editor/`](toy-editor/) — shape editor component library (submodule)
@@ -107,7 +107,7 @@ A root [`Makefile`](Makefile) wraps the two most common workflows:
 
 ```bash
 make be   # Django backend on 0.0.0.0:8000
-make fe   # Next.js dev server for cone-visualization
+make fe   # Next.js dev server (web/)
 ```
 
 `make test` runs both suites; `make test-be` and `make test-fe` run them individually.

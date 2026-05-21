@@ -1,19 +1,19 @@
-name: cone-visualization CI
+name: web CI
 
 on:
   pull_request:
     paths:
-      - "cone-visualization/**"
+      - "web/**"
       - "toy-editor/**"
       - "api/schema.yml"
-      - ".github/workflows/cone-visualization.yml"
+      - ".github/workflows/web.yml"
   push:
     branches: [main]
     paths:
-      - "cone-visualization/**"
+      - "web/**"
       - "toy-editor/**"
       - "api/schema.yml"
-      - ".github/workflows/cone-visualization.yml"
+      - ".github/workflows/web.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: cone-visualization
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +36,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
-            cone-visualization/package-lock.json
+            web/package-lock.json
             toy-editor/package-lock.json
 
       - name: Install and build toy-editor

@@ -28,9 +28,7 @@ export default function SectionTabs() {
             href={tab.href}
             className={
               'flex-1 rounded-md px-3 py-1 text-center text-xs font-medium transition-colors sm:flex-initial ' +
-              (active
-                ? 'bg-white text-neutral-900 shadow-xs'
-                : 'text-neutral-500 hover:text-neutral-900')
+              (active ? 'bg-white text-neutral-900 shadow-xs' : 'text-neutral-500 hover:text-neutral-900')
             }
           >
             {tab.label}

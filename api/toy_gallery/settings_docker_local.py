@@ -19,6 +19,6 @@ from .settings_docker import *  # noqa: E402, F401, F403
 
 # Point WhiteNoise at the live Next.js build instead of the path the
 # Dockerfile copies the export to.
-WHITENOISE_ROOT = REPO_ROOT / "cone-visualization" / "build"
+WHITENOISE_ROOT = REPO_ROOT / "web" / "build"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
