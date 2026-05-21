@@ -29,7 +29,7 @@ type Props = {
   onChange: (mm: number | null) => void;
 };
 
-/** A reusable `<foreignObject>` + `cone-editor-floating` `<div>` + `<input>`
+/** A reusable `<foreignObject>` + `toy-editor-floating` `<div>` + `<input>`
  *  used by the height / diameter / circumference per-section labels.
  *  Centralises mm⇄unit formatting, parsing, and the touched-vs-default
  *  visual cue. */
@@ -58,10 +58,10 @@ const FloatingInput = ({
       height={LABEL_INPUT_H_PX}
     >
       <div
-        className={`cone-editor-floating ${stateClass}`}
+        className={`toy-editor-floating ${stateClass}`}
         style={{ width: "100%", height: "100%" }}
       >
-        <span className="cone-editor-floating-prefix">{prefix}</span>
+        <span className="toy-editor-floating-prefix">{prefix}</span>
         <input
           type="text"
           inputMode="decimal"

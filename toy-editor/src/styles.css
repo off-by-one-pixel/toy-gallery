@@ -1,39 +1,39 @@
-/* cone-editor default styles
- * Import with: import "cone-editor/styles.css";
- * All class names are prefixed with `cone-editor-` so they're easy to scope
+/* toy-editor default styles
+ * Import with: import "toy-editor/styles.css";
+ * All class names are prefixed with `toy-editor-` so they're easy to scope
  * or override from the consumer.
  */
 
-.cone-editor-root {
-  --cone-editor-ink: #111827;
-  --cone-editor-ink-muted: #6b7280;
-  --cone-editor-ink-soft: #9ca3af;
-  --cone-editor-line: #e5e7eb;
-  --cone-editor-line-strong: #d1d5db;
-  --cone-editor-accent: #2563eb;
-  --cone-editor-accent-soft: rgba(37, 99, 235, 0.08);
-  --cone-editor-surface: #ffffff;
-  --cone-editor-bg: #f3f4f6;
-  --cone-editor-canvas-a: #fafaff;
-  --cone-editor-canvas-b: #f0fdfa;
-  --cone-editor-guide: #d97706;
-  --cone-editor-guide-soft: rgba(217, 119, 6, 0.18);
-  --cone-editor-warn: #d97706;
+.toy-editor-root {
+  --toy-editor-ink: #111827;
+  --toy-editor-ink-muted: #6b7280;
+  --toy-editor-ink-soft: #9ca3af;
+  --toy-editor-line: #e5e7eb;
+  --toy-editor-line-strong: #d1d5db;
+  --toy-editor-accent: #2563eb;
+  --toy-editor-accent-soft: rgba(37, 99, 235, 0.08);
+  --toy-editor-surface: #ffffff;
+  --toy-editor-bg: #f3f4f6;
+  --toy-editor-canvas-a: #fafaff;
+  --toy-editor-canvas-b: #f0fdfa;
+  --toy-editor-guide: #d97706;
+  --toy-editor-guide-soft: rgba(217, 119, 6, 0.18);
+  --toy-editor-warn: #d97706;
 
   display: flex;
   flex-direction: row;
   gap: 0;
   font-family: inherit;
-  color: var(--cone-editor-ink);
+  color: var(--toy-editor-ink);
   height: 100%;
   min-height: 0;
   min-width: 0;
-  background: var(--cone-editor-surface);
+  background: var(--toy-editor-surface);
 }
 
 /* ---------- Layout: main editing area + side panel for app fields ---------- */
 
-.cone-editor-main {
+.toy-editor-main {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -41,76 +41,76 @@
   min-height: 0;
 }
 
-.cone-editor-side {
+.toy-editor-side {
   flex: 0 0 320px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 16px 18px;
-  border-left: 1px solid var(--cone-editor-line);
-  background: var(--cone-editor-surface);
+  border-left: 1px solid var(--toy-editor-line);
+  background: var(--toy-editor-surface);
   overflow-y: auto;
 }
-.cone-editor-known {
+.toy-editor-known {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 10px 16px;
-  border-bottom: 1px solid var(--cone-editor-line);
-  background: var(--cone-editor-surface);
+  border-bottom: 1px solid var(--toy-editor-line);
+  background: var(--toy-editor-surface);
 }
-.cone-editor-known-row {
+.toy-editor-known-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 14px;
 }
-.cone-editor-known-field {
+.toy-editor-known-field {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: var(--cone-editor-ink-muted);
+  color: var(--toy-editor-ink-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.cone-editor-known-field-label {
+.toy-editor-known-field-label {
   white-space: nowrap;
 }
-.cone-editor-known-field-input {
+.toy-editor-known-field-input {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 3px 6px;
-  border: 1px solid var(--cone-editor-line);
+  border: 1px solid var(--toy-editor-line);
   border-radius: 6px;
-  background: var(--cone-editor-surface);
+  background: var(--toy-editor-surface);
   text-transform: none;
   letter-spacing: 0;
 }
-.cone-editor-known-field-input:focus-within {
-  border-color: var(--cone-editor-accent);
+.toy-editor-known-field-input:focus-within {
+  border-color: var(--toy-editor-accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
-.cone-editor-known-field-input input {
+.toy-editor-known-field-input input {
   width: 60px;
   padding: 2px 0;
   border: 0;
   background: transparent;
   font: inherit;
   font-size: 12px;
-  color: var(--cone-editor-ink);
+  color: var(--toy-editor-ink);
   text-align: right;
   text-transform: none;
 }
-.cone-editor-known-field-input input:focus { outline: none; }
-.cone-editor-known-field-unit {
+.toy-editor-known-field-input input:focus { outline: none; }
+.toy-editor-known-field-unit {
   font-size: 10px;
-  color: var(--cone-editor-ink-soft);
+  color: var(--toy-editor-ink-soft);
   text-transform: uppercase;
 }
 
-.cone-editor-display-mode {
+.toy-editor-display-mode {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -118,37 +118,37 @@
   padding: 0;
   border: 0;
   font-size: 12px;
-  color: var(--cone-editor-ink);
+  color: var(--toy-editor-ink);
 }
-.cone-editor-display-mode-legend {
+.toy-editor-display-mode-legend {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.06em;
-  color: var(--cone-editor-ink-soft);
+  color: var(--toy-editor-ink-soft);
   text-transform: uppercase;
   margin-right: 4px;
   padding: 0;
 }
-.cone-editor-display-mode label {
+.toy-editor-display-mode label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   cursor: pointer;
 }
 
-.cone-editor-snap {
+.toy-editor-snap {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   margin-left: auto;
   font-size: 12px;
-  color: var(--cone-editor-ink);
+  color: var(--toy-editor-ink);
   cursor: pointer;
 }
 
 /* ---------- Canvas ---------- */
 
-.cone-editor-canvas {
+.toy-editor-canvas {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
@@ -156,7 +156,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background: linear-gradient(135deg, var(--cone-editor-canvas-a), var(--cone-editor-canvas-b));
+  background: linear-gradient(135deg, var(--toy-editor-canvas-a), var(--toy-editor-canvas-b));
   padding: 14px 24px 18px;
   overflow: hidden;
 }
@@ -164,26 +164,26 @@
 /* Editor chrome (cap selectors, add-section button, in-SVG ruler / handles /
  * inputs) only appears when the canvas is hovered, so the silhouette has
  * the spotlight when the user isn't actively editing. */
-.cone-editor-cap-row,
-.cone-editor-canvas-actions,
-.cone-editor-chrome {
+.toy-editor-cap-row,
+.toy-editor-canvas-actions,
+.toy-editor-chrome {
   opacity: 0;
   pointer-events: none;
   transition: opacity 140ms ease;
 }
-.cone-editor-main:hover .cone-editor-cap-row,
-.cone-editor-main:hover .cone-editor-canvas-actions,
-.cone-editor-main:hover .cone-editor-chrome {
+.toy-editor-main:hover .toy-editor-cap-row,
+.toy-editor-main:hover .toy-editor-canvas-actions,
+.toy-editor-main:hover .toy-editor-chrome {
   opacity: 1;
   pointer-events: auto;
 }
 
-.cone-editor-cap-row {
+.toy-editor-cap-row {
   display: flex;
   justify-content: center;
   padding: 4px 0;
 }
-.cone-editor-stage {
+.toy-editor-stage {
   flex: 1 1 auto;
   display: flex;
   align-items: stretch;
@@ -191,12 +191,12 @@
   min-width: 0;
   min-height: 0;
 }
-.cone-editor-canvas-actions {
+.toy-editor-canvas-actions {
   display: flex;
   justify-content: center;
   padding-top: 6px;
 }
-.cone-editor-svg {
+.toy-editor-svg {
   max-width: 100%;
   max-height: 100%;
   display: block;
@@ -205,16 +205,16 @@
 
 /* ---------- Silhouette parts (clickable) ---------- */
 
-.cone-editor-part { transition: filter 0.15s ease; }
-.cone-editor-part:hover { filter: brightness(0.96); }
+.toy-editor-part { transition: filter 0.15s ease; }
+.toy-editor-part:hover { filter: brightness(0.96); }
 
-.cone-editor-selection-tint {
-  fill: var(--cone-editor-accent);
+.toy-editor-selection-tint {
+  fill: var(--toy-editor-accent);
   fill-opacity: 0.12;
 }
-.cone-editor-selection-outline {
+.toy-editor-selection-outline {
   fill: none;
-  stroke: var(--cone-editor-accent);
+  stroke: var(--toy-editor-accent);
   stroke-width: 2;
   stroke-dasharray: 5 3;
   vector-effect: non-scaling-stroke;
@@ -222,15 +222,15 @@
 
 /* ---------- Reference guides ---------- */
 
-.cone-editor-guide {
+.toy-editor-guide {
   fill: none;
-  stroke: var(--cone-editor-guide);
+  stroke: var(--toy-editor-guide);
   stroke-width: 1;
   stroke-dasharray: 5 4;
   vector-effect: non-scaling-stroke;
 }
-.cone-editor-guide-label {
-  fill: var(--cone-editor-guide);
+.toy-editor-guide-label {
+  fill: var(--toy-editor-guide);
   font-size: 10px;
   font-weight: 600;
   font-family:
@@ -239,27 +239,27 @@
 
 /* ---------- Ruler ---------- */
 
-.cone-editor-ruler-axis {
-  stroke: var(--cone-editor-line-strong);
+.toy-editor-ruler-axis {
+  stroke: var(--toy-editor-line-strong);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
-.cone-editor-ruler-tick {
-  stroke: var(--cone-editor-ink-muted);
+.toy-editor-ruler-tick {
+  stroke: var(--toy-editor-ink-muted);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
-.cone-editor-ruler-label,
-.cone-editor-ruler-unit,
-.cone-editor-ruler-bottom {
-  fill: var(--cone-editor-ink-muted);
+.toy-editor-ruler-label,
+.toy-editor-ruler-unit,
+.toy-editor-ruler-bottom {
+  fill: var(--toy-editor-ink-muted);
   font-size: 10px;
   font-family:
     ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
-.cone-editor-ruler-bottom { font-weight: 600; }
-.cone-editor-total-readout {
-  fill: var(--cone-editor-ink);
+.toy-editor-ruler-bottom { font-weight: 600; }
+.toy-editor-total-readout {
+  fill: var(--toy-editor-ink);
   font-size: 13px;
   font-family:
     ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -267,7 +267,7 @@
 
 /* ---------- Floating value labels (foreignObject inputs) ---------- */
 
-.cone-editor-floating {
+.toy-editor-floating {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -276,38 +276,38 @@
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid transparent;
-  color: var(--cone-editor-ink);
+  color: var(--toy-editor-ink);
   font-family:
     ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 11px;
   line-height: 1;
   box-sizing: border-box;
 }
-.cone-editor-floating:hover {
-  border-color: var(--cone-editor-line-strong);
-  background: var(--cone-editor-surface);
+.toy-editor-floating:hover {
+  border-color: var(--toy-editor-line-strong);
+  background: var(--toy-editor-surface);
 }
-.cone-editor-floating:focus-within {
-  border-color: var(--cone-editor-accent);
-  background: var(--cone-editor-surface);
+.toy-editor-floating:focus-within {
+  border-color: var(--toy-editor-accent);
+  background: var(--toy-editor-surface);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
-.cone-editor-floating.is-touched {
+.toy-editor-floating.is-touched {
   font-weight: 700;
-  color: var(--cone-editor-ink);
+  color: var(--toy-editor-ink);
 }
-.cone-editor-floating.is-default {
+.toy-editor-floating.is-default {
   font-weight: 400;
-  color: var(--cone-editor-ink-soft);
+  color: var(--toy-editor-ink-soft);
   font-style: italic;
 }
-.cone-editor-floating-prefix {
-  color: var(--cone-editor-ink-soft);
+.toy-editor-floating-prefix {
+  color: var(--toy-editor-ink-soft);
   font-size: 10px;
   font-weight: 500;
   font-style: normal;
 }
-.cone-editor-floating input {
+.toy-editor-floating input {
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
@@ -318,9 +318,9 @@
   text-align: right;
   padding: 0;
 }
-.cone-editor-floating input:focus { outline: none; }
-.cone-editor-floating-warn {
-  color: var(--cone-editor-warn);
+.toy-editor-floating input:focus { outline: none; }
+.toy-editor-floating-warn {
+  color: var(--toy-editor-warn);
   font-size: 11px;
   font-style: normal;
   font-weight: 700;
@@ -328,31 +328,31 @@
 }
 
 /* leader lines from silhouette to diameter labels */
-.cone-editor-leader {
+.toy-editor-leader {
   fill: none;
-  stroke: var(--cone-editor-line-strong);
+  stroke: var(--toy-editor-line-strong);
   stroke-width: 0.8;
   vector-effect: non-scaling-stroke;
 }
-.cone-editor-leader.is-touched { stroke: var(--cone-editor-ink-soft); }
-.cone-editor-leader.is-default { stroke-dasharray: 2 2; }
+.toy-editor-leader.is-touched { stroke: var(--toy-editor-ink-soft); }
+.toy-editor-leader.is-default { stroke-dasharray: 2 2; }
 
 /* ---------- Drag handles ---------- */
 
-.cone-editor-handle {
-  fill: var(--cone-editor-surface);
-  stroke: var(--cone-editor-accent);
+.toy-editor-handle {
+  fill: var(--toy-editor-surface);
+  stroke: var(--toy-editor-accent);
   stroke-width: 1.6;
   vector-effect: non-scaling-stroke;
   transition: r 0.1s ease;
 }
-.cone-editor-handle-diameter {
+.toy-editor-handle-diameter {
   cursor: ew-resize;
 }
-.cone-editor-handle-diameter:hover { r: 7; }
-.cone-editor-handle-height { cursor: ns-resize; }
+.toy-editor-handle-diameter:hover { r: 7; }
+.toy-editor-handle-height { cursor: ns-resize; }
 
-.cone-editor-handle-boundary {
+.toy-editor-handle-boundary {
   fill: rgba(37, 99, 235, 0);
   stroke: rgba(37, 99, 235, 0);
   cursor: ns-resize;
@@ -360,7 +360,7 @@
     fill 0.1s ease,
     stroke 0.1s ease;
 }
-.cone-editor-handle-boundary:hover {
+.toy-editor-handle-boundary:hover {
   fill: rgba(37, 99, 235, 0.08);
   stroke: rgba(37, 99, 235, 0.45);
   stroke-width: 1;
@@ -369,52 +369,52 @@
 
 /* ---------- Per-section rim angle cycle button ---------- */
 
-.cone-editor-rim-btn {
+.toy-editor-rim-btn {
   cursor: pointer;
 }
-.cone-editor-rim-btn circle {
-  fill: var(--cone-editor-surface);
-  stroke: var(--cone-editor-line-strong);
+.toy-editor-rim-btn circle {
+  fill: var(--toy-editor-surface);
+  stroke: var(--toy-editor-line-strong);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
   transition:
     fill 0.12s ease,
     stroke 0.12s ease;
 }
-.cone-editor-rim-btn line {
-  stroke: var(--cone-editor-ink-muted);
+.toy-editor-rim-btn line {
+  stroke: var(--toy-editor-ink-muted);
   stroke-width: 1.5;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
-.cone-editor-rim-btn:hover circle {
-  fill: var(--cone-editor-accent-soft);
-  stroke: var(--cone-editor-accent);
+.toy-editor-rim-btn:hover circle {
+  fill: var(--toy-editor-accent-soft);
+  stroke: var(--toy-editor-accent);
 }
-.cone-editor-rim-btn:hover line {
-  stroke: var(--cone-editor-accent);
+.toy-editor-rim-btn:hover line {
+  stroke: var(--toy-editor-accent);
 }
 
 /* ---------- Per-section remove button (× chip) ---------- */
 
-.cone-editor-remove {
+.toy-editor-remove {
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.12s ease;
 }
-.cone-editor-remove:hover,
-.cone-editor-chrome:hover .cone-editor-remove { opacity: 1; }
-.cone-editor-remove circle {
-  fill: var(--cone-editor-surface);
-  stroke: var(--cone-editor-line-strong);
+.toy-editor-remove:hover,
+.toy-editor-chrome:hover .toy-editor-remove { opacity: 1; }
+.toy-editor-remove circle {
+  fill: var(--toy-editor-surface);
+  stroke: var(--toy-editor-line-strong);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
-.cone-editor-remove:hover circle {
+.toy-editor-remove:hover circle {
   fill: #fef2f2;
   stroke: #fca5a5;
 }
-.cone-editor-remove text {
+.toy-editor-remove text {
   fill: #b91c1c;
   font-size: 12px;
   font-weight: 700;
@@ -425,14 +425,14 @@
 
 /* ---------- Cap-shape selectors (above / below silhouette) ---------- */
 
-.cone-editor-shape-select {
+.toy-editor-shape-select {
   appearance: none;
   font: inherit;
   font-size: 12px;
-  color: var(--cone-editor-ink);
-  background: var(--cone-editor-surface);
+  color: var(--toy-editor-ink);
+  background: var(--toy-editor-surface);
   padding: 5px 24px 5px 10px;
-  border: 1px solid var(--cone-editor-line);
+  border: 1px solid var(--toy-editor-line);
   border-radius: 6px;
   cursor: pointer;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M3 5 L6 8 L9 5' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
@@ -441,16 +441,16 @@
   background-size: 11px 11px;
   transition: border-color 0.15s ease;
 }
-.cone-editor-shape-select:hover { border-color: var(--cone-editor-line-strong); }
-.cone-editor-shape-select:focus {
+.toy-editor-shape-select:hover { border-color: var(--toy-editor-line-strong); }
+.toy-editor-shape-select:focus {
   outline: none;
-  border-color: var(--cone-editor-accent);
+  border-color: var(--toy-editor-accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* ---------- Buttons ---------- */
 
-.cone-editor-btn {
+.toy-editor-btn {
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -460,46 +460,46 @@
   font-weight: 500;
   font-size: 12px;
   padding: 6px 14px;
-  border: 1px solid var(--cone-editor-line);
+  border: 1px solid var(--toy-editor-line);
   border-radius: 6px;
-  background: var(--cone-editor-surface);
-  color: var(--cone-editor-ink);
+  background: var(--toy-editor-surface);
+  color: var(--toy-editor-ink);
   cursor: pointer;
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
 }
-.cone-editor-btn:hover:not(:disabled) {
-  border-color: var(--cone-editor-line-strong);
-  background: var(--cone-editor-bg);
+.toy-editor-btn:hover:not(:disabled) {
+  border-color: var(--toy-editor-line-strong);
+  background: var(--toy-editor-bg);
 }
-.cone-editor-btn:focus-visible {
+.toy-editor-btn:focus-visible {
   outline: none;
-  border-color: var(--cone-editor-accent);
+  border-color: var(--toy-editor-accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
-.cone-editor-btn:disabled {
+.toy-editor-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
-.cone-editor-add {
-  background: var(--cone-editor-surface);
-  border: 1px dashed var(--cone-editor-ink-soft);
-  color: var(--cone-editor-ink-muted);
+.toy-editor-add {
+  background: var(--toy-editor-surface);
+  border: 1px dashed var(--toy-editor-ink-soft);
+  color: var(--toy-editor-ink-muted);
 }
-.cone-editor-add:hover:not(:disabled) {
-  color: var(--cone-editor-accent);
-  border-color: var(--cone-editor-accent);
-  background: var(--cone-editor-accent-soft);
+.toy-editor-add:hover:not(:disabled) {
+  color: var(--toy-editor-accent);
+  border-color: var(--toy-editor-accent);
+  background: var(--toy-editor-accent-soft);
 }
 
 /* ---------- Group title (used by KnownMeasurements) ---------- */
 
-.cone-editor-group-title {
+.toy-editor-group-title {
   margin: 0;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--cone-editor-ink-soft);
+  color: var(--toy-editor-ink-soft);
 }

@@ -54,7 +54,7 @@ const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
           <Ruler />
           <TotalReadout />
 
-          <g className="cone-editor-chrome">
+          <g className="toy-editor-chrome">
             <SectionLabels />
             <DragLayer handlers={handlers} />
             <CurveAngleButtons />

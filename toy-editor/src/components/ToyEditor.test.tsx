@@ -22,6 +22,6 @@ describe("ToyEditor", () => {
     // depends on a measured pixel size from ResizeObserver. happy-dom
     // returns 0×0 boxes by default so handles only appear after layout in
     // a real browser. Just verify the SVG element exists.
-    expect(document.querySelector(".cone-editor-svg")).toBeTruthy();
+    expect(document.querySelector(".toy-editor-svg")).toBeTruthy();
   });
 });

@@ -18,7 +18,7 @@ type ButtonProps = RimButtonPos & {
 
 const CycleButton = ({ cx, cy, angle, ariaLabel, onClick }: ButtonProps) => (
   <g
-    className="cone-editor-rim-btn"
+    className="toy-editor-rim-btn"
     role="button"
     aria-label={ariaLabel}
     onClick={(e) => {

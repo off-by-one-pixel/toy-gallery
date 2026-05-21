@@ -24,10 +24,10 @@ const KnownMeasurements = () => {
   };
 
   return (
-    <section className="cone-editor-known" aria-label="Known measurements">
-      <h3 className="cone-editor-group-title">Known measurements</h3>
+    <section className="toy-editor-known" aria-label="Known measurements">
+      <h3 className="toy-editor-group-title">Known measurements</h3>
 
-      <div className="cone-editor-known-row">
+      <div className="toy-editor-known-row">
         <NumberField label="Insertable" mm={insertable} onChangeMm={setInsertable} />
         <NumberField label="Total" mm={knownTotal} onChangeMm={setKnownTotal} />
         <NumberField
@@ -36,7 +36,7 @@ const KnownMeasurements = () => {
           onChangeMm={handleKnownCircumferenceChange}
         />
 
-        <label className="cone-editor-snap">
+        <label className="toy-editor-snap">
           <input
             type="checkbox"
             checked={snap}
@@ -44,7 +44,7 @@ const KnownMeasurements = () => {
           />
           Snap
         </label>
-        <label className="cone-editor-snap">
+        <label className="toy-editor-snap">
           <input
             type="checkbox"
             checked={showSectionCirc}
@@ -69,9 +69,9 @@ const NumberField = ({ label, mm, onChangeMm }: NumberFieldProps) => {
   const display = draft ?? formatMm(mm, unit);
 
   return (
-    <label className="cone-editor-known-field">
-      <span className="cone-editor-known-field-label">{label}</span>
-      <span className="cone-editor-known-field-input">
+    <label className="toy-editor-known-field">
+      <span className="toy-editor-known-field-label">{label}</span>
+      <span className="toy-editor-known-field-input">
         <input
           type="text"
           inputMode="decimal"
@@ -85,7 +85,7 @@ const NumberField = ({ label, mm, onChangeMm }: NumberFieldProps) => {
           }}
           onBlur={() => setDraft(null)}
         />
-        <span className="cone-editor-known-field-unit">{unit.id}</span>
+        <span className="toy-editor-known-field-unit">{unit.id}</span>
       </span>
     </label>
   );

@@ -57,21 +57,21 @@ const ToyEditor = ({ style = {}, onChange, ref, initialToy, leadingSlot, unit }:
 
   return (
     <EditorUnitContext.Provider value={unit}>
-      <div className="cone-editor-root">
-        <div className="cone-editor-main">
+      <div className="toy-editor-root">
+        <div className="toy-editor-main">
           <KnownMeasurements />
 
-          <section className="cone-editor-canvas">
-            <div className="cone-editor-cap-row top">
+          <section className="toy-editor-canvas">
+            <div className="toy-editor-cap-row top">
               <ShapeSelect
-                id="cone-editor-top-shape"
+                id="toy-editor-top-shape"
                 label="Top shape"
                 value={toy.topShape}
                 onChange={toy.setTopShape}
               />
             </div>
 
-            <div className="cone-editor-stage">
+            <div className="toy-editor-stage">
               <EditorRender
                 toy={toy}
                 ref={ref}
@@ -80,19 +80,19 @@ const ToyEditor = ({ style = {}, onChange, ref, initialToy, leadingSlot, unit }:
               />
             </div>
 
-            <div className="cone-editor-cap-row bottom">
+            <div className="toy-editor-cap-row bottom">
               <ShapeSelect
-                id="cone-editor-bottom-shape"
+                id="toy-editor-bottom-shape"
                 label="Bottom shape"
                 value={toy.bottomShape}
                 onChange={toy.setBottomShape}
               />
             </div>
 
-            <div className="cone-editor-canvas-actions">
+            <div className="toy-editor-canvas-actions">
               <button
                 type="button"
-                className="cone-editor-btn cone-editor-add"
+                className="toy-editor-btn toy-editor-add"
                 onClick={() => toy.newSection()}
               >
                 + Add section
@@ -101,7 +101,7 @@ const ToyEditor = ({ style = {}, onChange, ref, initialToy, leadingSlot, unit }:
           </section>
         </div>
 
-        {leadingSlot && <aside className="cone-editor-side">{leadingSlot}</aside>}
+        {leadingSlot && <aside className="toy-editor-side">{leadingSlot}</aside>}
       </div>
     </EditorUnitContext.Provider>
   );
@@ -118,7 +118,7 @@ const ShapeSelect = ({ id, label, value, onChange }: ShapeSelectProps) => (
   <select
     id={id}
     aria-label={label}
-    className="cone-editor-shape-select"
+    className="toy-editor-shape-select"
     value={value}
     onChange={(e) => onChange(e.target.value as Shape)}
   >

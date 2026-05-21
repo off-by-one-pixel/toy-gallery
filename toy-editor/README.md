@@ -1,29 +1,20 @@
-# Cone Editor
+# Toy Editor
 
-A React-based cone editor component library.
+A React component library for editing stacked cylindrical sections (toys).
 
 ## Installation
 
 ```bash
-npm install cone-editor
+npm install toy-editor
 ```
 
 ## Usage
 
 ```tsx
-import { ConeEditor } from 'cone-editor';
+import { ToyEditor } from 'toy-editor';
 
 function App() {
-  const handleChange = (value: string) => {
-    console.log('New value:', value);
-  };
-
-  return (
-    <ConeEditor
-      initialValue="Initial content"
-      onChange={handleChange}
-    />
-  );
+  return <ToyEditor unit={{ id: 'mm', factor: 1, decimals: 0 }} />;
 }
 ```
 

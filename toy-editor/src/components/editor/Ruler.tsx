@@ -11,9 +11,9 @@ const Ruler = () => {
   const ticks = [0, ...layout.sectionMeta.map((s) => s.bottomMm)];
 
   return (
-    <g className="cone-editor-ruler" aria-hidden>
+    <g className="toy-editor-ruler" aria-hidden>
       <line
-        className="cone-editor-ruler-axis"
+        className="toy-editor-ruler-axis"
         x1={axisX}
         x2={axisX}
         y1={axisY1}
@@ -24,14 +24,14 @@ const Ruler = () => {
         return (
           <g key={i}>
             <line
-              className="cone-editor-ruler-tick"
+              className="toy-editor-ruler-tick"
               x1={tickOuter}
               x2={tickInner}
               y1={y}
               y2={y}
             />
             <text
-              className="cone-editor-ruler-label"
+              className="toy-editor-ruler-label"
               x={labelX}
               y={y + 4}
               textAnchor="end"
@@ -42,7 +42,7 @@ const Ruler = () => {
         );
       })}
       <text
-        className="cone-editor-ruler-unit"
+        className="toy-editor-ruler-unit"
         x={labelX}
         y={unitY}
         textAnchor="end"
