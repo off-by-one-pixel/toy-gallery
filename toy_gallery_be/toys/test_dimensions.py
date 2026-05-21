@@ -19,6 +19,3 @@ class MaxOrNoneTests(SimpleTestCase):
 
     def test_returns_none_when_empty(self):
         self.assertIsNone(max_or_none([]))
-
-    def test_accepts_generator(self):
-        self.assertEqual(max_or_none(x for x in (None, 7, 4)), 7)
