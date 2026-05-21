@@ -56,22 +56,22 @@ class TempDataDir:
         test_case.addCleanup(self._tmpdir.cleanup)
 
 
-def make_sqlite_with_table(path: Path, table: str = "things", rows: int = 3) -> None:
+def make_sqlite_with_table(path: Path, rows: int = 3) -> None:
     """Create a tiny SQLite DB at `path` with a known table and row count."""
     conn = sqlite3.connect(str(path))
     try:
-        conn.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY, name TEXT)")
+        conn.execute("CREATE TABLE things (id INTEGER PRIMARY KEY, name TEXT)")
         for i in range(rows):
-            conn.execute(f"INSERT INTO {table} (name) VALUES (?)", (f"row-{i}",))
+            conn.execute("INSERT INTO things (name) VALUES (?)", (f"row-{i}",))
         conn.commit()
     finally:
         conn.close()
 
 
-def row_count(path: Path, table: str = "things") -> int:
+def row_count(path: Path) -> int:
     conn = sqlite3.connect(str(path))
     try:
-        cur = conn.execute(f"SELECT COUNT(*) FROM {table}")
+        cur = conn.execute("SELECT COUNT(*) FROM things")
         return cur.fetchone()[0]
     finally:
         conn.close()
