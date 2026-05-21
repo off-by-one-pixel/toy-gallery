@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ToySection } from 'cone-editor';
+import type { ToySection } from 'toy-editor';
 
 import { SectionShape } from '../types';
 import { editorToPayload, editorToTemplateJson, type EditorState } from './editor';

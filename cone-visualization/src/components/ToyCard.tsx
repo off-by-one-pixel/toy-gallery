@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
-import { ThumbnailRender } from 'cone-editor';
+import { ThumbnailRender } from 'toy-editor';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { formatValue, type Unit } from '../services/units';

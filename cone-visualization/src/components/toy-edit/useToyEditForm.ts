@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useMemo, useReducer, useState } from 'react';
-import { useToyStore } from 'cone-editor';
-import type { Toy as EditorToy } from 'cone-editor';
+import { useToyStore } from 'toy-editor';
+import type { Toy as EditorToy } from 'toy-editor';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { createToy, patchToy } from '../../services/api';
@@ -39,7 +39,7 @@ export type ToyEditForm = Readonly<{
 }>;
 
 /** Facade for the toy edit modal. Wraps the identity reducer, the
- *  cone-editor store reads, the picked-initial transient state, and
+ *  toy-editor store reads, the picked-initial transient state, and
  *  the save flow into one object so children take a single `form`
  *  prop instead of a dozen. */
 export function useToyEditForm(mode: ToyEditMode): ToyEditForm {

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Toy as EditorToy } from 'cone-editor';
+import type { Toy as EditorToy } from 'toy-editor';
 
 import type { WizardStep } from '../../hooks/nav/useToyEditorWizardNav';
 import { templateToEditor } from '../../services/converters/template';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ThumbnailRender } from 'cone-editor';
+import { ThumbnailRender } from 'toy-editor';
 
 import { templatePreviewToy } from '../../services/templateForm';
 import type { ToyTemplate } from '../../services/types';

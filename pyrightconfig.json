@@ -5,7 +5,7 @@
     "**/.venv",
     "**/node_modules",
     "cone-visualization",
-    "cone_editor"
+    "toy-editor"
   ],
   "extraPaths": ["api"],
   "venvPath": "api",

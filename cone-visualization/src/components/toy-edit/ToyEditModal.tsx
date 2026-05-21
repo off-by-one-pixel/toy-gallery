@@ -1,8 +1,8 @@
 'use client';
 
 import { Alert, Modal, useOverlayState } from '@heroui/react';
-import { ToyEditor } from 'cone-editor';
-import type { StyleOption } from 'cone-editor';
+import { ToyEditor } from 'toy-editor';
+import type { StyleOption } from 'toy-editor';
 
 import type { WizardDialog, WizardStage, WizardStep } from '../../hooks/nav/useToyEditorWizardNav';
 import { templateJsonToEditor } from '../../services/converters/templateJson';

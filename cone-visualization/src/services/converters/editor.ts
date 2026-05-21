@@ -1,8 +1,8 @@
-import type { ToySection } from 'cone-editor';
+import type { ToySection } from 'toy-editor';
 import { type SectionShape, type ToyPayload } from '../types';
 import { diameterToCircumference } from '../units';
 
-/** Snapshot of the cone-editor store's user-visible state, captured at
+/** Snapshot of the toy-editor store's user-visible state, captured at
  *  the point a converter runs. Held read-only by callers so the
  *  converter can't mutate the live store. */
 export type EditorState = Readonly<{

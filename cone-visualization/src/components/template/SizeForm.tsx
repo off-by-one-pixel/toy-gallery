@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react';
 import { Button } from '@heroui/react';
-import { ThumbnailRender } from 'cone-editor';
-import type { Toy as EditorToy } from 'cone-editor';
+import { ThumbnailRender } from 'toy-editor';
+import type { Toy as EditorToy } from 'toy-editor';
 import { ArrowLeft } from 'lucide-react';
 
 import {
@@ -39,8 +39,7 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
   }, [template, totalMm, maxDiameterMm]);
 
   const canContinue = template != null && totalMm != null && insertableMm != null && maxDiameterMm != null;
-  const sizeFieldLabel =
-    state.sizeMode === 'diameter' ? TEMPLATE_FIELD_MAX_DIAMETER : TEMPLATE_FIELD_CIRCUMFERENCE;
+  const sizeFieldLabel = state.sizeMode === 'diameter' ? TEMPLATE_FIELD_MAX_DIAMETER : TEMPLATE_FIELD_CIRCUMFERENCE;
 
   return (
     <>

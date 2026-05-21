@@ -1,4 +1,4 @@
-import type { ToySection } from 'cone-editor';
+import type { ToySection } from 'toy-editor';
 
 export const Unit = {
   mm: { id: 'mm', factor: 1, decimals: 0 },
@@ -15,15 +15,13 @@ export const fromMm = (mm: number, unit: Unit): number => mm / unit.factor;
 
 /** Convert a circumference to a diameter assuming a circular cross-section
  *  (d = c / π). Pass-through for null. */
-export const circumferenceToDiameter = (
-  circumference: number | null | undefined,
-): number | null => (circumference == null ? null : circumference / Math.PI);
+export const circumferenceToDiameter = (circumference: number | null | undefined): number | null =>
+  circumference == null ? null : circumference / Math.PI;
 
 /** Convert a diameter to a circumference assuming a circular cross-section
  *  (c = π · d). Pass-through for null. */
-export const diameterToCircumference = (
-  diameter: number | null | undefined,
-): number | null => (diameter == null ? null : diameter * Math.PI);
+export const diameterToCircumference = (diameter: number | null | undefined): number | null =>
+  diameter == null ? null : diameter * Math.PI;
 
 export const convertSections = (sections: ToySection[], from: Unit, to: Unit): ToySection[] => {
   if (from === to) return sections;

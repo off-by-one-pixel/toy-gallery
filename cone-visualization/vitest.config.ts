@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  // cone_editor (a `file:../cone_editor` workspace dep) ships its own
-  // copy of React in cone_editor/node_modules/react. Without dedup,
+  // toy-editor (a `file:../toy-editor` workspace dep) ships its own
+  // copy of React in toy-editor/node_modules/react. Without dedup,
   // vitest can resolve React twice — once for the hook under test, once
   // for @testing-library/react — and useRef sees a null dispatcher.
   resolve: {

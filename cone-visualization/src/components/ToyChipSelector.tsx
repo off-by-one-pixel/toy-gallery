@@ -1,7 +1,7 @@
 'use client';
 
 import { Chip } from '@heroui/react';
-import { ThumbnailRender } from 'cone-editor';
+import { ThumbnailRender } from 'toy-editor';
 import { Check } from 'lucide-react';
 
 import { INVOLVEMENT_LABEL } from '../labels';

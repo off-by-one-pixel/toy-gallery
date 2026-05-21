@@ -4,14 +4,14 @@ on:
   pull_request:
     paths:
       - "cone-visualization/**"
-      - "cone_editor/**"
+      - "toy-editor/**"
       - "api/schema.yml"
       - ".github/workflows/cone-visualization.yml"
   push:
     branches: [main]
     paths:
       - "cone-visualization/**"
-      - "cone_editor/**"
+      - "toy-editor/**"
       - "api/schema.yml"
       - ".github/workflows/cone-visualization.yml"
 
@@ -37,10 +37,10 @@ jobs:
           cache: npm
           cache-dependency-path: |
             cone-visualization/package-lock.json
-            cone_editor/package-lock.json
+            toy-editor/package-lock.json
 
-      - name: Install and build cone_editor
-        working-directory: cone_editor
+      - name: Install and build toy-editor
+        working-directory: toy-editor
         run: |
           npm ci
           npm run build
