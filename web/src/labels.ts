@@ -2,6 +2,7 @@
 // strings mapped from values (rather than passed in as component props) live
 // here so a future i18n layer can swap them in one place.
 
+import { ViewMode } from './providers/ViewModeProvider';
 import { Involvement, SectionShape } from './services/types';
 
 export const SHAPE_LABEL: Record<SectionShape, string> = {
@@ -27,6 +28,14 @@ export const TOY_CIRCUMFERENCE_SHORT = 'circ.';
 export const TOY_ACTION_EDIT = 'Edit';
 export const TOY_ACTION_COPY = 'Copy';
 export const TOY_ACTION_DELETE = 'Delete';
+
+export const VIEW_TOGGLE_ARIA_LABEL = 'Gallery view';
+export const VIEW_MODE_LABEL: Record<ViewMode, string> = {
+  [ViewMode.cards]: 'Cards',
+  [ViewMode.list]: 'List',
+};
+
+export const UNIT_TOGGLE_ARIA_LABEL = 'Display units';
 
 // ---- Sessions ----
 

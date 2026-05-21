@@ -42,7 +42,7 @@ const ConeList = () => {
   const [query, setQuery] = useState('');
   const [openCardId, setOpenCardId] = useState<number | null>(null);
   const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
-  const { view } = useViewMode();
+  const { view, setView } = useViewMode();
   const { sort } = useSort();
   const sortedCones = useMemo(() => sortToys(filterToys(cones, query), sort), [cones, sort, query]);
 
@@ -93,7 +93,7 @@ const ConeList = () => {
           <div className="w-full sm:w-auto">
             <SearchInput value={query} onChange={setQuery} />
           </div>
-          <ViewToggle />
+          <ViewToggle view={view} onChange={setView} />
           <UnitToggle />
           <div className="flex-1" />
           <Button variant="outline" size="sm" onPress={() => router.push('/sessions/new')}>
