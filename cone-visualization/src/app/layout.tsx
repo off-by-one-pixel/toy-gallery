@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import 'cone-editor/styles.css';
+import 'toy-editor/styles.css';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/index.css';
 import { AuthProvider } from '../providers/AuthProvider';

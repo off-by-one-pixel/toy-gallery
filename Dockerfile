@@ -7,21 +7,21 @@
 # Build context: repo root.
 #   docker build -t toy-gallery .
 
-# ----- Stage 1: build cone_editor (the React component library) ----------
+# ----- Stage 1: build toy-editor (the React component library) ----------
 # Builds the submodule that's pinned in this repo (`git submodule update
-# --init` must have populated cone_editor/ before `docker build`). Using
+# --init` must have populated toy-editor/ before `docker build`). Using
 # the submodule rather than cloning a fresh tip-of-main keeps the parent
 # repo and the editor in lockstep.
-FROM node:22-alpine AS cone_editor
-WORKDIR /cone_editor
-COPY cone_editor/ ./
+FROM node:22-alpine AS toy_editor
+WORKDIR /toy-editor
+COPY toy-editor/ ./
 RUN npm ci && npm run build
 
 # ----- Stage 2: build the Next.js static export --------------------------
 FROM node:22-alpine AS frontend
 ARG APP_VERSION=dev
 ARG APP_COMMIT_SHA=local
-COPY --from=cone_editor /cone_editor /workspace/cone_editor
+COPY --from=toy_editor /toy-editor /workspace/toy-editor
 WORKDIR /workspace/cone-visualization
 COPY cone-visualization/package.json cone-visualization/package-lock.json ./
 RUN npm ci

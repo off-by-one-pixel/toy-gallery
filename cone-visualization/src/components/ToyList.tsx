@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
-import { ThumbnailRender } from 'cone-editor';
+import { ThumbnailRender } from 'toy-editor';
 
 import { ATTRIBUTES_HEADING, SHAPE_LABEL, TOY_CIRCUMFERENCE, TOY_CIRCUMFERENCE_SHORT } from '../labels';
 import { useSort } from '../providers/SortProvider';

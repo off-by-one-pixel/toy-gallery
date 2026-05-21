@@ -1,8 +1,8 @@
-import type { Toy as EditorToy } from 'cone-editor';
+import type { Toy as EditorToy } from 'toy-editor';
 import { SectionShape, type Toy } from '../types';
 import { circumferenceToDiameter } from '../units';
 
-/** Map a saved Toy (API domain) to the EditorToy the cone-editor store
+/** Map a saved Toy (API domain) to the EditorToy the toy-editor store
  *  consumes when opening edit / copy flows. Sections are shallow-copied
  *  so editor mutations don't leak back into the source record. Reference
  *  dimensions are translated: circumference → diameter via π, snake

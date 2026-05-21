@@ -1,4 +1,4 @@
-import type { StyleOption } from 'cone-editor';
+import type { StyleOption } from 'toy-editor';
 
 /** Neutral silhouette style shared by the template picker cards and
  *  the live preview in the size form. The final colour comes from the

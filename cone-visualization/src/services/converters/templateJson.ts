@@ -1,4 +1,4 @@
-import type { Toy as EditorToy } from 'cone-editor';
+import type { Toy as EditorToy } from 'toy-editor';
 import { SectionShape, type ToyTemplate } from '../types';
 import { circumferenceToDiameter } from '../units';
 

@@ -1,4 +1,4 @@
-import type { Toy as EditorToy } from 'cone-editor';
+import type { Toy as EditorToy } from 'toy-editor';
 import { SectionShape, type Shape } from '../types';
 
 /** Map a domain Shape to the read-only triple the thumbnail renderer

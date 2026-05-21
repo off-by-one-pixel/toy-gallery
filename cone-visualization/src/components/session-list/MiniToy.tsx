@@ -1,6 +1,6 @@
 'use client';
 
-import { ThumbnailRender } from 'cone-editor';
+import { ThumbnailRender } from 'toy-editor';
 
 import { SESSION_TOY_DELETED } from '../../labels';
 import { toyShapeToEditor } from '../../services/converters/toyShape';

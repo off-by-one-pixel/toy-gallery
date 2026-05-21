@@ -17,11 +17,11 @@ api/staticfiles
 api/**/__pycache__
 api/**/*.pyc
 
-# cone_editor is a submodule that gets built in stage 1 of the all-in-one
+# toy-editor is a submodule that gets built in stage 1 of the all-in-one
 # Dockerfile — we need its source in the build context. Exclude only the
 # build outputs and tooling state.
-cone_editor/dist
-cone_editor/.devcontainer
+toy-editor/dist
+toy-editor/.devcontainer
 
 # VCS / editor
 .git

@@ -3,9 +3,9 @@
 # Build context: repo root. Invoke with:
 #   docker build -f cone-visualization/Dockerfile .
 
-# ----- Stage 1: fetch + build cone_editor (the library) ------------------
-FROM node:22-alpine AS cone_editor
-WORKDIR /cone_editor
+# ----- Stage 1: fetch + build toy-editor (the library) ------------------
+FROM node:22-alpine AS toy_editor
+WORKDIR /toy-editor
 RUN apk add --no-cache git
 RUN git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git . \
  && npm ci \
@@ -13,9 +13,9 @@ RUN git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git . \
 
 # ----- Stage 2: install + build the Next.js app -------------------------
 FROM node:22-alpine AS builder
-# The Next.js app's package.json has `cone-editor: file:../cone_editor`.
+# The Next.js app's package.json has `toy-editor: file:../toy-editor`.
 # Preserve the sibling layout under /workspace/.
-COPY --from=cone_editor /cone_editor /workspace/cone_editor
+COPY --from=toy_editor /toy-editor /workspace/toy-editor
 WORKDIR /workspace/cone-visualization
 COPY cone-visualization/package.json cone-visualization/package-lock.json ./
 RUN npm ci

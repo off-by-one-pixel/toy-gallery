@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ToySection } from 'cone-editor';
+import type { ToySection } from 'toy-editor';
 
 import type { EditorState } from './converters/editor';
 import {
