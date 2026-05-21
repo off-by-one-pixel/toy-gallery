@@ -40,7 +40,7 @@ export interface ToySection {
   height: number;
   /** Optional measured circumference in the same units as diameter.
    *  Preserved for backward compatibility with consumers that persist it
-   *  per-section (notably the toy_gallery_be backend). */
+   *  per-section (notably the toy_gallery backend). */
   circumference?: number | null;
   /** Visual-only flag: was each dimension touched by the user? Defaults to
    *  fully touched on hydrate (loaded toys are by definition user-set) and
