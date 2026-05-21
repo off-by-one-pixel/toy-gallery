@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import models
+
+
+def max_or_none(values: Iterable[float | None]) -> float | None:
+    """Max of the non-None entries, or None when none are present."""
+    filtered = [v for v in values if v is not None]
+    return max(filtered) if filtered else None
 
 
 class SessionDimensions:
@@ -34,18 +41,8 @@ class SessionDimensions:
 
     @classmethod
     def peak_length(cls, session: models.Session) -> float | None:
-        values = [
-            e.toy.insertable_length
-            for e in cls._length_entries(session)
-            if e.toy.insertable_length is not None
-        ]
-        return max(values) if values else None
+        return max_or_none(e.toy.insertable_length for e in cls._length_entries(session))
 
     @classmethod
     def peak_circumference(cls, session: models.Session) -> float | None:
-        values = [
-            e.toy.circumference
-            for e in cls._circumference_entries(session)
-            if e.toy.circumference is not None
-        ]
-        return max(values) if values else None
+        return max_or_none(e.toy.circumference for e in cls._circumference_entries(session))

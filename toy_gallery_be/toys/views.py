@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 from . import export as export_mod
 from . import models, serializers
-from .dimensions import SessionDimensions
+from .dimensions import SessionDimensions, max_or_none
 
 
 class ToyViewSet(viewsets.ModelViewSet):
@@ -105,20 +105,16 @@ class SessionViewSet(viewsets.ModelViewSet):
 
         days = []
         for day, day_sessions in sorted(buckets.items()):
-            lengths = [
-                v for v in (SessionDimensions.peak_length(s) for s in day_sessions) if v is not None
-            ]
-            circs = [
-                v
-                for v in (SessionDimensions.peak_circumference(s) for s in day_sessions)
-                if v is not None
-            ]
             days.append(
                 {
                     "date": day,
                     "session_count": len(day_sessions),
-                    "max_insertable_length": max(lengths) if lengths else None,
-                    "max_circumference": max(circs) if circs else None,
+                    "max_insertable_length": max_or_none(
+                        SessionDimensions.peak_length(s) for s in day_sessions
+                    ),
+                    "max_circumference": max_or_none(
+                        SessionDimensions.peak_circumference(s) for s in day_sessions
+                    ),
                 }
             )
 
