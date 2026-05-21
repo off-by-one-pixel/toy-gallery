@@ -1,5 +1,5 @@
 {
-  "include": ["toy_gallery_be"],
+  "include": ["api"],
   "exclude": [
     "**/__pycache__",
     "**/.venv",
@@ -7,8 +7,8 @@
     "cone-visualization",
     "cone_editor"
   ],
-  "extraPaths": ["toy_gallery_be"],
-  "venvPath": "toy_gallery_be",
+  "extraPaths": ["api"],
+  "venvPath": "api",
   "venv": ".venv",
   "pythonVersion": "3.13",
 

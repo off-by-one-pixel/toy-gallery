@@ -32,6 +32,6 @@
       }
     }
   },
-  "postCreateCommand": "cd toy_gallery_be && uv sync && cd ../cone-visualization && npm install && cd /workspace && pre-commit install",
+  "postCreateCommand": "cd api && uv sync && cd ../cone-visualization && npm install && cd /workspace && pre-commit install",
   "remoteUser": "vscode"
 }

@@ -23,23 +23,23 @@ jobs:
           python-version: '3.13'
       - uses: astral-sh/setup-uv@v4
       - name: Install BE dependencies
-        run: cd toy_gallery_be && uv sync --frozen
+        run: cd api && uv sync --frozen
       - name: Run BE tests with coverage
         run: |
-          cd toy_gallery_be
+          cd api
           uv run coverage run --source=toys manage.py test toys
           uv run coverage xml -o coverage.xml
           # `coverage xml` writes paths relative to its cwd (here:
-          # toy_gallery_be), so filenames look like `toys/models.py`.
-          # Sonar's project root is the repo root, where the same files
-          # live at `toy_gallery_be/toys/models.py`. Prefix the filenames
-          # so they're relative to the project root, and point <source>
-          # at "." — the scanner runs inside a Docker container where
-          # $GITHUB_WORKSPACE (a host path) doesn't exist, but a relative
-          # path resolves against sonar.projectBaseDir.
+          # api/), so filenames look like `toys/models.py`. Sonar's
+          # project root is the repo root, where the same files live at
+          # `api/toys/models.py`. Prefix the filenames so they're
+          # relative to the project root, and point <source> at "." —
+          # the scanner runs inside a Docker container where
+          # $GITHUB_WORKSPACE (a host path) doesn't exist, but a
+          # relative path resolves against sonar.projectBaseDir.
           sed -i \
             -e 's|<source>.*</source>|<source>.</source>|' \
-            -e 's|filename="toys/|filename="toy_gallery_be/toys/|g' \
+            -e 's|filename="toys/|filename="api/toys/|g' \
             coverage.xml
 
       # ─── Frontend (Next.js) coverage ────────────────────────────────

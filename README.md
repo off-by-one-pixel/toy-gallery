@@ -92,7 +92,7 @@ If you'd rather not manage the certificate yourself, you can put a reverse proxy
 
 This repo is a multi-project monorepo. Each directory is an independent project with its own `package.json` / `pyproject.toml`:
 
-### [`toy_gallery_be/`](toy_gallery_be/) — Django backend
+### [`api/`](api/) — Django backend
 REST API (Django 5 + DRF) with JWT auth. Stores toys and their shape data (ordered cylindrical sections + top-shape enum). Serves the gallery and editor frontends.
 
 ### [`cone-visualization/`](cone-visualization/) — gallery frontend (primary app)

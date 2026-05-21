@@ -2,7 +2,7 @@ import { defineConfig } from 'orval';
 
 export default defineConfig({
   toys: {
-    input: '../toy_gallery_be/schema.yml',
+    input: '../api/schema.yml',
     output: {
       target: 'src/services/generated/sdk.ts',
       schemas: 'src/services/generated/schemas',

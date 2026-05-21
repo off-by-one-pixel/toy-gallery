@@ -20,10 +20,10 @@ WORKDIR /workspace/cone-visualization
 COPY cone-visualization/package.json cone-visualization/package-lock.json ./
 RUN npm ci
 COPY cone-visualization/ ./
-# The orval config reads `../toy_gallery_be/schema.yml`. Bring just that file
+# The orval config reads `../api/schema.yml`. Bring just that file
 # into the builder so the generated SDK is always regenerated from the
 # committed schema at image-build time.
-COPY toy_gallery_be/schema.yml /workspace/toy_gallery_be/schema.yml
+COPY api/schema.yml /workspace/api/schema.yml
 RUN npm run build
 
 # ----- Stage 3: runtime (serves the static export) ----------------------

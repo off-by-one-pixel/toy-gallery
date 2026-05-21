@@ -5,14 +5,14 @@ on:
     paths:
       - "cone-visualization/**"
       - "cone_editor/**"
-      - "toy_gallery_be/schema.yml"
+      - "api/schema.yml"
       - ".github/workflows/cone-visualization.yml"
   push:
     branches: [main]
     paths:
       - "cone-visualization/**"
       - "cone_editor/**"
-      - "toy_gallery_be/schema.yml"
+      - "api/schema.yml"
       - ".github/workflows/cone-visualization.yml"
 
 concurrency:

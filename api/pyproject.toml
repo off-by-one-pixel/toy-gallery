@@ -1,5 +1,5 @@
 [project]
-name = "toy-gallery-be"
+name = "toy-gallery"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -42,4 +42,4 @@ select = ["F", "E", "W", "I", "B", "UP"]
 [tool.ruff.lint.per-file-ignores]
 # Django settings inheritance idiomatically uses `from .settings import *`.
 # F403/F405 flag the star import; we accept it here.
-"toy_gallery_be/settings_*.py" = ["F403", "F405"]
+"toy_gallery/settings_*.py" = ["F403", "F405"]

@@ -418,7 +418,7 @@ wheels = [
 ]
 
 [[package]]
-name = "toy-gallery-be"
+name = "toy-gallery"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
