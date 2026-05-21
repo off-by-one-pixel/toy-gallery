@@ -1,12 +1,11 @@
-type CamelKey<S extends string> = S extends `${infer H}_${infer T}`
-  ? `${H}${Capitalize<CamelKey<T>>}`
-  : S;
+type CamelKey<S extends string> = S extends `${infer H}_${infer T}` ? `${H}${Capitalize<CamelKey<T>>}` : S;
 
-export type SnakeToCamel<T> = T extends Array<infer U>
-  ? Array<SnakeToCamel<U>>
-  : T extends object
-    ? { [K in keyof T as CamelKey<K & string>]: SnakeToCamel<T[K]> }
-    : T;
+export type SnakeToCamel<T> =
+  T extends Array<infer U>
+    ? Array<SnakeToCamel<U>>
+    : T extends object
+      ? { [K in keyof T as CamelKey<K & string>]: SnakeToCamel<T[K]> }
+      : T;
 
 type Dict = { [key: string]: unknown };
 

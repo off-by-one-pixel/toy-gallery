@@ -47,17 +47,17 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: cone-visualization/package-lock.json
+          cache-dependency-path: web/package-lock.json
       - name: Install FE dependencies
-        run: cd cone-visualization && npm ci
+        run: cd web && npm ci
       - name: Run FE tests with coverage
         run: |
-          cd cone-visualization
+          cd web
           npm test -- --coverage
           # Same path fix as the BE: vitest emits `SF:src/...` paths
-          # rooted at cone-visualization/, but Sonar indexes from repo
-          # root, so prefix every source path.
-          sed -i 's|^SF:src/|SF:cone-visualization/src/|' coverage/lcov.info
+          # rooted at web/, but Sonar indexes from repo root, so prefix
+          # every source path.
+          sed -i 's|^SF:src/|SF:web/src/|' coverage/lcov.info
 
       # ─── SonarQube scan + Quality Gate ──────────────────────────────
       # SonarQube Community Edition doesn't support PR analysis

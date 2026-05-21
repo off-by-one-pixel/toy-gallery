@@ -3,7 +3,7 @@
 #
 # Two scopes:
 #   - Backend Python (api/) → Ruff lint with auto-fix.
-#   - Frontend TS/TSX (cone-visualization/src/) → Prettier auto-format.
+#   - Frontend TS/TSX (web/src/) → Prettier auto-format.
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -20,8 +20,8 @@ repos:
         name: prettier (frontend)
         # Run prettier from the project's own node_modules so the version
         # matches what the dev runs locally via `npm run format`. Prettier
-        # auto-discovers cone-visualization/.prettierrc.json.
-        entry: cone-visualization/node_modules/.bin/prettier --write
+        # auto-discovers web/.prettierrc.json.
+        entry: web/node_modules/.bin/prettier --write
         language: system
-        files: ^cone-visualization/src/.*\.(ts|tsx)$
+        files: ^web/src/.*\.(ts|tsx)$
         pass_filenames: true

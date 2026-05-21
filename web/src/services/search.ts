@@ -1,7 +1,6 @@
 import type { Toy } from './types';
 
-const haystack = (t: Toy): string =>
-  `${t.brand} ${t.name} ${t.size}`.toLowerCase();
+const haystack = (t: Toy): string => `${t.brand} ${t.name} ${t.size}`.toLowerCase();
 
 // Whitespace-separated terms, all of which must appear somewhere in the
 // concatenated brand+name+size string. So "bad small" matches a Bad Dragon

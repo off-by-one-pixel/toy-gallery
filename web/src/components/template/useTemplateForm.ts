@@ -62,10 +62,7 @@ export function useTemplateForm(unit: Unit): TemplateForm {
     [selectedTemplate, unit],
   );
   const changeSize = useCallback((value: string) => dispatch({ type: 'change-size', value }), []);
-  const changeSizeMode = useCallback(
-    (mode: SizeMode) => dispatch({ type: 'change-size-mode', mode, unit }),
-    [unit],
-  );
+  const changeSizeMode = useCallback((mode: SizeMode) => dispatch({ type: 'change-size-mode', mode, unit }), [unit]);
 
   return {
     state,

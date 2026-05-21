@@ -22,10 +22,10 @@ FROM node:22-alpine AS frontend
 ARG APP_VERSION=dev
 ARG APP_COMMIT_SHA=local
 COPY --from=toy_editor /toy-editor /workspace/toy-editor
-WORKDIR /workspace/cone-visualization
-COPY cone-visualization/package.json cone-visualization/package-lock.json ./
+WORKDIR /workspace/web
+COPY web/package.json web/package-lock.json ./
 RUN npm ci
-COPY cone-visualization/ ./
+COPY web/ ./
 COPY api/schema.yml /workspace/api/schema.yml
 # Empty string flips the frontend into same-origin mode (see src/config.ts).
 # APP_VERSION + APP_COMMIT_SHA are inlined into the static bundle so the UI
@@ -61,7 +61,7 @@ WORKDIR /app
 
 COPY --from=python_deps /app/.venv /app/.venv
 COPY api/ /app/
-COPY --from=frontend /workspace/cone-visualization/build /app/frontend
+COPY --from=frontend /workspace/web/build /app/frontend
 COPY docker/ /app/docker/
 RUN chmod +x /app/docker/entrypoint.sh \
  && mkdir -p /data

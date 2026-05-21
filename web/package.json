@@ -1,7 +1,7 @@
 {
-  "name": "cone-visualization",
+  "name": "web",
   "version": "1.0.0",
-  "description": "A React application for visualizing a cone based on specified measurements.",
+  "description": "Toy Gallery web app — Next.js + HeroUI frontend that talks to the Django API.",
   "scripts": {
     "codegen": "orval --config orval.config.ts",
     "predev": "npm run codegen",
