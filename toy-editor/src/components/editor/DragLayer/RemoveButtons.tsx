@@ -17,7 +17,7 @@ const RemoveButtons = () => {
         return (
           <g
             key={`x-${meta.section.id}`}
-            className="cone-editor-remove"
+            className="toy-editor-remove"
             onClick={(e) => {
               e.stopPropagation();
               removeSection(meta.section.id);

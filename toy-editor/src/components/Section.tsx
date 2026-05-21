@@ -26,7 +26,7 @@ const Section = ({
 
   return (
     <g
-      className={interactive ? "cone-editor-part" : undefined}
+      className={interactive ? "toy-editor-part" : undefined}
       transform={`translate(${x}, 0)`}
       onClick={onSelect ? () => onSelect(section.id) : undefined}
       onMouseEnter={onHover ? () => onHover(section.id) : undefined}

@@ -29,7 +29,7 @@ const SvgRoot = ({
   return (
     <svg
       ref={ref}
-      className="cone-editor-svg"
+      className="toy-editor-svg"
       width={width}
       height={height}
       viewBox={viewBox}

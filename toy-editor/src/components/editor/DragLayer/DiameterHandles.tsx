@@ -21,7 +21,7 @@ const DiameterHandles = ({ handlers }: { handlers: DragHandlers }) => {
         return (
           <circle
             key={`d-${meta.section.id}`}
-            className="cone-editor-handle cone-editor-handle-diameter"
+            className="toy-editor-handle toy-editor-handle-diameter"
             {...pos}
             r={HANDLE_R_PX}
             onPointerDown={(e) =>

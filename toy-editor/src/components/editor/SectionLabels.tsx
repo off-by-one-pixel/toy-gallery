@@ -77,7 +77,7 @@ const HeightRow = ({ meta, layout, x, onChange }: RowProps) => {
   return (
     <g>
       <path
-        className={`cone-editor-leader ${touched ? "is-touched" : "is-default"}`}
+        className={`toy-editor-leader ${touched ? "is-touched" : "is-default"}`}
         d={leaderD}
       />
       <FloatingInput
@@ -102,7 +102,7 @@ const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
   return (
     <g>
       <path
-        className={`cone-editor-leader ${touched ? "is-touched" : "is-default"}`}
+        className={`toy-editor-leader ${touched ? "is-touched" : "is-default"}`}
         d={leaderD}
       />
       <FloatingInput
@@ -117,7 +117,7 @@ const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
         trailing={
           overshoots && (
             <span
-              className="cone-editor-floating-warn"
+              className="toy-editor-floating-warn"
               title="Section is wider than the known size guide"
               aria-label="Section exceeds the known size guide"
             >

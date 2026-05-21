@@ -11,7 +11,7 @@ const BoundaryBands = ({ handlers }: { handlers: DragHandlers }) => {
         return (
           <rect
             key={`b-${meta.section.id}`}
-            className="cone-editor-handle-boundary"
+            className="toy-editor-handle-boundary"
             {...bandRect(boundaryMm, layout)}
             onPointerDown={(e) =>
               handlers.onBoundaryPointerDown(e, meta.section.id, boundaryMm)

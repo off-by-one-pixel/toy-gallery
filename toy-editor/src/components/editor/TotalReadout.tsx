@@ -8,7 +8,7 @@ const TotalReadout = () => {
   const unit = useEditorUnit();
   return (
     <text
-      className="cone-editor-total-readout"
+      className="toy-editor-total-readout"
       {...totalReadoutPosition(layout)}
       textAnchor="middle"
     >

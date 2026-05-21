@@ -1,5 +1,5 @@
 {
-  "name": "cone-editor",
+  "name": "toy-editor",
   "version": "0.1.0",
   "description": "Headless React component for editing stacked cylindrical sections (toys, cones, etc.)",
   "type": "module",

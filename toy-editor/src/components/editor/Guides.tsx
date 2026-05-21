@@ -14,7 +14,7 @@ const Guides = () => {
   const xRange = guidesXRange(layout);
 
   return (
-    <g className="cone-editor-guides" pointerEvents="none">
+    <g className="toy-editor-guides" pointerEvents="none">
       {insertableMm != null && insertableMm >= 0 && (
         <HorizontalGuide
           {...xRange}
@@ -48,9 +48,9 @@ const HorizontalGuide = ({
   label: string;
 }) => (
   <>
-    <line className="cone-editor-guide" x1={xLeft} x2={xRight} y1={y} y2={y} />
+    <line className="toy-editor-guide" x1={xLeft} x2={xRight} y1={y} y2={y} />
     <text
-      className="cone-editor-guide-label"
+      className="toy-editor-guide-label"
       x={xRight}
       y={y - 4}
       textAnchor="end"
@@ -71,10 +71,10 @@ const SizeGuide = ({
   const { xLeft, xRight, yTop, yBot } = sizeGuideGeometry(knownSizeMm, layout);
   return (
     <>
-      <line className="cone-editor-guide" x1={xLeft} x2={xLeft} y1={yTop} y2={yBot} />
-      <line className="cone-editor-guide" x1={xRight} x2={xRight} y1={yTop} y2={yBot} />
+      <line className="toy-editor-guide" x1={xLeft} x2={xLeft} y1={yTop} y2={yBot} />
+      <line className="toy-editor-guide" x1={xRight} x2={xRight} y1={yTop} y2={yBot} />
       <text
-        className="cone-editor-guide-label"
+        className="toy-editor-guide-label"
         x={layout.silhouetteCenter}
         y={yTop - 2}
         textAnchor="middle"

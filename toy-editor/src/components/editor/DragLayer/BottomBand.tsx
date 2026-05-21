@@ -8,7 +8,7 @@ const BottomBand = ({ handlers }: { handlers: DragHandlers }) => {
   if (!last) return null;
   return (
     <rect
-      className="cone-editor-handle-boundary cone-editor-handle-bottom"
+      className="toy-editor-handle-boundary toy-editor-handle-bottom"
       {...bandRect(last.bottomMm, layout)}
       onPointerDown={(e) =>
         handlers.onBottomPointerDown(e, last.section.id, last.bottomMm, last.topMm)
