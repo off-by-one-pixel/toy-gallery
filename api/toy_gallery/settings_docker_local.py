@@ -13,7 +13,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 os.environ.setdefault("SECRET_KEY", "local-prod-not-a-real-secret")
-os.environ.setdefault("DATA_DIR", str(REPO_ROOT / "toy_gallery_be"))
+os.environ.setdefault("DATA_DIR", str(REPO_ROOT / "toy_gallery"))
 
 from .settings_docker import *  # noqa: E402, F401, F403
 

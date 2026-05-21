@@ -2,7 +2,7 @@
 # `pre-commit install` (the devcontainer's postCreateCommand handles this).
 #
 # Two scopes:
-#   - Backend Python (toy_gallery_be/) → Ruff lint with auto-fix.
+#   - Backend Python (api/) → Ruff lint with auto-fix.
 #   - Frontend TS/TSX (cone-visualization/src/) → Prettier auto-format.
 
 repos:
@@ -12,7 +12,7 @@ repos:
       - id: ruff
         name: ruff lint (backend)
         args: [--fix]
-        files: ^toy_gallery_be/.*\.py$
+        files: ^api/.*\.py$
 
   - repo: local
     hooks:

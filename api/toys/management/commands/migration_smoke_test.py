@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from toy_gallery_be.migration_invariants import check as run_invariants
+from toy_gallery.migration_invariants import check as run_invariants
 
 LOG_PREFIX = "[smoke]"
 

@@ -40,7 +40,7 @@ SSL_KEY_PATH="${SSL_KEY_PATH:-$DATA_DIR/certs/key.pem}"
 
 if [ -f "$SSL_CERT_PATH" ] && [ -f "$SSL_KEY_PATH" ]; then
   echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} (HTTPS)"
-  exec gunicorn toy_gallery_be.wsgi:application \
+  exec gunicorn toy_gallery.wsgi:application \
     --bind "0.0.0.0:${PORT:-8000}" \
     --workers "${WORKERS:-3}" \
     --certfile "$SSL_CERT_PATH" \
@@ -50,7 +50,7 @@ if [ -f "$SSL_CERT_PATH" ] && [ -f "$SSL_KEY_PATH" ]; then
 fi
 
 echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} (HTTP)"
-exec gunicorn toy_gallery_be.wsgi:application \
+exec gunicorn toy_gallery.wsgi:application \
   --bind "0.0.0.0:${PORT:-8000}" \
   --workers "${WORKERS:-3}" \
   --access-logfile - \

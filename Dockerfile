@@ -26,7 +26,7 @@ WORKDIR /workspace/cone-visualization
 COPY cone-visualization/package.json cone-visualization/package-lock.json ./
 RUN npm ci
 COPY cone-visualization/ ./
-COPY toy_gallery_be/schema.yml /workspace/toy_gallery_be/schema.yml
+COPY api/schema.yml /workspace/api/schema.yml
 # Empty string flips the frontend into same-origin mode (see src/config.ts).
 # APP_VERSION + APP_COMMIT_SHA are inlined into the static bundle so the UI
 # can show what the user is running.
@@ -41,14 +41,14 @@ ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1
 RUN pip install --no-cache-dir uv==0.5.14
 WORKDIR /app
-COPY toy_gallery_be/pyproject.toml toy_gallery_be/uv.lock ./
+COPY api/pyproject.toml api/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 # ----- Stage 4: runtime --------------------------------------------------
 FROM python:3.13-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=toy_gallery_be.settings_docker \
+    DJANGO_SETTINGS_MODULE=toy_gallery.settings_docker \
     PATH="/app/.venv/bin:$PATH" \
     PORT=8000
 
@@ -60,7 +60,7 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY --from=python_deps /app/.venv /app/.venv
-COPY toy_gallery_be/ /app/
+COPY api/ /app/
 COPY --from=frontend /workspace/cone-visualization/build /app/frontend
 COPY docker/ /app/docker/
 RUN chmod +x /app/docker/entrypoint.sh \

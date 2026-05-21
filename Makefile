@@ -9,26 +9,26 @@ help:
 	@echo "  make test      Run backend and frontend tests"
 	@echo "  make test-be   Run backend tests (Django)"
 	@echo "  make test-fe   Run frontend tests (Vitest)"
-	@echo "  make schema    Regenerate the OpenAPI schema (toy_gallery_be/schema.yml)"
+	@echo "  make schema    Regenerate the OpenAPI schema (api/schema.yml)"
 	@echo "For dev, run 'make be' and 'make fe' in separate terminals."
 
 be:
-	cd toy_gallery_be && uv run python manage.py runserver 0.0.0.0:8000
+	cd api && uv run python manage.py runserver 0.0.0.0:8000
 
 # Mirrors the Docker entrypoint: builds the Next.js export, runs the same
 # migrate + collectstatic + gunicorn sequence under settings_docker_local
 # (a thin override of settings_docker pointing WhiteNoise at the live
 # build and using the dev sqlite DB).
-PROD_SETTINGS = DJANGO_SETTINGS_MODULE=toy_gallery_be.settings_docker_local
+PROD_SETTINGS = DJANGO_SETTINGS_MODULE=toy_gallery.settings_docker_local
 
 be-prod:
 	cd cone-visualization && npm run build
-	cd toy_gallery_be && $(PROD_SETTINGS) uv run python manage.py migrate --noinput
-	cd toy_gallery_be && $(PROD_SETTINGS) uv run python manage.py collectstatic --noinput
-	cd toy_gallery_be && $(PROD_SETTINGS) uv run gunicorn toy_gallery_be.wsgi:application --bind 0.0.0.0:8000
+	cd api && $(PROD_SETTINGS) uv run python manage.py migrate --noinput
+	cd api && $(PROD_SETTINGS) uv run python manage.py collectstatic --noinput
+	cd api && $(PROD_SETTINGS) uv run gunicorn toy_gallery.wsgi:application --bind 0.0.0.0:8000
 
 migrate:
-	cd toy_gallery_be && uv run python manage.py migrate
+	cd api && uv run python manage.py migrate
 
 fe:
 	cd cone-visualization && npm run dev
@@ -36,10 +36,10 @@ fe:
 test: test-be test-fe
 
 test-be:
-	cd toy_gallery_be && uv run python manage.py test toys
+	cd api && uv run python manage.py test toys
 
 test-fe:
 	cd cone-visualization && npm test
 
 schema:
-	cd toy_gallery_be && uv run python manage.py spectacular --file schema.yml --validate
+	cd api && uv run python manage.py spectacular --file schema.yml --validate

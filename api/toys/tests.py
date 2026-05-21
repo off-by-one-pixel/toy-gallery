@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from toy_gallery_be.urls import _resolve_spa_html
+from toy_gallery.urls import _resolve_spa_html
 
 from . import export as export_mod
 from . import models
