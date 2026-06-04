@@ -5,16 +5,8 @@ import { Button } from '@heroui/react';
 import { ThumbnailRender } from 'toy-editor';
 import type { Toy as EditorToy } from 'toy-editor';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import {
-  TEMPLATE_BACK,
-  TEMPLATE_CONTINUE,
-  TEMPLATE_FIELD_CIRCUMFERENCE,
-  TEMPLATE_FIELD_INSERTABLE_LENGTH,
-  TEMPLATE_FIELD_MAX_DIAMETER,
-  TEMPLATE_FIELD_TOTAL_LENGTH,
-  TEMPLATE_PICKED_SHAPE_PREFIX,
-} from '../../labels';
 import { templateToEditor } from '../../services/converters/template';
 import type { SizeMode } from '../../services/templateForm';
 import { useUnit } from '../../providers/UnitProvider';
@@ -31,6 +23,8 @@ type Props = Readonly<{
 
 export default function SizeForm({ form, onBack, onContinue }: Props) {
   const { unit } = useUnit();
+  const t = useTranslations('template');
+  const common = useTranslations('common');
   const { state, selectedTemplate: template, totalMm, insertableMm, maxDiameterMm } = form;
 
   const previewToy = useMemo<EditorToy | null>(() => {
@@ -39,7 +33,7 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
   }, [template, totalMm, maxDiameterMm]);
 
   const canContinue = template != null && totalMm != null && insertableMm != null && maxDiameterMm != null;
-  const sizeFieldLabel = state.sizeMode === 'diameter' ? TEMPLATE_FIELD_MAX_DIAMETER : TEMPLATE_FIELD_CIRCUMFERENCE;
+  const sizeFieldLabel = state.sizeMode === 'diameter' ? t('fieldMaxDiameter') : common('circumference');
 
   return (
     <>
@@ -47,7 +41,7 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
         <div className="mx-auto flex max-w-md flex-col gap-5">
           {template && (
             <div className="text-center text-xs uppercase tracking-[0.08em] text-neutral-500">
-              {TEMPLATE_PICKED_SHAPE_PREFIX} · <span className="text-neutral-700">{template.name}</span>
+              {t('pickedShapePrefix')} · <span className="text-neutral-700">{template.name}</span>
             </div>
           )}
 
@@ -56,14 +50,9 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
           </div>
 
           <div className="flex flex-col gap-3">
+            <SizeField label={common('totalLength')} value={state.totalInput} onChange={form.changeTotal} unit={unit} />
             <SizeField
-              label={TEMPLATE_FIELD_TOTAL_LENGTH}
-              value={state.totalInput}
-              onChange={form.changeTotal}
-              unit={unit}
-            />
-            <SizeField
-              label={TEMPLATE_FIELD_INSERTABLE_LENGTH}
+              label={t('fieldInsertableLength')}
               value={state.insertableInput}
               onChange={form.changeInsertable}
               unit={unit}
@@ -82,11 +71,11 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
       <footer className="flex items-center gap-2 border-t border-neutral-200 bg-white px-4 py-3 sm:px-6">
         <Button variant="outline" size="sm" onPress={onBack}>
           <ArrowLeft size={14} strokeWidth={2} />
-          {TEMPLATE_BACK}
+          {common('back')}
         </Button>
         <div className="flex-1" />
         <Button variant="primary" size="sm" isDisabled={!canContinue} onPress={onContinue}>
-          {TEMPLATE_CONTINUE}
+          {t('continue')}
         </Button>
       </footer>
     </>

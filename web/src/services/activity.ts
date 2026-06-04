@@ -15,9 +15,9 @@ export function localDateKey(d: Date): string {
 }
 
 /** Human-readable date for the cell hover tooltip. */
-export function formatTooltipDate(key: string): string {
+export function formatTooltipDate(key: string, locale: string): string {
   const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+  return new Date(y, m - 1, d).toLocaleDateString(locale, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -105,6 +105,7 @@ const buildDimensionView = (
   endDate: Date,
   windowDays: number,
   unit: Unit,
+  locale: string,
 ): DimensionView => {
   const range = extent(pluck(Array.from(byDate.values()), input.pick));
   const cells: ActivityCell[] = [];
@@ -113,7 +114,7 @@ const buildDimensionView = (
     const key = localDateKey(date);
     const day = byDate.get(key);
     const fill = colorFor(day ? input.pick(day) : null, range.min, range.max, input.hue, day != null);
-    cells.push({ date: key, tooltip: formatTooltipDate(key), fill });
+    cells.push({ date: key, tooltip: formatTooltipDate(key, locale), fill });
   }
   const hasData = range.max > 0;
   return {
@@ -127,12 +128,19 @@ const buildDimensionView = (
   };
 };
 
+export type ActivityLabels = Readonly<{
+  length: string;
+  circumference: string;
+}>;
+
 /** Build the complete heatmap data for the activity tracker, in the
  *  user's current unit. The dimension cells / colors are unit-agnostic;
  *  only the legend labels change with the unit. */
 export function buildActivityHeatmap(
   days: readonly ActivityDay[],
   unit: Unit,
+  locale: string,
+  labels: ActivityLabels,
   options?: Readonly<{ today?: Date; windowDays?: number }>,
 ): ActivityHeatmap {
   const windowDays = options?.windowDays ?? ACTIVITY_WINDOW_DAYS;
@@ -142,20 +150,22 @@ export function buildActivityHeatmap(
   const byDate = new Map(days.map((d) => [d.date, d]));
   return {
     length: buildDimensionView(
-      { title: 'Length', pick: (d) => d.maxInsertableLength, hue: ACTIVITY_PALETTE.lengthHue },
+      { title: labels.length, pick: (d) => d.maxInsertableLength, hue: ACTIVITY_PALETTE.lengthHue },
       byDate,
       startDate,
       today,
       windowDays,
       unit,
+      locale,
     ),
     circumference: buildDimensionView(
-      { title: 'Circumference', pick: (d) => d.maxCircumference, hue: ACTIVITY_PALETTE.circumferenceHue },
+      { title: labels.circumference, pick: (d) => d.maxCircumference, hue: ACTIVITY_PALETTE.circumferenceHue },
       byDate,
       startDate,
       today,
       windowDays,
       unit,
+      locale,
     ),
   };
 }

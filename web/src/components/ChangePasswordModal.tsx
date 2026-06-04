@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Alert, Button, Modal, Toast, useOverlayState } from '@heroui/react';
+import { useTranslations } from 'next-intl';
 
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { changePassword } from '../services/api';
@@ -13,6 +14,8 @@ type Props = Readonly<{
 }>;
 
 export default function ChangePasswordModal({ onClose }: Props) {
+  const t = useTranslations('changePassword');
+  const common = useTranslations('common');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,13 +34,13 @@ export default function ChangePasswordModal({ onClose }: Props) {
     e.preventDefault();
     setError(null);
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match.');
+      setError(t('mismatch'));
       return;
     }
     await runAction(() => changePassword(currentPassword, newPassword), {
       busy: setSubmitting,
       onSuccess: () => {
-        Toast.toast.success('Password changed');
+        Toast.toast.success(t('successToast'));
         overlayState.close();
       },
     });
@@ -50,8 +53,8 @@ export default function ChangePasswordModal({ onClose }: Props) {
           <Modal.Dialog>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
               <header>
-                <h2 className="text-base font-semibold tracking-tight text-neutral-900">Change password</h2>
-                <p className="mt-1 text-[13px] text-neutral-500">Enter your current password and pick a new one.</p>
+                <h2 className="text-base font-semibold tracking-tight text-neutral-900">{t('title')}</h2>
+                <p className="mt-1 text-[13px] text-neutral-500">{t('subtitle')}</p>
               </header>
 
               {error && (
@@ -60,7 +63,7 @@ export default function ChangePasswordModal({ onClose }: Props) {
                 </Alert>
               )}
 
-              <Field label="Current password" htmlFor="cp-current">
+              <Field label={t('currentLabel')} htmlFor="cp-current">
                 <TextInput
                   id="cp-current"
                   type="password"
@@ -71,7 +74,7 @@ export default function ChangePasswordModal({ onClose }: Props) {
                   autoFocus
                 />
               </Field>
-              <Field label="New password" htmlFor="cp-new">
+              <Field label={t('newLabel')} htmlFor="cp-new">
                 <TextInput
                   id="cp-new"
                   type="password"
@@ -81,7 +84,7 @@ export default function ChangePasswordModal({ onClose }: Props) {
                   required
                 />
               </Field>
-              <Field label="Confirm new password" htmlFor="cp-confirm">
+              <Field label={t('confirmLabel')} htmlFor="cp-confirm">
                 <TextInput
                   id="cp-confirm"
                   type="password"
@@ -94,10 +97,10 @@ export default function ChangePasswordModal({ onClose }: Props) {
 
               <div className="mt-1 flex justify-end gap-2">
                 <Button variant="outline" size="sm" isDisabled={submitting} onPress={() => overlayState.close()}>
-                  Cancel
+                  {common('cancel')}
                 </Button>
                 <Button variant="primary" size="sm" type="submit" isDisabled={submitting}>
-                  {submitting ? 'Saving…' : 'Save'}
+                  {submitting ? common('saving') : common('save')}
                 </Button>
               </div>
             </form>

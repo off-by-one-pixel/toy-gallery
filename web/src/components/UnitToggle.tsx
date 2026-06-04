@@ -1,14 +1,15 @@
 'use client';
 
 import { ToggleButton } from '@heroui/react';
+import { useTranslations } from 'next-intl';
 
-import { UNIT_TOGGLE_ARIA_LABEL } from '../labels';
 import { useUnit } from '../providers/UnitProvider';
 import { Unit, unitById } from '../services/units';
 import SegmentedToggle from './SegmentedToggle';
 
 export default function UnitToggle() {
   const { unit, setUnit } = useUnit();
+  const t = useTranslations('unitToggle');
 
   return (
     <SegmentedToggle
@@ -17,7 +18,7 @@ export default function UnitToggle() {
         const next = unitById(id);
         if (next) setUnit(next);
       }}
-      ariaLabel={UNIT_TOGGLE_ARIA_LABEL}
+      ariaLabel={t('ariaLabel')}
     >
       {Object.values(Unit).map((u) => (
         <ToggleButton key={u.id} id={u.id}>

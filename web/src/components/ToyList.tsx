@@ -3,9 +3,9 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { ThumbnailRender } from 'toy-editor';
 
-import { ATTRIBUTES_HEADING, SHAPE_LABEL, TOY_CIRCUMFERENCE, TOY_CIRCUMFERENCE_SHORT } from '../labels';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
@@ -60,6 +60,8 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy,
 }
 
 function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (column: SortColumn) => void }>) {
+  const t = useTranslations('toy.columns');
+  const common = useTranslations('common');
   return (
     <div
       className={
@@ -68,12 +70,19 @@ function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (col
       }
     >
       <span />
-      <SortHeader label="Brand / Model" shortLabel="Model" column="name" sort={sort} onSort={onSort} />
-      <span className={HIDDEN_SIZE}>Size</span>
-      <SortHeader label="Insertable" shortLabel="Ins" column="insertable" sort={sort} onSort={onSort} align="right" />
+      <SortHeader label={t('brandModel')} shortLabel={t('brandModelShort')} column="name" sort={sort} onSort={onSort} />
+      <span className={HIDDEN_SIZE}>{common('size')}</span>
       <SortHeader
-        label="Circumference"
-        shortLabel="Circ"
+        label={common('insertable')}
+        shortLabel={t('insertableShort')}
+        column="insertable"
+        sort={sort}
+        onSort={onSort}
+        align="right"
+      />
+      <SortHeader
+        label={common('circumference')}
+        shortLabel={t('circumferenceShort')}
         column="circumference"
         sort={sort}
         onSort={onSort}
@@ -255,10 +264,14 @@ function Metric({
 
 function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
   const { unit } = useUnit();
+  const t = useTranslations();
+  const topShapeLabel = t(`shape.${toy.shape.topSectionShape ?? SectionShape.FLAT}`);
   return (
     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-xs min-[640px]:px-5">
       <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Total length</dt>
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+          {t('common.totalLength')}
+        </dt>
         <dd className="text-neutral-900 tabular-nums">
           {toy.totalLength == null ? (
             <span className="font-normal text-neutral-300">—</span>
@@ -270,10 +283,12 @@ function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
           )}
         </dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Top shape</dt>
-        <dd className="text-neutral-900">{SHAPE_LABEL[toy.shape.topSectionShape ?? SectionShape.FLAT]}</dd>
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+          {t('toy.columns.topShape')}
+        </dt>
+        <dd className="text-neutral-900">{topShapeLabel}</dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Color</dt>
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{t('common.color')}</dt>
         <dd className="inline-flex items-center gap-2 text-neutral-900">
           <span
             aria-hidden
@@ -283,20 +298,22 @@ function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
           <span className="font-mono text-[11px] text-neutral-600">{toy.color || '—'}</span>
         </dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Sections</dt>
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+          {t('toy.columns.sections')}
+        </dt>
         <dd>
           <div className="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-3 gap-y-0.5 font-mono text-[11px] text-neutral-800 tabular-nums">
             {toy.shape.sections.map((s, idx) => (
               <SectionLine key={s.id} n={idx + 1} d={s.diameter} h={s.height} c={s.circumference ?? null} />
             ))}
             <span className="text-neutral-400">+</span>
-            <span className="italic text-neutral-500 col-span-4">
-              {SHAPE_LABEL[toy.shape.topSectionShape ?? SectionShape.FLAT]} cap
-            </span>
+            <span className="italic text-neutral-500 col-span-4">{t('toy.topCap', { shape: topShapeLabel })}</span>
           </div>
         </dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{ATTRIBUTES_HEADING}</dt>
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+          {t('attributes.heading')}
+        </dt>
         <dd>
           <AttributesPanel toy={toy} />
         </dd>
@@ -306,6 +323,7 @@ function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
 }
 
 function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number; c: number | null }>) {
+  const t = useTranslations('toy');
   return (
     <>
       <span className="text-neutral-400">#{n}</span>
@@ -316,8 +334,8 @@ function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number;
         {c != null ? (
           <>
             <span className="whitespace-nowrap">{Math.round(c)} mm</span>{' '}
-            <span className="sm:hidden">{TOY_CIRCUMFERENCE_SHORT}</span>
-            <span className="hidden sm:inline">{TOY_CIRCUMFERENCE}</span>
+            <span className="sm:hidden">{t('circumferenceShort')}</span>
+            <span className="hidden sm:inline">{t('circumferenceInline')}</span>
           </>
         ) : (
           ''

@@ -1,18 +1,14 @@
 'use client';
 
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import {
-  ADD_ATTRIBUTE_BUTTON,
-  ATTRIBUTE_KEY_PLACEHOLDER,
-  ATTRIBUTE_REMOVE_LABEL,
-  ATTRIBUTE_VALUE_PLACEHOLDER,
-} from '../labels';
 import { useAttributesEditor } from '../hooks/useAttributesEditor';
 import type { Toy } from '../services/types';
 
 export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
   const { rows, updateKey, updateValue, removeRow, addRow, commitChanges } = useAttributesEditor(toy);
+  const t = useTranslations('attributes');
 
   return (
     <div>
@@ -22,7 +18,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
             <input
               type="text"
               value={row.key}
-              placeholder={ATTRIBUTE_KEY_PLACEHOLDER}
+              placeholder={t('keyPlaceholder')}
               onChange={(e) => updateKey(row.rowId, e.target.value)}
               onBlur={commitChanges}
               className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-neutral-700 hover:border-neutral-200 focus:border-blue-400 focus:bg-white focus:outline-none"
@@ -30,7 +26,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
             <input
               type="text"
               value={row.value}
-              placeholder={ATTRIBUTE_VALUE_PLACEHOLDER}
+              placeholder={t('valuePlaceholder')}
               onChange={(e) => updateValue(row.rowId, e.target.value)}
               onBlur={commitChanges}
               className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-neutral-900 hover:border-neutral-200 focus:border-blue-400 focus:bg-white focus:outline-none"
@@ -38,7 +34,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
             <button
               type="button"
               onClick={() => removeRow(row.rowId)}
-              aria-label={ATTRIBUTE_REMOVE_LABEL}
+              aria-label={t('removeLabel')}
               className="text-neutral-400 opacity-0 transition-opacity hover:text-neutral-700 hover:opacity-100! group-hover:opacity-60"
             >
               <X size={12} strokeWidth={2} />
@@ -51,7 +47,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
         onClick={addRow}
         className="mt-1.5 text-[11px] text-neutral-500 transition-colors hover:text-blue-600"
       >
-        {ADD_ATTRIBUTE_BUTTON}
+        {t('addButton')}
       </button>
     </div>
   );

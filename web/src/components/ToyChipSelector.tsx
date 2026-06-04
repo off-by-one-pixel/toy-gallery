@@ -3,8 +3,8 @@
 import { Chip } from '@heroui/react';
 import { ThumbnailRender } from 'toy-editor';
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { INVOLVEMENT_LABEL } from '../labels';
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { Involvement, type Toy } from '../services/types';
 
@@ -42,6 +42,7 @@ const nextInCycle = (current: Involvement | null): Involvement | null => {
 };
 
 export default function ToyChipSelector({ toy, state, onChange }: Props) {
+  const t = useTranslations('involvement');
   const editorToy = toyShapeToEditor(toy.shape);
 
   const silhouetteStyle = {
@@ -116,7 +117,7 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
                   (active ? SEG_ACTIVE[s] : 'text-neutral-500 hover:bg-white/60 hover:text-neutral-900')
                 }
               >
-                {INVOLVEMENT_LABEL[s]}
+                {t(s)}
               </button>
             );
           })}

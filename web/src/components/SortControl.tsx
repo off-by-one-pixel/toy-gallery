@@ -2,13 +2,28 @@
 
 import { Dropdown } from '@heroui/react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { useSort } from '../providers/SortProvider';
-import { cycleSort, sortColumnLabel, sortColumns } from '../services/sort';
+import { cycleSort, sortColumns, type SortColumn } from '../services/sort';
 
 export default function SortControl() {
   const { sort, setSort } = useSort();
-  const activeLabel = sort ? sortColumnLabel(sort.column) : 'Sort';
+  const t = useTranslations('sort');
+  const common = useTranslations('common');
+  const columnLabel = (column: SortColumn): string => {
+    switch (column) {
+      case 'name':
+        return t('column.name');
+      case 'insertable':
+        return common('insertable');
+      case 'total':
+        return common('totalLength');
+      case 'circumference':
+        return common('circumference');
+    }
+  };
+  const activeLabel = sort ? columnLabel(sort.column) : t('label');
   const DirArrow = sort?.direction === 'desc' ? ArrowDown : ArrowUp;
 
   const flipDirection = () => {
@@ -27,7 +42,7 @@ export default function SortControl() {
           <Dropdown.Menu selectedKeys={sort ? [sort.column] : []}>
             {sortColumns.map((column) => (
               <Dropdown.Item key={column} id={column} onAction={() => setSort(cycleSort(sort, column))}>
-                <SortRow label={sortColumnLabel(column)} direction={sort?.column === column ? sort.direction : null} />
+                <SortRow label={columnLabel(column)} direction={sort?.column === column ? sort.direction : null} />
               </Dropdown.Item>
             ))}
           </Dropdown.Menu>
@@ -37,7 +52,7 @@ export default function SortControl() {
         type="button"
         onClick={flipDirection}
         disabled={!sort}
-        aria-label={sort?.direction === 'desc' ? 'Sort ascending' : 'Sort descending'}
+        aria-label={sort?.direction === 'desc' ? t('ascending') : t('descending')}
         className="inline-flex items-center rounded-r-md border-l border-neutral-200 px-2 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
       >
         <DirArrow size={12} strokeWidth={2.4} className="text-neutral-500" />

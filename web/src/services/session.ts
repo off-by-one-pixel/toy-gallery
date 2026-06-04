@@ -1,10 +1,3 @@
-import {
-  SESSION_FILTER_ALL,
-  SESSION_FILTER_MONTH,
-  SESSION_FILTER_MONTH_SHORT,
-  SESSION_FILTER_WEEK,
-  SESSION_FILTER_WEEK_SHORT,
-} from '../labels';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -13,15 +6,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Human-readable "when" label for a session timestamp:
  *  `Today · 3:45 PM`, `Yesterday · 9:00 AM`, or `Mar 5 · 2:00 PM`.
- *  Locale-aware. Pass `now` for deterministic tests. */
-export function formatWhen(iso: string, now: Date = new Date()): string {
+ *  Locale-aware: `locale` drives Intl date/time formatting; `t` supplies
+ *  the `Today` / `Yesterday` literals. Pass `now` for deterministic tests. */
+export function formatWhen(iso: string, now: Date, locale: string, t: (key: 'today' | 'yesterday') => string): string {
   const d = new Date(iso);
   const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const diffDays = Math.floor((startOfDay(now) - startOfDay(d)) / DAY_MS);
-  const time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  if (diffDays === 0) return `Today · ${time}`;
-  if (diffDays === 1) return `Yesterday · ${time}`;
-  const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const time = d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+  if (diffDays === 0) return `${t('today')} · ${time}`;
+  if (diffDays === 1) return `${t('yesterday')} · ${time}`;
+  const date = d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
   return `${date} · ${time}`;
 }
 
@@ -37,17 +31,16 @@ export type FilterKey = 'all' | 'week' | 'month';
 
 export type FilterOption = Readonly<{
   key: FilterKey;
-  label: string;
-  /** Compact label used on narrow viewports; falls back to `label` when absent. */
-  shortLabel?: string;
   /** Number of days the filter accepts. `null` means no upper bound. */
   days: number | null;
+  /** Whether this filter has a short-label variant for narrow viewports. */
+  hasShortLabel: boolean;
 }>;
 
 export const FILTERS: readonly FilterOption[] = [
-  { key: 'all', label: SESSION_FILTER_ALL, days: null },
-  { key: 'week', label: SESSION_FILTER_WEEK, shortLabel: SESSION_FILTER_WEEK_SHORT, days: 7 },
-  { key: 'month', label: SESSION_FILTER_MONTH, shortLabel: SESSION_FILTER_MONTH_SHORT, days: 30 },
+  { key: 'all', days: null, hasShortLabel: false },
+  { key: 'week', days: 7, hasShortLabel: true },
+  { key: 'month', days: 30, hasShortLabel: true },
 ];
 
 /** Filter sessions by recency. Pass `now` for deterministic tests. */
@@ -56,11 +49,6 @@ export function filterSessions(sessions: readonly Session[], filter: FilterKey, 
   if (option?.days == null) return [...sessions];
   const days = option.days;
   return sessions.filter((s) => isWithin(s.startedAt, days, now));
-}
-
-/** Look up the human label for a filter key. */
-export function filterLabel(filter: FilterKey): string {
-  return FILTERS.find((f) => f.key === filter)?.label ?? '';
 }
 
 // -------- Entry sort --------

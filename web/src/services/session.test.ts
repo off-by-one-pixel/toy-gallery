@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  filterLabel,
   filterSessions,
   formatWhen,
   INVOLVEMENT_RANK,
@@ -14,6 +13,8 @@ import { Involvement, type Session, type SessionEntry, type Toy } from './types'
 
 const NOW = new Date(2026, 4, 16, 10, 0); // 2026-05-16 10:00 local
 
+const whenT = (key: 'today' | 'yesterday') => (key === 'today' ? 'Today' : 'Yesterday');
+
 const session = (id: number, isoDay: string): Session => ({
   id,
   startedAt: `${isoDay}T10:00:00`,
@@ -24,15 +25,15 @@ const session = (id: number, isoDay: string): Session => ({
 
 describe('formatWhen', () => {
   it("formats today's timestamp with a Today prefix", () => {
-    expect(formatWhen('2026-05-16T09:30:00', NOW)).toMatch(/^Today · /);
+    expect(formatWhen('2026-05-16T09:30:00', NOW, 'en', whenT)).toMatch(/^Today · /);
   });
 
   it("formats yesterday's timestamp with a Yesterday prefix", () => {
-    expect(formatWhen('2026-05-15T20:00:00', NOW)).toMatch(/^Yesterday · /);
+    expect(formatWhen('2026-05-15T20:00:00', NOW, 'en', whenT)).toMatch(/^Yesterday · /);
   });
 
   it('formats older timestamps as month + day', () => {
-    const out = formatWhen('2026-04-01T14:00:00', NOW);
+    const out = formatWhen('2026-04-01T14:00:00', NOW, 'en', whenT);
     expect(out).not.toMatch(/Today|Yesterday/);
     expect(out).toContain('Apr');
   });
@@ -84,12 +85,6 @@ describe('filterSessions', () => {
     const result = filterSessions(all, 'all', NOW);
     expect(result).not.toBe(all);
     expect(result).toEqual([...all]);
-  });
-});
-
-describe('filterLabel', () => {
-  it('returns the label for a known key', () => {
-    expect(filterLabel('week')).toBeTruthy();
   });
 });
 

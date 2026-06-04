@@ -3,8 +3,7 @@
 import type { ComponentProps } from 'react';
 import { Button, Tooltip } from '@heroui/react';
 import { Copy, type LucideIcon, Pencil, Trash2 } from 'lucide-react';
-
-import { TOY_ACTION_COPY, TOY_ACTION_DELETE, TOY_ACTION_EDIT } from '../labels';
+import { useTranslations } from 'next-intl';
 
 const TOOLTIP_DELAY_MS = 200;
 const ICON_SIZE = 13;
@@ -31,11 +30,12 @@ type Props = Readonly<{
 }>;
 
 export default function ToyActionButtons({ onEdit, onCopy, onDelete, stopPropagation }: Props) {
+  const t = useTranslations('common');
   const stop = stopPropagation ? (e: React.MouseEvent) => e.stopPropagation() : undefined;
   const actions: ActionDef[] = [
-    { key: 'edit', label: TOY_ACTION_EDIT, icon: Pencil, variant: 'outline', onPress: onEdit },
-    { key: 'copy', label: TOY_ACTION_COPY, icon: Copy, variant: 'outline', onPress: onCopy },
-    { key: 'delete', label: TOY_ACTION_DELETE, icon: Trash2, variant: 'danger-soft', onPress: onDelete },
+    { key: 'edit', label: t('edit'), icon: Pencil, variant: 'outline', onPress: onEdit },
+    { key: 'copy', label: t('copy'), icon: Copy, variant: 'outline', onPress: onCopy },
+    { key: 'delete', label: t('delete'), icon: Trash2, variant: 'danger-soft', onPress: onDelete },
   ];
   return (
     <>

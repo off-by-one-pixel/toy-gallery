@@ -1,28 +1,13 @@
 import type { Toy } from './types';
 
-type ColumnConfig = {
-  label: string;
-  accessor: (t: Toy) => number | string;
-};
+type Accessor = (t: Toy) => number | string;
 
 const COLUMNS = {
-  name: {
-    label: 'Brand / Model',
-    accessor: (t) => `${t.brand} ${t.name}`.toLowerCase(),
-  },
-  insertable: {
-    label: 'Insertable',
-    accessor: (t) => t.insertableLength ?? -Infinity,
-  },
-  total: {
-    label: 'Total length',
-    accessor: (t) => t.totalLength ?? -Infinity,
-  },
-  circumference: {
-    label: 'Circumference',
-    accessor: (t) => t.circumference ?? -Infinity,
-  },
-} as const satisfies Record<string, ColumnConfig>;
+  name: (t: Toy) => `${t.brand} ${t.name}`.toLowerCase(),
+  insertable: (t: Toy) => t.insertableLength ?? -Infinity,
+  total: (t: Toy) => t.totalLength ?? -Infinity,
+  circumference: (t: Toy) => t.circumference ?? -Infinity,
+} as const satisfies Record<string, Accessor>;
 
 export type SortColumn = keyof typeof COLUMNS;
 export type SortDirection = 'asc' | 'desc';
@@ -30,13 +15,11 @@ export type Sort = { column: SortColumn; direction: SortDirection };
 
 export const sortColumns = Object.keys(COLUMNS) as SortColumn[];
 
-export const sortColumnLabel = (column: SortColumn): string => COLUMNS[column].label;
-
 export const isSortColumn = (v: unknown): v is SortColumn => typeof v === 'string' && v in COLUMNS;
 
 export const sortToys = (toys: Toy[], sort: Sort | null): Toy[] => {
   if (!sort) return toys;
-  const accessor = COLUMNS[sort.column].accessor;
+  const accessor = COLUMNS[sort.column];
   const mul = sort.direction === 'asc' ? 1 : -1;
   return toys.slice().sort((a, b) => {
     const av = accessor(a);

@@ -1,20 +1,15 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import {
-  TEMPLATE_PICKER_SUBTITLE,
-  TEMPLATE_PICKER_TITLE,
-  TEMPLATE_SIZE_SUBTITLE,
-  TEMPLATE_SIZE_TITLE,
-  templateStepAriaLabel,
-} from '../../labels';
 import type { WizardStep } from '../../hooks/nav/useToyEditorWizardNav';
 
 export default function StepHeader({ step }: Readonly<{ step: WizardStep }>) {
+  const t = useTranslations('template');
   const stepNumber = step === 'template' ? 1 : 2;
-  const title = step === 'template' ? TEMPLATE_PICKER_TITLE : TEMPLATE_SIZE_TITLE;
-  const subtitle = step === 'template' ? TEMPLATE_PICKER_SUBTITLE : TEMPLATE_SIZE_SUBTITLE;
+  const title = step === 'template' ? t('pickerTitle') : t('sizeTitle');
+  const subtitle = step === 'template' ? t('pickerSubtitle') : t('sizeSubtitle');
   return (
     <div className="border-b border-neutral-200 bg-white px-4 pt-5 pb-4 sm:px-6">
       <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
@@ -27,8 +22,9 @@ export default function StepHeader({ step }: Readonly<{ step: WizardStep }>) {
 }
 
 function StepIndicator({ current, total }: Readonly<{ current: number; total: number }>) {
+  const t = useTranslations('template');
   return (
-    <ol className="flex items-center gap-2" aria-label={templateStepAriaLabel(current, total)}>
+    <ol className="flex items-center gap-2" aria-label={t('stepAria', { current, total })}>
       {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
         const active = n === current;
         const done = n < current;

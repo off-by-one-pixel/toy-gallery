@@ -1,0 +1,196 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "back": "Back",
+    "close": "Close",
+    "size": "Size",
+    "color": "Color",
+    "totalLength": "Total length",
+    "insertable": "Insertable",
+    "circumference": "Circumference",
+    "length": "Length",
+    "edit": "Edit",
+    "copy": "Copy",
+    "delete": "Delete"
+  },
+  "shape": {
+    "FLAT": "Flat",
+    "EGG": "Egg",
+    "CONE": "Cone",
+    "SPIKE": "Spike"
+  },
+  "attributes": {
+    "heading": "Attributes",
+    "addButton": "+ Add field",
+    "keyPlaceholder": "Name",
+    "valuePlaceholder": "Value",
+    "removeLabel": "Remove attribute",
+    "saveError": "Could not save attributes"
+  },
+  "toy": {
+    "items": "{count, plural, one {# item} other {# items}}",
+    "circumferenceInline": "circumference",
+    "circumferenceShort": "circ.",
+    "deleteConfirm": "Delete {brand} {name}?",
+    "new": "New Toy",
+    "columns": {
+      "brandModel": "Brand / Model",
+      "brandModelShort": "Model",
+      "insertableShort": "Ins",
+      "circumferenceShort": "Circ",
+      "topShape": "Top shape",
+      "sections": "Sections"
+    },
+    "topCap": "{shape} cap"
+  },
+  "viewToggle": {
+    "ariaLabel": "Gallery view",
+    "mode": {
+      "cards": "Cards",
+      "list": "List"
+    }
+  },
+  "unitToggle": {
+    "ariaLabel": "Display units"
+  },
+  "involvement": {
+    "USED": "Used",
+    "INSERTED": "Inserted",
+    "FULLY_INSERTED": "Fully"
+  },
+  "nav": {
+    "gallery": "Gallery",
+    "sessions": "Sessions"
+  },
+  "session": {
+    "newButton": "New session",
+    "recorded": "recorded",
+    "filter": {
+      "all": "All",
+      "allShort": "All",
+      "week": "This week",
+      "weekShort": "Week",
+      "month": "This month",
+      "monthShort": "Month"
+    },
+    "peakLength": "max len",
+    "peakCircumference": "max circ",
+    "toyDeleted": "deleted",
+    "empty": "No sessions yet — record your first one.",
+    "emptyFilteredPrefix": "No sessions in",
+    "newTitle": "New session",
+    "editTitle": "Edit session",
+    "backToList": "Back to sessions",
+    "whenHeading": "When",
+    "nowButton": "Now",
+    "toysHeading": "Toys used",
+    "toysHint": "Tap a tag below each toy to record how it was used.",
+    "save": "Save session",
+    "savedToast": "Session saved",
+    "editArrowLabel": "Edit session",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "toysSelected": "{count, plural, one {toy} other {toys}} selected",
+    "overflowMore": "+{count} more"
+  },
+  "template": {
+    "pickerTitle": "Choose a starting shape",
+    "pickerSubtitle": "We'll scale your pick to the size you enter next.",
+    "sizeTitle": "Set the dimensions",
+    "sizeSubtitle": "We'll scale the shape you picked to these dimensions.",
+    "stepAria": "Step {current} of {total}",
+    "blankName": "Start blank",
+    "blankDescription": "Skip the wizard and start from the default toy.",
+    "pickedShapePrefix": "Shape",
+    "fieldInsertableLength": "Insertable length",
+    "fieldMaxDiameter": "Max diameter",
+    "continue": "Continue",
+    "newToyHeaderTitle": "Pick a starting shape",
+    "moreActions": "More actions",
+    "exportMenu": "Export JSON",
+    "exportMenuDescription": "Copy a template entry for toyTemplates.json",
+    "importMenu": "Import JSON",
+    "importMenuDescription": "Paste a template entry to replace the current toy",
+    "exportDialogTitle": "Export toy as template JSON",
+    "exportDialogDescription": "Copy this JSON into src/data/toyTemplates.json. Fill in id, name, and description before committing.",
+    "importDialogTitle": "Import template JSON",
+    "importDialogDescription": "Paste a ToyTemplate entry and load it into the editor. The current toy is replaced.",
+    "importPlaceholder": "{ \"id\": \"...\", \"shape\": { ... } }",
+    "clipboardError": "Could not access clipboard — select the text and copy manually.",
+    "dialogCopy": "Copy",
+    "dialogCopied": "Copied",
+    "dialogLoad": "Load"
+  },
+  "collection": {
+    "exportedToast": "Exported collection",
+    "importedToast": "Imported {toys, plural, one {# toy} other {# toys}}{sessions, plural, =0 {} one { and # session} other { and # sessions}}",
+    "deletedToast": "Deleted {toys, plural, one {# toy} other {# toys}}{sessions, plural, =0 {} one { and # session} other { and # sessions}}",
+    "deleteAllConfirm": "Permanently delete the entire collection? All toys and sessions will be removed. This cannot be undone.",
+    "menu": {
+      "exportLabel": "Export collection",
+      "exportDescription": "Download the gallery as JSON",
+      "importLabel": "Import collection",
+      "importDescription": "Add toys from a JSON file",
+      "deleteLabel": "Delete collection",
+      "deleteDescription": "Permanently remove all toys and sessions",
+      "changePasswordLabel": "Change password",
+      "changePasswordDescription": "Set a new sign-in password",
+      "signOutLabel": "Sign out",
+      "signOutDescriptionAnonymous": "End your session",
+      "signOutDescriptionSignedIn": "Signed in as {username}"
+    },
+    "appTitle": "Toy Gallery"
+  },
+  "changePassword": {
+    "successToast": "Password changed",
+    "title": "Change password",
+    "subtitle": "Enter your current password and pick a new one.",
+    "currentLabel": "Current password",
+    "newLabel": "New password",
+    "confirmLabel": "Confirm new password",
+    "mismatch": "New passwords do not match."
+  },
+  "sort": {
+    "ascending": "Sort ascending",
+    "descending": "Sort descending",
+    "label": "Sort",
+    "column": {
+      "name": "Brand / Model"
+    }
+  },
+  "colorPicker": {
+    "presets": "Preset colors",
+    "custom": "Custom color"
+  },
+  "toyEdit": {
+    "brand": "Brand",
+    "model": "Model",
+    "identification": "Identification",
+    "header": {
+      "newMode": "New toy",
+      "copyFrom": "from {brand} · {name}",
+      "untitled": "Untitled toy"
+    }
+  },
+  "search": {
+    "placeholder": "Search toys…",
+    "ariaLabel": "Search toys",
+    "clear": "Clear search"
+  },
+  "login": {
+    "welcome": "Welcome back",
+    "subtitle": "Sign in to your gallery.",
+    "usernameLabel": "Username",
+    "passwordLabel": "Password",
+    "usernamePlaceholder": "your-username",
+    "passwordPlaceholder": "••••••••••",
+    "submitting": "Signing in…",
+    "submit": "Sign in",
+    "inviteOnly": "Access is invite-only.",
+    "brand": "Toy Gallery",
+    "tagline": "Your collection, shaped to scale.",
+    "taglineSubtitle": "Record every toy with its silhouette, exact dimensions, and your own notes — see the whole gallery at a glance."
+  }
+}
