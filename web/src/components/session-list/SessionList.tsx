@@ -5,7 +5,6 @@ import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { usePasswordModalNav } from '../../hooks/nav/usePasswordModalNav';
 import { useUnit } from '../../providers/UnitProvider';
 import { FILTERS } from '../../services/session';
 import ActivityTracker from '../ActivityTracker';
@@ -17,7 +16,6 @@ import { useSessionList } from './useSessionList';
 
 export default function SessionList() {
   const router = useRouter();
-  const password = usePasswordModalNav();
   const { unit } = useUnit();
   const data = useSessionList(unit);
   const t = useTranslations('session');
@@ -26,11 +24,7 @@ export default function SessionList() {
 
   return (
     <>
-      <TopBar
-        subtitle={data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`}
-        onImported={() => {}}
-        onChangePassword={password.open}
-      />
+      <TopBar subtitle={data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`} />
       <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <div className="inline-flex gap-0.5 rounded-lg bg-neutral-200/70 p-0.5">
