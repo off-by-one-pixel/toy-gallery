@@ -3,33 +3,28 @@
 import { Dropdown } from '@heroui/react';
 import { Globe } from 'lucide-react';
 
-import { useLocaleContext } from '../providers/LocaleProvider';
-import { isLocale, LOCALES, type Locale } from '../i18n/routing';
+export type LocaleOption = Readonly<{ code: string; label: string }>;
 
-const LOCALE_LABEL: Record<Locale, string> = {
-  en: 'English',
-};
+type Props = Readonly<{
+  value: string;
+  options: readonly LocaleOption[];
+  onChange: (code: string) => void;
+}>;
 
-export default function LocaleSwitcher() {
-  const { locale, setLocale } = useLocaleContext();
+export default function LocaleSwitcher({ value, options, onChange }: Props) {
+  const current = options.find((o) => o.code === value);
 
   return (
     <Dropdown>
       <Dropdown.Trigger className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50">
         <Globe size={14} strokeWidth={2} className="text-neutral-500" />
-        <span>{LOCALE_LABEL[locale]}</span>
+        <span>{current?.label ?? value}</span>
       </Dropdown.Trigger>
       <Dropdown.Popover placement="bottom end">
-        <Dropdown.Menu
-          selectedKeys={[locale]}
-          onAction={(key) => {
-            const next = String(key);
-            if (isLocale(next)) setLocale(next);
-          }}
-        >
-          {LOCALES.map((code) => (
-            <Dropdown.Item key={code} id={code}>
-              {LOCALE_LABEL[code]}
+        <Dropdown.Menu selectedKeys={[value]} onAction={(key) => onChange(String(key))}>
+          {options.map((option) => (
+            <Dropdown.Item key={option.code} id={option.code}>
+              {option.label}
             </Dropdown.Item>
           ))}
         </Dropdown.Menu>
