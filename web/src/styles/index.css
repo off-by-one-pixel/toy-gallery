@@ -7,6 +7,57 @@
 
   --text-caption: 0.6875rem;
   --text-meta: 0.8125rem;
+
+  --thumbnail-tile-from: oklch(0.995 0 0);
+  --thumbnail-tile-to: oklch(0.975 0.025 320);
+
+  --silhouette-stroke: oklch(0.27 0.04 265);
+  --toy-fill-dim: none;
+
+  --color-thumb: oklch(0.4 0.005 286);
+}
+
+:root {
+  --surface-tertiary: oklch(0.91 0.002 286);
+  --default: oklch(0.91 0.002 286);
+}
+
+[data-theme='dark'] {
+  --background: oklch(0.16 0.005 286);
+  --foreground: oklch(0.96 0.002 286);
+
+  --surface: oklch(0.21 0.005 286);
+  --surface-foreground: oklch(0.96 0.002 286);
+  --surface-secondary: oklch(0.25 0.005 286);
+  --surface-secondary-foreground: oklch(0.96 0.002 286);
+  --surface-tertiary: oklch(0.36 0.005 286);
+  --surface-tertiary-foreground: oklch(0.96 0.002 286);
+
+  --overlay: oklch(0.23 0.005 286);
+  --overlay-foreground: oklch(0.96 0.002 286);
+
+  --muted: oklch(0.72 0.008 286);
+
+  --border: oklch(0.28 0.005 286);
+  --border-secondary: oklch(0.34 0.005 286);
+  --separator: oklch(0.28 0.005 286);
+
+  --default: oklch(0.28 0.005 286);
+  --default-foreground: oklch(0.96 0.002 286);
+
+  --field-background: oklch(0.21 0.005 286);
+  --field-foreground: oklch(0.96 0.002 286);
+
+  --color-text-tertiary: oklch(0.55 0.005 286);
+  --color-text-subtle: oklch(0.42 0.005 286);
+
+  --thumbnail-tile-from: oklch(0.24 0.02 290);
+  --thumbnail-tile-to: oklch(0.27 0.035 320);
+
+  --silhouette-stroke: oklch(0.3 0.015 290);
+  --toy-fill-dim: brightness(0.78) saturate(0.85);
+
+  --color-thumb: oklch(0.85 0.005 286);
 }
 
 html {
@@ -41,7 +92,7 @@ html {
   font-family: inherit;
   font-size: 15px;
   font-weight: 500;
-  fill: #404040;
+  fill: var(--muted);
   letter-spacing: normal;
 }
 

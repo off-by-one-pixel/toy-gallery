@@ -47,7 +47,7 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
 
   const silhouetteStyle = {
     borderWidth: 1.25,
-    borderColor: '#1f2937',
+    borderColor: 'var(--silhouette-stroke)',
     color: toy.color || '#c7e4ee',
   };
 
@@ -67,11 +67,11 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
         }
       }}
       className={
-        'relative cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-sm transition-shadow hover:shadow-md ' +
-        (state ? CHIP_BORDER[state] : 'border-neutral-200')
+        'relative cursor-pointer overflow-hidden rounded-2xl border bg-surface shadow-sm transition-shadow hover:shadow-md ' +
+        (state ? CHIP_BORDER[state] : 'border-border')
       }
     >
-      <div className="relative h-35 border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
+      <div className="relative h-35 border-b border-border bg-linear-to-br from-(--thumbnail-tile-from) to-(--thumbnail-tile-to)">
         {state && (
           <div
             className={
@@ -82,17 +82,18 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
             <Check size={14} strokeWidth={3} />
           </div>
         )}
-        <div className="absolute inset-x-0 top-2 bottom-2 flex items-end justify-center">
+        <div
+          className="absolute inset-x-0 top-2 bottom-2 flex items-end justify-center"
+          style={{ filter: 'var(--toy-fill-dim)' }}
+        >
           <ThumbnailRender toy={editorToy} scaleFactor={1} style={silhouetteStyle} />
         </div>
       </div>
       <div className="px-3 py-2.5">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[10px] font-medium uppercase tracking-wider text-neutral-500">
-              {toy.brand}
-            </div>
-            <div className="truncate text-sm font-semibold text-neutral-900">{toy.name}</div>
+            <div className="truncate text-caption font-medium uppercase tracking-wider text-muted">{toy.brand}</div>
+            <div className="truncate text-sm font-semibold text-foreground">{toy.name}</div>
           </div>
           {toy.size && (
             <Chip size="sm" color="accent" className="shrink-0">
@@ -101,7 +102,7 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
           )}
         </div>
 
-        <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-lg bg-neutral-100 p-1">
+        <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-lg bg-surface-secondary p-1">
           {STATE_ORDER.map((s) => {
             const active = s === state;
             return (
@@ -114,7 +115,7 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
                 }}
                 className={
                   'h-11 rounded-md text-xs font-medium transition-colors ' +
-                  (active ? SEG_ACTIVE[s] : 'text-neutral-500 hover:bg-white/60 hover:text-neutral-900')
+                  (active ? SEG_ACTIVE[s] : 'text-muted hover:bg-surface/60 hover:text-foreground')
                 }
               >
                 {t(s)}

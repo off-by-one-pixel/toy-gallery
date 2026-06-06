@@ -35,7 +35,7 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
   const isUsed = entry.involvement === Involvement.USED;
   const silhouetteStyle = {
     borderWidth: 1,
-    borderColor: isUsed ? '#9ca3af' : '#1f2937',
+    borderColor: isUsed ? 'var(--muted)' : 'var(--silhouette-stroke)',
     color: isUsed ? 'transparent' : toy.color || DEFAULT_FILL,
   };
   return (
@@ -45,7 +45,9 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
           className="absolute inset-x-0 bottom-0 flex items-end justify-center"
           style={{ top: `${(1 - heightRatio) * 100}%`, ...STATE_FILTER_STYLE[entry.involvement] }}
         >
-          <ThumbnailRender toy={editorToy} scaleFactor={0.18} style={silhouetteStyle} />
+          <div className="flex h-full w-full items-end justify-center" style={{ filter: 'var(--toy-fill-dim)' }}>
+            <ThumbnailRender toy={editorToy} scaleFactor={0.18} style={silhouetteStyle} />
+          </div>
         </div>
       </div>
       <div className="max-w-20 truncate text-sm text-foreground">

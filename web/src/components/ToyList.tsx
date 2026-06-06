@@ -204,13 +204,15 @@ function ToyRow({
 function Thumb({ toy }: Readonly<{ toy: Toy }>) {
   const style = {
     borderWidth: 1,
-    borderColor: '#1f2937',
+    borderColor: 'var(--silhouette-stroke)',
     color: toy.color || DEFAULT_FILL,
   };
   const editorToy = toyShapeToEditor(toy.shape);
   return (
-    <div className="flex h-15 w-12 items-end justify-center rounded-md border border-border bg-linear-to-br from-[#fafaff] to-[#f0fdfa] p-1">
-      <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />
+    <div className="flex h-15 w-12 items-end justify-center rounded-md border border-border bg-linear-to-br from-(--thumbnail-tile-from) to-(--thumbnail-tile-to) p-1">
+      <div className="flex h-full w-full items-end justify-center" style={{ filter: 'var(--toy-fill-dim)' }}>
+        <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />
+      </div>
     </div>
   );
 }
