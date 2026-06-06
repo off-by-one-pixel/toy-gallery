@@ -32,13 +32,13 @@ export default function Switcher<T extends string>({ items, value, onChange, ari
           'inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1 text-center text-xs font-medium transition-colors ' +
           (active ? 'bg-surface text-foreground shadow-xs' : 'text-muted hover:text-foreground');
         const content =
-          item.shortLabel !== undefined ? (
+          item.shortLabel === undefined ? (
+            item.label
+          ) : (
             <>
               <span className="sm:hidden">{item.shortLabel}</span>
               <span className="hidden sm:inline">{item.label}</span>
             </>
-          ) : (
-            item.label
           );
         if (item.href !== undefined) {
           return (
