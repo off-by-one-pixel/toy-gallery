@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { deleteToy, fetchCones } from '../services/api';
 import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
-import { usePasswordModalNav } from '../hooks/nav/usePasswordModalNav';
 import { useToyEditorWizardNav } from '../hooks/nav/useToyEditorWizardNav';
 import { useToyModalNav } from '../hooks/nav/useToyModalNav';
 import { useSort } from '../providers/SortProvider';
@@ -33,7 +32,6 @@ const ConeList = () => {
   const router = useRouter();
   const toyModal = useToyModalNav();
   const wizard = useToyEditorWizardNav();
-  const password = usePasswordModalNav();
   const t = useTranslations();
 
   const [cones, setCones] = useState<Toy[]>([]);
@@ -84,11 +82,7 @@ const ConeList = () => {
 
   return (
     <>
-      <TopBar
-        subtitle={isLoading ? null : t('toy.items', { count: cones.length })}
-        onImported={updateLastChanged}
-        onChangePassword={password.open}
-      />
+      <TopBar subtitle={isLoading ? null : t('toy.items', { count: cones.length })} />
       <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <div className="w-full sm:w-auto">

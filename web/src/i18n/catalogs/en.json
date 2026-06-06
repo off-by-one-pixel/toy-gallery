@@ -124,29 +124,48 @@
     "dialogLoad": "Load"
   },
   "collection": {
-    "exportedToast": "Exported collection",
-    "importedToast": "Imported {toys, plural, one {# toy} other {# toys}}{sessions, plural, =0 {} one { and # session} other { and # sessions}}",
-    "deletedToast": "Deleted {toys, plural, one {# toy} other {# toys}}{sessions, plural, =0 {} one { and # session} other { and # sessions}}",
-    "deleteAllConfirm": "Permanently delete the entire collection? All toys and sessions will be removed. This cannot be undone.",
+    "appTitle": "Toy Gallery",
     "menu": {
-      "exportLabel": "Export collection",
-      "exportDescription": "Download the gallery as JSON",
-      "importLabel": "Import collection",
-      "importDescription": "Add toys from a JSON file",
-      "deleteLabel": "Delete collection",
-      "deleteDescription": "Permanently remove all toys and sessions",
-      "changePasswordLabel": "Change password",
-      "changePasswordDescription": "Set a new sign-in password",
+      "settingsLabel": "Settings",
+      "settingsDescription": "Language, data, account",
       "signOutLabel": "Sign out",
       "signOutDescriptionAnonymous": "End your session",
       "signOutDescriptionSignedIn": "Signed in as {username}"
+    }
+  },
+  "settings": {
+    "pageTitle": "Settings",
+    "language": {
+      "heading": "Language",
+      "description": "Choose the language used across the app."
     },
-    "appTitle": "Toy Gallery"
+    "password": {
+      "heading": "Change password",
+      "subtitle": "Enter your current password and pick a new one."
+    },
+    "data": {
+      "heading": "Data",
+      "exportLabel": "Export collection",
+      "exportDescription": "Download the gallery as JSON.",
+      "exportButton": "Export",
+      "importLabel": "Import collection",
+      "importDescription": "Add toys from a JSON file.",
+      "importButton": "Import",
+      "deleteLabel": "Delete collection",
+      "deleteDescription": "Permanently remove all toys and sessions.",
+      "deleteButton": "Delete",
+      "exportedToast": "Exported collection",
+      "importedToast": "Imported {toys, plural, one {# toy} other {# toys}}{sessions, plural, =0 {} one { and # session} other { and # sessions}}",
+      "deletedToast": "Deleted {toys, plural, one {# toy} other {# toys}}{sessions, plural, =0 {} one { and # session} other { and # sessions}}",
+      "deleteConfirm": {
+        "title": "Delete collection?",
+        "body": "All toys and sessions will be permanently removed. This cannot be undone.",
+        "action": "Delete everything"
+      }
+    }
   },
   "changePassword": {
     "successToast": "Password changed",
-    "title": "Change password",
-    "subtitle": "Enter your current password and pick a new one.",
     "currentLabel": "Current password",
     "newLabel": "New password",
     "confirmLabel": "Confirm new password",
