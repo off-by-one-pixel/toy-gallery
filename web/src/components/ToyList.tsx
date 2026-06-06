@@ -41,7 +41,7 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy,
   const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
 
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
       <ListHeader sort={sort} onSort={handleSort} />
       {toys.map((toy) => (
         <ToyRow
@@ -65,7 +65,7 @@ function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (col
   return (
     <div
       className={
-        `grid items-center gap-x-3 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-neutral-400 min-[640px]:gap-x-3.5 min-[640px]:px-5 min-[640px]:text-[10px] min-[640px]:tracking-[0.08em] ` +
+        `grid items-center gap-x-3 border-b border-border bg-surface-secondary px-4 py-2.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-text-tertiary min-[640px]:gap-x-3.5 min-[640px]:px-5 min-[640px]:text-caption min-[640px]:tracking-[0.08em] ` +
         GRID_COLS
       }
     >
@@ -115,8 +115,8 @@ function SortHeader({
     <button
       type="button"
       onClick={() => onSort(column)}
-      className={`inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-neutral-500 ${
-        active ? 'text-neutral-700' : ''
+      className={`inline-flex items-center gap-1 whitespace-nowrap uppercase transition-colors hover:text-muted ${
+        active ? 'text-foreground' : ''
       } ${align === 'right' ? 'justify-end' : ''} ${className ?? ''}`}
     >
       {shortLabel ? (
@@ -173,9 +173,9 @@ function ToyRow({
           }
         }}
         className={
-          `group relative grid cursor-pointer items-center gap-x-3 border-b border-neutral-200 px-4 py-2.5 transition-colors hover:bg-neutral-50 min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
+          `group relative grid cursor-pointer items-center gap-x-3 border-b border-border px-4 py-2.5 transition-colors hover:bg-surface-secondary min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
           GRID_COLS +
-          (open ? ' bg-blue-50/50' : '')
+          (open ? ' bg-accent-soft/50' : '')
         }
       >
         <Thumb toy={toy} />
@@ -191,7 +191,7 @@ function ToyRow({
         <Metric value={toy.circumference} unit={unit} />
         <div
           ref={actionsRef}
-          className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-white/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
+          className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-surface/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
         >
           <ToyActionButtons onEdit={onEdit} onCopy={onCopy} onDelete={onDelete} />
         </div>
@@ -209,7 +209,7 @@ function Thumb({ toy }: Readonly<{ toy: Toy }>) {
   };
   const editorToy = toyShapeToEditor(toy.shape);
   return (
-    <div className="flex h-15 w-12 items-end justify-center rounded-md border border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa] p-1">
+    <div className="flex h-15 w-12 items-end justify-center rounded-md border border-border bg-linear-to-br from-[#fafaff] to-[#f0fdfa] p-1">
       <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />
     </div>
   );
@@ -218,11 +218,11 @@ function Thumb({ toy }: Readonly<{ toy: Toy }>) {
 function NameCol({ toy }: Readonly<{ toy: Toy }>) {
   return (
     <div className="min-w-0">
-      <div className="truncate text-[10px] font-normal uppercase tracking-[0.06em] text-neutral-500 min-[640px]:text-[11px]">
+      <div className="truncate text-caption font-normal uppercase tracking-[0.06em] text-muted min-[640px]:text-caption">
         {toy.brand}
       </div>
       <div className="flex min-w-0 items-center gap-1.5">
-        <span className="truncate text-sm font-semibold text-neutral-900 min-[640px]:text-base">{toy.name}</span>
+        <span className="truncate text-sm font-semibold text-foreground min-[640px]:text-base">{toy.name}</span>
         {toy.size && (
           <Chip size="sm" color="accent" className="shrink-0 min-[640px]:hidden">
             <Chip.Label>{toy.size}</Chip.Label>
@@ -247,15 +247,15 @@ function Metric({
   return (
     <div
       className={`text-right text-[17px] font-semibold tracking-tight tabular-nums ${
-        muted ? 'font-medium text-neutral-500' : 'text-neutral-900'
+        muted ? 'font-medium text-muted' : 'text-foreground'
       } ${className ?? ''}`}
     >
       {value == null ? (
-        <span className="font-normal text-neutral-300">—</span>
+        <span className="font-normal text-text-subtle">—</span>
       ) : (
         <>
           {formatValue(value, unit)}
-          <span className="ml-1.5 text-[11px] font-medium text-neutral-500">{unit.id}</span>
+          <span className="ml-1.5 text-caption font-medium text-muted">{unit.id}</span>
         </>
       )}
     </div>
@@ -267,51 +267,51 @@ function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
   const t = useTranslations();
   const topShapeLabel = t(`shape.${toy.shape.topSectionShape ?? SectionShape.FLAT}`);
   return (
-    <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3.5 text-xs min-[640px]:px-5">
+    <div className="border-b border-border bg-surface-secondary px-4 py-3.5 text-xs min-[640px]:px-5">
       <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
           {t('common.totalLength')}
         </dt>
-        <dd className="text-neutral-900 tabular-nums">
+        <dd className="text-foreground tabular-nums">
           {toy.totalLength == null ? (
-            <span className="font-normal text-neutral-300">—</span>
+            <span className="font-normal text-text-subtle">—</span>
           ) : (
             <>
               {formatValue(toy.totalLength, unit)}
-              <span className="ml-1 text-[10px] font-medium text-neutral-500">{unit.id}</span>
+              <span className="ml-1 text-caption font-medium text-muted">{unit.id}</span>
             </>
           )}
         </dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
           {t('toy.columns.topShape')}
         </dt>
-        <dd className="text-neutral-900">{topShapeLabel}</dd>
+        <dd className="text-foreground">{topShapeLabel}</dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{t('common.color')}</dt>
-        <dd className="inline-flex items-center gap-2 text-neutral-900">
+        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">{t('common.color')}</dt>
+        <dd className="inline-flex items-center gap-2 text-foreground">
           <span
             aria-hidden
             className="inline-block h-3.5 w-3.5 rounded-sm border border-black/15"
             style={{ background: toy.color || DEFAULT_FILL }}
           />
-          <span className="font-mono text-[11px] text-neutral-600">{toy.color || '—'}</span>
+          <span className="font-mono text-caption text-muted">{toy.color || '—'}</span>
         </dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
           {t('toy.columns.sections')}
         </dt>
         <dd>
-          <div className="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-3 gap-y-0.5 font-mono text-[11px] text-neutral-800 tabular-nums">
+          <div className="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-3 gap-y-0.5 font-mono text-caption text-foreground tabular-nums">
             {toy.shape.sections.map((s, idx) => (
               <SectionLine key={s.id} n={idx + 1} d={s.diameter} h={s.height} c={s.circumference ?? null} />
             ))}
-            <span className="text-neutral-400">+</span>
-            <span className="italic text-neutral-500 col-span-4">{t('toy.topCap', { shape: topShapeLabel })}</span>
+            <span className="text-text-tertiary">+</span>
+            <span className="italic text-muted col-span-4">{t('toy.topCap', { shape: topShapeLabel })}</span>
           </div>
         </dd>
 
-        <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
           {t('attributes.heading')}
         </dt>
         <dd>
@@ -326,11 +326,11 @@ function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number;
   const t = useTranslations('toy');
   return (
     <>
-      <span className="text-neutral-400">#{n}</span>
+      <span className="text-text-tertiary">#{n}</span>
       <span className="whitespace-nowrap">{Math.round(d)} mm</span>
-      <span className="text-neutral-400">×</span>
+      <span className="text-text-tertiary">×</span>
       <span className="whitespace-nowrap">{Math.round(h)} mm</span>
-      <span className="text-neutral-600">
+      <span className="text-muted">
         {c != null ? (
           <>
             <span className="whitespace-nowrap">{Math.round(c)} mm</span>{' '}

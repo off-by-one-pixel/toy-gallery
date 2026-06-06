@@ -61,13 +61,13 @@ export default function Header({
   ];
 
   return (
-    <header className="flex items-center gap-2 border-b border-neutral-200 px-4 py-2.5">
+    <header className="flex items-center gap-2 border-b border-border px-4 py-2.5">
       <Button variant="outline" size="sm" isIconOnly aria-label={common('back')} onPress={onBack}>
         <ArrowLeft size={14} strokeWidth={2} />
       </Button>
-      <h2 className="text-sm font-semibold tracking-tight text-neutral-900">
+      <h2 className="text-sm font-semibold tracking-tight text-foreground">
         {headerLabel}
-        <span className="ml-2 font-normal text-neutral-500">{title}</span>
+        <span className="ml-2 font-normal text-muted">{title}</span>
       </h2>
       <div className="flex-1" />
       {!isPickingTemplate && (

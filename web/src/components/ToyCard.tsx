@@ -42,7 +42,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   return (
     <div
       className={
-        'group relative bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer ' +
+        'group relative bg-surface shadow-sm hover:shadow-md transition-shadow cursor-pointer ' +
         (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
       }
       role="button"
@@ -56,7 +56,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         }
       }}
     >
-      <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-neutral-200 bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
+      <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-border bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
           <ToyActionButtons
             onEdit={() => onEdit(toy)}
@@ -78,10 +78,8 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
       <div className="px-3.5 py-3">
         <div className="mb-2 flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500 truncate">
-              {toy.brand}
-            </div>
-            <div className="truncate text-sm font-semibold text-neutral-900">{toy.name}</div>
+            <div className="text-caption font-medium uppercase tracking-wider text-muted truncate">{toy.brand}</div>
+            <div className="truncate text-sm font-semibold text-foreground">{toy.name}</div>
           </div>
           {toy.size && (
             <Chip size="sm" color="accent" className="shrink-0">
@@ -89,7 +87,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
             </Chip>
           )}
         </div>
-        <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2.5">
+        <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-border pt-2.5">
           <Metric label="Insertable" value={toy.insertableLength} unit={unit} />
           <Metric label="Circumference" value={toy.circumference} unit={unit} bordered />
         </div>
@@ -98,7 +96,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
       <div
         ref={detailsRef}
         className={
-          'absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-white px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 ' +
+          'absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-surface px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 ' +
           (detailsOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0 pointer-events-none')
         }
       >
@@ -124,12 +122,12 @@ function Metric({
   bordered?: boolean;
 }>) {
   return (
-    <div className={bordered ? 'pl-3 border-l border-neutral-200' : ''}>
-      <div className="text-[22px] font-semibold leading-none tracking-tight text-neutral-900 tabular-nums">
+    <div className={bordered ? 'pl-3 border-l border-border' : ''}>
+      <div className="text-[22px] font-semibold leading-none tracking-tight text-foreground tabular-nums">
         {formatValue(value, unit)}
-        {value != null && <span className="ml-0.5 text-xs font-medium text-neutral-500">{unit.id}</span>}
+        {value != null && <span className="ml-0.5 text-xs font-medium text-muted">{unit.id}</span>}
       </div>
-      <div className="mt-1 text-[10px] uppercase tracking-wider text-neutral-400">{label}</div>
+      <div className="mt-1 text-caption uppercase tracking-wider text-text-tertiary">{label}</div>
     </div>
   );
 }
@@ -137,8 +135,8 @@ function Metric({
 function AttrRow({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
-      <span className="px-1.5 py-0.5 text-xs text-neutral-700">{label}</span>
-      <span className="px-1.5 py-0.5 text-xs tabular-nums text-neutral-900">{value}</span>
+      <span className="px-1.5 py-0.5 text-xs text-foreground">{label}</span>
+      <span className="px-1.5 py-0.5 text-xs tabular-nums text-foreground">{value}</span>
       <span aria-hidden className="w-3" />
     </div>
   );

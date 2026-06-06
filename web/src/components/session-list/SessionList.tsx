@@ -25,9 +25,9 @@ export default function SessionList() {
   return (
     <>
       <TopBar subtitle={data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`} />
-      <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
-          <div className="inline-flex gap-0.5 rounded-lg bg-neutral-200/70 p-0.5">
+          <div className="inline-flex gap-0.5 rounded-lg bg-surface-tertiary/70 p-0.5">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -35,9 +35,7 @@ export default function SessionList() {
                 onClick={() => data.setFilter(f.key)}
                 className={
                   'rounded-md px-3 py-1 text-xs font-medium transition-colors ' +
-                  (data.filter === f.key
-                    ? 'bg-white text-neutral-900 shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-900')
+                  (data.filter === f.key ? 'bg-surface text-foreground shadow-xs' : 'text-muted hover:text-foreground')
                 }
               >
                 {f.hasShortLabel ? (
@@ -79,7 +77,7 @@ export default function SessionList() {
   function renderBody() {
     if (data.isLoading) {
       return (
-        <div className="flex justify-center py-20 text-neutral-500">
+        <div className="flex justify-center py-20 text-muted">
           <Spinner />
         </div>
       );

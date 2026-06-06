@@ -21,7 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <meta name="theme-color" content="#f3f4f6" />
       </head>
-      <body className="bg-neutral-100 text-neutral-900 min-h-screen antialiased">
+      <body className="bg-surface-secondary text-foreground min-h-screen antialiased">
         <ToastProvider />
         <LocaleProvider>
           <UnitProvider>

@@ -37,13 +37,13 @@ export default function AppMenu() {
     <Dropdown>
       <Dropdown.Trigger
         aria-label={t('menu.openMenu')}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-neutral-900"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-tertiary/60 hover:text-foreground"
       >
         <Settings size={16} strokeWidth={1.8} />
       </Dropdown.Trigger>
       <Dropdown.Popover placement="bottom end">
         <ActionDropdownMenu items={items} />
-        <div className="px-3 py-1.5 text-center font-mono text-[10px] text-neutral-400">
+        <div className="px-3 py-1.5 text-center font-mono text-caption text-text-tertiary">
           {APP_VERSION}
           {APP_COMMIT_SHA && ` · ${APP_COMMIT_SHA}`}
         </div>

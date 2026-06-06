@@ -26,8 +26,8 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
   if (!toy) {
     return (
       <div className="flex w-20 flex-col items-center gap-1.5 text-center">
-        <div className="h-14 w-10 rounded bg-neutral-200" />
-        <div className="truncate text-xs text-neutral-400">{t('toyDeleted')}</div>
+        <div className="h-14 w-10 rounded bg-surface-tertiary" />
+        <div className="truncate text-xs text-text-tertiary">{t('toyDeleted')}</div>
       </div>
     );
   }
@@ -48,9 +48,9 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
           <ThumbnailRender toy={editorToy} scaleFactor={0.18} style={silhouetteStyle} />
         </div>
       </div>
-      <div className="max-w-20 truncate text-sm text-neutral-900">
+      <div className="max-w-20 truncate text-sm text-foreground">
         {toy.name}
-        {toy.size && <span className="text-neutral-500"> {toy.size}</span>}
+        {toy.size && <span className="text-muted"> {toy.size}</span>}
       </div>
     </div>
   );

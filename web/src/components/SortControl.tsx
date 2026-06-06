@@ -32,10 +32,10 @@ export default function SortControl() {
   };
 
   return (
-    <div className="inline-flex items-stretch rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-700 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+    <div className="inline-flex items-stretch rounded-md border border-border bg-surface text-xs font-medium text-foreground shadow-[0_1px_0_rgba(0,0,0,0.03)]">
       <Dropdown>
-        <Dropdown.Trigger className="inline-flex items-center gap-1.5 rounded-l-md px-2.5 py-1 transition-colors hover:bg-neutral-50">
-          <ArrowUpDown size={13} strokeWidth={2} className="text-neutral-500" />
+        <Dropdown.Trigger className="inline-flex items-center gap-1.5 rounded-l-md px-2.5 py-1 transition-colors hover:bg-surface-secondary">
+          <ArrowUpDown size={13} strokeWidth={2} className="text-muted" />
           <span>{activeLabel}</span>
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom end">
@@ -53,9 +53,9 @@ export default function SortControl() {
         onClick={flipDirection}
         disabled={!sort}
         aria-label={sort?.direction === 'desc' ? t('ascending') : t('descending')}
-        className="inline-flex items-center rounded-r-md border-l border-neutral-200 px-2 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+        className="inline-flex items-center rounded-r-md border-l border-border px-2 transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
       >
-        <DirArrow size={12} strokeWidth={2.4} className="text-neutral-500" />
+        <DirArrow size={12} strokeWidth={2.4} className="text-muted" />
       </button>
     </div>
   );
@@ -66,7 +66,7 @@ function SortRow({ label, direction }: Readonly<{ label: string; direction: 'asc
   return (
     <span className="flex w-full items-center justify-between gap-3">
       <span>{label}</span>
-      {Arrow && <Arrow size={12} strokeWidth={2.2} className="text-neutral-500" />}
+      {Arrow && <Arrow size={12} strokeWidth={2.2} className="text-muted" />}
     </span>
   );
 }

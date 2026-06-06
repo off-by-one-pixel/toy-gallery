@@ -93,7 +93,7 @@ export default function PasswordSection() {
 function Field({ label, htmlFor, children }: Readonly<{ label: string; htmlFor: string; children: React.ReactNode }>) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-[13px] font-medium text-neutral-900">
+      <label htmlFor={htmlFor} className="text-meta font-medium text-foreground">
         {label}
       </label>
       {children}

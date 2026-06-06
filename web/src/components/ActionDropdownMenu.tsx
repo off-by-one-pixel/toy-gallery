@@ -14,7 +14,6 @@ export type ActionMenuItem = Readonly<{
   label: string;
   description: string;
   onAction: () => void;
-  /** Renders icon in red-500 and wraps the label in a red-600 span. */
   danger?: boolean;
 }>;
 
@@ -23,9 +22,6 @@ type Props = Readonly<{
   disabledKeys?: string[];
 }>;
 
-/** Inner contents of a HeroUI Dropdown: items rendered through MenuRow with
- *  consistent icon sizing and danger styling. Wrap with <Dropdown.Popover>
- *  in the consumer when popover placement / footer differs. */
 export default function ActionDropdownMenu({ items, disabledKeys }: Props) {
   return (
     <Dropdown.Menu disabledKeys={disabledKeys ?? []}>
@@ -33,9 +29,9 @@ export default function ActionDropdownMenu({ items, disabledKeys }: Props) {
         <Dropdown.Item key={id} id={id} onAction={onAction}>
           <ActionDropdownMenuRow
             icon={
-              <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} className={danger ? 'text-red-500' : undefined} />
+              <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} className={danger ? 'text-danger' : undefined} />
             }
-            label={danger ? <span className="text-red-600">{label}</span> : label}
+            label={danger ? <span className="text-danger">{label}</span> : label}
             description={description}
           />
         </Dropdown.Item>

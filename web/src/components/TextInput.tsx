@@ -17,10 +17,10 @@ type Props = Readonly<
 >;
 
 const wrapperBase =
-  'flex w-full items-center gap-2 rounded-xl border border-neutral-200 bg-white text-neutral-900 ' +
+  'flex w-full items-center gap-2 rounded-xl border border-border bg-surface text-foreground ' +
   'transition-[border-color,box-shadow] duration-150 ' +
-  'focus-within:border-blue-600 focus-within:ring-[3px] focus-within:ring-blue-600/15 ' +
-  'has-[input:disabled]:cursor-not-allowed has-[input:disabled]:bg-neutral-50 has-[input:disabled]:text-neutral-500';
+  'focus-within:border-accent focus-within:ring-[3px] focus-within:ring-accent/15 ' +
+  'has-[input:disabled]:cursor-not-allowed has-[input:disabled]:bg-surface-secondary has-[input:disabled]:text-muted';
 
 const wrapperSize: Record<Size, string> = {
   sm: 'px-3 py-2 text-sm',
@@ -29,7 +29,7 @@ const wrapperSize: Record<Size, string> = {
 
 const inputBase =
   'min-w-0 flex-1 appearance-none border-0 bg-transparent text-inherit outline-none ' +
-  'placeholder:text-neutral-400 disabled:cursor-not-allowed ' +
+  'placeholder:text-text-tertiary disabled:cursor-not-allowed ' +
   '[&::-webkit-search-cancel-button]:appearance-none';
 
 const TextInput = forwardRef<HTMLInputElement, Props>(function TextInput(

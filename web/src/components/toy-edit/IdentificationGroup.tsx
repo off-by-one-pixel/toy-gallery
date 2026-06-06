@@ -17,7 +17,7 @@ export default function IdentificationGroup({ form }: Props) {
   const { identity, setIdentityField } = form;
   return (
     <section className="flex flex-col gap-2.5">
-      <h2 className="m-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+      <h2 className="m-0 text-caption font-semibold uppercase tracking-[0.08em] text-text-tertiary">
         {t('identification')}
       </h2>
       <FormField label={t('brand')}>
@@ -54,7 +54,7 @@ export default function IdentificationGroup({ form }: Props) {
 function FormField({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
   return (
     <div className="grid grid-cols-[62px_1fr] items-center gap-2.5">
-      <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
+      <span className="text-caption uppercase tracking-wide text-muted">{label}</span>
       {children}
     </div>
   );

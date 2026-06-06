@@ -40,7 +40,7 @@ export default function NewToyTemplateStep({ step, onStepChange, onPick, onSkip 
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-col overflow-hidden bg-surface">
       <StepHeader step={step} />
 
       {step === 'template' ? (

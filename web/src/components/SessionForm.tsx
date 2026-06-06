@@ -95,17 +95,17 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
 
   return (
     <>
-      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-b border-border bg-surface-secondary/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
           <button
             type="button"
             onClick={() => router.push('/sessions')}
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-neutral-900"
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-muted transition-colors hover:bg-surface-tertiary/60 hover:text-foreground"
           >
             <ArrowLeft size={14} strokeWidth={2} />
             {t('backToList')}
           </button>
-          <h1 className="m-0 text-lg font-semibold tracking-tight text-neutral-900">{title}</h1>
+          <h1 className="m-0 text-lg font-semibold tracking-tight text-foreground">{title}</h1>
         </div>
       </header>
 
@@ -117,19 +117,21 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
         )}
 
         <section className="mb-7">
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">{t('whenHeading')}</h2>
-          <div className="inline-flex max-w-90 items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
-            <Clock size={16} className="text-neutral-500" />
+          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            {t('whenHeading')}
+          </h2>
+          <div className="inline-flex max-w-90 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm">
+            <Clock size={16} className="text-muted" />
             <input
               type="datetime-local"
               value={startedAt}
               onChange={(e) => setStartedAt(e.target.value)}
-              className="flex-1 border-0 bg-transparent text-sm tabular-nums text-neutral-900 outline-none"
+              className="flex-1 border-0 bg-transparent text-sm tabular-nums text-foreground outline-none"
             />
             <button
               type="button"
               onClick={() => setStartedAt(datetimeLocalNow())}
-              className="rounded-md border border-neutral-200 bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-white"
+              className="rounded-md border border-border bg-surface-secondary px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface"
             >
               {t('nowButton')}
             </button>
@@ -137,14 +139,16 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
         </section>
 
         <section>
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">{t('toysHeading')}</h2>
+          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            {t('toysHeading')}
+          </h2>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <SearchInput value={query} onChange={setQuery} />
-            <span className="text-sm text-neutral-500">{t('toysHint')}</span>
+            <span className="text-sm text-muted">{t('toysHint')}</span>
           </div>
 
           {isLoading ? (
-            <div className="flex justify-center py-20 text-neutral-500">
+            <div className="flex justify-center py-20 text-muted">
               <Spinner />
             </div>
           ) : (
@@ -162,10 +166,10 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
         </section>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-neutral-200 bg-white/95 shadow-[0_-4px_16px_rgba(17,24,39,.06)] backdrop-blur-sm">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 shadow-[0_-4px_16px_rgba(17,24,39,.06)] backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
-          <div className="text-sm text-neutral-900">
-            <span className="font-semibold text-blue-600">{selectedCount}</span>{' '}
+          <div className="text-sm text-foreground">
+            <span className="font-semibold text-accent">{selectedCount}</span>{' '}
             {t('toysSelected', { count: selectedCount })}
           </div>
           <div className="flex-1" />

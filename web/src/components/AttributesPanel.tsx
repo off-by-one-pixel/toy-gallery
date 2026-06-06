@@ -21,7 +21,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
               placeholder={t('keyPlaceholder')}
               onChange={(e) => updateKey(row.rowId, e.target.value)}
               onBlur={commitChanges}
-              className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-neutral-700 hover:border-neutral-200 focus:border-blue-400 focus:bg-white focus:outline-none"
+              className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
             />
             <input
               type="text"
@@ -29,13 +29,13 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
               placeholder={t('valuePlaceholder')}
               onChange={(e) => updateValue(row.rowId, e.target.value)}
               onBlur={commitChanges}
-              className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-neutral-900 hover:border-neutral-200 focus:border-blue-400 focus:bg-white focus:outline-none"
+              className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
             />
             <button
               type="button"
               onClick={() => removeRow(row.rowId)}
               aria-label={t('removeLabel')}
-              className="text-neutral-400 opacity-0 transition-opacity hover:text-neutral-700 hover:opacity-100! group-hover:opacity-60"
+              className="text-text-tertiary opacity-0 transition-opacity hover:text-foreground hover:opacity-100! group-hover:opacity-60"
             >
               <X size={12} strokeWidth={2} />
             </button>
@@ -45,7 +45,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
       <button
         type="button"
         onClick={addRow}
-        className="mt-1.5 text-[11px] text-neutral-500 transition-colors hover:text-blue-600"
+        className="mt-1.5 text-caption text-muted transition-colors hover:text-accent"
       >
         {t('addButton')}
       </button>
