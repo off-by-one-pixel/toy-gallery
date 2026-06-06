@@ -1,12 +1,12 @@
 'use client';
 
 import { Chip } from '@heroui/react';
-import { ThumbnailRender } from 'toy-editor';
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { Involvement, type Toy } from '../services/types';
+import ToyThumbnail from './ToyThumbnail';
 
 type Props = Readonly<{
   toy: Toy;
@@ -45,12 +45,6 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
   const t = useTranslations('involvement');
   const editorToy = toyShapeToEditor(toy.shape);
 
-  const silhouetteStyle = {
-    borderWidth: 1.25,
-    borderColor: 'var(--silhouette-stroke)',
-    color: toy.color || '#c7e4ee',
-  };
-
   const handlePick = (next: Involvement) => {
     onChange(state === next ? null : next);
   };
@@ -71,7 +65,7 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
         (state ? CHIP_BORDER[state] : 'border-border')
       }
     >
-      <div className="relative h-35 border-b border-border bg-linear-to-br from-(--thumbnail-tile-from) to-(--thumbnail-tile-to)">
+      <ToyThumbnail toy={editorToy} fillColor={toy.color} className="h-35 border-b border-border py-2">
         {state && (
           <div
             className={
@@ -82,13 +76,7 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
             <Check size={14} strokeWidth={3} />
           </div>
         )}
-        <div
-          className="absolute inset-x-0 top-2 bottom-2 flex items-end justify-center"
-          style={{ filter: 'var(--toy-fill-dim)' }}
-        >
-          <ThumbnailRender toy={editorToy} scaleFactor={1} style={silhouetteStyle} />
-        </div>
-      </div>
+      </ToyThumbnail>
       <div className="px-3 py-2.5">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
