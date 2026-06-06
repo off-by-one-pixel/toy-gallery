@@ -45,9 +45,9 @@ export default function DataSection() {
   return (
     <SectionCard>
       <SectionHeading title={t('heading')} />
-      <ul className="flex flex-col divide-y divide-neutral-200">
+      <ul className="flex flex-col divide-y divide-border">
         <DataRow
-          icon={<Download size={16} strokeWidth={1.8} className="text-neutral-500" />}
+          icon={<Download size={16} strokeWidth={1.8} className="text-muted" />}
           label={t('exportLabel')}
           description={t('exportDescription')}
           action={
@@ -57,7 +57,7 @@ export default function DataSection() {
           }
         />
         <DataRow
-          icon={<Upload size={16} strokeWidth={1.8} className="text-neutral-500" />}
+          icon={<Upload size={16} strokeWidth={1.8} className="text-muted" />}
           label={t('importLabel')}
           description={t('importDescription')}
           action={
@@ -67,8 +67,8 @@ export default function DataSection() {
           }
         />
         <DataRow
-          icon={<Trash2 size={16} strokeWidth={1.8} className="text-red-500" />}
-          label={<span className="text-red-600">{t('deleteLabel')}</span>}
+          icon={<Trash2 size={16} strokeWidth={1.8} className="text-danger" />}
+          label={<span className="text-danger">{t('deleteLabel')}</span>}
           description={t('deleteDescription')}
           action={
             <Button variant="danger" size="sm" isDisabled={busy} onPress={() => setConfirmOpen(true)}>
@@ -115,10 +115,10 @@ type DataRowProps = Readonly<{
 function DataRow({ icon, label, description, action }: DataRowProps) {
   return (
     <li className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-neutral-100">{icon}</div>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-secondary">{icon}</div>
       <div className="flex-1">
-        <div className="text-sm font-medium text-neutral-900">{label}</div>
-        <div className="text-[13px] text-neutral-500">{description}</div>
+        <div className="text-sm font-medium text-foreground">{label}</div>
+        <div className="text-meta text-muted">{description}</div>
       </div>
       {action}
     </li>

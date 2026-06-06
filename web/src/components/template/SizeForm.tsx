@@ -40,12 +40,12 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
       <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
         <div className="mx-auto flex max-w-md flex-col gap-5">
           {template && (
-            <div className="text-center text-xs uppercase tracking-[0.08em] text-neutral-500">
-              {t('pickedShapePrefix')} · <span className="text-neutral-700">{template.name}</span>
+            <div className="text-center text-xs uppercase tracking-[0.08em] text-muted">
+              {t('pickedShapePrefix')} · <span className="text-foreground">{template.name}</span>
             </div>
           )}
 
-          <div className="flex h-56 items-end justify-center rounded-2xl border border-neutral-200 bg-neutral-50">
+          <div className="flex h-56 items-end justify-center rounded-2xl border border-border bg-surface-secondary">
             {previewToy && <ThumbnailRender toy={previewToy} scaleFactor={1} style={PREVIEW_STYLE} />}
           </div>
 
@@ -68,7 +68,7 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
         </div>
       </div>
 
-      <footer className="flex items-center gap-2 border-t border-neutral-200 bg-white px-4 py-3 sm:px-6">
+      <footer className="flex items-center gap-2 border-t border-border bg-surface px-4 py-3 sm:px-6">
         <Button variant="outline" size="sm" onPress={onBack}>
           <ArrowLeft size={14} strokeWidth={2} />
           {common('back')}
@@ -93,7 +93,7 @@ type SizeFieldProps = Readonly<{
 function SizeField({ label, value, onChange, unit, trailing }: SizeFieldProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
+      <span className="text-caption uppercase tracking-wide text-muted">{label}</span>
       <TextInput
         size="sm"
         type="number"
@@ -103,7 +103,7 @@ function SizeField({ label, value, onChange, unit, trailing }: SizeFieldProps) {
         value={value}
         onChange={onChange}
         trailing={
-          <span className="flex items-center gap-2 text-xs text-neutral-500">
+          <span className="flex items-center gap-2 text-xs text-muted">
             <span>{unit.id}</span>
             {trailing}
           </span>
@@ -120,15 +120,15 @@ type ModeToggleProps = Readonly<{
 
 function ModeToggle({ value, onChange }: ModeToggleProps) {
   return (
-    <span className="inline-flex rounded-md border border-neutral-200 bg-neutral-100 p-0.5">
+    <span className="inline-flex rounded-md border border-border bg-surface-secondary p-0.5">
       {(['diameter', 'circumference'] as const).map((m) => (
         <button
           key={m}
           type="button"
           onClick={() => onChange(m)}
           className={
-            'rounded px-2 py-0.5 text-[11px] font-medium transition-colors ' +
-            (value === m ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700')
+            'rounded px-2 py-0.5 text-caption font-medium transition-colors ' +
+            (value === m ? 'bg-surface text-foreground shadow-sm' : 'text-muted hover:text-foreground')
           }
         >
           {m === 'diameter' ? 'Ø' : 'C'}

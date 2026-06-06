@@ -11,13 +11,13 @@ type Props = Readonly<{
 export default function PeakRow({ label, mm, unit }: Props) {
   return (
     <div className="flex items-baseline justify-end gap-2 py-0.5">
-      <span className="text-[11px] uppercase tracking-wider text-neutral-400">{label}</span>
+      <span className="text-caption uppercase tracking-wider text-text-tertiary">{label}</span>
       {mm == null ? (
-        <span className="text-[17px] font-medium text-neutral-400">—</span>
+        <span className="text-[17px] font-medium text-text-tertiary">—</span>
       ) : (
-        <span className="text-[17px] font-semibold tracking-tight tabular-nums text-neutral-900">
+        <span className="text-[17px] font-semibold tracking-tight tabular-nums text-foreground">
           {formatValue(mm, unit)}
-          <span className="ml-1.5 text-[11px] font-medium text-neutral-500">{unit.id}</span>
+          <span className="ml-1.5 text-caption font-medium text-muted">{unit.id}</span>
         </span>
       )}
     </div>

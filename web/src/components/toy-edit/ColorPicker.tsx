@@ -26,7 +26,7 @@ export default function ColorPicker({ value, onChange }: Props) {
       <label
         aria-label={t('custom')}
         className={`relative inline-flex h-6 w-6 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-white ring-1 transition-transform hover:scale-110 ${
-          isPreset ? 'ring-neutral-200' : 'ring-2 ring-blue-500'
+          isPreset ? 'ring-border' : 'ring-2 ring-accent'
         }`}
         style={{
           background: isPreset

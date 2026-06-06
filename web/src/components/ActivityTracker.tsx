@@ -12,7 +12,7 @@ type Props = Readonly<{
 
 export default function ActivityTracker({ heatmap }: Props) {
   return (
-    <div className="mx-auto grid max-w-300 grid-cols-1 gap-6 rounded-lg bg-white/60 px-4 pt-3 pb-4 sm:grid-cols-2 sm:gap-8">
+    <div className="mx-auto grid max-w-300 grid-cols-1 gap-6 rounded-lg bg-surface/60 px-4 pt-3 pb-4 sm:grid-cols-2 sm:gap-8">
       <DimensionHeatmap view={heatmap.length} />
       <DimensionHeatmap view={heatmap.circumference} />
     </div>
@@ -22,7 +22,7 @@ export default function ActivityTracker({ heatmap }: Props) {
 function DimensionHeatmap({ view }: Readonly<{ view: DimensionView }>) {
   return (
     <div>
-      <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">{view.title}</h3>
+      <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">{view.title}</h3>
       <div>
         <CalendarHeatmap
           startDate={view.startDate}
@@ -42,7 +42,7 @@ function DimensionHeatmap({ view }: Readonly<{ view: DimensionView }>) {
           }}
         />
       </div>
-      <div className="-mt-4 ml-auto flex w-1/3 items-center gap-2 text-[10px] tabular-nums text-neutral-500">
+      <div className="-mt-4 ml-auto flex w-1/3 items-center gap-2 text-caption tabular-nums text-muted">
         <span>{view.legendMinLabel}</span>
         <span aria-hidden className="h-1.5 flex-1 rounded-full" style={{ background: view.legendGradient }} />
         <span>{view.legendMaxLabel}</span>

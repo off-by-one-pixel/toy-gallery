@@ -16,8 +16,8 @@ export default function LocaleSwitcher({ value, options, onChange }: Props) {
 
   return (
     <Dropdown>
-      <Dropdown.Trigger className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50">
-        <Globe size={14} strokeWidth={2} className="text-neutral-500" />
+      <Dropdown.Trigger className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-secondary">
+        <Globe size={14} strokeWidth={2} className="text-muted" />
         <span>{current?.label ?? value}</span>
       </Dropdown.Trigger>
       <Dropdown.Popover placement="bottom end">

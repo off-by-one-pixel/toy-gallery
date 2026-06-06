@@ -8,8 +8,8 @@ type Props = Readonly<{
 export default function SectionHeading({ title, subtitle }: Props) {
   return (
     <header>
-      <h2 className="text-base font-semibold tracking-tight text-neutral-900">{title}</h2>
-      {subtitle !== undefined && <p className="mt-1 text-[13px] text-neutral-500">{subtitle}</p>}
+      <h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>
+      {subtitle !== undefined && <p className="mt-1 text-meta text-muted">{subtitle}</p>}
     </header>
   );
 }

@@ -31,15 +31,15 @@ export default function SessionRow({ session, toysById, unit }: Props) {
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5">
+    <div className="rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5">
       <div className="flex items-center justify-between gap-3 sm:contents">
-        <div className="text-base font-semibold tracking-tight text-neutral-900 sm:order-1">
+        <div className="text-base font-semibold tracking-tight text-foreground sm:order-1">
           {formatWhen(session.startedAt, new Date(), locale, whenT)}
         </div>
         <Link
           href={`/sessions/edit?id=${session.id}`}
           aria-label={t('editArrowLabel')}
-          className="rounded-md p-1 text-neutral-300 transition-colors hover:bg-neutral-100 hover:text-blue-600 sm:order-4"
+          className="rounded-md p-1 text-text-subtle transition-colors hover:bg-surface-secondary hover:text-accent sm:order-4"
         >
           <ChevronRight size={20} />
         </Link>
@@ -51,7 +51,7 @@ export default function SessionRow({ session, toysById, unit }: Props) {
             return <MiniToy key={entry.toy} entry={entry} toy={toy} heightRatio={scale(toy)} />;
           })}
           {overflow > 0 && (
-            <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-500">
+            <span className="rounded-full bg-surface-secondary px-2.5 py-1 text-xs font-medium text-muted">
               {t('overflowMore', { count: overflow })}
             </span>
           )}

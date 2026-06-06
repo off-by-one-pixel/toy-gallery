@@ -11,10 +11,10 @@ type Props = Readonly<{
 export default function ActionDropdownMenuRow({ icon, label, description }: Props) {
   return (
     <span className="flex items-start gap-2.5">
-      <span className="mt-0.5 text-neutral-500">{icon}</span>
+      <span className="mt-0.5 text-muted">{icon}</span>
       <span className="flex flex-col">
         <span className="font-medium">{label}</span>
-        <span className="text-[11px] text-neutral-500">{description}</span>
+        <span className="text-caption text-muted">{description}</span>
       </span>
     </span>
   );

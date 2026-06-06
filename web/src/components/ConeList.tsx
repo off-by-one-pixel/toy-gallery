@@ -83,7 +83,7 @@ const ConeList = () => {
   return (
     <>
       <TopBar subtitle={isLoading ? null : t('toy.items', { count: cones.length })} />
-      <header className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <div className="w-full sm:w-auto">
             <SearchInput value={query} onChange={setQuery} />
@@ -109,7 +109,7 @@ const ConeList = () => {
           </Alert>
         )}
         {isLoading ? (
-          <div className="flex justify-center py-20 text-neutral-500">
+          <div className="flex justify-center py-20 text-muted">
             <Spinner />
           </div>
         ) : view === ViewMode.list ? (
@@ -142,10 +142,10 @@ const ConeList = () => {
               <button
                 type="button"
                 onClick={toyModal.openNew}
-                className="flex min-h-90 items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 text-neutral-500 transition-colors hover:border-blue-500 hover:bg-blue-50/40 hover:text-blue-700"
+                className="flex min-h-90 items-center justify-center rounded-2xl border-2 border-dashed border-border-secondary text-muted transition-colors hover:border-accent hover:bg-accent-soft/40 hover:text-accent-hover"
               >
                 <span className="inline-flex items-center gap-2 font-medium">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white text-lg leading-none">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-lg leading-none">
                     +
                   </span>
                   <span>{t('toy.new')}</span>

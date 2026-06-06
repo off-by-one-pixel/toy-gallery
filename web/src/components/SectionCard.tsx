@@ -6,7 +6,7 @@ type Props = Readonly<{
 
 export default function SectionCard({ children }: Props) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-sm">
       {children}
     </section>
   );

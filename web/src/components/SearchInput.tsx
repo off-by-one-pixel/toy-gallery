@@ -22,7 +22,7 @@ const SearchInput = ({ value, onChange, placeholder }: Props) => {
       placeholder={placeholder ?? t('placeholder')}
       aria-label={t('ariaLabel')}
       className="min-w-60"
-      leading={<Search size={14} className="text-neutral-400" />}
+      leading={<Search size={14} className="text-text-tertiary" />}
       trailing={
         <button
           type="button"
@@ -30,7 +30,7 @@ const SearchInput = ({ value, onChange, placeholder }: Props) => {
           aria-label={t('clear')}
           tabIndex={value ? 0 : -1}
           aria-hidden={value ? undefined : true}
-          className={`inline-flex h-4 w-4 items-center justify-center rounded text-neutral-400 transition-colors hover:text-neutral-700 ${value ? 'visible' : 'invisible'}`}
+          className={`inline-flex h-4 w-4 items-center justify-center rounded text-text-tertiary transition-colors hover:text-foreground ${value ? 'visible' : 'invisible'}`}
         >
           <X size={14} />
         </button>

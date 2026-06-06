@@ -1,6 +1,14 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
 
+@theme {
+  --color-text-tertiary: oklch(0.71 0.005 286);
+  --color-text-subtle: oklch(0.83 0.004 286);
+
+  --text-caption: 0.6875rem;
+  --text-meta: 0.8125rem;
+}
+
 html {
   font-size: 14px;
   /* Same stack as the mockups — system font first so we get San Francisco

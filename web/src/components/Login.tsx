@@ -32,11 +32,11 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen grid min-[900px]:grid-cols-2">
       <BrandPanel />
-      <section className="grid place-items-center px-8 py-12 bg-neutral-100">
-        <div className="w-full max-w-md rounded-3xl border border-neutral-200 bg-white px-9 py-10 shadow-[0_1px_2px_rgba(17,24,39,0.04),0_4px_24px_rgba(17,24,39,0.06)]">
+      <section className="grid place-items-center px-8 py-12 bg-surface-secondary">
+        <div className="w-full max-w-md rounded-3xl border border-border bg-surface px-9 py-10 shadow-[0_1px_2px_rgba(17,24,39,0.04),0_4px_24px_rgba(17,24,39,0.06)]">
           <header className="mb-7">
-            <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900">{t('welcome')}</h1>
-            <p className="mt-1.5 text-sm text-neutral-500">{t('subtitle')}</p>
+            <h1 className="text-[28px] font-semibold tracking-tight text-foreground">{t('welcome')}</h1>
+            <p className="mt-1.5 text-sm text-muted">{t('subtitle')}</p>
           </header>
 
           {error && (
@@ -70,13 +70,13 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-1.5 w-full rounded-xl bg-blue-600 px-4 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-1.5 w-full rounded-xl bg-accent px-4 py-3.5 text-[15px] font-semibold text-accent-foreground transition-colors hover:bg-accent-hover active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? t('submitting') : t('submit')}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-[13px] text-neutral-500">{t('inviteOnly')}</p>
+          <p className="mt-5 text-center text-meta text-muted">{t('inviteOnly')}</p>
         </div>
       </section>
     </div>
@@ -86,7 +86,7 @@ const LoginPage = () => {
 function Field({ label, htmlFor, children }: Readonly<{ label: string; htmlFor: string; children: React.ReactNode }>) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-[13px] font-medium text-neutral-900">
+      <label htmlFor={htmlFor} className="text-meta font-medium text-foreground">
         {label}
       </label>
       {children}
@@ -111,7 +111,7 @@ function BrandPanel() {
         style={{ background: 'linear-gradient(to right, transparent 92%, rgba(17,24,39,0.04))' }}
       />
       <div className="relative z-10 flex items-center gap-3">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-neutral-800">
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-foreground">
           <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
             <path
               d="M16 5 L22 11 L22 19 L20 27 L12 27 L10 19 L10 11 Z"
@@ -122,14 +122,14 @@ function BrandPanel() {
             />
           </svg>
         </span>
-        <span className="text-base font-semibold tracking-tight text-neutral-900">{t('brand')}</span>
+        <span className="text-base font-semibold tracking-tight text-foreground">{t('brand')}</span>
       </div>
 
       <GalleryMontage />
 
       <div className="relative z-10 max-w-md">
-        <h2 className="m-0 text-[22px] font-semibold tracking-tight text-neutral-900">{t('tagline')}</h2>
-        <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{t('taglineSubtitle')}</p>
+        <h2 className="m-0 text-[22px] font-semibold tracking-tight text-foreground">{t('tagline')}</h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">{t('taglineSubtitle')}</p>
       </div>
     </aside>
   );
@@ -172,7 +172,7 @@ function MontageTile({ tile, staggered }: Readonly<{ tile: Tile; staggered: bool
     >
       <span
         aria-hidden
-        className="absolute left-1/2 -translate-x-1/2 border-[1.25px] border-neutral-800"
+        className="absolute left-1/2 -translate-x-1/2 border-[1.25px] border-foreground"
         style={{
           bottom: 24,
           width: tile.w,
