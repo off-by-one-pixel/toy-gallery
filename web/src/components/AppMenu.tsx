@@ -1,7 +1,7 @@
 'use client';
 
 import { Dropdown } from '@heroui/react';
-import { ChevronDown, LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
@@ -9,11 +9,7 @@ import { APP_COMMIT_SHA, APP_VERSION } from '../config';
 import { useAuth } from '../providers/AuthProvider';
 import ActionDropdownMenu, { type ActionMenuItem } from './ActionDropdownMenu';
 
-type Props = Readonly<{
-  subtitle?: React.ReactNode;
-}>;
-
-export default function TitleMenu({ subtitle }: Props) {
+export default function AppMenu() {
   const t = useTranslations('collection');
   const router = useRouter();
   const { username, logout } = useAuth();
@@ -39,18 +35,13 @@ export default function TitleMenu({ subtitle }: Props) {
 
   return (
     <Dropdown>
-      <Dropdown.Trigger className="group inline-flex items-baseline gap-2 rounded-md px-1 -mx-1 text-left transition-colors hover:bg-neutral-200/60">
-        <span className="text-lg font-semibold tracking-tight text-neutral-900">{t('appTitle')}</span>
-        {subtitle !== undefined && (
-          <span className="inline-block min-w-22 text-sm font-normal text-neutral-500">{subtitle}</span>
-        )}
-        <ChevronDown
-          size={10}
-          strokeWidth={2.5}
-          className="text-neutral-400 transition-colors group-hover:text-neutral-600"
-        />
+      <Dropdown.Trigger
+        aria-label={t('menu.openMenu')}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-neutral-900"
+      >
+        <Settings size={16} strokeWidth={1.8} />
       </Dropdown.Trigger>
-      <Dropdown.Popover placement="bottom start">
+      <Dropdown.Popover placement="bottom end">
         <ActionDropdownMenu items={items} />
         <div className="px-3 py-1.5 text-center font-mono text-[10px] text-neutral-400">
           {APP_VERSION}
