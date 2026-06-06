@@ -125,7 +125,9 @@
   },
   "collection": {
     "appTitle": "Toy Gallery",
+    "appTitleHomeLabel": "Toy Gallery — go to home",
     "menu": {
+      "openMenu": "Open menu",
       "settingsLabel": "Settings",
       "settingsDescription": "Language, data, account",
       "signOutLabel": "Sign out",
