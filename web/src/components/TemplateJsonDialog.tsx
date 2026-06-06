@@ -3,20 +3,7 @@
 import { useState } from 'react';
 import { Alert, Button, Modal, useOverlayState } from '@heroui/react';
 import { Check, Copy } from 'lucide-react';
-
-import {
-  TEMPLATE_CLIPBOARD_ERROR,
-  TEMPLATE_DIALOG_CANCEL,
-  TEMPLATE_DIALOG_CLOSE,
-  TEMPLATE_DIALOG_COPIED,
-  TEMPLATE_DIALOG_COPY,
-  TEMPLATE_DIALOG_LOAD,
-  TEMPLATE_EXPORT_DIALOG_DESCRIPTION,
-  TEMPLATE_EXPORT_DIALOG_TITLE,
-  TEMPLATE_IMPORT_DIALOG_DESCRIPTION,
-  TEMPLATE_IMPORT_DIALOG_TITLE,
-  TEMPLATE_IMPORT_PLACEHOLDER,
-} from '../labels';
+import { useTranslations } from 'next-intl';
 
 type Props = Readonly<{
   mode: 'export' | 'import';
@@ -29,6 +16,8 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
   const [text, setText] = useState(initialText);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const t = useTranslations('template');
+  const common = useTranslations('common');
 
   const overlayState = useOverlayState({
     defaultOpen: true,
@@ -45,7 +34,7 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      setError(TEMPLATE_CLIPBOARD_ERROR);
+      setError(t('clipboardError'));
     }
   };
 
@@ -66,10 +55,10 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
           <Modal.Dialog className="flex max-h-[80vh] flex-col overflow-hidden">
             <header className="border-b border-neutral-200 px-4 py-3">
               <h3 className="text-sm font-semibold text-neutral-900">
-                {isExport ? TEMPLATE_EXPORT_DIALOG_TITLE : TEMPLATE_IMPORT_DIALOG_TITLE}
+                {isExport ? t('exportDialogTitle') : t('importDialogTitle')}
               </h3>
               <p className="mt-0.5 text-xs text-neutral-500">
-                {isExport ? TEMPLATE_EXPORT_DIALOG_DESCRIPTION : TEMPLATE_IMPORT_DIALOG_DESCRIPTION}
+                {isExport ? t('exportDialogDescription') : t('importDialogDescription')}
               </p>
             </header>
 
@@ -85,24 +74,24 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 readOnly={isExport}
-                placeholder={isExport ? undefined : TEMPLATE_IMPORT_PLACEHOLDER}
+                placeholder={isExport ? undefined : t('importPlaceholder')}
                 spellCheck={false}
               />
             </div>
 
             <footer className="flex items-center gap-2 border-t border-neutral-200 px-4 py-3">
               <Button variant="outline" size="sm" onPress={() => overlayState.close()}>
-                {isExport ? TEMPLATE_DIALOG_CLOSE : TEMPLATE_DIALOG_CANCEL}
+                {isExport ? common('close') : common('cancel')}
               </Button>
               <div className="flex-1" />
               {isExport ? (
                 <Button variant="primary" size="sm" onPress={handleCopy}>
                   {copied ? <Check size={14} strokeWidth={2.5} /> : <Copy size={14} strokeWidth={2} />}
-                  {copied ? TEMPLATE_DIALOG_COPIED : TEMPLATE_DIALOG_COPY}
+                  {copied ? t('dialogCopied') : t('dialogCopy')}
                 </Button>
               ) : (
                 <Button variant="primary" size="sm" isDisabled={!text.trim()} onPress={handleLoad}>
-                  {TEMPLATE_DIALOG_LOAD}
+                  {t('dialogLoad')}
                 </Button>
               )}
             </footer>

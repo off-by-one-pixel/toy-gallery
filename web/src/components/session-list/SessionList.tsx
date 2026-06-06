@@ -2,12 +2,12 @@
 
 import { Alert, Button, Spinner } from '@heroui/react';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { usePasswordModalNav } from '../../hooks/nav/usePasswordModalNav';
-import { SESSIONS_NEW_BUTTON, SESSIONS_RECORDED } from '../../labels';
 import { useUnit } from '../../providers/UnitProvider';
-import { FILTERS, filterLabel } from '../../services/session';
+import { FILTERS } from '../../services/session';
 import ActivityTracker from '../ActivityTracker';
 import TopBar from '../TopBar';
 import UnitToggle from '../UnitToggle';
@@ -20,11 +20,14 @@ export default function SessionList() {
   const password = usePasswordModalNav();
   const { unit } = useUnit();
   const data = useSessionList(unit);
+  const t = useTranslations('session');
+  const filterLongLabel = (key: 'all' | 'week' | 'month') => t(`filter.${key}`);
+  const filterShortLabel = (key: 'all' | 'week' | 'month') => t(`filter.${key}Short`);
 
   return (
     <>
       <TopBar
-        subtitle={data.isLoading ? null : `${data.sessionCount} ${SESSIONS_RECORDED}`}
+        subtitle={data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`}
         onImported={() => {}}
         onChangePassword={password.open}
       />
@@ -43,13 +46,13 @@ export default function SessionList() {
                     : 'text-neutral-500 hover:text-neutral-900')
                 }
               >
-                {f.shortLabel ? (
+                {f.hasShortLabel ? (
                   <>
-                    <span className="sm:hidden">{f.shortLabel}</span>
-                    <span className="hidden sm:inline">{f.label}</span>
+                    <span className="sm:hidden">{filterShortLabel(f.key)}</span>
+                    <span className="hidden sm:inline">{filterLongLabel(f.key)}</span>
                   </>
                 ) : (
-                  f.label
+                  filterLongLabel(f.key)
                 )}
               </button>
             ))}
@@ -58,7 +61,7 @@ export default function SessionList() {
           <div className="flex-1" />
           <Button variant="primary" size="sm" onPress={() => router.push('/sessions/new')}>
             <Plus size={14} strokeWidth={2.2} />
-            <span className="hidden md:inline">{SESSIONS_NEW_BUTTON}</span>
+            <span className="hidden md:inline">{t('newButton')}</span>
           </Button>
         </div>
       </header>
@@ -88,7 +91,7 @@ export default function SessionList() {
       );
     }
     if (data.visibleSessions.length === 0) {
-      return <EmptyState anyExist={data.sessionCount > 0} filterLabel={filterLabel(data.filter)} />;
+      return <EmptyState anyExist={data.sessionCount > 0} filterLabel={filterLongLabel(data.filter)} />;
     }
     return (
       <div className="flex flex-col gap-3.5">

@@ -1,6 +1,7 @@
 'use client';
 
 import { Alert } from '@heroui/react';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
@@ -11,6 +12,7 @@ const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
+  const t = useTranslations('login');
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -33,8 +35,8 @@ const LoginPage = () => {
       <section className="grid place-items-center px-8 py-12 bg-neutral-100">
         <div className="w-full max-w-md rounded-3xl border border-neutral-200 bg-white px-9 py-10 shadow-[0_1px_2px_rgba(17,24,39,0.04),0_4px_24px_rgba(17,24,39,0.06)]">
           <header className="mb-7">
-            <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900">Welcome back</h1>
-            <p className="mt-1.5 text-sm text-neutral-500">Sign in to your gallery.</p>
+            <h1 className="text-[28px] font-semibold tracking-tight text-neutral-900">{t('welcome')}</h1>
+            <p className="mt-1.5 text-sm text-neutral-500">{t('subtitle')}</p>
           </header>
 
           {error && (
@@ -44,23 +46,23 @@ const LoginPage = () => {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4.5">
-            <Field label="Username" htmlFor="username">
+            <Field label={t('usernameLabel')} htmlFor="username">
               <TextInput
                 id="username"
                 value={username}
                 onChange={setUsername}
-                placeholder="your-username"
+                placeholder={t('usernamePlaceholder')}
                 autoComplete="username"
                 required
               />
             </Field>
-            <Field label="Password" htmlFor="password">
+            <Field label={t('passwordLabel')} htmlFor="password">
               <TextInput
                 id="password"
                 type="password"
                 value={password}
                 onChange={setPassword}
-                placeholder="••••••••••"
+                placeholder={t('passwordPlaceholder')}
                 autoComplete="current-password"
                 required
               />
@@ -70,11 +72,11 @@ const LoginPage = () => {
               disabled={submitting}
               className="mt-1.5 w-full rounded-xl bg-blue-600 px-4 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? 'Signing in…' : 'Sign in'}
+              {submitting ? t('submitting') : t('submit')}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-[13px] text-neutral-500">Access is invite-only.</p>
+          <p className="mt-5 text-center text-[13px] text-neutral-500">{t('inviteOnly')}</p>
         </div>
       </section>
     </div>
@@ -93,6 +95,7 @@ function Field({ label, htmlFor, children }: Readonly<{ label: string; htmlFor: 
 }
 
 function BrandPanel() {
+  const t = useTranslations('login');
   return (
     <aside
       aria-hidden
@@ -119,19 +122,14 @@ function BrandPanel() {
             />
           </svg>
         </span>
-        <span className="text-base font-semibold tracking-tight text-neutral-900">Toy Gallery</span>
+        <span className="text-base font-semibold tracking-tight text-neutral-900">{t('brand')}</span>
       </div>
 
       <GalleryMontage />
 
       <div className="relative z-10 max-w-md">
-        <h2 className="m-0 text-[22px] font-semibold tracking-tight text-neutral-900">
-          Your collection, shaped to scale.
-        </h2>
-        <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">
-          Record every toy with its silhouette, exact dimensions, and your own notes — see the whole gallery at a
-          glance.
-        </p>
+        <h2 className="m-0 text-[22px] font-semibold tracking-tight text-neutral-900">{t('tagline')}</h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{t('taglineSubtitle')}</p>
       </div>
     </aside>
   );

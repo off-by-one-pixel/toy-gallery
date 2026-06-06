@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { Dropdown, Toast } from '@heroui/react';
 import { ChevronDown, Download, KeyRound, LogOut, Trash2, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { APP_COMMIT_SHA, APP_VERSION } from '../config';
 import { deleteCollection, downloadExport, importFromFile } from '../services/api';
@@ -19,6 +20,7 @@ type Props = Readonly<{
 type MenuItem = ActionMenuItem & Readonly<{ disabledWhenBusy?: boolean }>;
 
 export default function CollectionMenu({ onImported, onChangePassword, subtitle }: Props) {
+  const t = useTranslations('collection');
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const runAction = useAsyncAction();
@@ -27,36 +29,24 @@ export default function CollectionMenu({ onImported, onChangePassword, subtitle 
   const handleExport = () =>
     runAction(downloadExport, {
       busy: setBusy,
-      onSuccess: () => Toast.toast.success('Exported collection'),
+      onSuccess: () => Toast.toast.success(t('exportedToast')),
     });
 
   const handleImportFile = (file: File) =>
     runAction(() => importFromFile(file), {
       busy: setBusy,
       onSuccess: ({ toys_created, sessions_created }) => {
-        const toys = `${toys_created} ${toys_created === 1 ? 'toy' : 'toys'}`;
-        const sessions =
-          sessions_created > 0 ? ` and ${sessions_created} ${sessions_created === 1 ? 'session' : 'sessions'}` : '';
-        Toast.toast.success(`Imported ${toys}${sessions}`);
+        Toast.toast.success(t('importedToast', { toys: toys_created, sessions: sessions_created }));
         onImported();
       },
     });
 
   const handleDeleteAll = () => {
-    if (
-      !confirm(
-        'Permanently delete the entire collection? All toys and sessions will be removed. This cannot be undone.',
-      )
-    ) {
-      return;
-    }
+    if (!confirm(t('deleteAllConfirm'))) return;
     runAction(deleteCollection, {
       busy: setBusy,
       onSuccess: ({ toys_deleted, sessions_deleted }) => {
-        const toys = `${toys_deleted} ${toys_deleted === 1 ? 'toy' : 'toys'}`;
-        const sessions =
-          sessions_deleted > 0 ? ` and ${sessions_deleted} ${sessions_deleted === 1 ? 'session' : 'sessions'}` : '';
-        Toast.toast.success(`Deleted ${toys}${sessions}`);
+        Toast.toast.success(t('deletedToast', { toys: toys_deleted, sessions: sessions_deleted }));
         onImported();
       },
     });
@@ -66,24 +56,24 @@ export default function CollectionMenu({ onImported, onChangePassword, subtitle 
     {
       id: 'export',
       icon: Download,
-      label: 'Export collection',
-      description: 'Download the gallery as JSON',
+      label: t('menu.exportLabel'),
+      description: t('menu.exportDescription'),
       onAction: handleExport,
       disabledWhenBusy: true,
     },
     {
       id: 'import',
       icon: Upload,
-      label: 'Import collection',
-      description: 'Add toys from a JSON file',
+      label: t('menu.importLabel'),
+      description: t('menu.importDescription'),
       onAction: () => fileRef.current?.click(),
       disabledWhenBusy: true,
     },
     {
       id: 'delete',
       icon: Trash2,
-      label: 'Delete collection',
-      description: 'Permanently remove all toys and sessions',
+      label: t('menu.deleteLabel'),
+      description: t('menu.deleteDescription'),
       onAction: handleDeleteAll,
       danger: true,
       disabledWhenBusy: true,
@@ -91,15 +81,17 @@ export default function CollectionMenu({ onImported, onChangePassword, subtitle 
     {
       id: 'change-password',
       icon: KeyRound,
-      label: 'Change password',
-      description: 'Set a new sign-in password',
+      label: t('menu.changePasswordLabel'),
+      description: t('menu.changePasswordDescription'),
       onAction: onChangePassword,
     },
     {
       id: 'logout',
       icon: LogOut,
-      label: 'Sign out',
-      description: username ? `Signed in as ${username}` : 'End your session',
+      label: t('menu.signOutLabel'),
+      description: username
+        ? t('menu.signOutDescriptionSignedIn', { username })
+        : t('menu.signOutDescriptionAnonymous'),
       onAction: logout,
     },
   ];
@@ -110,7 +102,7 @@ export default function CollectionMenu({ onImported, onChangePassword, subtitle 
     <>
       <Dropdown>
         <Dropdown.Trigger className="group inline-flex items-baseline gap-2 rounded-md px-1 -mx-1 text-left transition-colors hover:bg-neutral-200/60">
-          <span className="text-lg font-semibold tracking-tight text-neutral-900">Toy Gallery</span>
+          <span className="text-lg font-semibold tracking-tight text-neutral-900">{t('appTitle')}</span>
           {subtitle !== undefined && (
             <span className="inline-block min-w-22 text-sm font-normal text-neutral-500">{subtitle}</span>
           )}

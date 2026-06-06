@@ -1,8 +1,8 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ThumbnailRender } from 'toy-editor';
 
-import { SESSION_TOY_DELETED } from '../../labels';
 import { toyShapeToEditor } from '../../services/converters/toyShape';
 import { toyTooltip } from '../../services/session';
 import { Involvement, type SessionEntry, type Toy } from '../../services/types';
@@ -22,11 +22,12 @@ type Props = Readonly<{
 }>;
 
 export default function MiniToy({ entry, toy, heightRatio }: Props) {
+  const t = useTranslations('session');
   if (!toy) {
     return (
       <div className="flex w-20 flex-col items-center gap-1.5 text-center">
         <div className="h-14 w-10 rounded bg-neutral-200" />
-        <div className="truncate text-xs text-neutral-400">{SESSION_TOY_DELETED}</div>
+        <div className="truncate text-xs text-neutral-400">{t('toyDeleted')}</div>
       </div>
     );
   }

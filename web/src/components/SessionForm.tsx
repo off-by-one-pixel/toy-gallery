@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner, Toast } from '@heroui/react';
 import { ArrowLeft, Check, Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { createSession, fetchCones, fetchSession, updateSession } from '../services/api';
@@ -11,18 +12,6 @@ import { filterToys } from '../services/search';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import SearchInput from './SearchInput';
 import ToyChipSelector from './ToyChipSelector';
-import {
-  SESSION_BACK_TO_LIST,
-  SESSION_CANCEL,
-  SESSION_EDIT_TITLE,
-  SESSION_NEW_TITLE,
-  SESSION_NOW_BUTTON,
-  SESSION_SAVE,
-  SESSION_SAVED_TOAST,
-  SESSION_TOYS_HEADING,
-  SESSION_TOYS_HINT,
-  SESSION_WHEN_HEADING,
-} from '../labels';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
 
@@ -36,6 +25,8 @@ const formatLocal = (d: Date): string => {
 
 export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const router = useRouter();
+  const t = useTranslations('session');
+  const common = useTranslations('common');
   const [toys, setToys] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,13 +85,13 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
     runToast(() => save, {
       busy: setSaving,
       onSuccess: () => {
-        Toast.toast.success(SESSION_SAVED_TOAST);
+        Toast.toast.success(t('savedToast'));
         router.push('/sessions');
       },
     });
   };
 
-  const title = mode.kind === 'edit' ? SESSION_EDIT_TITLE : SESSION_NEW_TITLE;
+  const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
 
   return (
     <>
@@ -112,7 +103,7 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
             className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-neutral-900"
           >
             <ArrowLeft size={14} strokeWidth={2} />
-            {SESSION_BACK_TO_LIST}
+            {t('backToList')}
           </button>
           <h1 className="m-0 text-lg font-semibold tracking-tight text-neutral-900">{title}</h1>
         </div>
@@ -126,9 +117,7 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
         )}
 
         <section className="mb-7">
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-            {SESSION_WHEN_HEADING}
-          </h2>
+          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">{t('whenHeading')}</h2>
           <div className="inline-flex max-w-90 items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
             <Clock size={16} className="text-neutral-500" />
             <input
@@ -142,18 +131,16 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
               onClick={() => setStartedAt(datetimeLocalNow())}
               className="rounded-md border border-neutral-200 bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-white"
             >
-              {SESSION_NOW_BUTTON}
+              {t('nowButton')}
             </button>
           </div>
         </section>
 
         <section>
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-            {SESSION_TOYS_HEADING}
-          </h2>
+          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-400">{t('toysHeading')}</h2>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <SearchInput value={query} onChange={setQuery} />
-            <span className="text-sm text-neutral-500">{SESSION_TOYS_HINT}</span>
+            <span className="text-sm text-neutral-500">{t('toysHint')}</span>
           </div>
 
           {isLoading ? (
@@ -178,16 +165,16 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-neutral-200 bg-white/95 shadow-[0_-4px_16px_rgba(17,24,39,.06)] backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
           <div className="text-sm text-neutral-900">
-            <span className="font-semibold text-blue-600">{selectedCount}</span> {selectedCount === 1 ? 'toy' : 'toys'}{' '}
-            selected
+            <span className="font-semibold text-blue-600">{selectedCount}</span>{' '}
+            {t('toysSelected', { count: selectedCount })}
           </div>
           <div className="flex-1" />
           <Button variant="outline" size="sm" onPress={() => router.push('/sessions')}>
-            {SESSION_CANCEL}
+            {common('cancel')}
           </Button>
           <Button variant="primary" size="sm" isDisabled={selectedCount === 0 || saving} onPress={handleSave}>
             <Check size={14} strokeWidth={2.2} />
-            {SESSION_SAVE}
+            {t('save')}
           </Button>
         </div>
       </div>

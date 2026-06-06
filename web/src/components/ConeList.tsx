@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { deleteToy, fetchCones } from '../services/api';
 import type { Toy } from '../services/types';
@@ -12,7 +13,6 @@ import { useToyEditorWizardNav } from '../hooks/nav/useToyEditorWizardNav';
 import { useToyModalNav } from '../hooks/nav/useToyModalNav';
 import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
-import { TOY_ITEM_PLURAL, TOY_ITEM_SINGULAR } from '../labels';
 import { filterToys } from '../services/search';
 import { heightScale } from '../services/scaling';
 import { sortToys } from '../services/sort';
@@ -34,6 +34,7 @@ const ConeList = () => {
   const toyModal = useToyModalNav();
   const wizard = useToyEditorWizardNav();
   const password = usePasswordModalNav();
+  const t = useTranslations();
 
   const [cones, setCones] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,7 +73,7 @@ const ConeList = () => {
   }, [lastChanged, runInline]);
 
   const handleDelete = async (toy: Toy) => {
-    if (!confirm(`Delete ${toy.brand} ${toy.name}?`)) return;
+    if (!confirm(t('toy.deleteConfirm', { brand: toy.brand, name: toy.name }))) return;
     await runToast(() => deleteToy(toy.id), { onDone: updateLastChanged });
   };
 
@@ -84,7 +85,7 @@ const ConeList = () => {
   return (
     <>
       <TopBar
-        subtitle={isLoading ? null : `${cones.length} ${cones.length === 1 ? TOY_ITEM_SINGULAR : TOY_ITEM_PLURAL}`}
+        subtitle={isLoading ? null : t('toy.items', { count: cones.length })}
         onImported={updateLastChanged}
         onChangePassword={password.open}
       />
@@ -98,11 +99,11 @@ const ConeList = () => {
           <div className="flex-1" />
           <Button variant="outline" size="sm" onPress={() => router.push('/sessions/new')}>
             <CalendarClock size={14} strokeWidth={1.8} />
-            <span className="hidden md:inline">New session</span>
+            <span className="hidden md:inline">{t('session.newButton')}</span>
           </Button>
           <Button variant="primary" size="sm" onPress={toyModal.openNew}>
             <Plus size={14} strokeWidth={2.2} />
-            <span className="hidden md:inline">New Toy</span>
+            <span className="hidden md:inline">{t('toy.new')}</span>
           </Button>
         </div>
       </header>
@@ -153,7 +154,7 @@ const ConeList = () => {
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white text-lg leading-none">
                     +
                   </span>
-                  <span>New toy</span>
+                  <span>{t('toy.new')}</span>
                 </span>
               </button>
             </div>

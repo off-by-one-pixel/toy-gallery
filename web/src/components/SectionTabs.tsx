@@ -1,23 +1,23 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { SESSIONS_TITLE } from '../labels';
-
 type Tab = {
-  label: string;
+  labelKey: 'gallery' | 'sessions';
   href: string;
   matches: (pathname: string) => boolean;
 };
 
 const TABS: Tab[] = [
-  { label: 'Gallery', href: '/', matches: (p) => p === '/' },
-  { label: SESSIONS_TITLE, href: '/sessions', matches: (p) => p.startsWith('/sessions') },
+  { labelKey: 'gallery', href: '/', matches: (p) => p === '/' },
+  { labelKey: 'sessions', href: '/sessions', matches: (p) => p.startsWith('/sessions') },
 ];
 
 export default function SectionTabs() {
   const pathname = usePathname() ?? '/';
+  const t = useTranslations('nav');
   return (
     <nav className="flex w-full gap-0.5 rounded-lg bg-neutral-200/70 p-0.5 sm:inline-flex sm:w-auto">
       {TABS.map((tab) => {
@@ -31,7 +31,7 @@ export default function SectionTabs() {
               (active ? 'bg-white text-neutral-900 shadow-xs' : 'text-neutral-500 hover:text-neutral-900')
             }
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </Link>
         );
       })}

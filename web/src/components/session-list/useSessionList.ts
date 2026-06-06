@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
@@ -31,6 +32,8 @@ export type SessionListData = Readonly<{
  *  lookup, activity heatmap, filter state. The page is a dumb
  *  composition over this facade. */
 export function useSessionList(unit: Unit): SessionListData {
+  const locale = useLocale();
+  const t = useTranslations('common');
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
   const [activity, setActivity] = useState<ActivityDay[]>([]);
@@ -63,7 +66,10 @@ export function useSessionList(unit: Unit): SessionListData {
     };
   }, [runInline]);
 
-  const heatmap = useMemo(() => buildActivityHeatmap(activity, unit), [activity, unit]);
+  const heatmap = useMemo(
+    () => buildActivityHeatmap(activity, unit, locale, { length: t('length'), circumference: t('circumference') }),
+    [activity, unit, locale, t],
+  );
   const toysById = useMemo(() => buildToysById(toys), [toys]);
   const visibleSessions = useMemo(() => filterSessions(sessions, filter), [sessions, filter]);
 

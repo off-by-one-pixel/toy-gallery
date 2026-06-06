@@ -1,14 +1,14 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-
-import { TEMPLATE_BLANK_DESCRIPTION, TEMPLATE_BLANK_NAME } from '../../labels';
+import { useTranslations } from 'next-intl';
 
 type Props = Readonly<{
   onClick: () => void;
 }>;
 
 export default function BlankCard({ onClick }: Props) {
+  const t = useTranslations('template');
   return (
     <button
       type="button"
@@ -21,8 +21,8 @@ export default function BlankCard({ onClick }: Props) {
         </span>
       </div>
       <div className="border-t border-neutral-200 px-3 py-2.5">
-        <div className="text-sm font-semibold text-neutral-900">{TEMPLATE_BLANK_NAME}</div>
-        <div className="mt-0.5 line-clamp-2 text-xs text-neutral-500">{TEMPLATE_BLANK_DESCRIPTION}</div>
+        <div className="text-sm font-semibold text-neutral-900">{t('blankName')}</div>
+        <div className="mt-0.5 line-clamp-2 text-xs text-neutral-500">{t('blankDescription')}</div>
       </div>
     </button>
   );
