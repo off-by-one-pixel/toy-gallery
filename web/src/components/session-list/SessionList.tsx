@@ -6,8 +6,9 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useUnit } from '../../providers/UnitProvider';
-import { FILTERS } from '../../services/session';
+import { FILTERS, type FilterKey } from '../../services/session';
 import ActivityTracker from '../ActivityTracker';
+import Switcher, { type SwitcherItem } from '../Switcher';
 import TopBar from '../TopBar';
 import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
@@ -19,36 +20,25 @@ export default function SessionList() {
   const { unit } = useUnit();
   const data = useSessionList(unit);
   const t = useTranslations('session');
-  const filterLongLabel = (key: 'all' | 'week' | 'month') => t(`filter.${key}`);
-  const filterShortLabel = (key: 'all' | 'week' | 'month') => t(`filter.${key}Short`);
+  const filterLongLabel = (key: FilterKey) => t(`filter.${key}`);
+  const filterShortLabel = (key: FilterKey) => t(`filter.${key}Short`);
+  const filterItems: SwitcherItem<FilterKey>[] = FILTERS.map((f) => ({
+    key: f.key,
+    label: filterLongLabel(f.key),
+    shortLabel: f.hasShortLabel ? filterShortLabel(f.key) : undefined,
+  }));
 
   return (
     <>
       <TopBar subtitle={data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`} />
       <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
-          <div className="inline-flex gap-0.5 rounded-lg bg-surface-tertiary/70 p-0.5">
-            {FILTERS.map((f) => (
-              <button
-                key={f.key}
-                type="button"
-                onClick={() => data.setFilter(f.key)}
-                className={
-                  'rounded-md px-3 py-1 text-xs font-medium transition-colors ' +
-                  (data.filter === f.key ? 'bg-surface text-foreground shadow-xs' : 'text-muted hover:text-foreground')
-                }
-              >
-                {f.hasShortLabel ? (
-                  <>
-                    <span className="sm:hidden">{filterShortLabel(f.key)}</span>
-                    <span className="hidden sm:inline">{filterLongLabel(f.key)}</span>
-                  </>
-                ) : (
-                  filterLongLabel(f.key)
-                )}
-              </button>
-            ))}
-          </div>
+          <Switcher
+            items={filterItems}
+            value={data.filter}
+            onChange={data.setFilter}
+            ariaLabel={t('filter.ariaLabel')}
+          />
           <UnitToggle />
           <div className="flex-1" />
           <Button variant="primary" size="sm" onPress={() => router.push('/sessions/new')}>

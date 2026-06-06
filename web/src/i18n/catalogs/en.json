@@ -61,6 +61,7 @@
     "FULLY_INSERTED": "Fully"
   },
   "nav": {
+    "ariaLabel": "Primary navigation",
     "gallery": "Gallery",
     "sessions": "Sessions"
   },
@@ -68,6 +69,7 @@
     "newButton": "New session",
     "recorded": "recorded",
     "filter": {
+      "ariaLabel": "Date range",
       "all": "All",
       "allShort": "All",
       "week": "This week",
