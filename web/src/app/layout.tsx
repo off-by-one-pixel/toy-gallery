@@ -5,6 +5,7 @@ import '../styles/index.css';
 import { AuthProvider } from '../providers/AuthProvider';
 import { LocaleProvider } from '../providers/LocaleProvider';
 import { SortProvider } from '../providers/SortProvider';
+import { ThemeProvider } from '../providers/ThemeProvider';
 import { ToastProvider } from '../providers/ToastProvider';
 import { UnitProvider } from '../providers/UnitProvider';
 import { ViewModeProvider } from '../providers/ViewModeProvider';
@@ -23,15 +24,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="bg-surface-secondary text-foreground min-h-screen antialiased">
         <ToastProvider />
-        <LocaleProvider>
-          <UnitProvider>
-            <ViewModeProvider>
-              <SortProvider>
-                <AuthProvider>{children}</AuthProvider>
-              </SortProvider>
-            </ViewModeProvider>
-          </UnitProvider>
-        </LocaleProvider>
+        <ThemeProvider>
+          <LocaleProvider>
+            <UnitProvider>
+              <ViewModeProvider>
+                <SortProvider>
+                  <AuthProvider>{children}</AuthProvider>
+                </SortProvider>
+              </ViewModeProvider>
+            </UnitProvider>
+          </LocaleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

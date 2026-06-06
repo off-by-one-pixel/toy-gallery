@@ -28,7 +28,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
 
   const style = {
     borderWidth: 1.25,
-    borderColor: '#1f2937',
+    borderColor: 'var(--silhouette-stroke)',
     color: toy.color || DEFAULT_FILL,
   };
 
@@ -56,7 +56,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         }
       }}
     >
-      <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-border bg-linear-to-br from-[#fafaff] to-[#f0fdfa]">
+      <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-border bg-linear-to-br from-(--thumbnail-tile-from) to-(--thumbnail-tile-to)">
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
           <ToyActionButtons
             onEdit={() => onEdit(toy)}
@@ -70,6 +70,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
           style={{
             top: `calc(${(1 - heightRatio) * 100}% - ${(1 - heightRatio) * 8}px)`,
             bottom: '8px',
+            filter: 'var(--toy-fill-dim)',
           }}
         >
           <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />

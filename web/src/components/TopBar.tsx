@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import AppMenu from './AppMenu';
 import SectionTabs from './SectionTabs';
+import ThemeToggle from './ThemeToggle';
 
 type Props = Readonly<{
   subtitle?: ReactNode;
@@ -31,6 +32,7 @@ export default function TopBar({ subtitle }: Props) {
         </h1>
         <SectionTabs />
         <div className="flex-1" />
+        <ThemeToggle />
         <AppMenu />
       </div>
     </div>

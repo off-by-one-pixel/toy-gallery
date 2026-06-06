@@ -135,6 +135,10 @@
       "signOutDescriptionSignedIn": "Signed in as {username}"
     }
   },
+  "theme": {
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
+  },
   "settings": {
     "pageTitle": "Settings",
     "language": {
