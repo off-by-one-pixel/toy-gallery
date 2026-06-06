@@ -5,7 +5,7 @@ import { Alert, Button, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { deleteToy, fetchCones } from '../services/api';
+import { deleteToy, fetchToys } from '../services/api';
 import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useToyEditorWizardNav } from '../hooks/nav/useToyEditorWizardNav';
@@ -13,28 +13,24 @@ import { useToyModalNav } from '../hooks/nav/useToyModalNav';
 import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { filterToys } from '../services/search';
-import { heightScale } from '../services/scaling';
 import { sortToys } from '../services/sort';
 import SearchInput from './SearchInput';
-import SortControl from './SortControl';
 import TopBar from './TopBar';
-import ToyCard from './ToyCard';
+import ToyCards from './ToyCards';
 import ToyEditModal from './toy-edit/ToyEditModal';
 import ToyList from './ToyList';
 import UnitToggle from './UnitToggle';
 import ViewToggle from './ViewToggle';
 
-export type { Toy } from '../services/types';
-
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
-const ConeList = () => {
+const ToyGallery = () => {
   const router = useRouter();
   const toyModal = useToyModalNav();
   const wizard = useToyEditorWizardNav();
   const t = useTranslations();
 
-  const [cones, setCones] = useState<Toy[]>([]);
+  const [toys, setToys] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastChanged, setLastChanged] = useState(0);
@@ -43,28 +39,26 @@ const ConeList = () => {
   const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
   const { view, setView } = useViewMode();
   const { sort } = useSort();
-  const sortedCones = useMemo(() => sortToys(filterToys(cones, query), sort), [cones, sort, query]);
+  const sortedToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, sort, query]);
 
   const editorMode = useMemo<EditorMode>(() => {
     if (toyModal.kind === 'new') return { kind: 'new' };
     if ((toyModal.kind === 'edit' || toyModal.kind === 'copy') && toyModal.toyId != null) {
-      const toy = cones.find((t) => t.id === toyModal.toyId);
+      const toy = toys.find((c) => c.id === toyModal.toyId);
       if (toy) return { kind: toyModal.kind, toy };
     }
     return { kind: 'closed' };
-  }, [toyModal.kind, toyModal.toyId, cones]);
+  }, [toyModal.kind, toyModal.toyId, toys]);
 
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
 
-  const scale = useMemo(() => heightScale(sortedCones), [sortedCones]);
-
   useEffect(() => {
-    runInline(fetchCones, {
+    runInline(fetchToys, {
       busy: setIsLoading,
       onSuccess: (loaded) => {
-        setCones(loaded);
+        setToys(loaded);
         setError(null);
       },
     });
@@ -80,9 +74,45 @@ const ConeList = () => {
     updateLastChanged();
   };
 
+  const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
+  const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
+
+  const renderBody = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center py-20 text-muted">
+          <Spinner />
+        </div>
+      );
+    }
+    if (view === ViewMode.list) {
+      return (
+        <ToyList
+          toys={sortedToys}
+          openToyId={openCardId}
+          onToggleOpen={toggleOpen}
+          onEdit={handleEdit}
+          onCopy={handleCopy}
+          onDelete={handleDelete}
+        />
+      );
+    }
+    return (
+      <ToyCards
+        toys={sortedToys}
+        openToyId={openCardId}
+        onToggleOpen={toggleOpen}
+        onEdit={handleEdit}
+        onCopy={handleCopy}
+        onDelete={handleDelete}
+        onNew={toyModal.openNew}
+      />
+    );
+  };
+
   return (
     <>
-      <TopBar subtitle={isLoading ? null : t('toy.items', { count: cones.length })} />
+      <TopBar subtitle={isLoading ? null : t('toy.items', { count: toys.length })} />
       <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <div className="w-full sm:w-auto">
@@ -108,52 +138,7 @@ const ConeList = () => {
             <Alert.Description>{error}</Alert.Description>
           </Alert>
         )}
-        {isLoading ? (
-          <div className="flex justify-center py-20 text-muted">
-            <Spinner />
-          </div>
-        ) : view === ViewMode.list ? (
-          <ToyList
-            toys={sortedCones}
-            openToyId={openCardId}
-            onToggleOpen={toggleOpen}
-            onEdit={(t) => toyModal.openEdit(t.id)}
-            onCopy={(t) => toyModal.openCopy(t.id)}
-            onDelete={handleDelete}
-          />
-        ) : (
-          <>
-            <div className="mb-3 flex justify-end">
-              <SortControl />
-            </div>
-            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-              {sortedCones.map((toy) => (
-                <ToyCard
-                  key={toy.id}
-                  toy={toy}
-                  heightRatio={scale(toy)}
-                  detailsOpen={openCardId === toy.id}
-                  onToggleDetails={() => toggleOpen(toy.id)}
-                  onEdit={(t) => toyModal.openEdit(t.id)}
-                  onCopy={(t) => toyModal.openCopy(t.id)}
-                  onDelete={handleDelete}
-                />
-              ))}
-              <button
-                type="button"
-                onClick={toyModal.openNew}
-                className="flex min-h-90 items-center justify-center rounded-2xl border-2 border-dashed border-border-secondary text-muted transition-colors hover:border-accent hover:bg-accent-soft/40 hover:text-accent-hover"
-              >
-                <span className="inline-flex items-center gap-2 font-medium">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-lg leading-none">
-                    +
-                  </span>
-                  <span>{t('toy.new')}</span>
-                </span>
-              </button>
-            </div>
-          </>
-        )}
+        {renderBody()}
       </main>
 
       {editorMode.kind !== 'closed' && (
@@ -173,4 +158,4 @@ const ConeList = () => {
   );
 };
 
-export default ConeList;
+export default ToyGallery;

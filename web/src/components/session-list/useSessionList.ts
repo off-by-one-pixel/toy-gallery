@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
-import { fetchActivity, fetchCones, fetchSessions } from '../../services/api';
+import { fetchActivity, fetchToys, fetchSessions } from '../../services/api';
 import { type ActivityHeatmap, buildActivityHeatmap } from '../../services/activity';
 import { type FilterKey, filterSessions, toysById as buildToysById } from '../../services/session';
 import type { ActivityDay, Session, Toy } from '../../services/types';
@@ -47,7 +47,7 @@ export function useSessionList(unit: Unit): SessionListData {
     let cancelled = false;
     runInline(
       async () => {
-        const [s, t, a] = await Promise.all([fetchSessions(), fetchCones(), fetchActivity()]);
+        const [s, t, a] = await Promise.all([fetchSessions(), fetchToys(), fetchActivity()]);
         return { sessions: s, toys: t, activity: a };
       },
       {
