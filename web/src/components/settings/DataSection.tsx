@@ -9,6 +9,8 @@ import { useTranslations } from 'next-intl';
 import { deleteCollection, downloadExport, importFromFile } from '../../services/api';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import ConfirmModal from '../ConfirmModal';
+import SectionCard from '../SectionCard';
+import SectionHeading from '../SectionHeading';
 
 export default function DataSection() {
   const t = useTranslations('settings.data');
@@ -41,10 +43,8 @@ export default function DataSection() {
     });
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-      <header className="mb-4">
-        <h2 className="text-base font-semibold tracking-tight text-neutral-900">{t('heading')}</h2>
-      </header>
+    <SectionCard>
+      <SectionHeading title={t('heading')} />
       <ul className="flex flex-col divide-y divide-neutral-200">
         <DataRow
           icon={<Download size={16} strokeWidth={1.8} className="text-neutral-500" />}
@@ -101,7 +101,7 @@ export default function DataSection() {
           onConfirm={handleDelete}
         />
       )}
-    </section>
+    </SectionCard>
   );
 }
 
