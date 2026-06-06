@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { ThumbnailRender } from 'toy-editor';
+import ToyThumbnail from './ToyThumbnail';
 
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
@@ -202,18 +202,14 @@ function ToyRow({
 }
 
 function Thumb({ toy }: Readonly<{ toy: Toy }>) {
-  const style = {
-    borderWidth: 1,
-    borderColor: 'var(--silhouette-stroke)',
-    color: toy.color || DEFAULT_FILL,
-  };
   const editorToy = toyShapeToEditor(toy.shape);
   return (
-    <div className="flex h-15 w-12 items-end justify-center rounded-md border border-border bg-linear-to-br from-(--thumbnail-tile-from) to-(--thumbnail-tile-to) p-1">
-      <div className="flex h-full w-full items-end justify-center" style={{ filter: 'var(--toy-fill-dim)' }}>
-        <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />
-      </div>
-    </div>
+    <ToyThumbnail
+      toy={editorToy}
+      fillColor={toy.color}
+      borderWidth={1}
+      className="h-15 w-12 rounded-md border border-border p-1"
+    />
   );
 }
 

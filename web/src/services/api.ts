@@ -67,7 +67,7 @@ export const changePassword = async (currentPassword: string, newPassword: strin
 
 // ---------- Toy CRUD ----------
 
-export const fetchCones = async (): Promise<Toy[]> => {
+export const fetchToys = async (): Promise<Toy[]> => {
   const { data } = await toysToysList();
   return data.map((t) => snakeToCamel<Toy>(t));
 };

@@ -1,5 +1,5 @@
-import ConeList from '../../components/ConeList';
+import ToyGallery from '../../components/ToyGallery';
 
 export default function Page() {
-  return <ConeList />;
+  return <ToyGallery />;
 }

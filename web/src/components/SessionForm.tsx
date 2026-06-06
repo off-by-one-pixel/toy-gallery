@@ -6,7 +6,7 @@ import { ArrowLeft, Check, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { createSession, fetchCones, fetchSession, updateSession } from '../services/api';
+import { createSession, fetchToys, fetchSession, updateSession } from '../services/api';
 import { Involvement, type Session, type Toy } from '../services/types';
 import { filterToys } from '../services/search';
 import { useAsyncAction } from '../hooks/useAsyncAction';
@@ -43,7 +43,7 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
   useEffect(() => {
     runInline(
       async () => {
-        const toysPromise = fetchCones();
+        const toysPromise = fetchToys();
         const sessionPromise: Promise<Session | null> =
           sessionId !== null ? fetchSession(sessionId) : Promise.resolve(null);
         const [loadedToys, loadedSession] = await Promise.all([toysPromise, sessionPromise]);

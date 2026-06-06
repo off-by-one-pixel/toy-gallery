@@ -2,13 +2,13 @@
 
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
-import { ThumbnailRender } from 'toy-editor';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { formatValue, type Unit } from '../services/units';
 import { type Toy } from '../services/types';
 import AttributesPanel from './AttributesPanel';
 import ToyActionButtons from './ToyActionButtons';
+import ToyThumbnail from './ToyThumbnail';
 
 type Props = Readonly<{
   toy: Toy;
@@ -20,17 +20,9 @@ type Props = Readonly<{
   onDelete: (toy: Toy) => void;
 }>;
 
-const DEFAULT_FILL = '#c7e4ee';
-
 export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
   const detailsRef = useRef<HTMLDivElement>(null);
-
-  const style = {
-    borderWidth: 1.25,
-    borderColor: 'var(--silhouette-stroke)',
-    color: toy.color || DEFAULT_FILL,
-  };
 
   const editorToy = toyShapeToEditor(toy.shape);
 
@@ -56,7 +48,12 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         }
       }}
     >
-      <div className="relative h-60 overflow-hidden rounded-t-2xl border-b border-border bg-linear-to-br from-(--thumbnail-tile-from) to-(--thumbnail-tile-to)">
+      <ToyThumbnail
+        toy={editorToy}
+        fillColor={toy.color}
+        heightRatio={heightRatio}
+        className="h-60 overflow-hidden rounded-t-2xl border-b border-border pb-2"
+      >
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
           <ToyActionButtons
             onEdit={() => onEdit(toy)}
@@ -65,17 +62,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
             stopPropagation
           />
         </div>
-        <div
-          className="absolute inset-x-0 flex items-end justify-center"
-          style={{
-            top: `calc(${(1 - heightRatio) * 100}% - ${(1 - heightRatio) * 8}px)`,
-            bottom: '8px',
-            filter: 'var(--toy-fill-dim)',
-          }}
-        >
-          <ThumbnailRender toy={editorToy} scaleFactor={1} style={style} />
-        </div>
-      </div>
+      </ToyThumbnail>
       <div className="px-3.5 py-3">
         <div className="mb-2 flex items-start gap-2">
           <div className="min-w-0 flex-1">
