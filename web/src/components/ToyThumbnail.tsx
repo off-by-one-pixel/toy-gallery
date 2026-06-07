@@ -15,6 +15,9 @@ type Props = Readonly<{
   scaleFactor?: number;
   heightRatio?: number;
   background?: Background;
+  insetTop?: number;
+  insetBottom?: number;
+  insetX?: number;
   className?: string;
   filter?: string;
   children?: ReactNode;
@@ -33,17 +36,25 @@ export default function ToyThumbnail({
   scaleFactor,
   heightRatio = 1,
   background = 'gradient',
+  insetTop = 0,
+  insetBottom = 8,
+  insetX = 0,
   className,
   filter,
   children,
 }: Props) {
+  const offset = (1 - heightRatio) * 100;
+  const compensation = (1 - heightRatio) * (insetTop + insetBottom);
   const innerStyle: CSSProperties = {
-    top: `${(1 - heightRatio) * 100}%`,
+    top: `calc(${insetTop}px + ${offset}% - ${compensation}px)`,
+    bottom: `${insetBottom}px`,
+    left: `${insetX}px`,
+    right: `${insetX}px`,
     filter,
   };
   return (
     <div className={`relative ${BG_CLASS[background]} ${className ?? ''}`}>
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-center" style={innerStyle}>
+      <div className="absolute flex items-end justify-center" style={innerStyle}>
         <Silhouette
           toy={toy}
           fillColor={fillColor}

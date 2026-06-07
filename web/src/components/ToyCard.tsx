@@ -52,7 +52,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         toy={editorToy}
         fillColor={toy.color}
         heightRatio={heightRatio}
-        className="h-60 overflow-hidden rounded-t-2xl border-b border-border pb-2"
+        className="h-60 overflow-hidden rounded-t-2xl border-b border-border"
       >
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
           <ToyActionButtons
