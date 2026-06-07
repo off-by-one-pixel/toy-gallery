@@ -17,12 +17,21 @@ type Props<T extends string> = Readonly<{
   onChange?: (key: T) => void;
   ariaLabel: string;
   fullWidth?: boolean;
+  className?: string;
 }>;
 
-export default function Switcher<T extends string>({ items, value, onChange, ariaLabel, fullWidth = false }: Props<T>) {
-  const containerClass = fullWidth
+export default function Switcher<T extends string>({
+  items,
+  value,
+  onChange,
+  ariaLabel,
+  fullWidth = false,
+  className,
+}: Props<T>) {
+  const baseClass = fullWidth
     ? 'flex w-full gap-0.5 rounded-lg bg-surface-tertiary/70 p-0.5 sm:inline-flex sm:w-auto'
     : 'inline-flex gap-0.5 rounded-lg bg-surface-tertiary/70 p-0.5';
+  const containerClass = className === undefined ? baseClass : `${baseClass} ${className}`;
   return (
     <div aria-label={ariaLabel} className={containerClass}>
       {items.map((item) => {
