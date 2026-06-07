@@ -4,18 +4,25 @@ import { Moon, Sun } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useThemeContext } from '../providers/ThemeProvider';
+import type { Theme } from '../themes/registry';
 
-export default function ThemeToggle() {
-  const { theme, toggleTheme } = useThemeContext();
+type Props = Readonly<{
+  lightTheme: Theme;
+  darkTheme: Theme;
+}>;
+
+export default function ThemeToggle({ lightTheme, darkTheme }: Props) {
+  const { theme, setTheme } = useThemeContext();
   const t = useTranslations('theme');
-  const isDark = theme === 'dark';
+  const isDark = theme === darkTheme;
+  const toggle = () => setTheme(isDark ? lightTheme : darkTheme);
   return (
     <button
       type="button"
       role="switch"
       aria-checked={isDark}
       aria-label={isDark ? t('switchToLight') : t('switchToDark')}
-      onClick={toggleTheme}
+      onClick={toggle}
       className="relative inline-flex h-7 w-12 items-center rounded-full bg-surface-tertiary transition-colors hover:bg-surface-tertiary/80"
     >
       <Sun size={12} strokeWidth={2} className="absolute left-1.5 text-text-tertiary" />

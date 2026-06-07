@@ -2,17 +2,13 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 
-const STORAGE_KEY = 'theme';
-const THEMES = ['light', 'dark'] as const;
-export type Theme = (typeof THEMES)[number];
-const DEFAULT_THEME: Theme = 'light';
+import { DEFAULT_THEME, isTheme, type Theme, THEMES } from '../themes/registry';
 
-const isTheme = (value: string): value is Theme => (THEMES as readonly string[]).includes(value);
+const STORAGE_KEY = 'theme';
 
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -26,7 +22,18 @@ export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
   }, []);
 
   useEffect(() => {
-    if (globalThis.window !== undefined) document.documentElement.dataset.theme = theme;
+    if (globalThis.window === undefined) return;
+    document.documentElement.dataset.theme = theme;
+    const color = THEMES[theme].browserChrome;
+    const meta = document.querySelector('meta[name="theme-color"]:not([media])');
+    if (meta) {
+      meta.setAttribute('content', color);
+    } else {
+      const created = document.createElement('meta');
+      created.setAttribute('name', 'theme-color');
+      created.setAttribute('content', color);
+      document.head.appendChild(created);
+    }
   }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {
@@ -34,15 +41,7 @@ export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
     if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    setThemeState((current) => {
-      const next: Theme = current === 'light' ? 'dark' : 'light';
-      if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next);
-      return next;
-    });
-  }, []);
-
-  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
+  const value = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
