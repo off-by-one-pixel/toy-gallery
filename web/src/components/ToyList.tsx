@@ -208,7 +208,10 @@ function Thumb({ toy }: Readonly<{ toy: Toy }>) {
       toy={editorToy}
       fillColor={toy.color}
       borderWidth={1}
-      className="h-15 w-12 rounded-md border border-border p-1"
+      insetTop={4}
+      insetBottom={4}
+      insetX={4}
+      className="h-15 w-12 rounded-md border border-border"
     />
   );
 }

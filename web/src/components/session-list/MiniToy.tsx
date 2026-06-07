@@ -41,6 +41,7 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
         scaleFactor={0.18}
         heightRatio={heightRatio}
         background="none"
+        insetBottom={0}
         filter={STATE_FILTER[entry.involvement]}
         className="h-14 w-full"
       />
