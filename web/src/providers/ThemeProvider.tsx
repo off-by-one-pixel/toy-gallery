@@ -9,6 +9,11 @@ const DEFAULT_THEME: Theme = 'light';
 
 const isTheme = (value: string): value is Theme => (THEMES as readonly string[]).includes(value);
 
+const THEME_COLOR: Record<Theme, string> = {
+  light: '#f3f4f6',
+  dark: '#35353a',
+};
+
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -26,7 +31,16 @@ export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
   }, []);
 
   useEffect(() => {
-    if (globalThis.window !== undefined) document.documentElement.dataset.theme = theme;
+    if (globalThis.window === undefined) return;
+    document.documentElement.dataset.theme = theme;
+    const meta = document.querySelector('meta[name="theme-color"]:not([media])');
+    if (meta) meta.setAttribute('content', THEME_COLOR[theme]);
+    else {
+      const created = document.createElement('meta');
+      created.setAttribute('name', 'theme-color');
+      created.setAttribute('content', THEME_COLOR[theme]);
+      document.head.appendChild(created);
+    }
   }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {
