@@ -9,6 +9,7 @@ import { ThemeProvider } from '../providers/ThemeProvider';
 import { ToastProvider } from '../providers/ToastProvider';
 import { UnitProvider } from '../providers/UnitProvider';
 import { ViewModeProvider } from '../providers/ViewModeProvider';
+import { OS_PREFERENCE_THEME_COLORS } from '../themes/registry';
 
 export const metadata: Metadata = {
   title: 'Toy Gallery',
@@ -27,10 +28,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f3f4f6' },
-    { media: '(prefers-color-scheme: dark)', color: '#35353a' },
-  ],
+  themeColor: OS_PREFERENCE_THEME_COLORS,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

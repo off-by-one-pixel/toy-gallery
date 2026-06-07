@@ -32,7 +32,7 @@ export default function TopBar({ subtitle }: Props) {
         </h1>
         <SectionTabs />
         <div className="flex-1" />
-        <ThemeToggle />
+        <ThemeToggle lightTheme="light" darkTheme="dark" />
         <AppMenu />
       </div>
     </div>
