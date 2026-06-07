@@ -30,7 +30,7 @@ export default function TopBar({ subtitle }: Props) {
             <span className="inline-block min-w-22 text-sm font-normal text-muted">{subtitle}</span>
           )}
         </h1>
-        <SectionTabs />
+        <SectionTabs className="order-last sm:order-0" />
         <div className="flex-1" />
         <ThemeToggle lightTheme="light" darkTheme="dark" />
         <AppMenu />
