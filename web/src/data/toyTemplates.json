@@ -1,87 +1,223 @@
 [
   {
-    "id": "minimal",
-    "name": "Minimal",
-    "description": "Straight cylinder. A blank slate already at the right size.",
-    "totalLength": 120,
-    "insertableLength": 120,
-    "circumference": 125.66,
-    "shape": {
-      "topSectionShape": "FLAT",
-      "bottomSectionShape": "FLAT",
-      "sections": [
-        { "id": 0, "order": 0, "diameter": 40, "height": 120 }
-      ]
-    }
-  },
-  {
-    "id": "slim-cone",
-    "name": "Slim cone",
-    "description": "Tapered from a wide base to a narrow tip.",
-    "totalLength": 130,
-    "insertableLength": 120,
-    "circumference": 125.66,
+    "id": "0",
+    "name": "Jewelry Plug",
+    "description": "Traditional metal plug",
+    "totalLength": 80,
+    "insertableLength": 70,
+    "circumference": 125,
     "shape": {
       "topSectionShape": "CONE",
       "bottomSectionShape": "FLAT",
       "sections": [
-        { "id": 0, "order": 0, "diameter": 40, "height": 40 },
-        { "id": 1, "order": 1, "diameter": 32, "height": 50 },
-        { "id": 2, "order": 2, "diameter": 20, "height": 30 }
+        {
+          "id": 27,
+          "order": 0,
+          "diameter": 40,
+          "height": 47,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 28,
+          "order": 1,
+          "diameter": 12,
+          "height": 12,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 29,
+          "order": 2,
+          "diameter": 12,
+          "height": 12,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 30,
+          "order": 3,
+          "diameter": 40,
+          "height": 5,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 31,
+          "order": 4,
+          "diameter": 40,
+          "height": 4,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        }
       ]
     }
   },
   {
-    "id": "bulbous",
-    "name": "Bulbous",
-    "description": "Pronounced widest point mid-height, tapered both ends.",
-    "totalLength": 135,
-    "insertableLength": 120,
-    "circumference": 125.66,
+    "id": "1",
+    "name": "Egg Plug",
+    "description": "Famous Egg Plug from SquarePegToys",
+    "totalLength": 171.0,
+    "insertableLength": 165.1,
+    "circumference": 205.74000000000004,
     "shape": {
       "topSectionShape": "EGG",
       "bottomSectionShape": "FLAT",
       "sections": [
-        { "id": 0, "order": 0, "diameter": 26, "height": 25 },
-        { "id": 1, "order": 1, "diameter": 32, "height": 30 },
-        { "id": 2, "order": 2, "diameter": 40, "height": 35 },
-        { "id": 3, "order": 3, "diameter": 26, "height": 30 }
+        {
+          "id": 105,
+          "order": 0,
+          "diameter": 64.977,
+          "height": 84.648,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 106,
+          "order": 1,
+          "diameter": 38.748,
+          "height": 63.654,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 107,
+          "order": 2,
+          "diameter": 89.974,
+          "height": 22.86,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        }
       ]
     }
   },
   {
-    "id": "egg-tip",
-    "name": "Egg tip",
-    "description": "Slim shaft with a bulbous, rounded head.",
-    "totalLength": 130,
-    "insertableLength": 120,
-    "circumference": 125.66,
+    "id": "2",
+    "name": "The Grip",
+    "description": "Classic shape from ToppedToys",
+    "totalLength": 185.0,
+    "insertableLength": 165.1,
+    "circumference": 292.1,
     "shape": {
-      "topSectionShape": "EGG",
+      "topSectionShape": "CONE",
       "bottomSectionShape": "FLAT",
       "sections": [
-        { "id": 0, "order": 0, "diameter": 30, "height": 40 },
-        { "id": 1, "order": 1, "diameter": 32, "height": 50 },
-        { "id": 2, "order": 2, "diameter": 40, "height": 30 }
+        {
+          "id": 126,
+          "order": 0,
+          "diameter": 93.132,
+          "height": 121.336,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 127,
+          "order": 1,
+          "diameter": 65.684,
+          "height": 21.141,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 128,
+          "order": 2,
+          "diameter": 65.684,
+          "height": 19.605,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 129,
+          "order": 3,
+          "diameter": 93.025,
+          "height": 12.539,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 130,
+          "order": 4,
+          "diameter": 92.717,
+          "height": 10,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        }
       ]
     }
   },
   {
-    "id": "stepped",
-    "name": "Stepped",
-    "description": "Alternating wider and narrower segments along the shaft.",
-    "totalLength": 130,
-    "insertableLength": 120,
-    "circumference": 125.66,
+    "id": "3",
+    "name": "Egg",
+    "description": "Fully insertable egg",
+    "totalLength": 115,
+    "insertableLength": 115,
+    "circumference": 250,
+    "shape": {
+      "topSectionShape": "EGG",
+      "bottomSectionShape": "EGG",
+      "sections": [
+        {
+          "id": 25,
+          "order": 0,
+          "diameter": 75,
+          "height": 61,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 26,
+          "order": 1,
+          "diameter": 55,
+          "height": 55,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        }
+      ]
+    }
+  },
+  {
+    "id": "4",
+    "name": "Dildo",
+    "description": "Just simple dildo",
+    "totalLength": 283.2,
+    "insertableLength": 228.6,
+    "circumference": 276.90000000000003,
     "shape": {
       "topSectionShape": "EGG",
       "bottomSectionShape": "FLAT",
       "sections": [
-        { "id": 0, "order": 0, "diameter": 40, "height": 25 },
-        { "id": 1, "order": 1, "diameter": 28, "height": 25 },
-        { "id": 2, "order": 2, "diameter": 40, "height": 25 },
-        { "id": 3, "order": 3, "diameter": 28, "height": 25 },
-        { "id": 4, "order": 4, "diameter": 32, "height": 20 }
+        {
+          "id": 293,
+          "order": 0,
+          "diameter": 74.22897196261682,
+          "height": 43.92523364485983,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 294,
+          "order": 1,
+          "diameter": 88.14000748429166,
+          "height": 77.587378565487,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 295,
+          "order": 2,
+          "diameter": 77.81869158878509,
+          "height": 107.08738778965316,
+          "topCurveAngle": 0,
+          "bottomCurveAngle": 180
+        },
+        {
+          "id": 296,
+          "order": 3,
+          "diameter": 111.8672897196262,
+          "height": 54.599999999999994,
+          "topCurveAngle": 90,
+          "bottomCurveAngle": 180
+        }
       ]
     }
   }
