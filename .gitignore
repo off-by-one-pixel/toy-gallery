@@ -84,3 +84,6 @@ mockups/
 # `manage.py collectstatic` output (Django admin/DRF assets, populated by
 # `make be-prod` and the Docker entrypoint).
 api/staticfiles/
+
+# Ad-hoc helper scripts
+scripts/
