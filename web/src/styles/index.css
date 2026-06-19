@@ -8,8 +8,8 @@
   --text-caption: 0.6875rem;
   --text-meta: 0.8125rem;
 
-  --thumbnail-tile-from: oklch(0.995 0 0);
-  --thumbnail-tile-to: oklch(0.975 0.025 320);
+  --thumbnail-tile-from: oklch(1 0 0);
+  --thumbnail-tile-to: oklch(0.99 0.018 245);
 
   --silhouette-stroke: oklch(0.27 0.04 265);
   --toy-fill-dim: none;
@@ -58,8 +58,8 @@
   --color-text-tertiary: oklch(0.55 0.005 286);
   --color-text-subtle: oklch(0.42 0.005 286);
 
-  --thumbnail-tile-from: oklch(0.24 0.02 290);
-  --thumbnail-tile-to: oklch(0.27 0.035 320);
+  --thumbnail-tile-from: oklch(0.24 0.025 200);
+  --thumbnail-tile-to: oklch(0.27 0.04 250);
 
   --silhouette-stroke: oklch(0.3 0.015 290);
   --toy-fill-dim: brightness(0.78) saturate(0.85);
