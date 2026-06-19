@@ -28,7 +28,8 @@
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
         "editor.formatOnSave": true,
-        "files.trimTrailingWhitespace": true
+        "files.trimTrailingWhitespace": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   },
