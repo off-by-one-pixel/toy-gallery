@@ -13,9 +13,6 @@ export type TimeOfDay = Readonly<{
   legendGradient: string;
 }>;
 
-/** Distribution of sessions across the 24 local hours of the day, shaded
- *  with the same palette as the activity heatmap. Pure — the hour comes
- *  from the session's local start time. */
 export function buildTimeOfDay(sessions: readonly Session[], hue: number = ACTIVITY_PALETTE.timeOfDayHue): TimeOfDay {
   const counts = Array.from({ length: HOURS }, () => 0);
   for (const s of sessions) {

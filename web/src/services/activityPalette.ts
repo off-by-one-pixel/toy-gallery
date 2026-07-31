@@ -11,7 +11,6 @@ export interface ActivityPalette {
   lengthHue: number;
   /** HSL hue for circumference-dominant days. */
   circumferenceHue: number;
-  /** HSL hue for the time-of-day strip. */
   timeOfDayHue: number;
   /** HSL saturation percentage applied to insertion days. */
   saturation: number;
