@@ -13,6 +13,7 @@ import TopBar from '../TopBar';
 import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
 import SessionRow from './SessionRow';
+import TimeOfDayStrip from './TimeOfDayStrip';
 import { useSessionList } from './useSessionList';
 
 export default function SessionList() {
@@ -55,8 +56,9 @@ export default function SessionList() {
           </Alert>
         )}
         {!data.isLoading && (
-          <div className="mb-4">
+          <div className="mb-4 space-y-3">
             <ActivityTracker heatmap={data.heatmap} />
+            <TimeOfDayStrip sessions={data.visibleSessions} />
           </div>
         )}
         {renderBody()}

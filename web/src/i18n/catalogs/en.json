@@ -95,7 +95,12 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "toysSelected": "{count, plural, one {toy} other {toys}} selected",
-    "overflowMore": "+{count} more"
+    "overflowMore": "+{count} more",
+    "timeOfDay": {
+      "title": "Time of day",
+      "tooltip": "{hour} · {count, plural, one {# session} other {# sessions}}",
+      "empty": "No sessions in range"
+    }
   },
   "template": {
     "pickerTitle": "Choose a starting shape",

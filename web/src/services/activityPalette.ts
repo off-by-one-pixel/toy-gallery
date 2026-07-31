@@ -11,6 +11,7 @@ export interface ActivityPalette {
   lengthHue: number;
   /** HSL hue for circumference-dominant days. */
   circumferenceHue: number;
+  timeOfDayHue: number;
   /** HSL saturation percentage applied to insertion days. */
   saturation: number;
   /** Lightness percentage at zero intensity (palest). */
@@ -31,6 +32,7 @@ export const ACTIVITY_PALETTE: ActivityPalette = {
   usedOnly: '#d1d5db',
   lengthHue: 330,
   circumferenceHue: 220,
+  timeOfDayHue: 40,
   saturation: 65,
   lightnessMax: 90,
   lightnessMin: 40,
