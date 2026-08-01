@@ -34,7 +34,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   return (
     <div
       className={
-        'group relative bg-surface shadow-sm hover:shadow-md transition-shadow cursor-pointer ' +
+        'group relative bg-surface shadow-sm transition-[transform,box-shadow] duration-200 hover:shadow-lg motion-safe:hover:-translate-y-1 cursor-pointer ' +
         (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
       }
       role="button"
@@ -111,11 +111,11 @@ function Metric({
 }>) {
   return (
     <div className={bordered ? 'pl-3 border-l border-border' : ''}>
-      <div className="text-[22px] font-semibold leading-none tracking-tight text-foreground tabular-nums">
+      <div className="flex items-baseline gap-1 text-[22px] font-semibold leading-none tracking-tight text-foreground tabular-nums">
         {formatValue(value, unit)}
-        {value != null && <span className="ml-0.5 text-xs font-medium text-muted">{unit.id}</span>}
+        {value != null && <span className="text-xs font-medium text-muted">{unit.id}</span>}
       </div>
-      <div className="mt-1 text-caption uppercase tracking-wider text-text-tertiary">{label}</div>
+      <div className="mt-0.5 text-caption uppercase tracking-wider text-text-tertiary">{label}</div>
     </div>
   );
 }
