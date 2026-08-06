@@ -9,7 +9,7 @@ import { ThemeProvider } from '../providers/ThemeProvider';
 import { ToastProvider } from '../providers/ToastProvider';
 import { UnitProvider } from '../providers/UnitProvider';
 import { ViewModeProvider } from '../providers/ViewModeProvider';
-import { OS_PREFERENCE_THEME_COLORS } from '../themes/registry';
+import { DEFAULT_THEME, THEMES } from '../themes/registry';
 
 export const metadata: Metadata = {
   title: 'Toy Gallery',
@@ -28,13 +28,18 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
-  themeColor: OS_PREFERENCE_THEME_COLORS,
+  themeColor: THEMES[DEFAULT_THEME].browserChrome,
 };
+
+const BROWSER_CHROME = Object.fromEntries(Object.entries(THEMES).map(([name, def]) => [name, def.browserChrome]));
+
+const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');var colors=${JSON.stringify(BROWSER_CHROME)};if(!colors[t])return;document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',colors[t]);}catch(e){}})()`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="bg-surface-secondary text-foreground min-h-screen antialiased">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <ToastProvider />
         <ThemeProvider>
           <LocaleProvider>
