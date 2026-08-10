@@ -47,7 +47,7 @@ export default function SessionRow({ session, toysById, unit }: Props) {
           <ChevronRight size={20} />
         </Link>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-4 sm:mt-0 sm:contents">
+      <div className="mt-3 sm:mt-0 sm:contents">
         <div className="flex flex-wrap items-center gap-3 sm:order-2">
           {visibleEntries.map((entry) => {
             const toy = toysById.get(entry.toy);
@@ -59,7 +59,7 @@ export default function SessionRow({ session, toysById, unit }: Props) {
             </span>
           )}
         </div>
-        <div className="min-w-32 text-right shrink-0 sm:order-3">
+        <div className="mt-3 flex items-baseline gap-5 border-t border-border pt-2.5 sm:order-3 sm:mt-0 sm:block sm:min-w-32 sm:shrink-0 sm:border-t-0 sm:pt-0 sm:text-right">
           <PeakRow label={t('peakLength')} mm={session.maxInsertableLength} unit={unit} />
           <PeakRow
             label={girth === 'diameter' ? t('peakDiameter') : t('peakCircumference')}
