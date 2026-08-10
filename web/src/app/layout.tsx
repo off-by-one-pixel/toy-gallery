@@ -3,6 +3,7 @@ import 'toy-editor/styles.css';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/index.css';
 import { AuthProvider } from '../providers/AuthProvider';
+import { GirthProvider } from '../providers/GirthProvider';
 import { LocaleProvider } from '../providers/LocaleProvider';
 import { SortProvider } from '../providers/SortProvider';
 import { ThemeProvider } from '../providers/ThemeProvider';
@@ -44,11 +45,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ThemeProvider>
           <LocaleProvider>
             <UnitProvider>
-              <ViewModeProvider>
-                <SortProvider>
-                  <AuthProvider>{children}</AuthProvider>
-                </SortProvider>
-              </ViewModeProvider>
+              <GirthProvider>
+                <ViewModeProvider>
+                  <SortProvider>
+                    <AuthProvider>{children}</AuthProvider>
+                  </SortProvider>
+                </ViewModeProvider>
+              </GirthProvider>
             </UnitProvider>
           </LocaleProvider>
         </ThemeProvider>

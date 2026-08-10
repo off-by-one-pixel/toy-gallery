@@ -1,4 +1,5 @@
 import { ACTIVITY_PALETTE } from './activityPalette';
+import { DEFAULT_GIRTH, displayGirth, type Girth } from './girth';
 import type { ActivityDay } from './types';
 import { formatValue, type Unit } from './units';
 
@@ -141,7 +142,7 @@ export function buildActivityHeatmap(
   unit: Unit,
   locale: string,
   labels: ActivityLabels,
-  options?: Readonly<{ today?: Date; windowDays?: number }>,
+  options?: Readonly<{ today?: Date; windowDays?: number; girth?: Girth }>,
 ): ActivityHeatmap {
   const windowDays = options?.windowDays ?? ACTIVITY_WINDOW_DAYS;
   const today = options?.today ? new Date(options.today) : new Date();
@@ -159,7 +160,11 @@ export function buildActivityHeatmap(
       locale,
     ),
     circumference: buildDimensionView(
-      { title: labels.circumference, pick: (d) => d.maxCircumference, hue: ACTIVITY_PALETTE.circumferenceHue },
+      {
+        title: labels.circumference,
+        pick: (d) => displayGirth(d.maxCircumference, options?.girth ?? DEFAULT_GIRTH),
+        hue: ACTIVITY_PALETTE.circumferenceHue,
+      },
       byDate,
       startDate,
       today,

@@ -4,6 +4,8 @@ import { ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+import { useGirth } from '../../providers/GirthProvider';
+import { displayGirth } from '../../services/girth';
 import { heightScale } from '../../services/scaling';
 import { formatWhen, sortEntriesByInvolvement } from '../../services/session';
 import type { Session, Toy } from '../../services/types';
@@ -22,6 +24,7 @@ type Props = Readonly<{
 export default function SessionRow({ session, toysById, unit }: Props) {
   const t = useTranslations('session');
   const locale = useLocale();
+  const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
   const orderedEntries = sortEntriesByInvolvement(session.entries);
@@ -58,7 +61,11 @@ export default function SessionRow({ session, toysById, unit }: Props) {
         </div>
         <div className="min-w-32 text-right shrink-0 sm:order-3">
           <PeakRow label={t('peakLength')} mm={session.maxInsertableLength} unit={unit} />
-          <PeakRow label={t('peakCircumference')} mm={session.maxCircumference} unit={unit} />
+          <PeakRow
+            label={girth === 'diameter' ? t('peakDiameter') : t('peakCircumference')}
+            mm={displayGirth(session.maxCircumference, girth)}
+            unit={unit}
+          />
         </div>
       </div>
     </div>

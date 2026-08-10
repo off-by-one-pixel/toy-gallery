@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useGirth } from '../../providers/GirthProvider';
 import { fetchActivity, fetchToys, fetchSessions } from '../../services/api';
 import { type ActivityHeatmap, buildActivityHeatmap } from '../../services/activity';
 import { type FilterKey, filterSessions, toysById as buildToysById } from '../../services/session';
@@ -34,6 +35,7 @@ export type SessionListData = Readonly<{
 export function useSessionList(unit: Unit): SessionListData {
   const locale = useLocale();
   const t = useTranslations('common');
+  const { girth } = useGirth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
   const [activity, setActivity] = useState<ActivityDay[]>([]);
@@ -67,8 +69,8 @@ export function useSessionList(unit: Unit): SessionListData {
   }, [runInline]);
 
   const heatmap = useMemo(
-    () => buildActivityHeatmap(activity, unit, locale, { length: t('length'), circumference: t('circumference') }),
-    [activity, unit, locale, t],
+    () => buildActivityHeatmap(activity, unit, locale, { length: t('length'), circumference: t(girth) }, { girth }),
+    [activity, unit, locale, t, girth],
   );
   const toysById = useMemo(() => buildToysById(toys), [toys]);
   const visibleSessions = useMemo(() => filterSessions(sessions, filter), [sessions, filter]);

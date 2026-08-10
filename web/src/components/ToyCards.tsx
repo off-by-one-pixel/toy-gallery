@@ -24,7 +24,7 @@ export default function ToyCards({ toys, openToyId, onToggleOpen, onEdit, onCopy
 
   return (
     <>
-      <div className="mb-3 flex justify-end">
+      <div className="mb-3 hidden justify-end sm:flex">
         <SortControl />
       </div>
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>

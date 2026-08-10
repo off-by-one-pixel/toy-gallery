@@ -8,8 +8,10 @@ import { useRouter } from 'next/navigation';
 import { useUnit } from '../../providers/UnitProvider';
 import { FILTERS, type FilterKey } from '../../services/session';
 import ActivityTracker from '../ActivityTracker';
+import DisplayOptionsMenu from '../DisplayOptionsMenu';
 import Switcher, { type SwitcherItem } from '../Switcher';
 import TopBar from '../TopBar';
+import GirthToggle from '../GirthToggle';
 import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
 import SessionRow from './SessionRow';
@@ -40,16 +42,33 @@ export default function SessionList() {
             onChange={data.setFilter}
             ariaLabel={t('filter.ariaLabel')}
           />
-          <UnitToggle />
+          <div className="hidden sm:contents">
+            <UnitToggle />
+            <GirthToggle />
+          </div>
           <div className="flex-1" />
-          <Button variant="primary" size="sm" onPress={() => router.push('/sessions/new')}>
+          <DisplayOptionsMenu>
+            <UnitToggle />
+            <GirthToggle />
+          </DisplayOptionsMenu>
+          <Button variant="primary" size="sm" className="max-sm:hidden" onPress={() => router.push('/sessions/new')}>
             <Plus size={14} strokeWidth={2.2} />
             <span className="hidden md:inline">{t('newButton')}</span>
           </Button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-300 px-6 py-6">
+      <Button
+        variant="primary"
+        size="sm"
+        aria-label={t('newButton')}
+        className="fixed bottom-5 right-5 z-30 h-12 w-12 rounded-full shadow-lg sm:hidden"
+        onPress={() => router.push('/sessions/new')}
+      >
+        <Plus size={18} strokeWidth={2.2} />
+      </Button>
+
+      <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-6">
         {data.error && (
           <Alert status="danger" className="mb-4">
             <Alert.Description>{data.error}</Alert.Description>

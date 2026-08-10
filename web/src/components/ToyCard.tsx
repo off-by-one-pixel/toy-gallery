@@ -2,6 +2,9 @@
 
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
+import { useTranslations } from 'next-intl';
+import { useGirth } from '../providers/GirthProvider';
+import { displayGirth } from '../services/girth';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { formatValue, type Unit } from '../services/units';
@@ -22,6 +25,8 @@ type Props = Readonly<{
 
 export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
+  const { girth } = useGirth();
+  const common = useTranslations('common');
   const detailsRef = useRef<HTMLDivElement>(null);
 
   const editorToy = toyShapeToEditor(toy.shape);
@@ -76,8 +81,8 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
           )}
         </div>
         <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-border pt-2.5">
-          <Metric label="Insertable" value={toy.insertableLength} unit={unit} />
-          <Metric label="Circumference" value={toy.circumference} unit={unit} bordered />
+          <Metric label={common('insertable')} value={toy.insertableLength} unit={unit} />
+          <Metric label={common(girth)} value={displayGirth(toy.circumference, girth)} unit={unit} bordered />
         </div>
       </div>
 
