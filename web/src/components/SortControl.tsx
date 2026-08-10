@@ -4,11 +4,13 @@ import { Dropdown } from '@heroui/react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { useGirth } from '../providers/GirthProvider';
 import { useSort } from '../providers/SortProvider';
 import { cycleSort, sortColumns, type SortColumn } from '../services/sort';
 
 export default function SortControl() {
   const { sort, setSort } = useSort();
+  const { girth } = useGirth();
   const t = useTranslations('sort');
   const common = useTranslations('common');
   const columnLabel = (column: SortColumn): string => {
@@ -20,7 +22,7 @@ export default function SortControl() {
       case 'total':
         return common('totalLength');
       case 'circumference':
-        return common('circumference');
+        return common(girth);
     }
   };
   const activeLabel = sort ? columnLabel(sort.column) : t('label');

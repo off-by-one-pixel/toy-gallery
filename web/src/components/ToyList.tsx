@@ -6,9 +6,11 @@ import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import ToyThumbnail from './ToyThumbnail';
 
+import { useGirth } from '../providers/GirthProvider';
 import { useSort } from '../providers/SortProvider';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
+import { displayGirth } from '../services/girth';
 import { cycleSort, type Sort, type SortColumn } from '../services/sort';
 import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
@@ -62,6 +64,7 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy,
 function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (column: SortColumn) => void }>) {
   const t = useTranslations('toy.columns');
   const common = useTranslations('common');
+  const { girth } = useGirth();
   return (
     <div
       className={
@@ -81,8 +84,8 @@ function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (col
         align="right"
       />
       <SortHeader
-        label={common('circumference')}
-        shortLabel={t('circumferenceShort')}
+        label={common(girth)}
+        shortLabel={girth === 'diameter' ? t('diameterShort') : t('circumferenceShort')}
         column="circumference"
         sort={sort}
         onSort={onSort}
@@ -155,6 +158,7 @@ function ToyRow({
   onCopy: () => void;
   onDelete: () => void;
 }>) {
+  const { girth } = useGirth();
   const actionsRef = useRef<HTMLDivElement>(null);
   const handleRowClick = (e: React.MouseEvent) => {
     if (actionsRef.current?.contains(e.target as Node)) return;
@@ -188,7 +192,7 @@ function ToyRow({
           )}
         </div>
         <Metric value={toy.insertableLength} unit={unit} />
-        <Metric value={toy.circumference} unit={unit} />
+        <Metric value={displayGirth(toy.circumference, girth)} unit={unit} />
         <div
           ref={actionsRef}
           className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-surface/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
@@ -325,6 +329,8 @@ function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
 
 function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number; c: number | null }>) {
   const t = useTranslations('toy');
+  const { girth } = useGirth();
+  const girthValue = displayGirth(c, girth);
   return (
     <>
       <span className="text-text-tertiary">#{n}</span>
@@ -332,11 +338,13 @@ function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number;
       <span className="text-text-tertiary">×</span>
       <span className="whitespace-nowrap">{Math.round(h)} mm</span>
       <span className="text-muted">
-        {c != null ? (
+        {girthValue != null ? (
           <>
-            <span className="whitespace-nowrap">{Math.round(c)} mm</span>{' '}
-            <span className="sm:hidden">{t('circumferenceShort')}</span>
-            <span className="hidden sm:inline">{t('circumferenceInline')}</span>
+            <span className="whitespace-nowrap">{Math.round(girthValue)} mm</span>{' '}
+            <span className="sm:hidden">{girth === 'diameter' ? t('diameterShort') : t('circumferenceShort')}</span>
+            <span className="hidden sm:inline">
+              {girth === 'diameter' ? t('diameterInline') : t('circumferenceInline')}
+            </span>
           </>
         ) : (
           ''

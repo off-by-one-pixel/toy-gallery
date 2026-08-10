@@ -14,11 +14,14 @@ import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
+import DisplayOptionsMenu from './DisplayOptionsMenu';
 import SearchInput from './SearchInput';
+import SortControl from './SortControl';
 import TopBar from './TopBar';
 import ToyCards from './ToyCards';
 import ToyEditModal from './toy-edit/ToyEditModal';
 import ToyList from './ToyList';
+import GirthToggle from './GirthToggle';
 import UnitToggle from './UnitToggle';
 import ViewToggle from './ViewToggle';
 
@@ -115,24 +118,54 @@ const ToyGallery = () => {
       <TopBar subtitle={isLoading ? null : t('toy.items', { count: toys.length })} />
       <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
-          <div className="w-full sm:w-auto">
+          <div className="min-w-0 flex-1 sm:w-auto sm:flex-initial">
             <SearchInput value={query} onChange={setQuery} />
           </div>
-          <ViewToggle view={view} onChange={setView} />
-          <UnitToggle />
-          <div className="flex-1" />
-          <Button variant="outline" size="sm" onPress={() => router.push('/sessions/new')}>
+          <DisplayOptionsMenu>
+            <ViewToggle view={view} onChange={setView} />
+            <UnitToggle />
+            <GirthToggle />
+            {view === ViewMode.cards && <SortControl />}
+          </DisplayOptionsMenu>
+          <div className="hidden sm:contents">
+            <ViewToggle view={view} onChange={setView} />
+            <UnitToggle />
+            <GirthToggle />
+          </div>
+          <div className="hidden flex-1 sm:block" />
+          <Button variant="outline" size="sm" className="max-sm:hidden" onPress={() => router.push('/sessions/new')}>
             <CalendarClock size={14} strokeWidth={1.8} />
             <span className="hidden md:inline">{t('session.newButton')}</span>
           </Button>
-          <Button variant="primary" size="sm" onPress={toyModal.openNew}>
+          <Button variant="primary" size="sm" className="max-sm:hidden" onPress={toyModal.openNew}>
             <Plus size={14} strokeWidth={2.2} />
             <span className="hidden md:inline">{t('toy.new')}</span>
           </Button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-300 px-6 py-6">
+      <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          aria-label={t('session.newButton')}
+          className="h-12 w-12 rounded-full bg-surface shadow-lg"
+          onPress={() => router.push('/sessions/new')}
+        >
+          <CalendarClock size={16} strokeWidth={1.8} />
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          aria-label={t('toy.new')}
+          className="h-12 w-12 rounded-full shadow-lg"
+          onPress={toyModal.openNew}
+        >
+          <Plus size={18} strokeWidth={2.2} />
+        </Button>
+      </div>
+
+      <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-6">
         {error && (
           <Alert status="danger" className="mb-4">
             <Alert.Description>{error}</Alert.Description>

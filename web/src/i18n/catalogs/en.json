@@ -10,6 +10,7 @@
     "totalLength": "Total length",
     "insertable": "Insertable",
     "circumference": "Circumference",
+    "diameter": "Diameter",
     "length": "Length",
     "edit": "Edit",
     "copy": "Copy",
@@ -33,6 +34,8 @@
     "items": "{count, plural, one {# item} other {# items}}",
     "circumferenceInline": "circumference",
     "circumferenceShort": "circ.",
+    "diameterInline": "diameter",
+    "diameterShort": "dia.",
     "deleteConfirm": "Delete {brand} {name}?",
     "new": "New Toy",
     "columns": {
@@ -40,6 +43,7 @@
       "brandModelShort": "Model",
       "insertableShort": "Ins",
       "circumferenceShort": "Circ",
+      "diameterShort": "Dia",
       "topShape": "Top shape",
       "sections": "Sections"
     },
@@ -54,6 +58,14 @@
   },
   "unitToggle": {
     "ariaLabel": "Display units"
+  },
+  "girthToggle": {
+    "ariaLabel": "Girth display",
+    "circumference": "circ",
+    "diameter": "dia"
+  },
+  "displayOptions": {
+    "ariaLabel": "Display options"
   },
   "involvement": {
     "USED": "Used",
@@ -79,6 +91,7 @@
     },
     "peakLength": "max len",
     "peakCircumference": "max circ",
+    "peakDiameter": "max dia",
     "toyDeleted": "deleted",
     "empty": "No sessions yet — record your first one.",
     "emptyFilteredPrefix": "No sessions in",
