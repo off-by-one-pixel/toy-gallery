@@ -20,6 +20,7 @@ export type SessionListData = Readonly<{
   toysById: Map<number, Toy>;
   /** Prebuilt activity heatmap for the page header. */
   heatmap: ActivityHeatmap;
+  reload: () => void;
 
   filter: FilterKey;
   setFilter: (next: FilterKey) => void;
@@ -43,6 +44,7 @@ export function useSessionList(unit: Unit): SessionListData {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [loadCount, setLoadCount] = useState(0);
 
   const runInline = useAsyncAction(setError);
 
@@ -67,7 +69,7 @@ export function useSessionList(unit: Unit): SessionListData {
     return () => {
       cancelled = true;
     };
-  }, [runInline]);
+  }, [runInline, loadCount]);
 
   const heatmap = useMemo(
     () =>
@@ -88,6 +90,7 @@ export function useSessionList(unit: Unit): SessionListData {
     visibleSessions,
     toysById,
     heatmap,
+    reload: () => setLoadCount((n) => n + 1),
     filter,
     setFilter,
     isLoading,

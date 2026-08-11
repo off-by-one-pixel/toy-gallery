@@ -1,12 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { useUnit } from '../../providers/UnitProvider';
+import { deleteSession } from '../../services/api';
 import { FILTERS, type FilterKey } from '../../services/session';
+import { ActionFabs, type ActionDef } from '../ActionButtons';
 import ActivityTracker from '../ActivityTracker';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
 import Switcher, { type SwitcherItem } from '../Switcher';
@@ -24,6 +28,40 @@ export default function SessionList() {
   const { unit } = useUnit();
   const data = useSessionList(unit);
   const t = useTranslations('session');
+  const common = useTranslations('common');
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const runToast = useAsyncAction();
+
+  const editSession = (id: number) => router.push(`/sessions/edit?id=${id}`);
+  const removeSession = (id: number) => {
+    if (!confirm(t('deleteConfirm'))) return;
+    runToast(() => deleteSession(id), {
+      onDone: () => {
+        setSelectedId(null);
+        data.reload();
+      },
+    });
+  };
+
+  const selectedActions: ActionDef[] | null =
+    selectedId === null
+      ? null
+      : [
+          {
+            key: 'edit',
+            label: common('edit'),
+            icon: Pencil,
+            variant: 'outline',
+            onPress: () => editSession(selectedId),
+          },
+          {
+            key: 'delete',
+            label: common('delete'),
+            icon: Trash2,
+            variant: 'danger-soft',
+            onPress: () => removeSession(selectedId),
+          },
+        ];
   const filterLongLabel = (key: FilterKey) => t(`filter.${key}`);
   const filterShortLabel = (key: FilterKey) => t(`filter.${key}Short`);
   const filterItems: SwitcherItem<FilterKey>[] = FILTERS.map((f) => ({
@@ -59,15 +97,20 @@ export default function SessionList() {
         </div>
       </header>
 
-      <Button
-        variant="primary"
-        size="sm"
-        aria-label={t('newButton')}
-        className="fixed bottom-5 right-5 z-30 h-12 w-12 rounded-full shadow-lg sm:hidden"
-        onPress={() => router.push('/sessions/new')}
-      >
-        <Plus size={18} strokeWidth={2.2} />
-      </Button>
+      <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
+        {selectedActions && <ActionFabs actions={selectedActions} />}
+        <ActionFabs
+          actions={[
+            {
+              key: 'new',
+              label: t('newButton'),
+              icon: Plus,
+              variant: 'primary',
+              onPress: () => router.push('/sessions/new'),
+            },
+          ]}
+        />
+      </div>
 
       <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-6">
         {data.error && (
@@ -102,7 +145,16 @@ export default function SessionList() {
     return (
       <div className="flex flex-col gap-3.5">
         {data.visibleSessions.map((session) => (
-          <SessionRow key={session.id} session={session} toysById={data.toysById} unit={unit} />
+          <SessionRow
+            key={session.id}
+            session={session}
+            toysById={data.toysById}
+            unit={unit}
+            selected={selectedId === session.id}
+            onToggleSelect={() => setSelectedId((cur) => (cur === session.id ? null : session.id))}
+            onEdit={() => editSession(session.id)}
+            onDelete={() => removeSession(session.id)}
+          />
         ))}
       </div>
     );
