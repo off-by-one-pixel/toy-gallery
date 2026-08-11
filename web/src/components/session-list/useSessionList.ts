@@ -35,6 +35,7 @@ export type SessionListData = Readonly<{
 export function useSessionList(unit: Unit): SessionListData {
   const locale = useLocale();
   const t = useTranslations('common');
+  const tSession = useTranslations('session');
   const { girth } = useGirth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
@@ -69,8 +70,15 @@ export function useSessionList(unit: Unit): SessionListData {
   }, [runInline]);
 
   const heatmap = useMemo(
-    () => buildActivityHeatmap(activity, unit, locale, { length: t('length'), circumference: t(girth) }, { girth }),
-    [activity, unit, locale, t, girth],
+    () =>
+      buildActivityHeatmap(
+        activity,
+        unit,
+        locale,
+        { length: t('length'), circumference: t(girth), sessions: tSession('perDayTitle') },
+        { girth },
+      ),
+    [activity, unit, locale, t, tSession, girth],
   );
   const toysById = useMemo(() => buildToysById(toys), [toys]);
   const visibleSessions = useMemo(() => filterSessions(sessions, filter), [sessions, filter]);

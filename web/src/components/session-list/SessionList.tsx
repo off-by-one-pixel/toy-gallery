@@ -16,6 +16,7 @@ import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
 import SessionRow from './SessionRow';
 import TimeOfDayStrip from './TimeOfDayStrip';
+import WeekdayStrip from './WeekdayStrip';
 import { useSessionList } from './useSessionList';
 
 export default function SessionList() {
@@ -75,9 +76,11 @@ export default function SessionList() {
           </Alert>
         )}
         {!data.isLoading && (
-          <div className="mb-4 space-y-3">
-            <ActivityTracker heatmap={data.heatmap} />
-            <TimeOfDayStrip sessions={data.visibleSessions} />
+          <div className="mb-4">
+            <ActivityTracker heatmap={data.heatmap}>
+              <TimeOfDayStrip sessions={data.visibleSessions} />
+              <WeekdayStrip sessions={data.visibleSessions} />
+            </ActivityTracker>
           </div>
         )}
         {renderBody()}
