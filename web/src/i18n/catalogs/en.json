@@ -105,6 +105,7 @@
     "toysHint": "Tap a tag below each toy to record how it was used.",
     "save": "Save session",
     "savedToast": "Session saved",
+    "deleteConfirm": "Delete this session?",
     "editArrowLabel": "Edit session",
     "today": "Today",
     "yesterday": "Yesterday",

@@ -14,6 +14,8 @@ import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
+import { ActionFabs } from './ActionButtons';
+import { toyActionDefs } from './ToyActionButtons';
 import DisplayOptionsMenu from './DisplayOptionsMenu';
 import SearchInput from './SearchInput';
 import SortControl from './SortControl';
@@ -32,6 +34,7 @@ const ToyGallery = () => {
   const toyModal = useToyModalNav();
   const wizard = useToyEditorWizardNav();
   const t = useTranslations();
+  const common = useTranslations('common');
 
   const [toys, setToys] = useState<Toy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,6 +82,15 @@ const ToyGallery = () => {
 
   const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
   const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
+
+  const openToy = openCardId === null ? null : (toys.find((c) => c.id === openCardId) ?? null);
+  const openToyActions = openToy
+    ? toyActionDefs((k) => common(k), {
+        onEdit: () => handleEdit(openToy),
+        onCopy: () => handleCopy(openToy),
+        onDelete: () => handleDelete(openToy),
+      })
+    : null;
 
   const renderBody = () => {
     if (isLoading) {
@@ -145,6 +157,7 @@ const ToyGallery = () => {
       </header>
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
+        {openToyActions && <ActionFabs actions={openToyActions} />}
         <Button
           variant="outline"
           size="sm"

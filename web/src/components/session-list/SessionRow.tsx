@@ -1,9 +1,9 @@
 'use client';
 
-import { ChevronRight } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import Link from 'next/link';
 
+import { ActionButtons, type ActionDef } from '../ActionButtons';
 import { useGirth } from '../../providers/GirthProvider';
 import { displayGirth } from '../../services/girth';
 import { heightScale } from '../../services/scaling';
@@ -19,10 +19,15 @@ type Props = Readonly<{
   session: Session;
   toysById: Map<number, Toy>;
   unit: Unit;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }>;
 
-export default function SessionRow({ session, toysById, unit }: Props) {
+export default function SessionRow({ session, toysById, unit, selected, onToggleSelect, onEdit, onDelete }: Props) {
   const t = useTranslations('session');
+  const common = useTranslations('common');
   const locale = useLocale();
   const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
@@ -33,19 +38,26 @@ export default function SessionRow({ session, toysById, unit }: Props) {
 
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
 
+  const actions: ActionDef[] = [
+    { key: 'edit', label: common('edit'), icon: Pencil, variant: 'outline', onPress: onEdit },
+    { key: 'delete', label: common('delete'), icon: Trash2, variant: 'danger-soft', onPress: onDelete },
+  ];
+
   return (
-    <div className="rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5">
+    <div
+      onClick={onToggleSelect}
+      className={
+        'group rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md max-sm:cursor-pointer sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
+        (selected ? 'max-sm:ring-2 max-sm:ring-accent' : '')
+      }
+    >
       <div className="flex items-center justify-between gap-3 sm:contents">
         <div className="text-base font-semibold tracking-tight text-foreground sm:order-1">
           {formatWhen(session.startedAt, new Date(), locale, whenT)}
         </div>
-        <Link
-          href={`/sessions/edit?id=${session.id}`}
-          aria-label={t('editArrowLabel')}
-          className="rounded-md p-1 text-text-subtle transition-colors hover:bg-surface-secondary hover:text-accent sm:order-4"
-        >
-          <ChevronRight size={20} />
-        </Link>
+        <div className="hidden gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 sm:order-4 sm:flex">
+          <ActionButtons actions={actions} stopPropagation />
+        </div>
       </div>
       <div className="mt-3 sm:mt-0 sm:contents">
         <div className="flex flex-wrap items-center gap-3 sm:order-2">
