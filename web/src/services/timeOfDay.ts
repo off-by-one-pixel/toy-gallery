@@ -21,6 +21,10 @@ export function buildTimeOfDay(sessions: readonly Session[], hue: number = ACTIV
   }
   const max = Math.max(0, ...counts);
   const total = counts.reduce((a, b) => a + b, 0);
-  const cells = counts.map((count, hour) => ({ hour, count, fill: colorFor(count, 0, max, hue, count > 0) }));
+  const cells = counts.map((count, hour) => ({
+    hour,
+    count,
+    fill: colorFor(count, 0, max, hue, count > 0, ACTIVITY_PALETTE.sessionsGamma),
+  }));
   return { cells, max, total, legendGradient: legendGradient(hue) };
 }

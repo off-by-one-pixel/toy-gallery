@@ -28,11 +28,11 @@ export function formatTooltipDate(key: string, locale: string): string {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-const lightnessAt = (t: number): number =>
-  lerp(ACTIVITY_PALETTE.lightnessMax, ACTIVITY_PALETTE.lightnessMin, Math.pow(t, ACTIVITY_PALETTE.gamma));
+const lightnessAt = (t: number, gamma: number): number =>
+  lerp(ACTIVITY_PALETTE.lightnessMax, ACTIVITY_PALETTE.lightnessMin, Math.pow(t, gamma));
 
-const hslAt = (hue: number, t: number): string =>
-  `hsl(${hue}, ${ACTIVITY_PALETTE.saturation}%, ${lightnessAt(t).toFixed(1)}%)`;
+const hslAt = (hue: number, t: number, gamma: number = ACTIVITY_PALETTE.gamma): string =>
+  `hsl(${hue}, ${ACTIVITY_PALETTE.saturation}%, ${lightnessAt(t, gamma).toFixed(1)}%)`;
 
 /** Cell fill for a (day-data, dimension-range) combination. */
 export function colorFor(
@@ -41,11 +41,12 @@ export function colorFor(
   max: number,
   hue: number,
   hasSession: boolean,
+  gamma: number = ACTIVITY_PALETTE.gamma,
 ): string {
   if (!hasSession) return ACTIVITY_PALETTE.empty;
   if (value == null) return ACTIVITY_PALETTE.usedOnly;
   const intensity = max > min ? (value - min) / (max - min) : 1;
-  return hslAt(hue, intensity);
+  return hslAt(hue, intensity, gamma);
 }
 
 /** CSS linear-gradient that interpolates the per-hue palette from
@@ -91,12 +92,15 @@ export type DimensionView = Readonly<{
 export type ActivityHeatmap = Readonly<{
   length: DimensionView;
   circumference: DimensionView;
+  sessions: DimensionView;
 }>;
 
 type DimensionInput = Readonly<{
   title: string;
   pick: (d: ActivityDay) => number | null | undefined;
   hue: number;
+  gamma?: number;
+  formatLegend?: (value: number) => string;
 }>;
 
 const buildDimensionView = (
@@ -114,24 +118,26 @@ const buildDimensionView = (
     const date = new Date(startDate.getTime() + i * MS_PER_DAY);
     const key = localDateKey(date);
     const day = byDate.get(key);
-    const fill = colorFor(day ? input.pick(day) : null, range.min, range.max, input.hue, day != null);
+    const fill = colorFor(day ? input.pick(day) : null, range.min, range.max, input.hue, day != null, input.gamma);
     cells.push({ date: key, tooltip: formatTooltipDate(key, locale), fill });
   }
   const hasData = range.max > 0;
+  const formatLegend = input.formatLegend ?? ((value: number) => `${formatValue(value, unit)} ${unit.id}`);
   return {
     title: input.title,
     cells,
     startDate,
     endDate,
     legendGradient: legendGradient(input.hue),
-    legendMinLabel: hasData ? `${formatValue(range.min, unit)} ${unit.id}` : '—',
-    legendMaxLabel: hasData ? `${formatValue(range.max, unit)} ${unit.id}` : '—',
+    legendMinLabel: hasData ? formatLegend(range.min) : '—',
+    legendMaxLabel: hasData ? formatLegend(range.max) : '—',
   };
 };
 
 export type ActivityLabels = Readonly<{
   length: string;
   circumference: string;
+  sessions: string;
 }>;
 
 /** Build the complete heatmap data for the activity tracker, in the
@@ -164,6 +170,21 @@ export function buildActivityHeatmap(
         title: labels.circumference,
         pick: (d) => displayGirth(d.maxCircumference, options?.girth ?? DEFAULT_GIRTH),
         hue: ACTIVITY_PALETTE.circumferenceHue,
+      },
+      byDate,
+      startDate,
+      today,
+      windowDays,
+      unit,
+      locale,
+    ),
+    sessions: buildDimensionView(
+      {
+        title: labels.sessions,
+        pick: (d) => d.sessionCount,
+        hue: ACTIVITY_PALETTE.sessionsHue,
+        gamma: ACTIVITY_PALETTE.sessionsGamma,
+        formatLegend: (value) => `${Math.round(value)}`,
       },
       byDate,
       startDate,

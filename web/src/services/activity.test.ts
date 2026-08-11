@@ -115,11 +115,47 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY },
     );
     expect(out.length.title).toBe('Length');
     expect(out.circumference.title).toBe('Circumference');
+    expect(out.sessions.title).toBe('Sessions');
+  });
+
+  it('renders sessions-per-day with plain integer legend labels', () => {
+    const counts: ActivityDay[] = [
+      { ...day('2026-05-16', null, null), sessionCount: 3 },
+      { ...day('2026-05-15', null, null), sessionCount: 1 },
+    ];
+    const out = buildActivityHeatmap(
+      counts,
+      Unit.mm,
+      'en',
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
+      { today: TODAY },
+    );
+    expect(out.sessions.legendMinLabel).toBe('1');
+    expect(out.sessions.legendMaxLabel).toBe('3');
+  });
+
+  it('keeps a one-session day visibly distinct from an empty day', () => {
+    const counts: ActivityDay[] = [
+      { ...day('2026-05-16', null, null), sessionCount: 8 },
+      { ...day('2026-05-15', null, null), sessionCount: 1 },
+    ];
+    const out = buildActivityHeatmap(
+      counts,
+      Unit.mm,
+      'en',
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
+      { today: TODAY },
+    );
+    const cellFor = (date: string) => out.sessions.cells.find((c) => c.date === date);
+    const low = cellFor('2026-05-15');
+    const empty = cellFor('2026-05-14');
+    expect(low?.fill).not.toBe(ACTIVITY_PALETTE.empty);
+    expect(empty?.fill).toBe(ACTIVITY_PALETTE.empty);
   });
 
   it('produces exactly ACTIVITY_WINDOW_DAYS cells per dimension', () => {
@@ -127,7 +163,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY },
     );
     expect(out.length.cells).toHaveLength(ACTIVITY_WINDOW_DAYS);
@@ -139,7 +175,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY, windowDays: 30 },
     );
     expect(out.length.cells).toHaveLength(30);
@@ -150,7 +186,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY, windowDays: 7 },
     );
     const dates = out.length.cells.map((c) => c.date);
@@ -163,7 +199,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY, windowDays: 7 },
     );
     const todayCell = out.length.cells.find((c) => c.date === '2026-05-16')!;
@@ -175,7 +211,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY, windowDays: 7 },
     );
     const usedOnly = out.length.cells.find((c) => c.date === '2026-05-10')!;
@@ -187,7 +223,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY, windowDays: 7 },
     );
     const empty = out.length.cells.find((c) => c.date === '2026-05-13')!;
@@ -199,7 +235,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY },
     );
     expect(out.length.legendMinLabel).toBe('80 mm');
@@ -211,7 +247,7 @@ describe('buildActivityHeatmap', () => {
       [],
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY },
     );
     expect(out.length.legendMinLabel).toBe('—');
@@ -223,7 +259,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.in,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY },
     );
     expect(out.length.legendMinLabel.endsWith(' in')).toBe(true);
@@ -235,7 +271,7 @@ describe('buildActivityHeatmap', () => {
       sample,
       Unit.mm,
       'en',
-      { length: 'Length', circumference: 'Circumference' },
+      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
       { today: TODAY, windowDays: 7 },
     );
     for (const cell of out.length.cells) {

@@ -92,6 +92,7 @@
     "peakLength": "max len",
     "peakCircumference": "max circ",
     "peakDiameter": "max dia",
+    "perDayTitle": "Sessions",
     "toyDeleted": "deleted",
     "empty": "No sessions yet — record your first one.",
     "emptyFilteredPrefix": "No sessions in",
@@ -112,6 +113,11 @@
     "timeOfDay": {
       "title": "Time of day",
       "tooltip": "{hour} · {count, plural, one {# session} other {# sessions}}",
+      "empty": "No sessions in range"
+    },
+    "weekday": {
+      "title": "Day of week",
+      "tooltip": "{day} · {count, plural, one {# session} other {# sessions}}",
       "empty": "No sessions in range"
     }
   },
