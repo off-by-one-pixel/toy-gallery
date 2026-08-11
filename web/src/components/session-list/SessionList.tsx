@@ -99,15 +99,17 @@ export default function SessionList() {
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {selectedActions && <ActionFabs actions={selectedActions} />}
-        <Button
-          variant="primary"
-          size="sm"
-          aria-label={t('newButton')}
-          className="h-12 w-12 rounded-full shadow-lg"
-          onPress={() => router.push('/sessions/new')}
-        >
-          <Plus size={18} strokeWidth={2.2} />
-        </Button>
+        <ActionFabs
+          actions={[
+            {
+              key: 'new',
+              label: t('newButton'),
+              icon: Plus,
+              variant: 'primary',
+              onPress: () => router.push('/sessions/new'),
+            },
+          ]}
+        />
       </div>
 
       <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-6">

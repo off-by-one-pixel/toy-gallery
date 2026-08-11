@@ -14,7 +14,7 @@ import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
-import { ActionFabs } from './ActionButtons';
+import { ActionFabs, type ActionDef } from './ActionButtons';
 import { toyActionDefs } from './ToyActionButtons';
 import DisplayOptionsMenu from './DisplayOptionsMenu';
 import SearchInput from './SearchInput';
@@ -82,6 +82,17 @@ const ToyGallery = () => {
 
   const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
   const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
+
+  const newActions: ActionDef[] = [
+    {
+      key: 'new-session',
+      label: t('session.newButton'),
+      icon: CalendarClock,
+      variant: 'outline',
+      onPress: () => router.push('/sessions/new'),
+    },
+    { key: 'new-toy', label: t('toy.new'), icon: Plus, variant: 'primary', onPress: toyModal.openNew },
+  ];
 
   const openToy = openCardId === null ? null : (toys.find((c) => c.id === openCardId) ?? null);
   const openToyActions = openToy
@@ -158,24 +169,7 @@ const ToyGallery = () => {
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {openToyActions && <ActionFabs actions={openToyActions} />}
-        <Button
-          variant="outline"
-          size="sm"
-          aria-label={t('session.newButton')}
-          className="h-12 w-12 rounded-full bg-surface shadow-lg"
-          onPress={() => router.push('/sessions/new')}
-        >
-          <CalendarClock size={16} strokeWidth={1.8} />
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          aria-label={t('toy.new')}
-          className="h-12 w-12 rounded-full shadow-lg"
-          onPress={toyModal.openNew}
-        >
-          <Plus size={18} strokeWidth={2.2} />
-        </Button>
+        <ActionFabs actions={newActions} />
       </div>
 
       <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-6">
