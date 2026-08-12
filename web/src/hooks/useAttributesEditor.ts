@@ -5,8 +5,11 @@ import { newRow, reconcileRows, sameDict, toDict, toRows } from '../services/att
 import type { AttributeRow, Toy } from '../services/types';
 import { useReportError } from './useAsyncAction';
 
+export type AttributeSaveState = 'idle' | 'saving' | 'saved';
+
 export interface AttributesEditor {
   rows: AttributeRow[];
+  saveState: AttributeSaveState;
   updateKey: (rowId: number, key: string) => void;
   updateValue: (rowId: number, value: string) => void;
   removeRow: (rowId: number) => void;
@@ -31,6 +34,8 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   const initial = toy.customAttributes ?? {};
   const [rows, setRows] = useState<AttributeRow[]>(() => toRows(initial, freshRowId));
 
+  const [saveState, setSaveState] = useState<AttributeSaveState>('idle');
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const rowsRef = useRef(rows);
   const savedRef = useRef<Record<string, string>>(initial);
   const reportError = useReportError();
@@ -67,14 +72,19 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
       return;
     }
     inFlight.current = true;
+    setSaveState('saving');
     try {
       const updated = await patchToy(toy.id, {
         customAttributes: toDict(rowsRef.current),
       });
       applyServerResponse(updated.customAttributes ?? {});
+      setSaveState('saved');
+      clearTimeout(savedTimer.current);
+      savedTimer.current = setTimeout(() => setSaveState('idle'), 2000);
     } catch (err) {
       revertToLastSaved();
       reportError(err);
+      setSaveState('idle');
     } finally {
       inFlight.current = false;
       if (pending.current) {
@@ -105,6 +115,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   // (e.g., the panel was removed while an input was still focused).
   useEffect(() => {
     return () => {
+      clearTimeout(savedTimer.current);
       void commitSave();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,6 +129,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
 
   return {
     rows,
+    saveState,
     updateKey: (rowId, key) => mutateRow(rowId, (r) => ({ ...r, key })),
     updateValue: (rowId, value) => mutateRow(rowId, (r) => ({ ...r, value })),
     removeRow: (rowId) => {

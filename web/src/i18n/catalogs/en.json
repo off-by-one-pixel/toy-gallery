@@ -28,6 +28,7 @@
     "keyPlaceholder": "Name",
     "valuePlaceholder": "Value",
     "removeLabel": "Remove attribute",
+    "saved": "Saved",
     "saveError": "Could not save attributes"
   },
   "toy": {

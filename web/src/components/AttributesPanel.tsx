@@ -1,5 +1,6 @@
 'use client';
 
+import { Check } from 'lucide-react';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -7,7 +8,10 @@ import { useAttributesEditor } from '../hooks/useAttributesEditor';
 import type { Toy } from '../services/types';
 
 export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
-  const { rows, updateKey, updateValue, removeRow, addRow, commitChanges } = useAttributesEditor(toy);
+  const { rows, saveState, updateKey, updateValue, removeRow, addRow, commitChanges } = useAttributesEditor(toy);
+  const blurOnEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') e.currentTarget.blur();
+  };
   const t = useTranslations('attributes');
 
   return (
@@ -21,6 +25,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
               placeholder={t('keyPlaceholder')}
               onChange={(e) => updateKey(row.rowId, e.target.value)}
               onBlur={commitChanges}
+              onKeyDown={blurOnEnter}
               className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
             />
             <input
@@ -29,6 +34,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
               placeholder={t('valuePlaceholder')}
               onChange={(e) => updateValue(row.rowId, e.target.value)}
               onBlur={commitChanges}
+              onKeyDown={blurOnEnter}
               className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
             />
             <button
@@ -42,13 +48,21 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        onClick={addRow}
-        className="mt-1.5 text-caption text-muted transition-colors hover:text-accent"
-      >
-        {t('addButton')}
-      </button>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        <button type="button" onClick={addRow} className="text-caption text-muted transition-colors hover:text-accent">
+          {t('addButton')}
+        </button>
+        <span
+          aria-live="polite"
+          className={
+            'inline-flex items-center gap-1 text-caption text-accent transition-opacity duration-300 ' +
+            (saveState === 'saved' ? 'opacity-100' : 'opacity-0')
+          }
+        >
+          <Check size={11} strokeWidth={2.5} />
+          {t('saved')}
+        </span>
+      </div>
     </div>
   );
 }
