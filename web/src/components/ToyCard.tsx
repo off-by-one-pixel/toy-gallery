@@ -39,8 +39,10 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   return (
     <div
       className={
-        'group relative bg-surface shadow-sm transition-[transform,box-shadow] duration-200 hover:shadow-lg motion-safe:hover:-translate-y-1 cursor-pointer ' +
-        (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
+        'group relative bg-surface shadow-sm transition-[transform,box-shadow] duration-200 cursor-pointer ' +
+        (detailsOpen
+          ? 'z-10 rounded-t-2xl rounded-b-none'
+          : 'z-0 rounded-2xl hover:shadow-lg motion-safe:hover:-translate-y-1')
       }
       role="button"
       tabIndex={0}
