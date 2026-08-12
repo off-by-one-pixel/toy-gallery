@@ -33,7 +33,7 @@ export default function SessionRow({ session, toysById, unit, selected, onToggle
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
   const orderedEntries = sortEntriesByInvolvement(session.entries);
-  const visibleEntries = orderedEntries.slice(0, STRIP_LIMIT);
+  const visibleEntries = selected ? orderedEntries : orderedEntries.slice(0, STRIP_LIMIT);
   const overflow = orderedEntries.length - visibleEntries.length;
 
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
@@ -47,8 +47,8 @@ export default function SessionRow({ session, toysById, unit, selected, onToggle
     <div
       onClick={onToggleSelect}
       className={
-        'group rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md max-sm:cursor-pointer sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
-        (selected ? 'max-sm:ring-2 max-sm:ring-accent' : '')
+        'group cursor-pointer rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
+        (selected ? 'ring-2 ring-accent' : '')
       }
     >
       <div className="flex items-center justify-between gap-3 sm:contents">
