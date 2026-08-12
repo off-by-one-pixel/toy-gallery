@@ -57,9 +57,16 @@ class ToySerializer(serializers.ModelSerializer):
         child=serializers.CharField(allow_blank=True),
         required=False,
     )
+    usage_count = serializers.SerializerMethodField()
 
     def validate_custom_attributes(self, value):
         return {k.strip(): v for k, v in value.items() if k.strip()}
+
+    def get_usage_count(self, obj) -> int:
+        annotated = getattr(obj, "usage_count", None)
+        if annotated is not None:
+            return annotated
+        return obj.toysessionentry_set.count()
 
     class Meta:
         model = models.Toy
@@ -76,6 +83,7 @@ class ToySerializer(serializers.ModelSerializer):
             "total_length",
             "circumference",
             "custom_attributes",
+            "usage_count",
         ]
 
     def create(self, validated_data):

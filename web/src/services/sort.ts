@@ -7,6 +7,7 @@ const COLUMNS = {
   insertable: (t: Toy) => t.insertableLength ?? -Infinity,
   total: (t: Toy) => t.totalLength ?? -Infinity,
   circumference: (t: Toy) => t.circumference ?? -Infinity,
+  popularity: (t: Toy) => t.usageCount ?? 0,
 } as const satisfies Record<string, Accessor>;
 
 export type SortColumn = keyof typeof COLUMNS;

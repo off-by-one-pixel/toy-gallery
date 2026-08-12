@@ -23,6 +23,8 @@ export default function SortControl() {
         return common('totalLength');
       case 'circumference':
         return common(girth);
+      case 'popularity':
+        return t('column.popularity');
     }
   };
   const activeLabel = sort ? columnLabel(sort.column) : t('label');

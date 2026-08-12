@@ -48,6 +48,7 @@
       "topShape": "Top shape",
       "sections": "Sections"
     },
+    "timesUsed": "Times used",
     "topCap": "{shape} cap"
   },
   "viewToggle": {
@@ -210,7 +211,8 @@
     "descending": "Sort descending",
     "label": "Sort",
     "column": {
-      "name": "Brand / Model"
+      "name": "Brand / Model",
+      "popularity": "Popularity"
     }
   },
   "colorPicker": {
