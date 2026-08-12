@@ -40,9 +40,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
     <div
       className={
         'group relative bg-surface shadow-sm transition-[transform,box-shadow] duration-200 hover:shadow-lg motion-safe:hover:-translate-y-1 cursor-pointer ' +
-        (detailsOpen
-          ? 'z-10 rounded-t-2xl rounded-b-none max-sm:border-2 max-sm:border-b-0 max-sm:border-accent'
-          : 'z-0 rounded-2xl')
+        (detailsOpen ? 'z-10 rounded-t-2xl rounded-b-none' : 'z-0 rounded-2xl')
       }
       role="button"
       tabIndex={0}
@@ -93,7 +91,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         className={
           'absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-surface px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 ' +
           (detailsOpen
-            ? 'visible translate-y-0 opacity-100 max-sm:-left-[2px] max-sm:-right-[2px] max-sm:border-2 max-sm:border-t-0 max-sm:border-accent'
+            ? 'visible translate-y-0 opacity-100 border-2 border-t-0 border-accent'
             : 'invisible -translate-y-2 opacity-0 pointer-events-none')
         }
       >
@@ -103,6 +101,13 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         />
         <AttributesPanel toy={toy} />
       </div>
+
+      {detailsOpen && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-30 rounded-t-2xl border-2 border-b-0 border-accent"
+        />
+      )}
     </div>
   );
 }
