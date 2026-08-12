@@ -47,6 +47,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
       aria-expanded={detailsOpen}
       onClick={handleClick}
       onKeyDown={(e) => {
+        if (detailsRef.current?.contains(e.target as Node)) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onToggleDetails();
