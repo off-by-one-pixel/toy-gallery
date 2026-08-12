@@ -89,6 +89,48 @@ class ToyCreateTests(TestCase):
         self.assertTrue(null_sections)
 
 
+class UsageCountTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+
+    def _create_toy(self):
+        response = self.client.post("/toys/toys/", _payload(), format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data["id"]
+
+    def _create_session(self, toy_ids, started_at):
+        response = self.client.post(
+            "/toys/sessions/",
+            {
+                "started_at": started_at,
+                "entries": [{"toy": tid, "involvement": "USED"} for tid in toy_ids],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+
+    def test_list_reports_session_entry_count_per_toy(self):
+        used_twice = self._create_toy()
+        used_once = self._create_toy()
+        never_used = self._create_toy()
+        self._create_session([used_twice, used_once], "2026-04-01T10:00:00Z")
+        self._create_session([used_twice], "2026-04-02T10:00:00Z")
+
+        response = self.client.get("/toys/toys/")
+        self.assertEqual(response.status_code, 200)
+        counts = {t["id"]: t["usage_count"] for t in response.data}
+        self.assertEqual(counts[used_twice], 2)
+        self.assertEqual(counts[used_once], 1)
+        self.assertEqual(counts[never_used], 0)
+
+    def test_create_response_includes_usage_count(self):
+        response = self.client.post("/toys/toys/", _payload(), format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.data["usage_count"], 0)
+
+
 class CurveAngleTests(TestCase):
     def setUp(self):
         user = User.objects.create_user(username="u", password="p")

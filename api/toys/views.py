@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import timedelta
 
 from django.db import transaction
+from django.db.models import Count
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -17,7 +18,7 @@ from .dimensions import SessionDimensions, max_or_none
 
 
 class ToyViewSet(viewsets.ModelViewSet):
-    queryset = models.Toy.objects.all()
+    queryset = models.Toy.objects.annotate(usage_count=Count("toysessionentry"))
     serializer_class = serializers.ToySerializer
 
     def destroy(self, request, *args, **kwargs):

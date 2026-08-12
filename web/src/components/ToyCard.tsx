@@ -27,6 +27,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   const { unit } = useUnit();
   const { girth } = useGirth();
   const common = useTranslations('common');
+  const tToy = useTranslations('toy');
   const detailsRef = useRef<HTMLDivElement>(null);
 
   const editorToy = toyShapeToEditor(toy.shape);
@@ -102,6 +103,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
           label="Total length"
           value={toy.totalLength == null ? '—' : `${formatValue(toy.totalLength, unit)} ${unit.id}`}
         />
+        <AttrRow label={tToy('timesUsed')} value={`${toy.usageCount ?? 0}`} />
         <AttributesPanel toy={toy} />
       </div>
 

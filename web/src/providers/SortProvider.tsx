@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { isSortColumn, type Sort } from '../services/sort';
 
-const STORAGE_KEY = 'gallery.sort';
+const DEFAULT_STORAGE_KEY = 'gallery.sort';
 
 interface SortContextValue {
   sort: Sort | null;
@@ -18,12 +18,15 @@ const isValidSort = (v: unknown): v is Sort => {
   return isSortColumn(s.column) && (s.direction === 'asc' || s.direction === 'desc');
 };
 
-export function SortProvider({ children }: Readonly<{ children: ReactNode }>) {
+export function SortProvider({
+  children,
+  storageKey = DEFAULT_STORAGE_KEY,
+}: Readonly<{ children: ReactNode; storageKey?: string }>) {
   const [sortState, setSortState] = useState<Sort | null>(null);
 
   useEffect(() => {
     if (globalThis.window === undefined) return;
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(storageKey);
     if (!stored) return;
     try {
       const parsed = JSON.parse(stored);
@@ -31,14 +34,17 @@ export function SortProvider({ children }: Readonly<{ children: ReactNode }>) {
     } catch {
       // ignore corrupt value
     }
-  }, []);
+  }, [storageKey]);
 
-  const setSort = useCallback((next: Sort | null) => {
-    setSortState(next);
-    if (globalThis.window === undefined) return;
-    if (next) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    else localStorage.removeItem(STORAGE_KEY);
-  }, []);
+  const setSort = useCallback(
+    (next: Sort | null) => {
+      setSortState(next);
+      if (globalThis.window === undefined) return;
+      if (next) localStorage.setItem(storageKey, JSON.stringify(next));
+      else localStorage.removeItem(storageKey);
+    },
+    [storageKey],
+  );
 
   const value = useMemo(() => ({ sort: sortState, setSort }), [sortState, setSort]);
 

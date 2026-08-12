@@ -8,9 +8,12 @@ import { useRouter } from 'next/navigation';
 
 import { createSession, fetchToys, fetchSession, updateSession } from '../services/api';
 import { Involvement, type Session, type Toy } from '../services/types';
+import { SortProvider, useSort } from '../providers/SortProvider';
 import { filterToys } from '../services/search';
+import { sortToys } from '../services/sort';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import SearchInput from './SearchInput';
+import SortControl from './SortControl';
 import ToyChipSelector from './ToyChipSelector';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
@@ -24,6 +27,14 @@ const formatLocal = (d: Date): string => {
 };
 
 export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }>) {
+  return (
+    <SortProvider storageKey="session.toySort">
+      <SessionFormContent mode={mode} />
+    </SortProvider>
+  );
+}
+
+function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const router = useRouter();
   const t = useTranslations('session');
   const common = useTranslations('common');
@@ -63,7 +74,8 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
     );
   }, [runInline, sessionId]);
 
-  const filteredToys = useMemo(() => filterToys(toys, query), [toys, query]);
+  const { sort } = useSort();
+  const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
   const selectedCount = selections.size;
 
   const handlePick = (toyId: number, next: Involvement | null) => {
@@ -144,6 +156,7 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
           </h2>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <SearchInput value={query} onChange={setQuery} />
+            <SortControl />
             <span className="text-sm text-muted">{t('toysHint')}</span>
           </div>
 
