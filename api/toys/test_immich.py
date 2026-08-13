@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
-from . import immich, models
+from . import immich, media, models
 
 
 def _response(status_code=200, json_data=None):
@@ -19,14 +19,14 @@ def _response(status_code=200, json_data=None):
 class SessionMediaWindowTests(TestCase):
     def test_window_is_symmetric_hour_by_default(self):
         started = datetime(2026, 6, 1, 20, 0, tzinfo=UTC)
-        start, end = immich.session_media_window(started)
+        start, end = media.session_media_window(started)
         self.assertEqual(start, started - timedelta(minutes=60))
         self.assertEqual(end, started + timedelta(minutes=60))
 
     @override_settings(SESSION_MEDIA_WINDOW_MINUTES=15)
     def test_window_honours_configured_minutes(self):
         started = datetime(2026, 6, 1, 20, 0, tzinfo=UTC)
-        start, end = immich.session_media_window(started)
+        start, end = media.session_media_window(started)
         self.assertEqual(end - start, timedelta(minutes=30))
 
 

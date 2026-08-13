@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import export as export_mod
-from . import immich, models, serializers
+from . import media, models, serializers
 from .dimensions import SessionDimensions, max_or_none
 
 
@@ -94,18 +94,18 @@ class SessionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="media")
     def media(self, request, pk=None):
         session = self.get_object()
-        return Response(immich.session_media(session.id, session.started_at))
+        return Response(media.get_provider().session_media(session.id, session.started_at))
 
     @extend_schema(responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["get"], url_path="media-indicators")
     def media_indicators(self, request):
-        return Response(immich.media_indicators())
+        return Response(media.get_provider().media_indicators())
 
     @extend_schema(request=None, responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["post"], url_path="refresh-media")
     def refresh_media(self, request):
         sessions = list(models.Session.objects.order_by("id").values_list("id", "started_at"))
-        return Response(immich.refresh_all_media(sessions))
+        return Response(media.get_provider().refresh_all_media(sessions))
 
     @extend_schema(responses=serializers.ActivityResponseSerializer)
     @action(detail=False, methods=["get"], url_path="activity")
