@@ -166,6 +166,27 @@ paths:
       responses:
         '204':
           description: No response body
+  /toys/sessions/{id}/media/:
+    get:
+      operationId: toys_sessions_media_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this session.
+        required: true
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionMediaResponse'
+          description: ''
   /toys/sessions/activity/:
     get:
       operationId: toys_sessions_activity_retrieve
@@ -179,6 +200,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
+          description: ''
+  /toys/sessions/media-indicators/:
+    get:
+      operationId: toys_sessions_media_indicators_retrieve
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionMediaIndicators'
+          description: ''
+  /toys/sessions/refresh-media/:
+    post:
+      operationId: toys_sessions_refresh_media_create
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionMediaIndicators'
           description: ''
   /toys/token/:
     post:
@@ -646,6 +695,58 @@ components:
       - max_circumference
       - max_insertable_length
       - started_at
+    SessionMediaIndicators:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        session_ids:
+          type: array
+          items:
+            type: integer
+      required:
+      - configured
+      - session_ids
+    SessionMediaItem:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          $ref: '#/components/schemas/SessionMediaKindEnum'
+        taken_at:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+        full_url:
+          type: string
+      required:
+      - full_url
+      - id
+      - kind
+      - taken_at
+      - thumbnail_url
+    SessionMediaKindEnum:
+      enum:
+      - image
+      - video
+      type: string
+      description: |-
+        * `image` - image
+        * `video` - video
+    SessionMediaResponse:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionMediaItem'
+      required:
+      - configured
+      - items
     SessionRequest:
       type: object
       properties:

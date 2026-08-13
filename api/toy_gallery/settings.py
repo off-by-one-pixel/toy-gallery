@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -64,6 +65,12 @@ MIGRATION_SMOKE_TEST_PATHS = [
 
 # Number of recent archives the migration safety gate retains after pruning.
 MIGRATION_ARCHIVE_RETAIN = 5
+
+IMMICH_URL = os.environ.get("IMMICH_URL", "").rstrip("/")
+IMMICH_PUBLIC_URL = os.environ.get("IMMICH_PUBLIC_URL", "").rstrip("/") or IMMICH_URL
+IMMICH_API_KEY = os.environ.get("IMMICH_API_KEY", "")
+SESSION_MEDIA_WINDOW_MINUTES = int(os.environ.get("SESSION_MEDIA_WINDOW_MINUTES", "60"))
+SESSION_MEDIA_LINK_HOURS = int(os.environ.get("SESSION_MEDIA_LINK_HOURS", "6"))
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -166,6 +173,7 @@ SPECTACULAR_SETTINGS = {
     "ENUM_NAME_OVERRIDES": {
         "SectionShapeEnum": "toys.models.Shape.CAP_SHAPE_CHOICES",
         "CurveAngleEnum": "toys.models.ShapeSection.CURVE_ANGLE_CHOICES",
+        "SessionMediaKindEnum": "toys.serializers.SESSION_MEDIA_KINDS",
     },
 }
 

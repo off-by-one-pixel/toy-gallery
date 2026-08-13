@@ -3,6 +3,9 @@ import {
   toysSessionsActivityRetrieve,
   toysSessionsCreate,
   toysSessionsDestroy,
+  toysSessionsMediaIndicatorsRetrieve,
+  toysSessionsMediaRetrieve,
+  toysSessionsRefreshMediaCreate,
   toysSessionsList,
   toysSessionsRetrieve,
   toysSessionsUpdate,
@@ -27,6 +30,8 @@ import {
   APIError,
   type ActivityDay,
   type Session,
+  type SessionMedia,
+  type SessionMediaItem,
   type SessionPayload,
   type TokenPair,
   type Toy,
@@ -144,6 +149,26 @@ export const updateSession = async (id: number, payload: SessionPayload): Promis
 };
 
 export const deleteSession = (id: number) => toysSessionsDestroy(id);
+
+export type MediaIndicators = { configured: boolean; sessionIds: Set<number> };
+
+export const fetchMediaIndicators = async (): Promise<MediaIndicators> => {
+  const { data } = await toysSessionsMediaIndicatorsRetrieve();
+  return { configured: data.configured, sessionIds: new Set(data.session_ids) };
+};
+
+export const refreshAllSessionMedia = async (): Promise<MediaIndicators> => {
+  const { data } = await toysSessionsRefreshMediaCreate();
+  return { configured: data.configured, sessionIds: new Set(data.session_ids) };
+};
+
+export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia> => {
+  const { data } = await toysSessionsMediaRetrieve(sessionId);
+  return {
+    configured: data.configured,
+    items: data.items.map((i) => snakeToCamel<SessionMediaItem>(i)),
+  };
+};
 
 export const fetchActivity = async (): Promise<ActivityDay[]> => {
   const { data } = await toysSessionsActivityRetrieve();

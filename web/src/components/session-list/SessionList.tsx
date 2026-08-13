@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, Button, Spinner } from '@heroui/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Alert, Button, Spinner, Toast } from '@heroui/react';
+import { Image as ImageIcon, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
@@ -30,7 +30,15 @@ export default function SessionList() {
   const t = useTranslations('session');
   const common = useTranslations('common');
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [refreshingMedia, setRefreshingMedia] = useState(false);
   const runToast = useAsyncAction();
+
+  const refreshMedia = () => {
+    runToast(data.refreshMedia, {
+      busy: setRefreshingMedia,
+      onSuccess: (count) => Toast.toast.success(t('media.refreshedToast', { count })),
+    });
+  };
 
   const editSession = (id: number) => router.push(`/sessions/edit?id=${id}`);
   const removeSession = (id: number) => {
@@ -86,6 +94,22 @@ export default function SessionList() {
             <GirthToggle />
           </div>
           <div className="flex-1" />
+          {data.mediaConfigured && (
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label={t('media.refreshButton')}
+              isDisabled={refreshingMedia}
+              onPress={refreshMedia}
+            >
+              {refreshingMedia ? (
+                <RefreshCw size={14} strokeWidth={2.2} className="animate-spin" />
+              ) : (
+                <ImageIcon size={14} strokeWidth={2.2} />
+              )}
+              <span className="hidden sm:inline">{t('media.refreshButtonLabel')}</span>
+            </Button>
+          )}
           <DisplayOptionsMenu>
             <UnitToggle />
             <GirthToggle />
@@ -150,6 +174,7 @@ export default function SessionList() {
             session={session}
             toysById={data.toysById}
             unit={unit}
+            hasMedia={data.mediaSessionIds.has(session.id)}
             selected={selectedId === session.id}
             onToggleSelect={() => setSelectedId((cur) => (cur === session.id ? null : session.id))}
             onEdit={() => editSession(session.id)}
