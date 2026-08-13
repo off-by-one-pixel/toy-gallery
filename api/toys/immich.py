@@ -139,7 +139,10 @@ class ImmichClient:
                 "showMetadata": False,
             },
         )
-        return created["key"]
+        key = (created or {}).get("key")
+        if not key:
+            raise ImmichError("shared link creation returned no key")
+        return key
 
     def _delete_link(self, link_id: str) -> None:
         try:

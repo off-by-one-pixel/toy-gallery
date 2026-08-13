@@ -196,18 +196,19 @@ class RefreshAllMediaTests(TestCase):
                     },
                 ]
             ),
-            _response(status_code=204),
             _response(json_data={"key": "NEW"}),
+            _response(status_code=204),
         ]
         response = self.client.post("/toys/sessions/refresh-media/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"configured": True, "session_ids": [with_media.id]})
-        delete_call = request_mock.call_args_list[2]
+        create_call = request_mock.call_args_list[2]
+        self.assertEqual(create_call.args[0], "POST")
+        self.assertIn("/shared-links", create_call.args[1])
+        self.assertEqual(create_call.kwargs["json"]["assetIds"], ["a1"])
+        delete_call = request_mock.call_args_list[3]
         self.assertEqual(delete_call.args[0], "DELETE")
         self.assertIn("/shared-links/stale", delete_call.args[1])
-        create_call = request_mock.call_args_list[3]
-        self.assertEqual(create_call.args[0], "POST")
-        self.assertEqual(create_call.kwargs["json"]["assetIds"], ["a1"])
 
     @mock.patch("toys.immich.requests.request")
     def test_keeps_matching_unexpired_link_without_creating(self, request_mock):
@@ -236,6 +237,26 @@ class RefreshAllMediaTests(TestCase):
         response = self.client.post("/toys/sessions/refresh-media/")
         self.assertEqual(response.data, {"configured": True, "session_ids": [session.id]})
         self.assertEqual(request_mock.call_count, 2)
+
+    @mock.patch("toys.immich.requests.request")
+    def test_keyless_create_response_degrades_to_empty(self, request_mock):
+        models.Session.objects.create(started_at="2026-06-01T20:00:00Z")
+        request_mock.side_effect = [
+            _response(
+                json_data={
+                    "assets": {
+                        "items": [
+                            {"id": "a1", "type": "IMAGE", "fileCreatedAt": "2026-06-01T20:15:00Z"}
+                        ]
+                    }
+                }
+            ),
+            _response(json_data=[]),
+            _response(status_code=204),
+        ]
+        response = self.client.post("/toys/sessions/refresh-media/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {"configured": True, "session_ids": []})
 
 
 class SessionMediaEndpointTests(TestCase):

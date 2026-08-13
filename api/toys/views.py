@@ -104,7 +104,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     @extend_schema(request=None, responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["post"], url_path="refresh-media")
     def refresh_media(self, request):
-        sessions = list(models.Session.objects.values_list("id", "started_at"))
+        sessions = list(models.Session.objects.order_by("id").values_list("id", "started_at"))
         return Response(immich.refresh_all_media(sessions))
 
     @extend_schema(responses=serializers.ActivityResponseSerializer)
