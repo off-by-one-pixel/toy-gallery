@@ -601,14 +601,6 @@ components:
         * `USED` - Used
         * `INSERTED` - Inserted
         * `FULLY_INSERTED` - Fully inserted
-    KindEnum:
-      enum:
-      - image
-      - video
-      type: string
-      description: |-
-        * `image` - image
-        * `video` - video
     PatchedSessionRequest:
       type: object
       properties:
@@ -721,7 +713,7 @@ components:
         id:
           type: string
         kind:
-          $ref: '#/components/schemas/KindEnum'
+          $ref: '#/components/schemas/SessionMediaKindEnum'
         taken_at:
           type: string
           nullable: true
@@ -735,6 +727,14 @@ components:
       - kind
       - taken_at
       - thumbnail_url
+    SessionMediaKindEnum:
+      enum:
+      - image
+      - video
+      type: string
+      description: |-
+        * `image` - image
+        * `video` - video
     SessionMediaResponse:
       type: object
       properties:

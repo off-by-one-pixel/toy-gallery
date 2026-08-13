@@ -173,6 +173,7 @@ SPECTACULAR_SETTINGS = {
     "ENUM_NAME_OVERRIDES": {
         "SectionShapeEnum": "toys.models.Shape.CAP_SHAPE_CHOICES",
         "CurveAngleEnum": "toys.models.ShapeSection.CURVE_ANGLE_CHOICES",
+        "SessionMediaKindEnum": "toys.serializers.SESSION_MEDIA_KINDS",
     },
 }
 
