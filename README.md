@@ -86,7 +86,7 @@ All optional. Set only what you need.
 | `SSL_CERT_PATH`    | `$DATA_DIR/certs/cert.pem` | TLS certificate path inside the container. If this and `SSL_KEY_PATH` both exist, the app serves HTTPS directly.    |
 | `SSL_KEY_PATH`     | `$DATA_DIR/certs/key.pem`  | Private key matching the certificate above.                                                                         |
 | `IMMICH_URL`       | unset              | Base URL of your Immich server. Set together with `IMMICH_API_KEY` to show session photos and videos.               |
-| `IMMICH_API_KEY`   | unset              | Immich API key used to find session media and create expiring share links.                                          |
+| `IMMICH_API_KEY`   | unset              | Immich API key used to find session media and create expiring share links. Needs only the `asset.read`, `sharedLink.read`, `sharedLink.create`, and `sharedLink.delete` permissions. |
 | `IMMICH_PUBLIC_URL`| `IMMICH_URL`       | Immich URL as reachable from your browser, if it differs from the server-side one.                                  |
 | `SESSION_MEDIA_WINDOW_MINUTES` | `60`   | How far around a session's start time (both ways) to look for media.                                                |
 | `SESSION_MEDIA_LINK_HOURS` | `6`        | How long the generated Immich share links stay valid.                                                               |
