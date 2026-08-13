@@ -1,5 +1,6 @@
 import hashlib
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import requests
@@ -55,6 +56,44 @@ class ImmichError(Exception):
     pass
 
 
+@dataclass(frozen=True)
+class MediaAsset:
+    id: str
+    kind: str
+    taken_at: str | None
+    instant: datetime | None
+
+
+@dataclass(frozen=True)
+class SharedLink:
+    id: str
+    key: str
+    description: str
+    expires_at: datetime | None
+
+    @property
+    def session_id(self) -> int | None:
+        return _marker_session_id(self.description)
+
+
+def _parse_asset(raw: dict) -> MediaAsset:
+    return MediaAsset(
+        id=raw["id"],
+        kind="video" if raw.get("type") == "VIDEO" else "image",
+        taken_at=raw.get("localDateTime") or raw.get("fileCreatedAt"),
+        instant=_parse_instant(raw.get("fileCreatedAt") or raw.get("localDateTime")),
+    )
+
+
+def _parse_link(raw: dict) -> SharedLink:
+    return SharedLink(
+        id=raw["id"],
+        key=raw.get("key") or "",
+        description=raw.get("description") or "",
+        expires_at=_parse_instant(raw.get("expiresAt")),
+    )
+
+
 class ImmichClient:
     def __init__(self):
         self.base_url = settings.IMMICH_URL
@@ -78,7 +117,7 @@ class ImmichClient:
             return None
         return response.json()
 
-    def search_assets(self, start: datetime, end: datetime) -> list[dict]:
+    def search_assets(self, start: datetime, end: datetime) -> list[MediaAsset]:
         items = []
         page = 1
         while page and page <= MAX_SEARCH_PAGES:
@@ -93,15 +132,10 @@ class ImmichClient:
             items.extend(chunk.get("items", []))
             next_page = chunk.get("nextPage")
             page = int(next_page) if next_page else None
-        return [
-            {
-                "id": a["id"],
-                "kind": "video" if a.get("type") == "VIDEO" else "image",
-                "taken_at": a.get("localDateTime") or a.get("fileCreatedAt"),
-                "instant": _parse_instant(a.get("fileCreatedAt") or a.get("localDateTime")),
-            }
-            for a in items
-        ]
+        return [_parse_asset(a) for a in items]
+
+    def shared_links(self) -> list[SharedLink]:
+        return [_parse_link(raw) for raw in self._request("GET", "/shared-links") or []]
 
     def ensure_shared_link(self, session_id: int, asset_ids: list[str]) -> str:
         marker = _link_marker(session_id, asset_ids)
@@ -109,14 +143,14 @@ class ImmichClient:
         reusable_key = None
         stale_link_ids = []
 
-        for link in self._request("GET", "/shared-links") or []:
-            description = link.get("description") or ""
-            if not description.startswith(session_prefix):
+        for link in self.shared_links():
+            if not link.description.startswith(session_prefix):
                 continue
-            if reusable_key is None and description == marker and self._has_remaining_life(link):
-                reusable_key = link["key"]
+            matches = link.description == marker and self._has_remaining_life(link)
+            if reusable_key is None and matches:
+                reusable_key = link.key
             else:
-                stale_link_ids.append(link["id"])
+                stale_link_ids.append(link.id)
 
         for link_id in stale_link_ids:
             self._delete_link(link_id)
@@ -150,34 +184,25 @@ class ImmichClient:
         except ImmichError:
             logger.warning("immich: failed to delete stale shared link %s", link_id)
 
-    def _has_remaining_life(self, link: dict) -> bool:
-        expires_at = link.get("expiresAt")
-        if not expires_at:
+    def _has_remaining_life(self, link: SharedLink) -> bool:
+        if link.expires_at is None:
             return True
-        parsed = datetime.fromisoformat(expires_at)
-        return parsed - timezone.now() >= REUSE_MIN_REMAINING
+        return link.expires_at - timezone.now() >= REUSE_MIN_REMAINING
 
     def sessions_with_media(self) -> list[int]:
-        ids = set()
-        for link in self._request("GET", "/shared-links") or []:
-            session_id = _marker_session_id(link.get("description") or "")
-            if session_id is not None:
-                ids.add(session_id)
-        return sorted(ids)
+        ids = {link.session_id for link in self.shared_links()}
+        return sorted(sid for sid in ids if sid is not None)
 
     def clear_session_links(self, session_id: int) -> None:
         prefix = _session_marker_prefix(session_id)
-        for link in self._request("GET", "/shared-links") or []:
-            if (link.get("description") or "").startswith(prefix):
-                try:
-                    self._request("DELETE", f"/shared-links/{link['id']}")
-                except ImmichError:
-                    logger.warning("immich: failed to delete stale shared link %s", link["id"])
+        for link in self.shared_links():
+            if link.description.startswith(prefix):
+                self._delete_link(link.id)
 
-    def asset_urls(self, asset: dict, key: str) -> tuple[str, str]:
-        base = f"{self.public_url}/api/assets/{asset['id']}"
+    def asset_urls(self, asset: MediaAsset, key: str) -> tuple[str, str]:
+        base = f"{self.public_url}/api/assets/{asset.id}"
         thumbnail = f"{base}/thumbnail?size=thumbnail&key={key}"
-        if asset["kind"] == "video":
+        if asset.kind == "video":
             return thumbnail, f"{base}/video/playback?key={key}"
         return thumbnail, f"{base}/thumbnail?size=preview&key={key}"
 
@@ -197,36 +222,33 @@ def refresh_all_media(sessions: list[tuple[int, datetime]]) -> dict:
 
         per_session: dict[int, list[str]] = {sid: [] for sid in windows}
         for asset in assets:
-            instant = asset["instant"]
-            if instant is None:
+            if asset.instant is None:
                 continue
             for sid, (window_start, window_end) in windows.items():
-                if window_start <= instant <= window_end:
-                    per_session[sid].append(asset["id"])
+                if window_start <= asset.instant <= window_end:
+                    per_session[sid].append(asset.id)
 
-        links = client._request("GET", "/shared-links") or []
-        links_by_session: dict[int, list[dict]] = {}
-        for link in links:
-            sid = _marker_session_id(link.get("description") or "")
-            if sid is not None:
-                links_by_session.setdefault(sid, []).append(link)
+        links_by_session: dict[int, list[SharedLink]] = {}
+        for link in client.shared_links():
+            if link.session_id is not None:
+                links_by_session.setdefault(link.session_id, []).append(link)
 
         session_ids = []
         for sid, asset_ids in per_session.items():
             existing = links_by_session.pop(sid, [])
             if not asset_ids:
                 for link in existing:
-                    client._delete_link(link["id"])
+                    client._delete_link(link.id)
                 continue
             session_ids.append(sid)
             marker = _link_marker(sid, asset_ids)
             keep_found = False
             for link in existing:
-                matches = link.get("description") == marker and client._has_remaining_life(link)
+                matches = link.description == marker and client._has_remaining_life(link)
                 if not keep_found and matches:
                     keep_found = True
                 else:
-                    client._delete_link(link["id"])
+                    client._delete_link(link.id)
             if not keep_found:
                 client._create_link(marker, asset_ids)
 
@@ -257,15 +279,15 @@ def session_media(session_id: int, started_at: datetime) -> dict:
         if not assets:
             client.clear_session_links(session_id)
             return {"configured": True, "items": []}
-        key = client.ensure_shared_link(session_id, [a["id"] for a in assets])
+        key = client.ensure_shared_link(session_id, [a.id for a in assets])
         items = []
         for asset in assets:
             thumbnail_url, full_url = client.asset_urls(asset, key)
             items.append(
                 {
-                    "id": asset["id"],
-                    "kind": asset["kind"],
-                    "taken_at": asset["taken_at"],
+                    "id": asset.id,
+                    "kind": asset.kind,
+                    "taken_at": asset.taken_at,
                     "thumbnail_url": thumbnail_url,
                     "full_url": full_url,
                 }

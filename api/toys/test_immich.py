@@ -53,12 +53,11 @@ class ImmichClientTests(TestCase):
         start = datetime(2026, 6, 1, 19, 0, tzinfo=UTC)
         end = datetime(2026, 6, 1, 21, 0, tzinfo=UTC)
         assets = immich.ImmichClient().search_assets(start, end)
-        slim = [{k: a[k] for k in ("id", "kind", "taken_at")} for a in assets]
         self.assertEqual(
-            slim,
+            [(a.id, a.kind, a.taken_at) for a in assets],
             [
-                {"id": "a1", "kind": "image", "taken_at": "2026-06-01T20:10:00"},
-                {"id": "a2", "kind": "video", "taken_at": "2026-06-01T20:20:00"},
+                ("a1", "image", "2026-06-01T20:10:00"),
+                ("a2", "video", "2026-06-01T20:20:00"),
             ],
         )
         body = request_mock.call_args.kwargs["json"]
@@ -106,11 +105,13 @@ class ImmichClientTests(TestCase):
 
     def test_asset_urls_use_public_base_and_key(self):
         client = immich.ImmichClient()
-        thumb, full = client.asset_urls({"id": "a1", "kind": "image"}, "KEY")
+        image = immich.MediaAsset(id="a1", kind="image", taken_at=None, instant=None)
+        video = immich.MediaAsset(id="a2", kind="video", taken_at=None, instant=None)
+        thumb, full = client.asset_urls(image, "KEY")
         self.assertEqual(thumb, "http://photos.example/api/assets/a1/thumbnail?size=thumbnail&key=KEY")
         self.assertEqual(full, "http://photos.example/api/assets/a1/thumbnail?size=preview&key=KEY")
-        _, video = client.asset_urls({"id": "a2", "kind": "video"}, "KEY")
-        self.assertEqual(video, "http://photos.example/api/assets/a2/video/playback?key=KEY")
+        _, video_url = client.asset_urls(video, "KEY")
+        self.assertEqual(video_url, "http://photos.example/api/assets/a2/video/playback?key=KEY")
 
 
 @override_settings(
@@ -276,7 +277,7 @@ class SessionMediaEndpointTests(TestCase):
     @mock.patch("toys.immich.ImmichClient.search_assets")
     def test_returns_items_with_keyed_urls(self, search_mock, _link_mock):
         search_mock.return_value = [
-            {"id": "a1", "kind": "image", "taken_at": "2026-06-01T20:10:00"}
+            immich.MediaAsset(id="a1", kind="image", taken_at="2026-06-01T20:10:00", instant=None)
         ]
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
         self.assertEqual(response.status_code, 200)
