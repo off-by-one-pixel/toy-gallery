@@ -13,6 +13,7 @@ import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import SearchInput from './SearchInput';
+import SessionMediaStrip from './session-list/SessionMediaStrip';
 import SortControl from './SortControl';
 import ToyChipSelector from './ToyChipSelector';
 
@@ -149,6 +150,15 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
             </button>
           </div>
         </section>
+
+        {sessionId !== null && (
+          <section className="mb-7">
+            <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+              {t('media.heading')}
+            </h2>
+            <SessionMediaStrip sessionId={sessionId} showHeading={false} />
+          </section>
+        )}
 
         <section>
           <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary">

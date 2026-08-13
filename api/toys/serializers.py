@@ -167,6 +167,24 @@ class ActivityResponseSerializer(serializers.Serializer):
     days = ActivityDaySerializer(many=True)
 
 
+class SessionMediaItemSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    kind = serializers.ChoiceField(choices=["image", "video"])
+    taken_at = serializers.CharField(allow_null=True)
+    thumbnail_url = serializers.CharField()
+    full_url = serializers.CharField()
+
+
+class SessionMediaResponseSerializer(serializers.Serializer):
+    configured = serializers.BooleanField()
+    items = SessionMediaItemSerializer(many=True)
+
+
+class SessionMediaIndicatorsSerializer(serializers.Serializer):
+    configured = serializers.BooleanField()
+    session_ids = serializers.ListField(child=serializers.IntegerField())
+
+
 class ExportEnvelopeSerializer(serializers.Serializer):
     version = serializers.IntegerField()
     exported_at = serializers.CharField()

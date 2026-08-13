@@ -5,7 +5,14 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { useGirth } from '../../providers/GirthProvider';
-import { fetchActivity, fetchToys, fetchSessions } from '../../services/api';
+import {
+  fetchActivity,
+  fetchMediaIndicators,
+  fetchToys,
+  fetchSessions,
+  type MediaIndicators,
+  refreshAllSessionMedia,
+} from '../../services/api';
 import { type ActivityHeatmap, buildActivityHeatmap } from '../../services/activity';
 import { type FilterKey, filterSessions, toysById as buildToysById } from '../../services/session';
 import type { ActivityDay, Session, Toy } from '../../services/types';
@@ -20,6 +27,9 @@ export type SessionListData = Readonly<{
   toysById: Map<number, Toy>;
   /** Prebuilt activity heatmap for the page header. */
   heatmap: ActivityHeatmap;
+  mediaSessionIds: Set<number>;
+  mediaConfigured: boolean;
+  refreshMedia: () => Promise<number>;
   reload: () => void;
 
   filter: FilterKey;
@@ -41,6 +51,7 @@ export function useSessionList(unit: Unit): SessionListData {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
   const [activity, setActivity] = useState<ActivityDay[]>([]);
+  const [media, setMedia] = useState<MediaIndicators>(() => ({ configured: false, sessionIds: new Set() }));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
@@ -52,8 +63,13 @@ export function useSessionList(unit: Unit): SessionListData {
     let cancelled = false;
     runInline(
       async () => {
-        const [s, t, a] = await Promise.all([fetchSessions(), fetchToys(), fetchActivity()]);
-        return { sessions: s, toys: t, activity: a };
+        const [s, t, a, m] = await Promise.all([
+          fetchSessions(),
+          fetchToys(),
+          fetchActivity(),
+          fetchMediaIndicators().catch((): MediaIndicators => ({ configured: false, sessionIds: new Set() })),
+        ]);
+        return { sessions: s, toys: t, activity: a, media: m };
       },
       {
         busy: setIsLoading,
@@ -62,6 +78,7 @@ export function useSessionList(unit: Unit): SessionListData {
           setSessions(loaded.sessions);
           setToys(loaded.toys);
           setActivity(loaded.activity);
+          setMedia(loaded.media);
           setError(null);
         },
       },
@@ -90,6 +107,13 @@ export function useSessionList(unit: Unit): SessionListData {
     visibleSessions,
     toysById,
     heatmap,
+    mediaSessionIds: media.sessionIds,
+    mediaConfigured: media.configured,
+    refreshMedia: async () => {
+      const next = await refreshAllSessionMedia();
+      setMedia(next);
+      return next.sessionIds.size;
+    },
     reload: () => setLoadCount((n) => n + 1),
     filter,
     setFilter,

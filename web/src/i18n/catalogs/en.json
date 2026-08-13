@@ -122,6 +122,19 @@
       "title": "Day of week",
       "tooltip": "{day} · {count, plural, one {# session} other {# sessions}}",
       "empty": "No sessions in range"
+    },
+    "media": {
+      "heading": "Media",
+      "empty": "No media in this session’s time window",
+      "loadError": "Could not load media",
+      "openLabel": "Open media",
+      "prevLabel": "Previous",
+      "nextLabel": "Next",
+      "closeLabel": "Close viewer",
+      "indicatorLabel": "Has media",
+      "refreshButton": "Refresh media for all sessions",
+      "refreshButtonLabel": "Refresh media",
+      "refreshedToast": "Media found for {count, plural, one {# session} other {# sessions}}"
     }
   },
   "template": {

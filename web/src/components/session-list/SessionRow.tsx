@@ -1,6 +1,6 @@
 'use client';
 
-import { Pencil, Trash2 } from 'lucide-react';
+import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ActionButtons, type ActionDef } from '../ActionButtons';
@@ -12,6 +12,7 @@ import type { Session, Toy } from '../../services/types';
 import { type Unit } from '../../services/units';
 import MiniToy from './MiniToy';
 import PeakRow from './PeakRow';
+import SessionMediaStrip from './SessionMediaStrip';
 
 const STRIP_LIMIT = 5;
 
@@ -19,13 +20,23 @@ type Props = Readonly<{
   session: Session;
   toysById: Map<number, Toy>;
   unit: Unit;
+  hasMedia: boolean;
   selected: boolean;
   onToggleSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }>;
 
-export default function SessionRow({ session, toysById, unit, selected, onToggleSelect, onEdit, onDelete }: Props) {
+export default function SessionRow({
+  session,
+  toysById,
+  unit,
+  hasMedia,
+  selected,
+  onToggleSelect,
+  onEdit,
+  onDelete,
+}: Props) {
   const t = useTranslations('session');
   const common = useTranslations('common');
   const locale = useLocale();
@@ -52,8 +63,17 @@ export default function SessionRow({ session, toysById, unit, selected, onToggle
       }
     >
       <div className="flex items-center justify-between gap-3 sm:contents">
-        <div className="text-base font-semibold tracking-tight text-foreground sm:order-1">
+        <div className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground sm:order-1">
           {formatWhen(session.startedAt, new Date(), locale, whenT)}
+          {hasMedia && (
+            <span
+              aria-label={t('media.indicatorLabel')}
+              title={t('media.indicatorLabel')}
+              className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-soft-foreground"
+            >
+              <ImageIcon size={13} strokeWidth={2} />
+            </span>
+          )}
         </div>
         <div className="hidden gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 sm:order-4 sm:flex">
           <ActionButtons actions={actions} stopPropagation />
@@ -80,6 +100,11 @@ export default function SessionRow({ session, toysById, unit, selected, onToggle
           />
         </div>
       </div>
+      {selected && (
+        <div className="mt-3 sm:order-5 sm:col-span-4 sm:mt-1">
+          <SessionMediaStrip sessionId={session.id} />
+        </div>
+      )}
     </div>
   );
 }
