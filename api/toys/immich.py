@@ -46,7 +46,7 @@ def _parse_instant(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return datetime.fromisoformat(value)
     except ValueError:
         return None
 
@@ -154,7 +154,7 @@ class ImmichClient:
         expires_at = link.get("expiresAt")
         if not expires_at:
             return True
-        parsed = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(expires_at)
         return parsed - timezone.now() >= REUSE_MIN_REMAINING
 
     def sessions_with_media(self) -> list[int]:
