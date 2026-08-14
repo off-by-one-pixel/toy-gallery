@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import AppMenu from './AppMenu';
+import PrivacyToggle from './PrivacyToggle';
 import SectionTabs from './SectionTabs';
 import ThemeToggle from './ThemeToggle';
 
@@ -32,6 +33,7 @@ export default function TopBar({ subtitle }: Props) {
         </h1>
         <SectionTabs className="order-last sm:order-0" />
         <div className="flex-1" />
+        <PrivacyToggle />
         <ThemeToggle lightTheme="light" darkTheme="dark" />
         <AppMenu />
       </div>
