@@ -5,8 +5,10 @@ import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { fetchSessionMedia } from '../../services/api';
+import { usePrivacy } from '../../providers/PrivacyProvider';
 import type { SessionMediaItem } from '../../services/types';
 import MediaLightbox from '../MediaLightbox';
+import SensitiveContent from '../SensitiveContent';
 
 type Props = Readonly<{ sessionId: number; showHeading?: boolean }>;
 
@@ -18,8 +20,13 @@ type LoadState =
 
 export default function SessionMediaStrip({ sessionId, showHeading = true }: Props) {
   const t = useTranslations('session.media');
+  const { hideSensitive } = usePrivacy();
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (hideSensitive) setOpenIndex(null);
+  }, [hideSensitive]);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,24 +63,26 @@ export default function SessionMediaStrip({ sessionId, showHeading = true }: Pro
         <p className="text-caption text-text-tertiary">{t('empty')}</p>
       )}
       {state.kind === 'ready' && state.items.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {state.items.map((item, i) => (
-            <button
-              key={item.id}
-              type="button"
-              aria-label={t('openLabel')}
-              onClick={() => setOpenIndex(i)}
-              className="relative h-16 w-16 overflow-hidden rounded-lg border border-border transition-transform hover:scale-105"
-            >
-              <img src={item.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
-              {item.kind === 'video' && (
-                <span className="absolute inset-0 grid place-items-center bg-black/25">
-                  <Play size={18} className="fill-white text-white drop-shadow" />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        <SensitiveContent>
+          <div className="flex flex-wrap gap-2">
+            {state.items.map((item, i) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-label={t('openLabel')}
+                onClick={() => setOpenIndex(i)}
+                className="relative h-16 w-16 overflow-hidden rounded-lg border border-border transition-transform hover:scale-105"
+              >
+                <img src={item.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                {item.kind === 'video' && (
+                  <span className="absolute inset-0 grid place-items-center bg-black/25">
+                    <Play size={18} className="fill-white text-white drop-shadow" />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </SensitiveContent>
       )}
       {openIndex !== null && state.kind === 'ready' && (
         <MediaLightbox items={state.items} initialIndex={openIndex} onClose={() => setOpenIndex(null)} />

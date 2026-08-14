@@ -181,6 +181,10 @@
     "switchToLight": "Switch to light theme",
     "switchToDark": "Switch to dark theme"
   },
+  "privacy": {
+    "hide": "Hide sensitive content",
+    "show": "Show sensitive content"
+  },
   "settings": {
     "pageTitle": "Settings",
     "language": {

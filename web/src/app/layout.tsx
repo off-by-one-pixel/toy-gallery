@@ -5,6 +5,7 @@ import '../styles/index.css';
 import { AuthProvider } from '../providers/AuthProvider';
 import { GirthProvider } from '../providers/GirthProvider';
 import { LocaleProvider } from '../providers/LocaleProvider';
+import { PrivacyProvider } from '../providers/PrivacyProvider';
 import { SortProvider } from '../providers/SortProvider';
 import { ThemeProvider } from '../providers/ThemeProvider';
 import { ToastProvider } from '../providers/ToastProvider';
@@ -48,7 +49,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <GirthProvider>
                 <ViewModeProvider>
                   <SortProvider>
-                    <AuthProvider>{children}</AuthProvider>
+                    <PrivacyProvider>
+                      <AuthProvider>{children}</AuthProvider>
+                    </PrivacyProvider>
                   </SortProvider>
                 </ViewModeProvider>
               </GirthProvider>

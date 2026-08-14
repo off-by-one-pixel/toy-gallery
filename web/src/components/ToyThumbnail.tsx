@@ -3,6 +3,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Toy as EditorToy } from 'toy-editor';
 
+import SensitiveContent from './SensitiveContent';
 import Silhouette from './Silhouette';
 
 type Background = 'gradient' | 'none';
@@ -54,15 +55,17 @@ export default function ToyThumbnail({
   };
   return (
     <div className={`relative ${BG_CLASS[background]} ${className ?? ''}`}>
-      <div className="absolute flex items-end justify-center" style={innerStyle}>
-        <Silhouette
-          toy={toy}
-          fillColor={fillColor}
-          strokeColor={strokeColor}
-          borderWidth={borderWidth}
-          scaleFactor={scaleFactor}
-        />
-      </div>
+      <SensitiveContent className="absolute inset-0">
+        <div className="absolute flex items-end justify-center" style={innerStyle}>
+          <Silhouette
+            toy={toy}
+            fillColor={fillColor}
+            strokeColor={strokeColor}
+            borderWidth={borderWidth}
+            scaleFactor={scaleFactor}
+          />
+        </div>
+      </SensitiveContent>
       {children}
     </div>
   );
