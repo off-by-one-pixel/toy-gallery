@@ -47,7 +47,14 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: |
+            web/package-lock.json
+            toy-editor/package-lock.json
+      - name: Install and build toy-editor
+        working-directory: toy-editor
+        run: |
+          npm ci
+          npm run build
       - name: Install FE dependencies
         run: cd web && npm ci
       - name: Run FE tests with coverage
