@@ -47,7 +47,7 @@ export default function SessionMediaStrip({ sessionId, showHeading = true }: Pro
   if (state.kind === 'hidden') return null;
 
   return (
-    <div onClick={(e) => e.stopPropagation()}>
+    <div>
       {showHeading && (
         <h3 className="mb-2 text-caption font-medium uppercase tracking-wider text-text-tertiary">{t('heading')}</h3>
       )}
