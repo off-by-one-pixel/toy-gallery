@@ -87,3 +87,4 @@ api/staticfiles/
 
 # Ad-hoc helper scripts
 scripts/
+.scannerwork/

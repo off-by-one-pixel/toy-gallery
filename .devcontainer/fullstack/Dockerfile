@@ -31,6 +31,16 @@ RUN apt-get update && apt-get install -y \
     && ln -sf /usr/lib/jvm/java-21-openjdk-$(dpkg --print-architecture) /usr/lib/jvm/default-java
 ENV JAVA_HOME=/usr/lib/jvm/default-java
 
+ARG SONAR_SCANNER_VERSION=7.1.0.4889
+RUN apt-get update && apt-get install -y unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSL -o /tmp/sonar-scanner.zip \
+        https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}.zip \
+    && unzip -q /tmp/sonar-scanner.zip -d /opt \
+    && rm /tmp/sonar-scanner.zip \
+    && mv /opt/sonar-scanner-${SONAR_SCANNER_VERSION} /opt/sonar-scanner \
+    && ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
+
 # Install uv (Python package manager) and pre-commit (git hook runner).
 # pre-commit is installed globally so `pre-commit install` works regardless
 # of which project venv the shell sits in.

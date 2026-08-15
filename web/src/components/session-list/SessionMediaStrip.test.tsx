@@ -88,7 +88,7 @@ describe('SessionMediaStrip', () => {
     expect(thumbs[0].querySelector('img')?.getAttribute('src')).toBe(image.thumbnailUrl);
 
     fireEvent.click(thumbs[1]);
-    await waitFor(() => expect(screen.getByRole('button', { name: en.session.media.closeLabel })).toBeTruthy());
+    expect(await screen.findByRole('button', { name: en.session.media.closeLabel })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
     await waitFor(() => expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull());
