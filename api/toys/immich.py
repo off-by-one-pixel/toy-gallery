@@ -204,6 +204,27 @@ class ImmichClient:
         return thumbnail, f"{base}/thumbnail?size=preview&key={key}"
 
 
+def _assets_by_session(
+    assets: list[MediaAsset], windows: dict[int, tuple[datetime, datetime]]
+) -> dict[int, list[str]]:
+    per_session: dict[int, list[str]] = {sid: [] for sid in windows}
+    for asset in assets:
+        if asset.instant is None:
+            continue
+        for sid, (window_start, window_end) in windows.items():
+            if window_start <= asset.instant <= window_end:
+                per_session[sid].append(asset.id)
+    return per_session
+
+
+def _links_by_session(links: list[SharedLink]) -> dict[int, list[SharedLink]]:
+    by_session: dict[int, list[SharedLink]] = {}
+    for link in links:
+        if link.session_id is not None:
+            by_session.setdefault(link.session_id, []).append(link)
+    return by_session
+
+
 class ImmichMediaProvider(SessionMediaProvider):
     def __init__(self):
         self.client = ImmichClient()
@@ -219,43 +240,36 @@ class ImmichMediaProvider(SessionMediaProvider):
             overall_start = min(w[0] for w in windows.values())
             overall_end = max(w[1] for w in windows.values())
             assets = self.client.search_assets(overall_start, overall_end)
+            links_by_session = _links_by_session(self.client.shared_links())
 
-            per_session: dict[int, list[str]] = {sid: [] for sid in windows}
-            for asset in assets:
-                if asset.instant is None:
-                    continue
-                for sid, (window_start, window_end) in windows.items():
-                    if window_start <= asset.instant <= window_end:
-                        per_session[sid].append(asset.id)
-
-            links_by_session: dict[int, list[SharedLink]] = {}
-            for link in self.client.shared_links():
-                if link.session_id is not None:
-                    links_by_session.setdefault(link.session_id, []).append(link)
-
-            session_ids = []
-            for sid, asset_ids in per_session.items():
-                existing = links_by_session.pop(sid, [])
-                if not asset_ids:
-                    for link in existing:
-                        self.client._delete_link(link.id)
-                    continue
-                session_ids.append(sid)
-                marker = _link_marker(sid, asset_ids)
-                keep_found = False
-                for link in existing:
-                    matches = link.description == marker and self.client._has_remaining_life(link)
-                    if not keep_found and matches:
-                        keep_found = True
-                    else:
-                        self.client._delete_link(link.id)
-                if not keep_found:
-                    self.client._create_link(marker, asset_ids)
-
+            session_ids = [
+                sid
+                for sid, asset_ids in _assets_by_session(assets, windows).items()
+                if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, []))
+            ]
             return {"configured": True, "session_ids": sorted(session_ids)}
         except (ImmichError, requests.RequestException) as err:
             logger.warning("immich: media refresh failed: %s", err)
             return {"configured": True, "session_ids": []}
+
+    def _sync_session_links(
+        self, session_id: int, asset_ids: list[str], existing: list[SharedLink]
+    ) -> bool:
+        if not asset_ids:
+            for link in existing:
+                self.client._delete_link(link.id)
+            return False
+        marker = _link_marker(session_id, asset_ids)
+        keep_found = False
+        for link in existing:
+            matches = link.description == marker and self.client._has_remaining_life(link)
+            if not keep_found and matches:
+                keep_found = True
+            else:
+                self.client._delete_link(link.id)
+        if not keep_found:
+            self.client._create_link(marker, asset_ids)
+        return True
 
     def media_indicators(self) -> dict:
         if not self.client.is_configured():
