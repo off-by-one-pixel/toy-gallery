@@ -15,7 +15,7 @@ jobs:
         with:
           # Sonar uses git history for blame data on new-code highlighting.
           fetch-depth: 0
-          submodules: false
+          submodules: recursive
 
       # ─── Backend (Django) coverage ──────────────────────────────────
       - uses: actions/setup-python@v5
