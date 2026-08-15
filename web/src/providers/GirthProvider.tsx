@@ -14,19 +14,19 @@ interface GirthContextValue {
 const GirthContext = createContext<GirthContextValue | null>(null);
 
 export function GirthProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [girth, setGirthState] = useState<Girth>(DEFAULT_GIRTH);
+  const [storedGirth, setStoredGirth] = useState<Girth>(DEFAULT_GIRTH);
 
   useEffect(() => {
     const stored = globalThis.window !== undefined ? localStorage.getItem(STORAGE_KEY) : null;
-    if (stored && isGirth(stored)) setGirthState(stored);
+    if (stored && isGirth(stored)) setStoredGirth(stored);
   }, []);
 
   const setGirth = useCallback((next: Girth) => {
-    setGirthState(next);
+    setStoredGirth(next);
     if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
-  const value = useMemo(() => ({ girth, setGirth }), [girth, setGirth]);
+  const value = useMemo(() => ({ girth: storedGirth, setGirth }), [storedGirth, setGirth]);
 
   return <GirthContext.Provider value={value}>{children}</GirthContext.Provider>;
 }

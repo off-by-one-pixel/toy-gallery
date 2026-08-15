@@ -31,7 +31,7 @@ class SessionMediaWindowTests(TestCase):
 
 
 @override_settings(
-    IMMICH_URL="http://immich", IMMICH_PUBLIC_URL="http://photos.example", IMMICH_API_KEY="k"
+    IMMICH_URL="https://immich", IMMICH_PUBLIC_URL="https://photos.example", IMMICH_API_KEY="k"
 )
 class ImmichClientTests(TestCase):
     def test_unconfigured_without_url_or_key(self):
@@ -108,14 +108,14 @@ class ImmichClientTests(TestCase):
         image = immich.MediaAsset(id="a1", kind="image", taken_at=None, instant=None)
         video = immich.MediaAsset(id="a2", kind="video", taken_at=None, instant=None)
         thumb, full = client.asset_urls(image, "KEY")
-        self.assertEqual(thumb, "http://photos.example/api/assets/a1/thumbnail?size=thumbnail&key=KEY")
-        self.assertEqual(full, "http://photos.example/api/assets/a1/thumbnail?size=preview&key=KEY")
+        self.assertEqual(thumb, "https://photos.example/api/assets/a1/thumbnail?size=thumbnail&key=KEY")
+        self.assertEqual(full, "https://photos.example/api/assets/a1/thumbnail?size=preview&key=KEY")
         _, video_url = client.asset_urls(video, "KEY")
-        self.assertEqual(video_url, "http://photos.example/api/assets/a2/video/playback?key=KEY")
+        self.assertEqual(video_url, "https://photos.example/api/assets/a2/video/playback?key=KEY")
 
 
 @override_settings(
-    IMMICH_URL="http://immich", IMMICH_PUBLIC_URL="http://immich", IMMICH_API_KEY="k"
+    IMMICH_URL="https://immich", IMMICH_PUBLIC_URL="https://immich", IMMICH_API_KEY="k"
 )
 class MediaIndicatorTests(TestCase):
     def setUp(self):
@@ -166,7 +166,7 @@ class MediaIndicatorTests(TestCase):
 
 
 @override_settings(
-    IMMICH_URL="http://immich", IMMICH_PUBLIC_URL="http://immich", IMMICH_API_KEY="k"
+    IMMICH_URL="https://immich", IMMICH_PUBLIC_URL="https://immich", IMMICH_API_KEY="k"
 )
 class RefreshAllMediaTests(TestCase):
     def setUp(self):
@@ -272,7 +272,7 @@ class SessionMediaEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"configured": False, "items": []})
 
-    @override_settings(IMMICH_URL="http://immich", IMMICH_API_KEY="k")
+    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
     @mock.patch("toys.immich.ImmichClient.ensure_shared_link", return_value="KEY")
     @mock.patch("toys.immich.ImmichClient.search_assets")
     def test_returns_items_with_keyed_urls(self, search_mock, _link_mock):
@@ -287,7 +287,7 @@ class SessionMediaEndpointTests(TestCase):
         self.assertIn("key=KEY", item["thumbnail_url"])
         self.assertIn("key=KEY", item["full_url"])
 
-    @override_settings(IMMICH_URL="http://immich", IMMICH_API_KEY="k")
+    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
     @mock.patch("toys.immich.ImmichClient.search_assets", side_effect=immich.ImmichError("boom"))
     def test_upstream_failure_degrades_to_empty(self, _search_mock):
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
