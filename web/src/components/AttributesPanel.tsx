@@ -1,7 +1,6 @@
 'use client';
 
-import { Check } from 'lucide-react';
-import { X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useAttributesEditor } from '../hooks/useAttributesEditor';
