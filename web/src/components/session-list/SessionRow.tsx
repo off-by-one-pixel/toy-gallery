@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
 import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -42,13 +41,7 @@ export default function SessionRow({
   const common = useTranslations('common');
   const locale = useLocale();
   const { girth } = useGirth();
-  const mediaRef = useRef<HTMLDivElement>(null);
   const whenT = (key: 'today' | 'yesterday') => t(key);
-
-  const toggleUnlessInMedia = (target: EventTarget) => {
-    if (mediaRef.current?.contains(target as Node)) return;
-    onToggleSelect();
-  };
 
   const orderedEntries = sortEntriesByInvolvement(session.entries);
   const visibleEntries = selected ? orderedEntries : orderedEntries.slice(0, STRIP_LIMIT);
@@ -63,21 +56,18 @@ export default function SessionRow({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={(e) => toggleUnlessInMedia(e.target)}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onToggleSelect();
-        }
-      }}
       className={
-        'group cursor-pointer rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
+        'group relative rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
         (selected ? 'ring-2 ring-accent' : '')
       }
     >
+      <button
+        type="button"
+        aria-label={t('detailsToggleLabel')}
+        aria-expanded={selected}
+        onClick={onToggleSelect}
+        className="absolute inset-0 cursor-pointer rounded-xl"
+      />
       <div className="flex items-center justify-between gap-3 sm:contents">
         <div className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground sm:order-1">
           {formatWhen(session.startedAt, new Date(), locale, whenT)}
@@ -91,7 +81,7 @@ export default function SessionRow({
             </span>
           )}
         </div>
-        <div className="hidden gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 sm:order-4 sm:flex">
+        <div className="relative hidden gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 sm:order-4 sm:flex">
           <ActionButtons actions={actions} stopPropagation />
         </div>
       </div>
@@ -117,7 +107,7 @@ export default function SessionRow({
         </div>
       </div>
       {selected && (
-        <div ref={mediaRef} className="mt-3 sm:order-5 sm:col-span-4 sm:mt-1">
+        <div className="relative mt-3 sm:order-5 sm:col-span-4 sm:mt-1">
           <SessionMediaStrip sessionId={session.id} />
         </div>
       )}

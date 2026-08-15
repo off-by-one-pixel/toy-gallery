@@ -82,6 +82,7 @@
   "session": {
     "newButton": "New session",
     "recorded": "recorded",
+    "detailsToggleLabel": "Toggle session details",
     "filter": {
       "ariaLabel": "Date range",
       "all": "All",

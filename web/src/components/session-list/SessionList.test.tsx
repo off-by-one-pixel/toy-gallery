@@ -72,7 +72,7 @@ describe('SessionList', () => {
   it('renders a row per session and a media badge for flagged sessions', async () => {
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    const rows = screen.getAllByRole('button').filter((el) => el.className.includes('cursor-pointer'));
+    const rows = screen.getAllByRole('button', { name: en.session.detailsToggleLabel });
     expect(rows).toHaveLength(2);
     expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(1);
   });
@@ -93,19 +93,19 @@ describe('SessionList', () => {
     expect(screen.queryByRole('button', { name: en.session.media.refreshButton })).toBeNull();
   });
 
-  it('selects a row on click and toggles it back on Enter', async () => {
+  it('toggles row selection through the overlay button', async () => {
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    const rows = screen.getAllByRole('button').filter((el) => el.className.includes('cursor-pointer'));
-    expect(rows.length).toBe(2);
+    const toggles = screen.getAllByRole('button', { name: en.session.detailsToggleLabel });
+    expect(toggles).toHaveLength(2);
+    const row = toggles[0].parentElement as HTMLElement;
 
-    fireEvent.click(rows[0]);
-    expect(rows[0].className).toContain('ring-accent');
+    fireEvent.click(toggles[0]);
+    expect(row.className).toContain('ring-accent');
+    expect(toggles[0].getAttribute('aria-expanded')).toBe('true');
 
-    fireEvent.keyDown(rows[0], { key: 'Enter' });
-    expect(rows[0].className).not.toContain('ring-accent');
-
-    fireEvent.keyDown(rows[0], { key: ' ' });
-    expect(rows[0].className).toContain('ring-accent');
+    fireEvent.click(toggles[0]);
+    expect(row.className).not.toContain('ring-accent');
+    expect(toggles[0].getAttribute('aria-expanded')).toBe('false');
   });
 });
