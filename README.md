@@ -9,6 +9,7 @@ It runs on your own machine, so your collection stays yours. Nothing is shared, 
 - **Your collection at a glance.** Every toy gets its own picture that matches its real shape and size, so you recognize each one instantly — drawn in a built-in editor, no photos needed.
 - **Keep the details that matter.** Brand, model, size, color, and any notes or fields you want to add.
 - **Track your sessions.** Jot down what you reached for and when, then watch your activity and progress build up over time.
+- **Your session photos and videos, right there.** Shots taken during a session appear on it automatically, straight from your own photo library — nothing gets uploaded or copied.
 - **Works on any screen.** Looks right whether you're on your laptop or your phone.
 - **Light and dark.** Pick whichever's easier on the eyes.
 - **Always yours to take.** Export your entire collection any time, and bring it back just as easily.
