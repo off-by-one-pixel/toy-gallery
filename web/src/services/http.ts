@@ -28,6 +28,12 @@ export const tokenStorage = {
   },
 };
 
+let onSessionExpired: (() => void) | null = null;
+
+export const setSessionExpiredHandler = (handler: (() => void) | null): void => {
+  onSessionExpired = handler;
+};
+
 // ---------- Silent token refresh (deduplicated across concurrent 401s) ----------
 
 let refreshInFlight: Promise<string | null> | null = null;
@@ -35,7 +41,10 @@ let refreshInFlight: Promise<string | null> | null = null;
 const refreshAccessToken = (): Promise<string | null> => {
   if (refreshInFlight) return refreshInFlight;
   const refresh = tokenStorage.getRefresh();
-  if (!refresh) return Promise.resolve(null);
+  if (!refresh) {
+    onSessionExpired?.();
+    return Promise.resolve(null);
+  }
 
   refreshInFlight = (async () => {
     try {
@@ -45,6 +54,7 @@ const refreshAccessToken = (): Promise<string | null> => {
     } catch (err) {
       console.warn('Silent token refresh failed', err);
       tokenStorage.clear();
+      onSessionExpired?.();
       return null;
     } finally {
       refreshInFlight = null;

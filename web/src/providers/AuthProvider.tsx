@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { login as authLogin, tokenStorage } from '../services/auth';
+import { login as authLogin, setSessionExpiredHandler, tokenStorage } from '../services/auth';
 
 interface AuthState {
   username: string | null;
@@ -40,6 +40,11 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     tokenStorage.clear();
     setState({ username: null, isAuthenticated: false, isHydrated: true });
   }, []);
+
+  useEffect(() => {
+    setSessionExpiredHandler(logout);
+    return () => setSessionExpiredHandler(null);
+  }, [logout]);
 
   const value = useMemo(() => ({ ...state, login, logout }), [state, login, logout]);
 
