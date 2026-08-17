@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 LINK_MARKER_PREFIX = "toy-gallery"
 REQUEST_TIMEOUT_S = 10
-REUSE_MIN_REMAINING = timedelta(minutes=30)
+REUSE_MIN_REMAINING = timedelta(minutes=5)
 SEARCH_PAGE_SIZE = 200
 MAX_SEARCH_PAGES = 10
 
@@ -157,7 +157,7 @@ class ImmichClient:
         return self._create_link(marker, asset_ids)
 
     def _create_link(self, marker: str, asset_ids: list[str]) -> str:
-        expires_at = timezone.now() + timedelta(hours=settings.SESSION_MEDIA_LINK_HOURS)
+        expires_at = timezone.now() + timedelta(minutes=settings.SESSION_MEDIA_LINK_MINUTES)
         created = self._request(
             "POST",
             "/shared-links",
@@ -185,10 +185,6 @@ class ImmichClient:
         if link.expires_at is None:
             return True
         return link.expires_at - timezone.now() >= REUSE_MIN_REMAINING
-
-    def sessions_with_media(self) -> list[int]:
-        ids = {link.session_id for link in self.shared_links()}
-        return sorted(sid for sid in ids if sid is not None)
 
     def clear_session_links(self, session_id: int) -> None:
         prefix = _session_marker_prefix(session_id)
@@ -229,13 +225,16 @@ class ImmichMediaProvider(SessionMediaProvider):
     def __init__(self):
         self.client = ImmichClient()
 
+    def is_configured(self) -> bool:
+        return self.client.is_configured()
+
     def refresh_all_media(self, sessions: list[tuple[int, datetime]]) -> dict:
         if not self.client.is_configured():
-            return {"configured": False, "session_ids": []}
+            return {"configured": False, "ok": False, "session_ids": []}
         try:
             windows = {sid: session_media_window(started) for sid, started in sessions}
             if not windows:
-                return {"configured": True, "session_ids": []}
+                return {"configured": True, "ok": True, "session_ids": []}
 
             overall_start = min(w[0] for w in windows.values())
             overall_end = max(w[1] for w in windows.values())
@@ -247,10 +246,10 @@ class ImmichMediaProvider(SessionMediaProvider):
                 for sid, asset_ids in _assets_by_session(assets, windows).items()
                 if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, []))
             ]
-            return {"configured": True, "session_ids": sorted(session_ids)}
+            return {"configured": True, "ok": True, "session_ids": sorted(session_ids)}
         except (ImmichError, requests.RequestException) as err:
             logger.warning("immich: media refresh failed: %s", err)
-            return {"configured": True, "session_ids": []}
+            return {"configured": True, "ok": False, "session_ids": []}
 
     def _sync_session_links(
         self, session_id: int, asset_ids: list[str], existing: list[SharedLink]
@@ -271,24 +270,15 @@ class ImmichMediaProvider(SessionMediaProvider):
             self.client._create_link(marker, asset_ids)
         return True
 
-    def media_indicators(self) -> dict:
-        if not self.client.is_configured():
-            return {"configured": False, "session_ids": []}
-        try:
-            return {"configured": True, "session_ids": self.client.sessions_with_media()}
-        except (ImmichError, requests.RequestException) as err:
-            logger.warning("immich: indicator lookup failed: %s", err)
-            return {"configured": True, "session_ids": []}
-
     def session_media(self, session_id: int, started_at: datetime) -> dict:
         if not self.client.is_configured():
-            return {"configured": False, "items": []}
+            return {"configured": False, "ok": False, "items": []}
         try:
             start, end = session_media_window(started_at)
             assets = self.client.search_assets(start, end)
             if not assets:
                 self.client.clear_session_links(session_id)
-                return {"configured": True, "items": []}
+                return {"configured": True, "ok": True, "items": []}
             key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
             items = []
             for asset in assets:
@@ -302,7 +292,7 @@ class ImmichMediaProvider(SessionMediaProvider):
                         "full_url": full_url,
                     }
                 )
-            return {"configured": True, "items": items}
+            return {"configured": True, "ok": True, "items": items}
         except (ImmichError, requests.RequestException) as err:
             logger.warning("immich: media lookup failed: %s", err)
-            return {"configured": True, "items": []}
+            return {"configured": True, "ok": False, "items": []}
