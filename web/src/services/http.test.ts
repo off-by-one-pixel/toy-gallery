@@ -11,7 +11,7 @@ vi.mock('../config', () => ({
 }));
 
 import { refreshTokens } from './api';
-import { customFetch, tokenStorage } from './http';
+import { customFetch, setSessionExpiredHandler, tokenStorage } from './http';
 import { APIError } from './types';
 
 const mockRefresh = vi.mocked(refreshTokens);
@@ -220,5 +220,32 @@ describe('customFetch — 401 refresh flow', () => {
     expect(tokenStorage.getUsername()).toBeNull();
 
     warnSpy.mockRestore();
+  });
+
+  it('notifies the session-expired handler when refresh fails', async () => {
+    const expired = vi.fn();
+    setSessionExpiredHandler(expired);
+    tokenStorage.setTokens({ access: 'OLD', refresh: 'R1' }, 'alice');
+    fetchMock.mockResolvedValueOnce(respond({ detail: 'expired' }, { status: 401 }));
+    mockRefresh.mockRejectedValueOnce(new Error('refresh failed'));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await expect(customFetch('/x', {})).rejects.toMatchObject({ status: 401 });
+    expect(expired).toHaveBeenCalledTimes(1);
+
+    warnSpy.mockRestore();
+    setSessionExpiredHandler(null);
+  });
+
+  it('notifies the session-expired handler on a 401 with no refresh token stored', async () => {
+    const expired = vi.fn();
+    setSessionExpiredHandler(expired);
+    fetchMock.mockResolvedValueOnce(respond({ detail: 'expired' }, { status: 401 }));
+
+    await expect(customFetch('/x', {})).rejects.toMatchObject({ status: 401 });
+    expect(expired).toHaveBeenCalledTimes(1);
+    expect(mockRefresh).not.toHaveBeenCalled();
+
+    setSessionExpiredHandler(null);
   });
 });

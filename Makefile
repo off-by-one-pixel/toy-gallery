@@ -1,4 +1,4 @@
-.PHONY: help be be-prod fe migrate test test-be test-fe schema
+.PHONY: help be be-prod fe migrate test test-be test-fe schema sonar
 
 help:
 	@echo "Targets:"
@@ -10,6 +10,7 @@ help:
 	@echo "  make test-be   Run backend tests (Django)"
 	@echo "  make test-fe   Run frontend tests (Vitest)"
 	@echo "  make schema    Regenerate the OpenAPI schema (api/schema.yml)"
+	@echo "  make sonar     Sonar-scan the worktree into the toy-gallery-local scratch project (needs SONAR_HOST_URL and SONAR_TOKEN)"
 	@echo "For dev, run 'make be' and 'make fe' in separate terminals."
 
 be:
@@ -43,3 +44,12 @@ test-fe:
 
 schema:
 	cd api && uv run python manage.py spectacular --file schema.yml --validate
+
+sonar:
+	@test -n "$(SONAR_HOST_URL)" || { echo "SONAR_HOST_URL is not set"; exit 1; }
+	@test -n "$(SONAR_TOKEN)" || { echo "SONAR_TOKEN is not set (SonarQube: My Account > Security)"; exit 1; }
+	sonar-scanner \
+		-Dsonar.projectKey=toy-gallery-local \
+		-Dsonar.projectName="Toy Gallery (local)" \
+		-Dsonar.host.url=$(SONAR_HOST_URL) \
+		-Dsonar.token=$(SONAR_TOKEN)
