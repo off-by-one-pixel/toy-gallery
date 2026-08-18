@@ -70,7 +70,7 @@ IMMICH_URL = os.environ.get("IMMICH_URL", "").rstrip("/")
 IMMICH_PUBLIC_URL = os.environ.get("IMMICH_PUBLIC_URL", "").rstrip("/") or IMMICH_URL
 IMMICH_API_KEY = os.environ.get("IMMICH_API_KEY", "")
 SESSION_MEDIA_WINDOW_MINUTES = int(os.environ.get("SESSION_MEDIA_WINDOW_MINUTES", "60"))
-SESSION_MEDIA_LINK_HOURS = int(os.environ.get("SESSION_MEDIA_LINK_HOURS", "6"))
+SESSION_MEDIA_LINK_MINUTES = int(os.environ.get("SESSION_MEDIA_LINK_MINUTES", "30"))
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

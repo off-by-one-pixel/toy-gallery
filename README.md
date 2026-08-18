@@ -9,6 +9,7 @@ It runs on your own machine, so your collection stays yours. Nothing is shared, 
 - **Your collection at a glance.** Every toy gets its own picture that matches its real shape and size, so you recognize each one instantly — drawn in a built-in editor, no photos needed.
 - **Keep the details that matter.** Brand, model, size, color, and any notes or fields you want to add.
 - **Track your sessions.** Jot down what you reached for and when, then watch your activity and progress build up over time.
+- **Your session photos and videos, right there.** Shots taken during a session appear on it automatically, straight from your own photo library — nothing gets uploaded or copied.
 - **Works on any screen.** Looks right whether you're on your laptop or your phone.
 - **Light and dark.** Pick whichever's easier on the eyes.
 - **Always yours to take.** Export your entire collection any time, and bring it back just as easily.
@@ -69,6 +70,14 @@ Then `docker compose up -d` in that folder.
 
 Everything the app needs to keep — the database, an auto-generated secret key, migration archives — lives in the `data/` folder you mounted as `/data`. Back up that folder and you have backed up your whole instance. Move that folder to a different machine and the app picks up where it left off.
 
+## Photos and videos for your sessions
+
+If you take photos or videos during a session, the app can show them right on that session — matched automatically by when they were taken, viewable in a built-in full-screen viewer. This is entirely optional: the app works fully without it.
+
+Your media never leaves your photo library. The app doesn't upload, copy, or store any of it — it only looks up what was taken around a session's time and displays it from the library directly, using short-lived viewing links. [Immich](https://immich.app/) is the supported library today; support for other media providers may come later.
+
+To turn it on, set `IMMICH_URL` and `IMMICH_API_KEY` from the table below. Video playback quality follows your Immich transcoding settings.
+
 ## Configuration
 
 All optional. Set only what you need.
@@ -89,4 +98,4 @@ All optional. Set only what you need.
 | `IMMICH_API_KEY`   | unset              | Immich API key used to find session media and create expiring share links. Needs only the `asset.read`, `sharedLink.read`, `sharedLink.create`, and `sharedLink.delete` permissions. |
 | `IMMICH_PUBLIC_URL`| `IMMICH_URL`       | Immich URL as reachable from your browser, if it differs from the server-side one.                                  |
 | `SESSION_MEDIA_WINDOW_MINUTES` | `60`   | How far around a session's start time (both ways) to look for media.                                                |
-| `SESSION_MEDIA_LINK_HOURS` | `6`        | How long the generated Immich share links stay valid.                                                               |
+| `SESSION_MEDIA_LINK_MINUTES` | `30`     | How long the short-lived Immich share links stay valid.                                                             |

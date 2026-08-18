@@ -94,18 +94,32 @@ class SessionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="media")
     def media(self, request, pk=None):
         session = self.get_object()
-        return Response(media.get_provider().session_media(session.id, session.started_at))
+        result = media.get_provider().session_media(session.id, session.started_at)
+        if result.authoritative:
+            has_media = bool(result.items)
+            if session.has_media != has_media:
+                session.has_media = has_media
+                session.save(update_fields=["has_media"])
+        return Response({"configured": result.configured, "items": result.items})
 
     @extend_schema(responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["get"], url_path="media-indicators")
     def media_indicators(self, request):
-        return Response(media.get_provider().media_indicators())
+        if not media.get_provider().is_configured():
+            return Response({"configured": False, "session_ids": []})
+        flagged = models.Session.objects.filter(has_media=True).order_by("id")
+        session_ids = list(flagged.values_list("id", flat=True))
+        return Response({"configured": True, "session_ids": session_ids})
 
     @extend_schema(request=None, responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["post"], url_path="refresh-media")
     def refresh_media(self, request):
         sessions = list(models.Session.objects.order_by("id").values_list("id", "started_at"))
-        return Response(media.get_provider().refresh_all_media(sessions))
+        result = media.get_provider().refresh_all_media(sessions)
+        if result.authoritative:
+            models.Session.objects.filter(id__in=result.session_ids).update(has_media=True)
+            models.Session.objects.exclude(id__in=result.session_ids).update(has_media=False)
+        return Response({"configured": result.configured, "session_ids": result.session_ids})
 
     @extend_schema(responses=serializers.ActivityResponseSerializer)
     @action(detail=False, methods=["get"], url_path="activity")

@@ -123,19 +123,12 @@ class MediaIndicatorTests(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=user)
 
-    @mock.patch("toys.immich.requests.request")
-    def test_lists_session_ids_from_app_marked_links(self, request_mock):
-        request_mock.return_value = _response(
-            json_data=[
-                {"id": "l1", "key": "K", "description": immich._link_marker(7, ["a"])},
-                {"id": "l2", "key": "K", "description": immich._link_marker(3, ["b"])},
-                {"id": "l3", "key": "K", "description": "someone elses link"},
-                {"id": "l4", "key": "K", "description": "toy-gallery:not-a-number:x"},
-            ]
-        )
+    def test_lists_session_ids_from_stored_flags(self):
+        flagged = models.Session.objects.create(started_at="2026-06-01T20:00:00Z", has_media=True)
+        models.Session.objects.create(started_at="2026-06-02T20:00:00Z")
         response = self.client.get("/toys/sessions/media-indicators/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {"configured": True, "session_ids": [3, 7]})
+        self.assertEqual(response.data, {"configured": True, "session_ids": [flagged.id]})
 
     def test_unconfigured_indicators(self):
         with override_settings(IMMICH_URL="", IMMICH_API_KEY=""):
@@ -158,11 +151,15 @@ class MediaIndicatorTests(TestCase):
             ),
             _response(status_code=204),
         ]
+        session.has_media = True
+        session.save(update_fields=["has_media"])
         response = self.client.get(f"/toys/sessions/{session.id}/media/")
         self.assertEqual(response.data, {"configured": True, "items": []})
         delete_call = request_mock.call_args_list[2]
         self.assertEqual(delete_call.args[0], "DELETE")
         self.assertIn("/shared-links/l1", delete_call.args[1])
+        session.refresh_from_db()
+        self.assertFalse(session.has_media)
 
 
 @override_settings(
@@ -200,9 +197,15 @@ class RefreshAllMediaTests(TestCase):
             _response(json_data={"key": "NEW"}),
             _response(status_code=204),
         ]
+        without_media.has_media = True
+        without_media.save(update_fields=["has_media"])
         response = self.client.post("/toys/sessions/refresh-media/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"configured": True, "session_ids": [with_media.id]})
+        with_media.refresh_from_db()
+        without_media.refresh_from_db()
+        self.assertTrue(with_media.has_media)
+        self.assertFalse(without_media.has_media)
         create_call = request_mock.call_args_list[2]
         self.assertEqual(create_call.args[0], "POST")
         self.assertIn("/shared-links", create_call.args[1])
@@ -259,6 +262,14 @@ class RefreshAllMediaTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"configured": True, "session_ids": []})
 
+    @mock.patch("toys.immich.ImmichClient.search_assets", side_effect=immich.ImmichError("boom"))
+    def test_upstream_failure_does_not_clear_stored_flags(self, _search_mock):
+        flagged = models.Session.objects.create(started_at="2026-06-01T20:00:00Z", has_media=True)
+        response = self.client.post("/toys/sessions/refresh-media/")
+        self.assertEqual(response.data, {"configured": True, "session_ids": []})
+        flagged.refresh_from_db()
+        self.assertTrue(flagged.has_media)
+
 
 class SessionMediaEndpointTests(TestCase):
     def setUp(self):
@@ -282,14 +293,21 @@ class SessionMediaEndpointTests(TestCase):
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data["configured"])
+        self.assertEqual(set(response.data.keys()), {"configured", "items"})
         item = response.data["items"][0]
         self.assertEqual(item["id"], "a1")
         self.assertIn("key=KEY", item["thumbnail_url"])
         self.assertIn("key=KEY", item["full_url"])
+        self.session.refresh_from_db()
+        self.assertTrue(self.session.has_media)
 
     @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
     @mock.patch("toys.immich.ImmichClient.search_assets", side_effect=immich.ImmichError("boom"))
-    def test_upstream_failure_degrades_to_empty(self, _search_mock):
+    def test_upstream_failure_degrades_to_empty_and_keeps_flag(self, _search_mock):
+        self.session.has_media = True
+        self.session.save(update_fields=["has_media"])
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"configured": True, "items": []})
+        self.session.refresh_from_db()
+        self.assertTrue(self.session.has_media)

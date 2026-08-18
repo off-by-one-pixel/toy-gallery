@@ -67,6 +67,7 @@ class Toy(models.Model):
 
 class Session(models.Model):
     started_at = models.DateTimeField()
+    has_media = models.BooleanField(default=False)
 
     if TYPE_CHECKING:
         # Reverse relation from ToySessionEntry.session (related_name="entries").
