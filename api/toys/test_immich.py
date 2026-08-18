@@ -293,7 +293,7 @@ class SessionMediaEndpointTests(TestCase):
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data["configured"])
-        self.assertNotIn("ok", response.data)
+        self.assertEqual(set(response.data.keys()), {"configured", "items"})
         item = response.data["items"][0]
         self.assertEqual(item["id"], "a1")
         self.assertIn("key=KEY", item["thumbnail_url"])

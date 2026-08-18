@@ -7,7 +7,12 @@ import requests
 from django.conf import settings
 from django.utils import timezone
 
-from .media import SessionMediaProvider, session_media_window
+from .media import (
+    MediaRefreshResult,
+    SessionMediaProvider,
+    SessionMediaResult,
+    session_media_window,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -228,13 +233,13 @@ class ImmichMediaProvider(SessionMediaProvider):
     def is_configured(self) -> bool:
         return self.client.is_configured()
 
-    def refresh_all_media(self, sessions: list[tuple[int, datetime]]) -> dict:
+    def refresh_all_media(self, sessions: list[tuple[int, datetime]]) -> MediaRefreshResult:
         if not self.client.is_configured():
-            return {"configured": False, "ok": False, "session_ids": []}
+            return MediaRefreshResult(configured=False, authoritative=False, session_ids=[])
         try:
             windows = {sid: session_media_window(started) for sid, started in sessions}
             if not windows:
-                return {"configured": True, "ok": True, "session_ids": []}
+                return MediaRefreshResult(configured=True, authoritative=True, session_ids=[])
 
             overall_start = min(w[0] for w in windows.values())
             overall_end = max(w[1] for w in windows.values())
@@ -246,10 +251,12 @@ class ImmichMediaProvider(SessionMediaProvider):
                 for sid, asset_ids in _assets_by_session(assets, windows).items()
                 if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, []))
             ]
-            return {"configured": True, "ok": True, "session_ids": sorted(session_ids)}
+            return MediaRefreshResult(
+                configured=True, authoritative=True, session_ids=sorted(session_ids)
+            )
         except (ImmichError, requests.RequestException) as err:
             logger.warning("immich: media refresh failed: %s", err)
-            return {"configured": True, "ok": False, "session_ids": []}
+            return MediaRefreshResult(configured=True, authoritative=False, session_ids=[])
 
     def _sync_session_links(
         self, session_id: int, asset_ids: list[str], existing: list[SharedLink]
@@ -270,15 +277,15 @@ class ImmichMediaProvider(SessionMediaProvider):
             self.client._create_link(marker, asset_ids)
         return True
 
-    def session_media(self, session_id: int, started_at: datetime) -> dict:
+    def session_media(self, session_id: int, started_at: datetime) -> SessionMediaResult:
         if not self.client.is_configured():
-            return {"configured": False, "ok": False, "items": []}
+            return SessionMediaResult(configured=False, authoritative=False, items=[])
         try:
             start, end = session_media_window(started_at)
             assets = self.client.search_assets(start, end)
             if not assets:
                 self.client.clear_session_links(session_id)
-                return {"configured": True, "ok": True, "items": []}
+                return SessionMediaResult(configured=True, authoritative=True, items=[])
             key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
             items = []
             for asset in assets:
@@ -292,7 +299,7 @@ class ImmichMediaProvider(SessionMediaProvider):
                         "full_url": full_url,
                     }
                 )
-            return {"configured": True, "ok": True, "items": items}
+            return SessionMediaResult(configured=True, authoritative=True, items=items)
         except (ImmichError, requests.RequestException) as err:
             logger.warning("immich: media lookup failed: %s", err)
-            return {"configured": True, "ok": False, "items": []}
+            return SessionMediaResult(configured=True, authoritative=False, items=[])

@@ -95,12 +95,12 @@ class SessionViewSet(viewsets.ModelViewSet):
     def media(self, request, pk=None):
         session = self.get_object()
         result = media.get_provider().session_media(session.id, session.started_at)
-        if result.pop("ok", False):
-            has_media = bool(result["items"])
+        if result.authoritative:
+            has_media = bool(result.items)
             if session.has_media != has_media:
                 session.has_media = has_media
                 session.save(update_fields=["has_media"])
-        return Response(result)
+        return Response({"configured": result.configured, "items": result.items})
 
     @extend_schema(responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["get"], url_path="media-indicators")
@@ -116,11 +116,10 @@ class SessionViewSet(viewsets.ModelViewSet):
     def refresh_media(self, request):
         sessions = list(models.Session.objects.order_by("id").values_list("id", "started_at"))
         result = media.get_provider().refresh_all_media(sessions)
-        if result.pop("ok", False):
-            with_media = result["session_ids"]
-            models.Session.objects.filter(id__in=with_media).update(has_media=True)
-            models.Session.objects.exclude(id__in=with_media).update(has_media=False)
-        return Response(result)
+        if result.authoritative:
+            models.Session.objects.filter(id__in=result.session_ids).update(has_media=True)
+            models.Session.objects.exclude(id__in=result.session_ids).update(has_media=False)
+        return Response({"configured": result.configured, "session_ids": result.session_ids})
 
     @extend_schema(responses=serializers.ActivityResponseSerializer)
     @action(detail=False, methods=["get"], url_path="activity")
