@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Spinner } from '@heroui/react';
+import { Alert, Spinner } from '@heroui/react';
 import { CalendarClock, Play, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,7 @@ import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
-import { ActionFabs, type ActionDef } from './ActionButtons';
+import { ActionBar, ActionFabs, type ActionDef } from './ActionButtons';
 import { toyActionDefs } from './ToyActionButtons';
 import DisplayOptionsMenu from './DisplayOptionsMenu';
 import SearchInput from './SearchInput';
@@ -95,7 +95,7 @@ const ToyGallery = () => {
             label: t('session.live.startButton'),
             icon: Play,
             variant: 'primary',
-            fabClassName: 'bg-emerald-600 text-white hover:bg-emerald-500',
+            className: 'bg-emerald-600 text-white hover:bg-emerald-500',
             fabIconSize: 22,
             onPress: () => void runToast(startLive),
           } satisfies ActionDef,
@@ -106,6 +106,7 @@ const ToyGallery = () => {
       label: t('session.newButton'),
       icon: CalendarClock,
       variant: 'outline',
+      iconStrokeWidth: 1.8,
       onPress: () => router.push('/sessions/new'),
     },
     { key: 'new-toy', label: t('toy.new'), icon: Plus, variant: 'primary', onPress: toyModal.openNew },
@@ -174,25 +175,7 @@ const ToyGallery = () => {
             <GirthToggle />
           </div>
           <div className="hidden flex-1 sm:block" />
-          {showStartLive && (
-            <Button
-              variant="primary"
-              size="sm"
-              className="max-sm:hidden bg-emerald-600 text-white hover:bg-emerald-500"
-              onPress={() => void runToast(startLive)}
-            >
-              <Play size={14} strokeWidth={2.2} />
-              <span className="hidden md:inline">{t('session.live.startButton')}</span>
-            </Button>
-          )}
-          <Button variant="outline" size="sm" className="max-sm:hidden" onPress={() => router.push('/sessions/new')}>
-            <CalendarClock size={14} strokeWidth={1.8} />
-            <span className="hidden md:inline">{t('session.newButton')}</span>
-          </Button>
-          <Button variant="primary" size="sm" className="max-sm:hidden" onPress={toyModal.openNew}>
-            <Plus size={14} strokeWidth={2.2} />
-            <span className="hidden md:inline">{t('toy.new')}</span>
-          </Button>
+          <ActionBar actions={newActions} />
         </div>
       </header>
 
