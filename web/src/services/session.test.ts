@@ -115,8 +115,24 @@ describe('sortEntriesByInvolvement', () => {
 });
 
 describe('toysById', () => {
-  const t1: Toy = { id: 1, brand: 'A', name: 'a', size: '', usageCount: 0, shape: { sections: [] } } as Toy;
-  const t2: Toy = { id: 2, brand: 'B', name: 'b', size: '', usageCount: 0, shape: { sections: [] } } as Toy;
+  const t1: Toy = {
+    id: 1,
+    brand: 'A',
+    name: 'a',
+    size: '',
+    usageCount: 0,
+    totalDurationMinutes: 0,
+    shape: { sections: [] },
+  } as Toy;
+  const t2: Toy = {
+    id: 2,
+    brand: 'B',
+    name: 'b',
+    size: '',
+    usageCount: 0,
+    totalDurationMinutes: 0,
+    shape: { sections: [] },
+  } as Toy;
 
   it('builds a map keyed by toy.id', () => {
     const map = toysById([t1, t2]);

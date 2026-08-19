@@ -187,6 +187,7 @@ describe('createToy', () => {
         name: 'N',
         size: '',
         usage_count: 0,
+        total_duration_minutes: 0,
         shape: { sections: [], top_section_shape: 'CONE' },
         custom_attributes: { color: 'red' },
         date_purchased: null,

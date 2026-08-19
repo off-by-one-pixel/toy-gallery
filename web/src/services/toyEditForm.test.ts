@@ -38,6 +38,7 @@ const SOURCE_TOY: Toy = {
   datePurchased: '2025-01-01',
   retired: false,
   usageCount: 0,
+  totalDurationMinutes: 0,
   shape: { topSectionShape: SectionShape.EGG, bottomSectionShape: SectionShape.FLAT, sections: [] },
   customAttributes: { season: 'spring' },
 };

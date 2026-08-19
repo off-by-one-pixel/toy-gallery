@@ -825,6 +825,22 @@ class SessionTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_toy_total_duration_aggregates_across_sessions(self):
+        for minutes in (30, None, 65):
+            entry = {"toy": self.toy_a, "involvement": "USED"}
+            if minutes is not None:
+                entry["duration_minutes"] = minutes
+            response = self.client.post(
+                "/toys/sessions/",
+                {"started_at": "2026-05-02T21:14:00Z", "entries": [entry]},
+                format="json",
+            )
+            self.assertEqual(response.status_code, 201, response.content)
+
+        toys = {t["id"]: t for t in self.client.get("/toys/toys/").data}
+        self.assertEqual(toys[self.toy_a]["total_duration_minutes"], 95)
+        self.assertEqual(toys[self.toy_b]["total_duration_minutes"], 0)
+
     def test_list_orders_by_started_at_descending(self):
         for ts in ("2026-04-01T10:00:00Z", "2026-05-01T10:00:00Z", "2026-04-15T10:00:00Z"):
             self.client.post(
