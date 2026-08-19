@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Spinner } from '@heroui/react';
-import { CalendarClock, Play, Plus } from 'lucide-react';
+import { Alert, Spinner } from '@heroui/react';
+import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { deleteToy, fetchToys } from '../services/api';
@@ -14,7 +14,7 @@ import { useSort } from '../providers/SortProvider';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
-import { ActionFabs, type ActionDef } from './ActionButtons';
+import { ActionBar, ActionFabs, type ActionDef } from './ActionButtons';
 import { toyActionDefs } from './ToyActionButtons';
 import DisplayOptionsMenu from './DisplayOptionsMenu';
 import SearchInput from './SearchInput';
@@ -25,7 +25,7 @@ import ToyEditModal from './toy-edit/ToyEditModal';
 import ToyList from './ToyList';
 import GirthToggle from './GirthToggle';
 import LiveSessionBanner from './LiveSessionBanner';
-import { useLiveSession } from '../providers/LiveSessionProvider';
+import { useStartLiveAction } from '../hooks/useStartLiveAction';
 import UnitToggle from './UnitToggle';
 import ViewToggle from './ViewToggle';
 
@@ -61,8 +61,7 @@ const ToyGallery = () => {
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
-  const { liveSession, isLoaded: liveLoaded, start: startLive } = useLiveSession();
-  const showStartLive = liveLoaded && !liveSession;
+  const startLiveAction = useStartLiveAction();
 
   useEffect(() => {
     runInline(fetchToys, {
@@ -88,24 +87,13 @@ const ToyGallery = () => {
   const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
 
   const newActions: ActionDef[] = [
-    ...(showStartLive
-      ? [
-          {
-            key: 'start-live',
-            label: t('session.live.startButton'),
-            icon: Play,
-            variant: 'primary',
-            fabClassName: 'bg-emerald-600 text-white hover:bg-emerald-500',
-            fabIconSize: 22,
-            onPress: () => void runToast(startLive),
-          } satisfies ActionDef,
-        ]
-      : []),
+    ...(startLiveAction ? [startLiveAction] : []),
     {
       key: 'new-session',
       label: t('session.newButton'),
       icon: CalendarClock,
       variant: 'outline',
+      iconStrokeWidth: 1.8,
       onPress: () => router.push('/sessions/new'),
     },
     { key: 'new-toy', label: t('toy.new'), icon: Plus, variant: 'primary', onPress: toyModal.openNew },
@@ -174,25 +162,7 @@ const ToyGallery = () => {
             <GirthToggle />
           </div>
           <div className="hidden flex-1 sm:block" />
-          {showStartLive && (
-            <Button
-              variant="primary"
-              size="sm"
-              className="max-sm:hidden bg-emerald-600 text-white hover:bg-emerald-500"
-              onPress={() => void runToast(startLive)}
-            >
-              <Play size={14} strokeWidth={2.2} />
-              <span className="hidden md:inline">{t('session.live.startButton')}</span>
-            </Button>
-          )}
-          <Button variant="outline" size="sm" className="max-sm:hidden" onPress={() => router.push('/sessions/new')}>
-            <CalendarClock size={14} strokeWidth={1.8} />
-            <span className="hidden md:inline">{t('session.newButton')}</span>
-          </Button>
-          <Button variant="primary" size="sm" className="max-sm:hidden" onPress={toyModal.openNew}>
-            <Plus size={14} strokeWidth={2.2} />
-            <span className="hidden md:inline">{t('toy.new')}</span>
-          </Button>
+          <ActionBar actions={newActions} />
         </div>
       </header>
 

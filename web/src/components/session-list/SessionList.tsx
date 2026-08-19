@@ -1,18 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, Button, Spinner } from '@heroui/react';
-import { Pencil, Play, Plus, Trash2 } from 'lucide-react';
+import { Alert, Spinner } from '@heroui/react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useStartLiveAction } from '../../hooks/useStartLiveAction';
 import { useLiveSession } from '../../providers/LiveSessionProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
 import { FILTERS, type FilterKey } from '../../services/session';
 import type { Session } from '../../services/types';
-import { ActionFabs, type ActionDef } from '../ActionButtons';
+import { ActionBar, ActionFabs, type ActionDef } from '../ActionButtons';
 import ActivityTracker from '../ActivityTracker';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
 import LiveSessionBanner from '../LiveSessionBanner';
@@ -35,13 +36,14 @@ export default function SessionList() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
   const runToast = useAsyncAction();
-  const { liveSession, isLoaded: liveLoaded, start: startLive, refresh: refreshLive } = useLiveSession();
-  const showStartLive = liveLoaded && !liveSession;
+  const { refresh: refreshLive } = useLiveSession();
 
   const addStartedSession = (session: Session) => {
     data.prependSession(session);
     setFlashId(session.id);
   };
+
+  const startLiveAction = useStartLiveAction(addStartedSession);
 
   const editSession = (id: number) => router.push(`/sessions/edit?id=${id}`);
   const removeSession = (id: number) => {
@@ -74,6 +76,17 @@ export default function SessionList() {
             onPress: () => removeSession(selectedId),
           },
         ];
+  const newActions: ActionDef[] = [
+    ...(startLiveAction ? [startLiveAction] : []),
+    {
+      key: 'new',
+      label: t('newButton'),
+      icon: Plus,
+      variant: 'primary',
+      onPress: () => router.push('/sessions/new'),
+    },
+  ];
+
   const filterLongLabel = (key: FilterKey) => t(`filter.${key}`);
   const filterShortLabel = (key: FilterKey) => t(`filter.${key}Short`);
   const filterItems: SwitcherItem<FilterKey>[] = FILTERS.map((f) => ({
@@ -99,54 +112,17 @@ export default function SessionList() {
             <GirthToggle />
           </div>
           <div className="flex-1" />
-          {showStartLive && (
-            <Button
-              variant="primary"
-              size="sm"
-              className="max-sm:hidden bg-emerald-600 text-white hover:bg-emerald-500"
-              onPress={() => void runToast(startLive, { onSuccess: addStartedSession })}
-            >
-              <Play size={14} strokeWidth={2.2} />
-              <span className="hidden md:inline">{t('live.startButton')}</span>
-            </Button>
-          )}
           <DisplayOptionsMenu>
             <UnitToggle />
             <GirthToggle />
           </DisplayOptionsMenu>
-          <Button variant="primary" size="sm" className="max-sm:hidden" onPress={() => router.push('/sessions/new')}>
-            <Plus size={14} strokeWidth={2.2} />
-            <span className="hidden md:inline">{t('newButton')}</span>
-          </Button>
+          <ActionBar actions={newActions} />
         </div>
       </header>
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {selectedActions && <ActionFabs actions={selectedActions} />}
-        <ActionFabs
-          actions={[
-            ...(showStartLive
-              ? [
-                  {
-                    key: 'start-live',
-                    label: t('live.startButton'),
-                    icon: Play,
-                    variant: 'primary',
-                    fabClassName: 'bg-emerald-600 text-white hover:bg-emerald-500',
-                    fabIconSize: 22,
-                    onPress: () => void runToast(startLive, { onSuccess: addStartedSession }),
-                  } satisfies ActionDef,
-                ]
-              : []),
-            {
-              key: 'new',
-              label: t('newButton'),
-              icon: Plus,
-              variant: 'primary',
-              onPress: () => router.push('/sessions/new'),
-            },
-          ]}
-        />
+        <ActionFabs actions={newActions} />
       </div>
 
       <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-6">
