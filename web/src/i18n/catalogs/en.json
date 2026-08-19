@@ -83,6 +83,15 @@
     "newButton": "New session",
     "recorded": "recorded",
     "detailsToggleLabel": "Toggle session details",
+    "totalTime": "Time",
+    "startedLabel": "Started",
+    "endedLabel": "Ended",
+    "clearEndedLabel": "Clear end time",
+    "duration": {
+      "label": "Duration",
+      "clearLabel": "Clear duration",
+      "wholeSession": "Whole session"
+    },
     "filter": {
       "ariaLabel": "Date range",
       "all": "All",

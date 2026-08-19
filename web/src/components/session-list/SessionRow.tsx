@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActionButtons, type ActionDef } from '../ActionButtons';
 import { useGirth } from '../../providers/GirthProvider';
 import { displayGirth } from '../../services/girth';
+import { formatDuration, totalDuration } from '../../services/duration';
 import { heightScale } from '../../services/scaling';
 import { formatWhen, sortEntriesByInvolvement } from '../../services/session';
 import type { Session, Toy } from '../../services/types';
@@ -48,6 +49,7 @@ export default function SessionRow({
   const overflow = orderedEntries.length - visibleEntries.length;
 
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
+  const totalMinutes = totalDuration(orderedEntries);
 
   const actions: ActionDef[] = [
     { key: 'edit', label: common('edit'), icon: Pencil, variant: 'outline', onPress: onEdit },
@@ -104,6 +106,14 @@ export default function SessionRow({
             mm={displayGirth(session.maxCircumference, girth)}
             unit={unit}
           />
+          {totalMinutes > 0 && (
+            <div className="flex items-baseline gap-2 py-0.5 sm:justify-end">
+              <span className="text-caption uppercase tracking-wider text-text-tertiary">{t('totalTime')}</span>
+              <span className="text-[15px] font-semibold tracking-tight tabular-nums text-foreground sm:text-[17px]">
+                {formatDuration(totalMinutes, locale)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       {selected && (

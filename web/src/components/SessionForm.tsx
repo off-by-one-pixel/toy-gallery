@@ -2,17 +2,21 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner, Toast } from '@heroui/react';
-import { ArrowLeft, Check, Clock } from 'lucide-react';
+import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { createSession, fetchToys, fetchSession, updateSession } from '../services/api';
 import { Involvement, type Session, type Toy } from '../services/types';
+
+type ToySelection = { involvement: Involvement; durationMinutes: number | null };
 import { SortProvider, useSort } from '../providers/SortProvider';
+import { minutesBetween } from '../services/duration';
 import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import SearchInput from './SearchInput';
+import SectionHeading from './SectionHeading';
 import SessionMediaStrip from './session-list/SessionMediaStrip';
 import SortControl from './SortControl';
 import ToyChipSelector from './ToyChipSelector';
@@ -44,8 +48,9 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [startedAt, setStartedAt] = useState(datetimeLocalNow);
+  const [endedAt, setEndedAt] = useState('');
   const [query, setQuery] = useState('');
-  const [selections, setSelections] = useState<Map<number, Involvement>>(() => new Map());
+  const [selections, setSelections] = useState<Map<number, ToySelection>>(() => new Map());
 
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
@@ -67,7 +72,15 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
           setToys(loadedToys);
           if (loadedSession) {
             setStartedAt(formatLocal(new Date(loadedSession.startedAt)));
-            setSelections(new Map(loadedSession.entries.map((e) => [e.toy, e.involvement])));
+            setEndedAt(loadedSession.endedAt ? formatLocal(new Date(loadedSession.endedAt)) : '');
+            setSelections(
+              new Map(
+                loadedSession.entries.map((e) => [
+                  e.toy,
+                  { involvement: e.involvement, durationMinutes: e.durationMinutes ?? null },
+                ]),
+              ),
+            );
           }
           setError(null);
         },
@@ -78,12 +91,30 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const { sort } = useSort();
   const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
   const selectedCount = selections.size;
+  const sessionSpan = startedAt && endedAt ? minutesBetween(startedAt, endedAt) : null;
+  const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
 
   const handlePick = (toyId: number, next: Involvement | null) => {
     setSelections((prev) => {
       const updated = new Map(prev);
-      if (next === null) updated.delete(toyId);
-      else updated.set(toyId, next);
+      if (next === null) {
+        updated.delete(toyId);
+      } else {
+        updated.set(toyId, {
+          involvement: next,
+          durationMinutes: prev.get(toyId)?.durationMinutes ?? null,
+        });
+      }
+      return updated;
+    });
+  };
+
+  const changeDuration = (toyId: number, next: number | null) => {
+    setSelections((prev) => {
+      const current = prev.get(toyId);
+      if (!current) return prev;
+      const updated = new Map(prev);
+      updated.set(toyId, { ...current, durationMinutes: next });
       return updated;
     });
   };
@@ -92,7 +123,12 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
     if (selectedCount === 0) return;
     const payload = {
       startedAt: new Date(startedAt).toISOString(),
-      entries: [...selections.entries()].map(([toy, involvement]) => ({ toy, involvement })),
+      endedAt: endedAt ? new Date(endedAt).toISOString() : null,
+      entries: [...selections.entries()].map(([toy, sel]) => ({
+        toy,
+        involvement: sel.involvement,
+        durationMinutes: sel.durationMinutes,
+      })),
     };
     const save = sessionId !== null ? updateSession(sessionId, payload) : createSession(payload);
     runToast(() => save, {
@@ -130,40 +166,82 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         )}
 
         <section className="mb-7">
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            {t('whenHeading')}
-          </h2>
-          <div className="inline-flex max-w-90 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm">
-            <Clock size={16} className="text-muted" />
-            <input
-              type="datetime-local"
-              value={startedAt}
-              onChange={(e) => setStartedAt(e.target.value)}
-              className="flex-1 border-0 bg-transparent text-sm tabular-nums text-foreground outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => setStartedAt(datetimeLocalNow())}
-              className="rounded-md border border-border bg-surface-secondary px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface"
-            >
-              {t('nowButton')}
-            </button>
+          <div className="mb-3 flex items-center gap-3">
+            <SectionHeading title={t('whenHeading')} />
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <div>
+              <div className="mb-1 text-caption font-medium uppercase tracking-wider text-text-tertiary">
+                {t('startedLabel')}
+                <span className="ml-0.5 align-middle text-sm leading-none text-accent">*</span>
+              </div>
+              <div className="flex w-full max-w-90 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm">
+                <Clock size={16} className="shrink-0 text-muted" />
+                <input
+                  type="datetime-local"
+                  value={startedAt}
+                  onChange={(e) => setStartedAt(e.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent text-sm tabular-nums text-foreground outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setStartedAt(datetimeLocalNow())}
+                  className="shrink-0 rounded-md border border-border bg-surface-secondary px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface"
+                >
+                  {t('nowButton')}
+                </button>
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 text-caption font-medium uppercase tracking-wider text-text-tertiary">
+                {t('endedLabel')}
+              </div>
+              <div className="flex w-full max-w-90 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm">
+                <Clock size={16} className="shrink-0 text-muted" />
+                <input
+                  type="datetime-local"
+                  value={endedAt}
+                  onChange={(e) => setEndedAt(e.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent text-sm tabular-nums text-foreground outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setEndedAt(datetimeLocalNow())}
+                  className="shrink-0 rounded-md border border-border bg-surface-secondary px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface"
+                >
+                  {t('nowButton')}
+                </button>
+                {endedAt && (
+                  <button
+                    type="button"
+                    aria-label={t('clearEndedLabel')}
+                    onClick={() => setEndedAt('')}
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+                  >
+                    <X size={14} strokeWidth={2.5} />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </section>
 
         {sessionId !== null && (
           <section className="mb-7">
-            <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-              {t('media.heading')}
-            </h2>
+            <div className="mb-3 flex items-center gap-3">
+              <SectionHeading title={t('media.heading')} />
+              <div className="h-px flex-1 bg-border" />
+            </div>
             <SessionMediaStrip sessionId={sessionId} showHeading={false} />
           </section>
         )}
 
         <section>
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            {t('toysHeading')}
-          </h2>
+          <div className="mb-3 flex items-center gap-3">
+            <SectionHeading title={t('toysHeading')} />
+            <div className="h-px flex-1 bg-border" />
+          </div>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <SearchInput value={query} onChange={setQuery} />
             <SortControl />
@@ -180,8 +258,15 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
                 <ToyChipSelector
                   key={toy.id}
                   toy={toy}
-                  state={selections.get(toy.id) ?? null}
+                  state={selections.get(toy.id)?.involvement ?? null}
+                  duration={selections.get(toy.id)?.durationMinutes ?? null}
                   onChange={(next) => handlePick(toy.id, next)}
+                  wholeSessionMinutes={wholeSessionMinutes}
+                  onAddDuration={(minutes) =>
+                    changeDuration(toy.id, (selections.get(toy.id)?.durationMinutes ?? 0) + minutes)
+                  }
+                  onSetDuration={(minutes) => changeDuration(toy.id, minutes)}
+                  onClearDuration={() => changeDuration(toy.id, null)}
                 />
               ))}
             </div>

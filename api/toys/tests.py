@@ -666,6 +666,66 @@ class SessionTests(TestCase):
         kinds = {e["involvement"] for e in response.data["entries"]}
         self.assertEqual(kinds, {"USED", "FULLY_INSERTED"})
 
+    def test_entry_duration_round_trips_and_defaults_to_null(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [
+                    {"toy": self.toy_a, "involvement": "USED", "duration_minutes": 95},
+                    {"toy": self.toy_b, "involvement": "INSERTED"},
+                ]
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        by_toy = {e["toy"]: e["duration_minutes"] for e in response.data["entries"]}
+        self.assertEqual(by_toy[self.toy_a], 95)
+        self.assertIsNone(by_toy[self.toy_b])
+
+        session_id = response.data["id"]
+        update = self.client.put(
+            f"/toys/sessions/{session_id}/",
+            self._session_payload(
+                [{"toy": self.toy_a, "involvement": "USED", "duration_minutes": 30}]
+            ),
+            format="json",
+        )
+        self.assertEqual(update.status_code, 200, update.content)
+        self.assertEqual(update.data["entries"][0]["duration_minutes"], 30)
+
+    def test_ended_at_round_trips_and_defaults_to_null(self):
+        payload = self._session_payload([{"toy": self.toy_a, "involvement": "USED"}])
+        response = self.client.post("/toys/sessions/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertIsNone(response.data["ended_at"])
+
+        payload["ended_at"] = "2026-05-03T07:30:00Z"
+        update = self.client.put(
+            f"/toys/sessions/{response.data['id']}/", payload, format="json"
+        )
+        self.assertEqual(update.status_code, 200, update.content)
+        self.assertEqual(update.data["ended_at"], "2026-05-03T07:30:00Z")
+
+    def test_ended_at_before_start_rejected(self):
+        payload = self._session_payload(
+            [{"toy": self.toy_a, "involvement": "USED"}],
+            started_at="2026-05-02T21:14:00Z",
+        )
+        payload["ended_at"] = "2026-05-02T20:00:00Z"
+        response = self.client.post("/toys/sessions/", payload, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("ended_at", response.data)
+
+    def test_negative_duration_rejected(self):
+        response = self.client.post(
+            "/toys/sessions/",
+            self._session_payload(
+                [{"toy": self.toy_a, "involvement": "USED", "duration_minutes": -5}]
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_list_orders_by_started_at_descending(self):
         for ts in ("2026-04-01T10:00:00Z", "2026-05-01T10:00:00Z", "2026-04-15T10:00:00Z"):
             self.client.post(

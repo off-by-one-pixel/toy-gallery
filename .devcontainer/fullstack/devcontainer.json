@@ -26,7 +26,7 @@
         "charliermarsh.ruff"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.defaultInterpreterPath": "api/.venv/bin/python",
         "editor.formatOnSave": true,
         "files.trimTrailingWhitespace": true,
         "terminal.integrated.defaultProfile.linux": "bash"

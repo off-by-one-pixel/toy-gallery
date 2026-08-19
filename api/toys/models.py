@@ -67,6 +67,7 @@ class Toy(models.Model):
 
 class Session(models.Model):
     started_at = models.DateTimeField()
+    ended_at = models.DateTimeField(null=True, blank=True)
     has_media = models.BooleanField(default=False)
 
     if TYPE_CHECKING:
@@ -88,6 +89,7 @@ class ToySessionEntry(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="entries")
     toy = models.ForeignKey(Toy, on_delete=models.PROTECT)
     involvement = models.CharField(max_length=20, choices=INVOLVEMENT_CHOICES)
+    duration_minutes = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         constraints = [
