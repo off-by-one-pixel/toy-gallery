@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
-import { Pencil, Play, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useStartLiveAction } from '../../hooks/useStartLiveAction';
 import { useLiveSession } from '../../providers/LiveSessionProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
@@ -35,13 +36,14 @@ export default function SessionList() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
   const runToast = useAsyncAction();
-  const { liveSession, isLoaded: liveLoaded, start: startLive, refresh: refreshLive } = useLiveSession();
-  const showStartLive = liveLoaded && !liveSession;
+  const { refresh: refreshLive } = useLiveSession();
 
   const addStartedSession = (session: Session) => {
     data.prependSession(session);
     setFlashId(session.id);
   };
+
+  const startLiveAction = useStartLiveAction(addStartedSession);
 
   const editSession = (id: number) => router.push(`/sessions/edit?id=${id}`);
   const removeSession = (id: number) => {
@@ -75,19 +77,7 @@ export default function SessionList() {
           },
         ];
   const newActions: ActionDef[] = [
-    ...(showStartLive
-      ? [
-          {
-            key: 'start-live',
-            label: t('live.startButton'),
-            icon: Play,
-            variant: 'primary',
-            className: 'bg-emerald-600 text-white hover:bg-emerald-500',
-            fabIconSize: 22,
-            onPress: () => void runToast(startLive, { onSuccess: addStartedSession }),
-          } satisfies ActionDef,
-        ]
-      : []),
+    ...(startLiveAction ? [startLiveAction] : []),
     {
       key: 'new',
       label: t('newButton'),
