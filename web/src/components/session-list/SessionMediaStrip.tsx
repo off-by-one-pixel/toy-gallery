@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { useMediaLightboxNav } from '../../hooks/nav/useMediaLightboxNav';
 import { fetchSessionMedia } from '../../services/api';
 import { usePrivacy } from '../../providers/PrivacyProvider';
 import type { SessionMediaItem } from '../../services/types';
@@ -22,11 +23,11 @@ export default function SessionMediaStrip({ sessionId, showHeading = true }: Pro
   const t = useTranslations('session.media');
   const { hideSensitive } = usePrivacy();
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { openIndex, open, close } = useMediaLightboxNav(sessionId);
 
   useEffect(() => {
-    if (hideSensitive) setOpenIndex(null);
-  }, [hideSensitive]);
+    if (hideSensitive && openIndex !== null) close({ replace: true });
+  }, [hideSensitive, openIndex, close]);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,7 +71,7 @@ export default function SessionMediaStrip({ sessionId, showHeading = true }: Pro
                 key={item.id}
                 type="button"
                 aria-label={t('openLabel')}
-                onClick={() => setOpenIndex(i)}
+                onClick={() => open(i)}
                 className="relative h-16 w-16 overflow-hidden rounded-lg border border-border transition-transform hover:scale-105"
               >
                 <img src={item.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -84,8 +85,8 @@ export default function SessionMediaStrip({ sessionId, showHeading = true }: Pro
           </div>
         </SensitiveContent>
       )}
-      {openIndex !== null && state.kind === 'ready' && (
-        <MediaLightbox items={state.items} initialIndex={openIndex} onClose={() => setOpenIndex(null)} />
+      {openIndex !== null && state.kind === 'ready' && openIndex < state.items.length && (
+        <MediaLightbox items={state.items} initialIndex={openIndex} onClose={() => close()} />
       )}
     </div>
   );

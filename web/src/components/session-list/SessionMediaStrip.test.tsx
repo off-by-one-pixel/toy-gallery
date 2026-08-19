@@ -8,6 +8,15 @@ vi.mock('../../services/api', () => ({
   fetchSessionMedia: vi.fn(),
 }));
 
+const push = vi.fn();
+let search = '';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push, replace: vi.fn() }),
+  usePathname: () => '/sessions',
+  useSearchParams: () => new URLSearchParams(search),
+}));
+
 import en from '../../i18n/catalogs/en.json';
 import { PrivacyProvider } from '../../providers/PrivacyProvider';
 import { fetchSessionMedia } from '../../services/api';
@@ -52,6 +61,7 @@ describe('SessionMediaStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    search = '';
   });
 
   it('renders nothing when the backend is not configured', async () => {
@@ -80,7 +90,7 @@ describe('SessionMediaStrip', () => {
     expect(await screen.findByText(en.session.media.loadError)).toBeTruthy();
   });
 
-  it('renders a thumbnail per item and opens the lightbox on click', async () => {
+  it('opens the lightbox by pushing the media URL param', async () => {
     vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
     render(wrap(<SessionMediaStrip sessionId={1} />));
     const thumbs = await screen.findAllByRole('button', { name: en.session.media.openLabel });
@@ -88,9 +98,32 @@ describe('SessionMediaStrip', () => {
     expect(thumbs[0].querySelector('img')?.getAttribute('src')).toBe(image.thumbnailUrl);
 
     fireEvent.click(thumbs[1]);
-    expect(await screen.findByRole('button', { name: en.session.media.closeLabel })).toBeTruthy();
+    expect(push).toHaveBeenCalledWith('/sessions?media=1%3A1', { scroll: false });
+  });
 
-    fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
-    await waitFor(() => expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull());
+  it('shows the lightbox when the media param addresses this session', async () => {
+    search = 'media=1:1';
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
+    render(wrap(<SessionMediaStrip sessionId={1} />));
+    expect(await screen.findByRole('button', { name: en.session.media.closeLabel })).toBeTruthy();
+  });
+
+  it('ignores media params for other sessions or out-of-range indexes', async () => {
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    for (const value of ['media=2:0', 'media=1:5', 'media=junk']) {
+      search = value;
+      const view = render(wrap(<SessionMediaStrip sessionId={1} />));
+      await screen.findAllByRole('button', { name: en.session.media.openLabel });
+      expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull();
+      view.unmount();
+    }
+  });
+
+  it('closes by clearing the media param', async () => {
+    search = 'media=1:0';
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    render(wrap(<SessionMediaStrip sessionId={1} />));
+    fireEvent.click(await screen.findByRole('button', { name: en.session.media.closeLabel }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/sessions', { scroll: false }));
   });
 });
