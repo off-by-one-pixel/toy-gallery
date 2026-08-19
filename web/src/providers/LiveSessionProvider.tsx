@@ -9,7 +9,7 @@ import type { Session } from '../services/types';
 interface LiveSessionContextValue {
   liveSession: Session | null;
   isLoaded: boolean;
-  start: () => Promise<void>;
+  start: () => Promise<Session>;
   refresh: () => Promise<void>;
 }
 
@@ -35,7 +35,9 @@ export function LiveSessionProvider({ children }: Readonly<{ children: ReactNode
   }, [refresh, pathname]);
 
   const start = useCallback(async () => {
-    setLiveSession(await startLiveSession());
+    const session = await startLiveSession();
+    setLiveSession(session);
+    return session;
   }, []);
 
   const value = useMemo(() => ({ liveSession, isLoaded, start, refresh }), [liveSession, isLoaded, start, refresh]);

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
-import { CalendarClock, CirclePlay, Plus } from 'lucide-react';
+import { CalendarClock, Play, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { deleteToy, fetchToys } from '../services/api';
@@ -93,8 +93,10 @@ const ToyGallery = () => {
           {
             key: 'start-live',
             label: t('session.live.startButton'),
-            icon: CirclePlay,
-            variant: 'outline',
+            icon: Play,
+            variant: 'primary',
+            fabClassName: 'bg-emerald-600 text-white hover:bg-emerald-500',
+            fabIconSize: 22,
             onPress: () => void runToast(startLive),
           } satisfies ActionDef,
         ]
@@ -172,8 +174,13 @@ const ToyGallery = () => {
           </div>
           <div className="hidden flex-1 sm:block" />
           {showStartLive && (
-            <Button variant="outline" size="sm" className="max-sm:hidden" onPress={() => void runToast(startLive)}>
-              <CirclePlay size={14} strokeWidth={1.8} />
+            <Button
+              variant="primary"
+              size="sm"
+              className="max-sm:hidden bg-emerald-600 text-white hover:bg-emerald-500"
+              onPress={() => void runToast(startLive)}
+            >
+              <Play size={14} strokeWidth={2.2} />
               <span className="hidden md:inline">{t('session.live.startButton')}</span>
             </Button>
           )}

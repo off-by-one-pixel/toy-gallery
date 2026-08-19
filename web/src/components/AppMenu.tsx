@@ -1,18 +1,45 @@
 'use client';
 
-import { Dropdown } from '@heroui/react';
-import { LogOut, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Dropdown, Toast } from '@heroui/react';
+import { Image as ImageIcon, LogOut, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { APP_COMMIT_SHA, APP_VERSION } from '../config';
+import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../providers/AuthProvider';
+import { fetchMediaIndicators, MEDIA_INDICATORS_CHANGED_EVENT, refreshAllSessionMedia } from '../services/api';
 import ActionDropdownMenu, { type ActionMenuItem } from './ActionDropdownMenu';
 
 export default function AppMenu() {
   const t = useTranslations('collection');
+  const tMedia = useTranslations('session.media');
   const router = useRouter();
   const { username, logout } = useAuth();
+  const runToast = useAsyncAction();
+  const [mediaConfigured, setMediaConfigured] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchMediaIndicators()
+      .then((indicators) => {
+        if (!cancelled) setMediaConfigured(indicators.configured);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const refreshMedia = () => {
+    void runToast(refreshAllSessionMedia, {
+      onSuccess: (indicators) => {
+        Toast.toast.success(tMedia('refreshedToast', { count: indicators.sessionIds.size }));
+        window.dispatchEvent(new Event(MEDIA_INDICATORS_CHANGED_EVENT));
+      },
+    });
+  };
 
   const items: ActionMenuItem[] = [
     {
@@ -22,6 +49,17 @@ export default function AppMenu() {
       description: t('menu.settingsDescription'),
       onAction: () => router.push('/settings'),
     },
+    ...(mediaConfigured
+      ? [
+          {
+            id: 'refresh-media',
+            icon: ImageIcon,
+            label: tMedia('refreshButtonLabel'),
+            description: tMedia('refreshButton'),
+            onAction: refreshMedia,
+          } satisfies ActionMenuItem,
+        ]
+      : []),
     {
       id: 'logout',
       icon: LogOut,

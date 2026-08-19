@@ -30,11 +30,11 @@ export default function LiveSessionBanner() {
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
   return (
-    <div className="border-b border-accent/30 bg-accent-soft/60">
+    <div className="banner-in border-b border-emerald-600/30 bg-emerald-500/10">
       <div className="mx-auto flex max-w-300 items-center gap-3 px-4 py-2 sm:px-6">
         <span className="relative flex h-2.5 w-2.5 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
         </span>
         <span className="min-w-0 flex-1 truncate text-sm text-foreground">
           <span className="font-semibold">{t('live.badge')}</span>

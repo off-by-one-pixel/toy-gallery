@@ -162,6 +162,8 @@ export const fetchLiveSession = async (): Promise<Session | null> => {
   return data.session ? snakeToCamel<Session>(data.session) : null;
 };
 
+export const MEDIA_INDICATORS_CHANGED_EVENT = 'mediaIndicatorsChanged';
+
 export type MediaIndicators = { configured: boolean; sessionIds: Set<number> };
 
 export const fetchMediaIndicators = async (): Promise<MediaIndicators> => {

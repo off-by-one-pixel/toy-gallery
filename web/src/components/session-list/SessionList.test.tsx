@@ -15,6 +15,7 @@ vi.mock('../../services/api', () => ({
   fetchActivity: vi.fn(),
   fetchMediaIndicators: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
+  MEDIA_INDICATORS_CHANGED_EVENT: 'mediaIndicatorsChanged',
   fetchSessionMedia: vi.fn(),
   deleteSession: vi.fn(),
   fetchLiveSession: vi.fn(),
@@ -35,7 +36,7 @@ import {
   fetchSessionMedia,
   fetchSessions,
   fetchToys,
-  refreshAllSessionMedia,
+  MEDIA_INDICATORS_CHANGED_EVENT,
   startLiveSession,
 } from '../../services/api';
 import type { Session } from '../../services/types';
@@ -86,20 +87,12 @@ describe('SessionList', () => {
     expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(1);
   });
 
-  it('shows the media refresh button only when configured and refreshes on press', async () => {
-    vi.mocked(refreshAllSessionMedia).mockResolvedValue({ configured: true, sessionIds: new Set([1, 2]) });
-    render(wrap(<SessionList />));
-    const button = await screen.findByRole('button', { name: en.session.media.refreshButton });
-    fireEvent.click(button);
-    await waitFor(() => expect(refreshAllSessionMedia).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(2));
-  });
-
-  it('hides the refresh button when media is not configured', async () => {
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: false, sessionIds: new Set() });
+  it('reloads indicators when the media-changed event fires', async () => {
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    expect(screen.queryByRole('button', { name: en.session.media.refreshButton })).toBeNull();
+    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: true, sessionIds: new Set([1, 2]) });
+    fireEvent(window, new Event(MEDIA_INDICATORS_CHANGED_EVENT));
+    await waitFor(() => expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(2));
   });
 
   it('starts a live session from the toolbar button and hides it afterwards', async () => {
