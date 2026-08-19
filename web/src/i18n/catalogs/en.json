@@ -131,12 +131,12 @@
     "overflowMore": "+{count} more",
     "timeOfDay": {
       "title": "Time of day",
-      "tooltip": "{hour} · {count, plural, one {# session} other {# sessions}}",
+      "tooltip": "{bucket} · {count, plural, one {# session} other {# sessions}}",
       "empty": "No sessions in range"
     },
     "weekday": {
       "title": "Day of week",
-      "tooltip": "{day} · {count, plural, one {# session} other {# sessions}}",
+      "tooltip": "{bucket} · {count, plural, one {# session} other {# sessions}}",
       "empty": "No sessions in range"
     },
     "media": {

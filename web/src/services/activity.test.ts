@@ -1,25 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  ACTIVITY_WINDOW_DAYS,
-  buildActivityHeatmap,
-  colorFor,
-  extent,
-  formatTooltipDate,
-  legendGradient,
-  localDateKey,
-  pluck,
-} from './activity';
+import { colorFor, extent, formatTooltipDate, legendGradient, localDateKey, pluck } from './activity';
 import { ACTIVITY_PALETTE } from './activityPalette';
-import type { ActivityDay } from './types';
-import { Unit } from './units';
-
-const day = (date: string, len: number | null, circ: number | null): ActivityDay => ({
-  date,
-  sessionCount: 1,
-  maxInsertableLength: len,
-  maxCircumference: circ,
-});
 
 describe('localDateKey', () => {
   it('formats a date as YYYY-MM-DD with zero-padded fields', () => {
@@ -92,6 +74,10 @@ describe('colorFor', () => {
 });
 
 describe('legendGradient', () => {
+  it('changes the gradient when a custom gamma is supplied', () => {
+    expect(legendGradient(220, 1.4)).not.toBe(legendGradient(220));
+  });
+
   it('returns a CSS linear-gradient anchored on the given hue', () => {
     const out = legendGradient(220);
     expect(out.startsWith('linear-gradient(to right,')).toBe(true);
@@ -99,183 +85,5 @@ describe('legendGradient', () => {
     // 11 stops at 0%, 10%, 20%, … 100%.
     expect(out).toContain('0.0%');
     expect(out).toContain('100.0%');
-  });
-});
-
-describe('buildActivityHeatmap', () => {
-  const TODAY = new Date(2026, 4, 16); // 2026-05-16 local
-  const sample: ActivityDay[] = [
-    day('2026-05-16', 120, 100),
-    day('2026-05-15', 80, 95),
-    day('2026-05-10', null, null), // "used only" cell
-  ];
-
-  it('produces both length and circumference dimensions', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY },
-    );
-    expect(out.length.title).toBe('Length');
-    expect(out.circumference.title).toBe('Circumference');
-    expect(out.sessions.title).toBe('Sessions');
-  });
-
-  it('renders sessions-per-day with plain integer legend labels', () => {
-    const counts: ActivityDay[] = [
-      { ...day('2026-05-16', null, null), sessionCount: 3 },
-      { ...day('2026-05-15', null, null), sessionCount: 1 },
-    ];
-    const out = buildActivityHeatmap(
-      counts,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY },
-    );
-    expect(out.sessions.legendMinLabel).toBe('1');
-    expect(out.sessions.legendMaxLabel).toBe('3');
-  });
-
-  it('keeps a one-session day visibly distinct from an empty day', () => {
-    const counts: ActivityDay[] = [
-      { ...day('2026-05-16', null, null), sessionCount: 8 },
-      { ...day('2026-05-15', null, null), sessionCount: 1 },
-    ];
-    const out = buildActivityHeatmap(
-      counts,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY },
-    );
-    const cellFor = (date: string) => out.sessions.cells.find((c) => c.date === date);
-    const low = cellFor('2026-05-15');
-    const empty = cellFor('2026-05-14');
-    expect(low?.fill).not.toBe(ACTIVITY_PALETTE.empty);
-    expect(empty?.fill).toBe(ACTIVITY_PALETTE.empty);
-  });
-
-  it('produces exactly ACTIVITY_WINDOW_DAYS cells per dimension', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY },
-    );
-    expect(out.length.cells).toHaveLength(ACTIVITY_WINDOW_DAYS);
-    expect(out.circumference.cells).toHaveLength(ACTIVITY_WINDOW_DAYS);
-  });
-
-  it('respects a custom windowDays', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY, windowDays: 30 },
-    );
-    expect(out.length.cells).toHaveLength(30);
-  });
-
-  it('places today as the last cell and ranges back', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY, windowDays: 7 },
-    );
-    const dates = out.length.cells.map((c) => c.date);
-    expect(dates[dates.length - 1]).toBe('2026-05-16');
-    expect(dates[0]).toBe('2026-05-10');
-  });
-
-  it('colors cells with a session-and-value using HSL', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY, windowDays: 7 },
-    );
-    const todayCell = out.length.cells.find((c) => c.date === '2026-05-16')!;
-    expect(todayCell.fill.startsWith('hsl(')).toBe(true);
-  });
-
-  it('colors a session-without-value cell with the used-only palette', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY, windowDays: 7 },
-    );
-    const usedOnly = out.length.cells.find((c) => c.date === '2026-05-10')!;
-    expect(usedOnly.fill).toBe(ACTIVITY_PALETTE.usedOnly);
-  });
-
-  it('colors a cell with no session at all with the empty palette', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY, windowDays: 7 },
-    );
-    const empty = out.length.cells.find((c) => c.date === '2026-05-13')!;
-    expect(empty.fill).toBe(ACTIVITY_PALETTE.empty);
-  });
-
-  it('formats legend labels in the requested unit', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY },
-    );
-    expect(out.length.legendMinLabel).toBe('80 mm');
-    expect(out.length.legendMaxLabel).toBe('120 mm');
-  });
-
-  it('renders legend labels as em-dashes when there is no data', () => {
-    const out = buildActivityHeatmap(
-      [],
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY },
-    );
-    expect(out.length.legendMinLabel).toBe('—');
-    expect(out.length.legendMaxLabel).toBe('—');
-  });
-
-  it('converts legend labels to the chosen unit', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.in,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY },
-    );
-    expect(out.length.legendMinLabel.endsWith(' in')).toBe(true);
-    expect(out.length.legendMaxLabel.endsWith(' in')).toBe(true);
-  });
-
-  it('attaches a tooltip string to every cell', () => {
-    const out = buildActivityHeatmap(
-      sample,
-      Unit.mm,
-      'en',
-      { length: 'Length', circumference: 'Circumference', sessions: 'Sessions' },
-      { today: TODAY, windowDays: 7 },
-    );
-    for (const cell of out.length.cells) {
-      expect(cell.tooltip.length).toBeGreaterThan(0);
-    }
   });
 });

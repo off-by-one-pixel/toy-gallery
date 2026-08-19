@@ -1,26 +1,26 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { useGirth } from '../../providers/GirthProvider';
 import { useUnit } from '../../providers/UnitProvider';
-import { ACTIVITY_WINDOW_DAYS, buildActivityHeatmap } from '../../services/activity';
 import { fetchSessionStats, SESSIONS_CHANGED_EVENT } from '../../services/api';
-import { type FilterKey, filterStartDate } from '../../services/session';
+import type { FilterKey } from '../../services/session';
+import { SESSION_STATS } from '../../services/statsConfig';
 import {
-  activityDaysFromStats,
-  countsFromGroups,
-  daysAgoDateString,
-  METRIC_COUNT,
-  METRIC_MAX_CIRCUMFERENCE,
-  METRIC_MAX_LENGTH,
-} from '../../services/stats';
+  buildStatViews,
+  deriveQueries,
+  type StatContext,
+  type StatDef,
+  startFor,
+  type StatWindow,
+} from '../../services/statsView';
 import type { StatsGroup } from '../../services/types';
 import ActivityTracker from '../ActivityTracker';
 
-type Props = Readonly<{ filter: FilterKey }>;
+type Props = Readonly<{ filter: FilterKey; defs?: readonly StatDef[] }>;
 
 function useSessionsChangedVersion(): number {
   const [version, setVersion] = useState(0);
@@ -32,79 +32,73 @@ function useSessionsChangedVersion(): number {
   return version;
 }
 
-export default function SessionStats({ filter }: Props) {
+export default function SessionStats({ filter, defs = SESSION_STATS }: Props) {
   const { unit } = useUnit();
   const { girth } = useGirth();
   const locale = useLocale();
-  const t = useTranslations('common');
-  const tSession = useTranslations('session');
+  const t = useTranslations();
   const version = useSessionsChangedVersion();
   const run = useAsyncAction();
-  const [dateGroups, setDateGroups] = useState<StatsGroup[] | null>(null);
-  const [hourCounts, setHourCounts] = useState<number[]>(() => Array.from({ length: 24 }, () => 0));
-  const [weekdayCounts, setWeekdayCounts] = useState<number[]>(() => Array.from({ length: 7 }, () => 0));
+  const [results, setResults] = useState<Map<string, StatsGroup[]>>(() => new Map());
 
-  useEffect(() => {
-    let cancelled = false;
-    run(
-      () =>
-        fetchSessionStats('date', [METRIC_COUNT, METRIC_MAX_LENGTH, METRIC_MAX_CIRCUMFERENCE], {
-          start: daysAgoDateString(ACTIVITY_WINDOW_DAYS - 1),
-        }),
-      {
-        onSuccess: (groups) => {
-          if (!cancelled) setDateGroups(groups);
+  const queries = useMemo(() => deriveQueries(defs), [defs]);
+
+  const runWindow = useCallback(
+    (window: StatWindow, filterKey: FilterKey, isCancelled: () => boolean) => {
+      const selected = queries.filter((query) => query.window === window);
+      if (selected.length === 0) return;
+      run(
+        async () => {
+          const groups = await Promise.all(
+            selected.map((query) =>
+              fetchSessionStats(query.groupBy, query.metrics, { start: startFor(window, filterKey) }),
+            ),
+          );
+          return selected.map((query, i) => [query.key, groups[i]] as const);
         },
-      },
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [run, version]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const start = filterStartDate(filter);
-    run(
-      async () => {
-        const [hours, weekdays] = await Promise.all([
-          fetchSessionStats('hour', [METRIC_COUNT], { start }),
-          fetchSessionStats('weekday', [METRIC_COUNT], { start }),
-        ]);
-        return { hours, weekdays };
-      },
-      {
-        onSuccess: (loaded) => {
-          if (cancelled) return;
-          setHourCounts(countsFromGroups(loaded.hours, 24));
-          setWeekdayCounts(countsFromGroups(loaded.weekdays, 7));
+        {
+          onSuccess: (entries) => {
+            if (isCancelled()) return;
+            setResults((prev) => {
+              const next = new Map(prev);
+              for (const [key, groups] of entries) next.set(key, groups);
+              return next;
+            });
+          },
         },
-      },
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [run, filter, version]);
-
-  const heatmap = useMemo(
-    () =>
-      dateGroups === null
-        ? null
-        : buildActivityHeatmap(
-            activityDaysFromStats(dateGroups),
-            unit,
-            locale,
-            { length: t('length'), circumference: t(girth), sessions: tSession('perDayTitle') },
-            { girth },
-          ),
-    [dateGroups, unit, locale, t, tSession, girth],
+      );
+    },
+    [queries, run],
   );
 
-  if (heatmap === null) return null;
+  useEffect(() => {
+    let cancelled = false;
+    runWindow('year', filter, () => cancelled);
+    return () => {
+      cancelled = true;
+    };
+  }, [runWindow, version]);
+
+  useEffect(() => {
+    let cancelled = false;
+    runWindow('filter', filter, () => cancelled);
+    return () => {
+      cancelled = true;
+    };
+  }, [runWindow, filter, version]);
+
+  const translate = t as unknown as StatContext['t'];
+  const ctx = useMemo<StatContext>(() => ({ unit, girth, locale, t: translate }), [unit, girth, locale, translate]);
+
+  const yearReady = queries.filter((query) => query.window === 'year').every((query) => results.has(query.key));
+
+  const items = useMemo(() => (yearReady ? buildStatViews(defs, results, ctx) : []), [yearReady, defs, results, ctx]);
+
+  if (!yearReady) return null;
 
   return (
     <div className="mb-4">
-      <ActivityTracker heatmap={heatmap} hourCounts={hourCounts} weekdayCounts={weekdayCounts} />
+      <ActivityTracker items={items} />
     </div>
   );
 }

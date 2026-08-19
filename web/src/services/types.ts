@@ -41,12 +41,6 @@ export type SessionEntry = SnakeToCamel<ApiSessionEntry>;
 export type Session = SnakeToCamel<ApiSession>;
 export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
 
-export type ActivityDay = {
-  date: string;
-  sessionCount: number;
-  maxInsertableLength: number | null;
-  maxCircumference: number | null;
-};
 export type { StatsGroup } from './generated/schemas';
 export type SessionMediaItem = SnakeToCamel<ApiSessionMediaItem>;
 export type SessionMedia = Omit<SnakeToCamel<ApiSessionMediaResponse>, 'items'> & { items: SessionMediaItem[] };
