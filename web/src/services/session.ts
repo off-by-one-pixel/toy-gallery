@@ -1,30 +1,5 @@
-import { daysAgoDateString } from './stats';
+import { daysAgoDateString, isWithin } from './dates';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-// -------- Date helpers --------
-
-/** Human-readable "when" label for a session timestamp:
- *  `Today · 3:45 PM`, `Yesterday · 9:00 AM`, or `Mar 5 · 2:00 PM`.
- *  Locale-aware: `locale` drives Intl date/time formatting; `t` supplies
- *  the `Today` / `Yesterday` literals. Pass `now` for deterministic tests. */
-export function formatWhen(iso: string, now: Date, locale: string, t: (key: 'today' | 'yesterday') => string): string {
-  const d = new Date(iso);
-  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-  const diffDays = Math.floor((startOfDay(now) - startOfDay(d)) / DAY_MS);
-  const time = d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
-  if (diffDays === 0) return `${t('today')} · ${time}`;
-  if (diffDays === 1) return `${t('yesterday')} · ${time}`;
-  const date = d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-  return `${date} · ${time}`;
-}
-
-/** Is `iso` within the last `days` (relative to `now`)? Pure. */
-export function isWithin(iso: string, days: number, now: Date = new Date()): boolean {
-  const t = new Date(iso).getTime();
-  return now.getTime() - t <= days * DAY_MS;
-}
 
 // -------- Filter --------
 

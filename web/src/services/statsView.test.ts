@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { localDateKey } from './activity';
+import { localDateKey } from './dates';
 import { ACTIVITY_PALETTE } from './activityPalette';
-import { METRIC_COUNT, METRIC_MAX_CIRCUMFERENCE, METRIC_MAX_LENGTH } from './stats';
-import { SESSION_STATS } from './statsConfig';
+import { METRIC_COUNT, METRIC_MAX_CIRCUMFERENCE, METRIC_MAX_LENGTH, SESSION_STATS } from './statsConfig';
 import {
   buildCalendarView,
   buildFrequencyView,

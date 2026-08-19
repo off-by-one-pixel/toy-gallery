@@ -1,17 +1,11 @@
 import { ACTIVITY_PALETTE } from './activityPalette';
+import { localizedHourLabel, localizedWeekdayLabel } from './dates';
 import { displayGirth } from './girth';
-import { METRIC_COUNT, METRIC_MAX_CIRCUMFERENCE, METRIC_MAX_LENGTH } from './stats';
 import type { StatDef } from './statsView';
 
-const REFERENCE_MONDAY = new Date(2001, 0, 1);
-
-const hourLabel = (hour: number, locale: string): string =>
-  new Date(2000, 0, 1, hour).toLocaleTimeString(locale, { hour: 'numeric' });
-
-const dayLabel = (dow: number, locale: string): string =>
-  new Date(REFERENCE_MONDAY.getFullYear(), 0, REFERENCE_MONDAY.getDate() + dow).toLocaleDateString(locale, {
-    weekday: 'short',
-  });
+export const METRIC_COUNT = 'count';
+export const METRIC_MAX_LENGTH = 'max:insertable_length';
+export const METRIC_MAX_CIRCUMFERENCE = 'max:circumference';
 
 export const SESSION_STATS: readonly StatDef[] = [
   {
@@ -57,7 +51,8 @@ export const SESSION_STATS: readonly StatDef[] = [
     title: (ctx) => ctx.t('session.timeOfDay.title'),
     empty: (ctx) => ctx.t('session.timeOfDay.empty'),
     bucketLabel: (hour) => hour,
-    tooltip: (hour, count, ctx) => ctx.t('session.timeOfDay.tooltip', { bucket: hourLabel(hour, ctx.locale), count }),
+    tooltip: (hour, count, ctx) =>
+      ctx.t('session.timeOfDay.tooltip', { bucket: localizedHourLabel(hour, ctx.locale), count }),
   },
   {
     kind: 'frequency',
@@ -71,7 +66,8 @@ export const SESSION_STATS: readonly StatDef[] = [
     minPolicy: 'nonzeroMin',
     title: (ctx) => ctx.t('session.weekday.title'),
     empty: (ctx) => ctx.t('session.weekday.empty'),
-    bucketLabel: (dow, ctx) => dayLabel(dow, ctx.locale),
-    tooltip: (dow, count, ctx) => ctx.t('session.weekday.tooltip', { bucket: dayLabel(dow, ctx.locale), count }),
+    bucketLabel: (dow, ctx) => localizedWeekdayLabel(dow, ctx.locale),
+    tooltip: (dow, count, ctx) =>
+      ctx.t('session.weekday.tooltip', { bucket: localizedWeekdayLabel(dow, ctx.locale), count }),
   },
 ];

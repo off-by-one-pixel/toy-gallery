@@ -21,6 +21,7 @@ import {
   toysToysPartialUpdate,
 } from './generated/sdk';
 import { API_CONFIG } from '../config';
+import { localDateKey } from './dates';
 import { camelToSnake, snakeToCamel } from '../utils/case';
 import type {
   ExportEnvelopeRequest,
@@ -109,7 +110,7 @@ const EXPORT_FILENAME = (date: string) => `toy-gallery-${date}.json`;
 
 export const downloadExport = async (): Promise<void> => {
   const { data } = await toysToysExportRetrieve();
-  const date = new Date().toISOString().slice(0, 10);
+  const date = localDateKey(new Date());
   triggerBrowserDownload(data, EXPORT_FILENAME(date));
 };
 

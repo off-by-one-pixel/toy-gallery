@@ -1,28 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { colorFor, extent, formatTooltipDate, legendGradient, localDateKey, pluck } from './activity';
+import { colorFor, extent, legendGradient, pluck } from './activity';
 import { ACTIVITY_PALETTE } from './activityPalette';
-
-describe('localDateKey', () => {
-  it('formats a date as YYYY-MM-DD with zero-padded fields', () => {
-    expect(localDateKey(new Date(2026, 0, 3))).toBe('2026-01-03');
-  });
-
-  it('uses local calendar fields, not UTC', () => {
-    // Construct a local-midnight date — exercises that the key is built
-    // from getFullYear/Month/Date (local) rather than ISO (UTC).
-    const d = new Date(2026, 11, 31, 0, 0, 0, 0);
-    expect(localDateKey(d)).toBe('2026-12-31');
-  });
-});
-
-describe('formatTooltipDate', () => {
-  it('produces a human-readable string for a valid key', () => {
-    const out = formatTooltipDate('2026-05-15', 'en');
-    expect(out).toMatch(/2026/);
-    expect(out.length).toBeGreaterThan(0);
-  });
-});
 
 describe('extent', () => {
   it('returns the min and max of a non-empty array', () => {

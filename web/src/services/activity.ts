@@ -2,26 +2,7 @@ import { ACTIVITY_PALETTE } from './activityPalette';
 
 export const ACTIVITY_WINDOW_DAYS = 365;
 
-export const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const LEGEND_STOPS = 11;
-
-/** YYYY-MM-DD key in the system's local timezone. The heatmap groups
- *  sessions by local calendar day, so we never reach for UTC here. */
-export function localDateKey(d: Date): string {
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-/** Human-readable date for the cell hover tooltip. */
-export function formatTooltipDate(key: string, locale: string): string {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(locale, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 

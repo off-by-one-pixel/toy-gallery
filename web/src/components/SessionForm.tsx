@@ -11,6 +11,7 @@ import { Involvement, type Session, type Toy } from '../services/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
 import { SortProvider, useSort } from '../providers/SortProvider';
+import { datetimeLocalValue } from '../services/dates';
 import { minutesBetween } from '../services/duration';
 import { filterToys } from '../services/search';
 import { sortToys } from '../services/sort';
@@ -23,13 +24,7 @@ import ToyChipSelector from './ToyChipSelector';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
 
-const datetimeLocalNow = () => formatLocal(new Date());
-
-const formatLocal = (d: Date): string => {
-  // datetime-local needs YYYY-MM-DDTHH:mm in *local* time, not UTC.
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
+const datetimeLocalNow = () => datetimeLocalValue(new Date());
 
 export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }>) {
   return (
@@ -71,8 +66,8 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         onSuccess: ({ loadedToys, loadedSession }) => {
           setToys(loadedToys);
           if (loadedSession) {
-            setStartedAt(formatLocal(new Date(loadedSession.startedAt)));
-            setEndedAt(loadedSession.endedAt ? formatLocal(new Date(loadedSession.endedAt)) : '');
+            setStartedAt(datetimeLocalValue(new Date(loadedSession.startedAt)));
+            setEndedAt(loadedSession.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '');
             setSelections(
               new Map(
                 loadedSession.entries.map((e) => [

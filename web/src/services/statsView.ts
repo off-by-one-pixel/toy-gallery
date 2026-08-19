@@ -4,14 +4,11 @@ import {
   colorFor,
   type DimensionView,
   extent,
-  formatTooltipDate,
   legendGradient,
-  localDateKey,
-  MS_PER_DAY,
 } from './activity';
+import { daysAgoDateString, formatDateKey, localDateKey, MS_PER_DAY, startOfDay } from './dates';
 import type { Girth } from './girth';
 import { type FilterKey, filterStartDate } from './session';
-import { daysAgoDateString } from './stats';
 import type { StatsGroup } from './types';
 import { formatValue, type Unit } from './units';
 
@@ -116,8 +113,7 @@ export function buildCalendarView(
   options?: Readonly<{ today?: Date; windowDays?: number }>,
 ): DimensionView {
   const windowDays = options?.windowDays ?? ACTIVITY_WINDOW_DAYS;
-  const today = options?.today ? new Date(options.today) : new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = startOfDay(options?.today ?? new Date());
   const startDate = new Date(today.getTime() - (windowDays - 1) * MS_PER_DAY);
   const byDate = calendarValues(def, groups, ctx);
 
@@ -126,7 +122,7 @@ export function buildCalendarView(
   for (let i = 0; i < windowDays; i++) {
     const key = localDateKey(new Date(startDate.getTime() + i * MS_PER_DAY));
     const fill = colorFor(byDate.get(key), range.min, range.max, def.hue, byDate.has(key), def.gamma);
-    cells.push({ date: key, tooltip: formatTooltipDate(key, ctx.locale), fill });
+    cells.push({ date: key, tooltip: formatDateKey(key, ctx.locale), fill });
   }
 
   const hasData = range.max > 0;

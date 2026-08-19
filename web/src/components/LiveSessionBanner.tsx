@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { useLiveSession } from '../providers/LiveSessionProvider';
 import { formatDuration, minutesBetween } from '../services/duration';
-import { formatWhen } from '../services/session';
+import { formatWhen } from '../services/dates';
 
 const TICK_MS = 60_000;
 
