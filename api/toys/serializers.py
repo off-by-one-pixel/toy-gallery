@@ -108,7 +108,7 @@ class ToySerializer(serializers.ModelSerializer):
 class ToySessionEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ToySessionEntry
-        fields = ["toy", "involvement"]
+        fields = ["toy", "involvement", "duration_minutes"]
 
 
 class SessionSerializer(serializers.ModelSerializer):
@@ -118,13 +118,29 @@ class SessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Session
-        fields = ["id", "started_at", "entries", "max_insertable_length", "max_circumference"]
+        fields = [
+            "id",
+            "started_at",
+            "ended_at",
+            "entries",
+            "max_insertable_length",
+            "max_circumference",
+        ]
 
     def get_max_insertable_length(self, obj) -> float | None:
         return SessionDimensions.peak_length(obj)
 
     def get_max_circumference(self, obj) -> float | None:
         return SessionDimensions.peak_circumference(obj)
+
+    def validate(self, attrs):
+        started_at = attrs.get("started_at", getattr(self.instance, "started_at", None))
+        ended_at = attrs.get("ended_at", getattr(self.instance, "ended_at", None))
+        if started_at and ended_at and ended_at <= started_at:
+            raise serializers.ValidationError(
+                {"ended_at": "Session end must be after its start."}
+            )
+        return attrs
 
     def validate_entries(self, entries):
         if not entries:
@@ -147,6 +163,7 @@ class SessionSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         entries_data = validated_data.pop("entries", None)
         instance.started_at = validated_data.get("started_at", instance.started_at)
+        instance.ended_at = validated_data.get("ended_at", instance.ended_at)
         instance.save()
         if entries_data is not None:
             instance.entries.all().delete()

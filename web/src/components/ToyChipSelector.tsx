@@ -1,17 +1,23 @@
 'use client';
 
 import { Chip } from '@heroui/react';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '../services/converters/toyShape';
+import { DURATION_INCREMENTS_MINUTES, formatDuration } from '../services/duration';
 import { Involvement, type Toy } from '../services/types';
 import ToyThumbnail from './ToyThumbnail';
 
 type Props = Readonly<{
   toy: Toy;
   state: Involvement | null;
+  duration: number | null;
+  wholeSessionMinutes: number | null;
   onChange: (next: Involvement | null) => void;
+  onAddDuration: (minutes: number) => void;
+  onSetDuration: (minutes: number) => void;
+  onClearDuration: () => void;
 }>;
 
 const STATE_ORDER: Involvement[] = [Involvement.USED, Involvement.INSERTED, Involvement.FULLY_INSERTED];
@@ -41,8 +47,18 @@ const nextInCycle = (current: Involvement | null): Involvement | null => {
   return STATE_CYCLE[(idx + 1) % STATE_CYCLE.length];
 };
 
-export default function ToyChipSelector({ toy, state, onChange }: Props) {
+export default function ToyChipSelector({
+  toy,
+  state,
+  duration,
+  wholeSessionMinutes,
+  onChange,
+  onAddDuration,
+  onSetDuration,
+  onClearDuration,
+}: Props) {
   const t = useTranslations('involvement');
+  const tDuration = useTranslations('session.duration');
   const editorToy = toyShapeToEditor(toy.shape);
 
   const handlePick = (next: Involvement) => {
@@ -111,6 +127,59 @@ export default function ToyChipSelector({ toy, state, onChange }: Props) {
             );
           })}
         </div>
+
+        {state && (
+          <div className="mt-2.5">
+            <div className="flex h-5 items-center justify-between">
+              <span className="text-caption font-medium uppercase tracking-wider text-muted">{tDuration('label')}</span>
+              <span className="flex items-center gap-1">
+                <span className="text-xs font-semibold tabular-nums text-foreground">
+                  {duration != null ? formatDuration(duration) : '—'}
+                </span>
+                {duration != null && (
+                  <button
+                    type="button"
+                    aria-label={tDuration('clearLabel')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClearDuration();
+                    }}
+                    className="-my-2 -mr-1.5 grid h-9 w-9 place-items-center rounded-full text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+                  >
+                    <X size={14} strokeWidth={2.5} />
+                  </button>
+                )}
+              </span>
+            </div>
+            {wholeSessionMinutes != null && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSetDuration(wholeSessionMinutes);
+                }}
+                className="mt-1.5 h-8 w-full rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
+              >
+                {tDuration('wholeSession')} · {formatDuration(wholeSessionMinutes)}
+              </button>
+            )}
+            <div className="mt-1.5 grid grid-cols-4 gap-1">
+              {DURATION_INCREMENTS_MINUTES.map((minutes) => (
+                <button
+                  key={minutes}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddDuration(minutes);
+                  }}
+                  className="h-8 rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
+                >
+                  +{formatDuration(minutes)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

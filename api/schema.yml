@@ -607,6 +607,10 @@ components:
         started_at:
           type: string
           format: date-time
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
         entries:
           type: array
           items:
@@ -675,6 +679,10 @@ components:
         started_at:
           type: string
           format: date-time
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
         entries:
           type: array
           items:
@@ -753,6 +761,10 @@ components:
         started_at:
           type: string
           format: date-time
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
         entries:
           type: array
           items:
@@ -913,6 +925,12 @@ components:
           type: integer
         involvement:
           $ref: '#/components/schemas/InvolvementEnum'
+        duration_minutes:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
       required:
       - involvement
       - toy
@@ -923,6 +941,12 @@ components:
           type: integer
         involvement:
           $ref: '#/components/schemas/InvolvementEnum'
+        duration_minutes:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
       required:
       - involvement
       - toy

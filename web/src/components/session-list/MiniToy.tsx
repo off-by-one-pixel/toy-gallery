@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '../../services/converters/toyShape';
+import { formatDuration } from '../../services/duration';
 import { toyTooltip } from '../../services/session';
 import { Involvement, type SessionEntry, type Toy } from '../../services/types';
 import ToyThumbnail from '../ToyThumbnail';
@@ -49,6 +50,9 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
         {toy.name}
         {toy.size && <span className="text-muted"> {toy.size}</span>}
       </div>
+      {entry.durationMinutes != null && (
+        <div className="text-xs tabular-nums text-muted">{formatDuration(entry.durationMinutes)}</div>
+      )}
     </div>
   );
 }
