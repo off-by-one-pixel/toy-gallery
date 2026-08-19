@@ -10,6 +10,20 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+type IOCallback = (entries: Array<{ isIntersecting: boolean }>) => void;
+const ioCallbacks: IOCallback[] = [];
+
+class IntersectionObserverStub {
+  constructor(callback: IOCallback) {
+    ioCallbacks.push(callback);
+  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
+
 vi.mock('../../services/api', () => ({
   fetchSessions: vi.fn(),
   fetchToys: vi.fn(),
@@ -54,6 +68,12 @@ const session = (id: number, startedAt: string, isLive = false): Session => ({
   maxCircumference: 110,
 });
 
+const pageOf = (sessions: Session[], overrides: Partial<{ count: number; hasMore: boolean }> = {}) => ({
+  sessions,
+  count: overrides.count ?? sessions.length,
+  hasMore: overrides.hasMore ?? false,
+});
+
 const wrap = (ui: React.ReactNode) => (
   <NextIntlClientProvider locale="en" messages={en}>
     <ThemeProvider>
@@ -74,7 +94,9 @@ describe('SessionList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    vi.mocked(fetchSessions).mockResolvedValue([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00')]);
+    vi.mocked(fetchSessions).mockResolvedValue(
+      pageOf([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00')]),
+    );
     vi.mocked(fetchToys).mockResolvedValue([]);
     vi.mocked(fetchSessionStats).mockResolvedValue([]);
     vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: true, sessionIds: new Set([2]) });
@@ -110,10 +132,9 @@ describe('SessionList', () => {
 
   it('hides the start button and shows banner plus badge when a session is live', async () => {
     vi.mocked(fetchLiveSession).mockResolvedValue(session(1, '2026-06-01T20:00:00', true));
-    vi.mocked(fetchSessions).mockResolvedValue([
-      session(1, '2026-06-01T20:00:00', true),
-      session(2, '2026-06-05T09:00:00'),
-    ]);
+    vi.mocked(fetchSessions).mockResolvedValue(
+      pageOf([session(1, '2026-06-01T20:00:00', true), session(2, '2026-06-05T09:00:00')]),
+    );
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
     expect(screen.queryAllByRole('button', { name: en.session.live.startButton })).toHaveLength(0);
@@ -133,6 +154,50 @@ describe('SessionList', () => {
       const calls = vi.mocked(fetchSessionStats).mock.calls.filter(([g]) => g === 'hour');
       const last = calls[calls.length - 1][2] as { start?: string };
       expect(last.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+  });
+
+  it('shows the server count in the subtitle, not the loaded page size', async () => {
+    vi.mocked(fetchSessions).mockResolvedValue(
+      pageOf([session(1, '2026-06-01T20:00:00')], { count: 41, hasMore: true }),
+    );
+    render(wrap(<SessionList />));
+    expect(await screen.findByText(`41 ${en.session.recorded}`)).toBeTruthy();
+  });
+
+  it('appends the next page without duplicating overlapping sessions', async () => {
+    vi.mocked(fetchSessions)
+      .mockResolvedValueOnce(
+        pageOf([session(1, '2026-06-05T09:00:00'), session(2, '2026-06-04T09:00:00')], {
+          count: 3,
+          hasMore: true,
+        }),
+      )
+      .mockResolvedValueOnce(
+        pageOf([session(2, '2026-06-04T09:00:00'), session(3, '2026-06-03T09:00:00')], {
+          count: 3,
+          hasMore: false,
+        }),
+      );
+    render(wrap(<SessionList />));
+    await screen.findByText(`3 ${en.session.recorded}`);
+
+    expect(ioCallbacks.length).toBeGreaterThan(0);
+    ioCallbacks[ioCallbacks.length - 1]([{ isIntersecting: true }]);
+
+    await waitFor(() => expect(screen.getAllByRole('button', { name: en.session.detailsToggleLabel })).toHaveLength(3));
+    const pageArgs = vi.mocked(fetchSessions).mock.calls.map(([opts]) => opts?.page);
+    expect(pageArgs).toContain(2);
+  });
+
+  it('refetches with the filter window start and the selected ordering', async () => {
+    render(wrap(<SessionList />));
+    await screen.findByText(`2 ${en.session.recorded}`);
+    fireEvent.click(screen.getByText(en.session.filter.week));
+    await waitFor(() => {
+      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
+      expect(last?.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(last?.page).toBe(1);
     });
   });
 

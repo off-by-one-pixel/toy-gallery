@@ -1,4 +1,4 @@
-import { daysAgoDateString, isWithin } from './dates';
+import { daysAgoDateString } from './dates';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
 
 // -------- Filter --------
@@ -20,17 +20,25 @@ export const FILTERS: readonly FilterOption[] = [
 ];
 
 /** Filter sessions by recency. Pass `now` for deterministic tests. */
+export const SESSION_SORT_COLUMNS = ['started_at', 'duration', 'length', 'circumference'] as const;
+export type SessionSortColumn = (typeof SESSION_SORT_COLUMNS)[number];
+
+export type SessionSort = Readonly<{ column: string; direction: 'asc' | 'desc' }>;
+
+export function sessionOrderingParam(sort: SessionSort | null): string | undefined {
+  if (!sort || !(SESSION_SORT_COLUMNS as readonly string[]).includes(sort.column)) return undefined;
+  return sort.direction === 'desc' ? `-${sort.column}` : sort.column;
+}
+
+export function mergeSessions(existing: readonly Session[], incoming: readonly Session[]): Session[] {
+  const seen = new Set(existing.map((s) => s.id));
+  return [...existing, ...incoming.filter((s) => !seen.has(s.id))];
+}
+
 export function filterStartDate(filter: FilterKey, now: Date = new Date()): string | undefined {
   const days = FILTERS.find((f) => f.key === filter)?.days;
   if (days == null) return undefined;
   return daysAgoDateString(days, now);
-}
-
-export function filterSessions(sessions: readonly Session[], filter: FilterKey, now: Date = new Date()): Session[] {
-  const option = FILTERS.find((f) => f.key === filter);
-  if (option?.days == null) return [...sessions];
-  const days = option.days;
-  return sessions.filter((s) => isWithin(s.startedAt, days, now));
 }
 
 // -------- Entry sort --------

@@ -8,13 +8,18 @@ import { useGirth } from '../providers/GirthProvider';
 import { useSort } from '../providers/SortProvider';
 import { cycleSort, sortColumns, type SortColumn } from '../services/sort';
 
-export default function SortControl() {
+type Props = Readonly<{
+  columns?: readonly string[];
+  columnLabel?: (column: string) => string;
+}>;
+
+export default function SortControl({ columns = sortColumns, columnLabel }: Props) {
   const { sort, setSort } = useSort();
   const { girth } = useGirth();
   const t = useTranslations('sort');
   const common = useTranslations('common');
-  const columnLabel = (column: SortColumn): string => {
-    switch (column) {
+  const toyColumnLabel = (column: string): string => {
+    switch (column as SortColumn) {
       case 'name':
         return t('column.name');
       case 'insertable':
@@ -29,7 +34,8 @@ export default function SortControl() {
         return t('column.duration');
     }
   };
-  const activeLabel = sort ? columnLabel(sort.column) : t('label');
+  const labelFor = columnLabel ?? toyColumnLabel;
+  const activeLabel = sort ? labelFor(sort.column) : t('label');
   const DirArrow = sort?.direction === 'desc' ? ArrowDown : ArrowUp;
 
   const flipDirection = () => {
@@ -46,9 +52,9 @@ export default function SortControl() {
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom end">
           <Dropdown.Menu selectedKeys={sort ? [sort.column] : []}>
-            {sortColumns.map((column) => (
+            {columns.map((column) => (
               <Dropdown.Item key={column} id={column} onAction={() => setSort(cycleSort(sort, column))}>
-                <SortRow label={columnLabel(column)} direction={sort?.column === column ? sort.direction : null} />
+                <SortRow label={labelFor(column)} direction={sort?.column === column ? sort.direction : null} />
               </Dropdown.Item>
             ))}
           </Dropdown.Menu>

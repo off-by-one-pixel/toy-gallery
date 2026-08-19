@@ -191,7 +191,34 @@ class LiveSessionResponseSerializer(serializers.Serializer):
     session = SessionSerializer(allow_null=True)
 
 
-class SessionStatsQuerySerializer(serializers.Serializer):
+class DateWindowQuerySerializer(serializers.Serializer):
+    start = serializers.DateField(required=False)
+    end = serializers.DateField(required=False)
+    tz = serializers.CharField(required=False, default="UTC")
+
+    def validate(self, attrs):
+        start = attrs.get("start")
+        end = attrs.get("end")
+        if start and end and end < start:
+            raise serializers.ValidationError({"end": "end must not precede start."})
+        try:
+            attrs["tz"] = ZoneInfo(attrs.get("tz") or "UTC")
+        except (ZoneInfoNotFoundError, ValueError) as err:
+            raise serializers.ValidationError({"tz": "Unknown timezone."}) from err
+        return attrs
+
+
+SESSION_ORDERING_FIELDS = ["started_at", "duration", "length", "circumference"]
+SESSION_ORDERING_CHOICES = [
+    prefix + field for field in SESSION_ORDERING_FIELDS for prefix in ("", "-")
+]
+
+
+class SessionListQuerySerializer(DateWindowQuerySerializer):
+    ordering = serializers.ChoiceField(choices=SESSION_ORDERING_CHOICES, required=False)
+
+
+class SessionStatsQuerySerializer(DateWindowQuerySerializer):
     group_by = serializers.ChoiceField(choices=["date", "hour", "weekday"])
     metrics = serializers.CharField(
         help_text=(
@@ -199,9 +226,6 @@ class SessionStatsQuerySerializer(serializers.Serializer):
             "min|max|avg|sum|first|last and field in insertable_length|circumference|duration."
         )
     )
-    start = serializers.DateField(required=False)
-    end = serializers.DateField(required=False)
-    tz = serializers.CharField(required=False, default="UTC")
 
     def validate_metrics(self, value):
         parsed = []
@@ -225,17 +249,6 @@ class SessionStatsQuerySerializer(serializers.Serializer):
         if not sep or func not in stats.REDUCERS or field not in stats.FIELD_EXTRACTORS:
             raise serializers.ValidationError(f"Unsupported metric '{token}'.")
         return func, field
-
-    def validate(self, attrs):
-        start = attrs.get("start")
-        end = attrs.get("end")
-        if start and end and end < start:
-            raise serializers.ValidationError({"end": "end must not precede start."})
-        try:
-            attrs["tz"] = ZoneInfo(attrs.get("tz") or "UTC")
-        except (ZoneInfoNotFoundError, ValueError) as err:
-            raise serializers.ValidationError({"tz": "Unknown timezone."}) from err
-        return attrs
 
 
 class StatsGroupSerializer(serializers.Serializer):

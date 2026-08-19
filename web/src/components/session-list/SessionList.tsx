@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useStartLiveAction } from '../../hooks/useStartLiveAction';
 import { useLiveSession } from '../../providers/LiveSessionProvider';
+import { useGirth } from '../../providers/GirthProvider';
+import { SortProvider } from '../../providers/SortProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
-import { FILTERS, type FilterKey } from '../../services/session';
+import { FILTERS, type FilterKey, SESSION_SORT_COLUMNS } from '../../services/session';
 import type { Session } from '../../services/types';
 import { ActionBar, ActionFabs, type ActionDef } from '../ActionButtons';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
@@ -22,15 +25,27 @@ import GirthToggle from '../GirthToggle';
 import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
 import SessionRow from './SessionRow';
+import SortControl from '../SortControl';
 import SessionStats from './SessionStats';
 import { useSessionList } from './useSessionList';
 
 export default function SessionList() {
+  return (
+    <SortProvider storageKey="sessions.sort" columns={SESSION_SORT_COLUMNS}>
+      <SessionListContent />
+    </SortProvider>
+  );
+}
+
+function SessionListContent() {
   const router = useRouter();
   const { unit } = useUnit();
+  const { girth } = useGirth();
   const data = useSessionList();
   const t = useTranslations('session');
   const common = useTranslations('common');
+  const tSort = useTranslations('sort');
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
   const runToast = useAsyncAction();
@@ -85,6 +100,21 @@ export default function SessionList() {
     },
   ];
 
+  const sortColumnLabel = (column: string): string => {
+    switch (column) {
+      case 'started_at':
+        return tSort('column.date');
+      case 'duration':
+        return tSort('column.duration');
+      case 'length':
+        return t('peakLength');
+      default:
+        return girth === 'diameter' ? t('peakDiameter') : t('peakCircumference');
+    }
+  };
+
+  useInfiniteScroll(sentinelRef, data.loadMore, data.hasMore && !data.isLoading && !data.isLoadingMore);
+
   const filterLongLabel = (key: FilterKey) => t(`filter.${key}`);
   const filterShortLabel = (key: FilterKey) => t(`filter.${key}Short`);
   const filterItems: SwitcherItem<FilterKey>[] = FILTERS.map((f) => ({
@@ -108,11 +138,13 @@ export default function SessionList() {
           <div className="hidden sm:contents">
             <UnitToggle />
             <GirthToggle />
+            <SortControl columns={SESSION_SORT_COLUMNS} columnLabel={sortColumnLabel} />
           </div>
           <div className="flex-1" />
           <DisplayOptionsMenu>
             <UnitToggle />
             <GirthToggle />
+            <SortControl columns={SESSION_SORT_COLUMNS} columnLabel={sortColumnLabel} />
           </DisplayOptionsMenu>
           <ActionBar actions={newActions} />
         </div>
@@ -143,12 +175,17 @@ export default function SessionList() {
         </div>
       );
     }
-    if (data.visibleSessions.length === 0) {
-      return <EmptyState anyExist={data.sessionCount > 0} filterLabel={filterLongLabel(data.filter)} />;
+    if (data.sessions.length === 0) {
+      return (
+        <EmptyState
+          anyExist={data.sessionCount > 0 || data.filter !== 'all'}
+          filterLabel={filterLongLabel(data.filter)}
+        />
+      );
     }
     return (
       <div className="flex flex-col gap-3.5">
-        {data.visibleSessions.map((session) => (
+        {data.sessions.map((session) => (
           <SessionRow
             key={session.id}
             session={session}
@@ -162,6 +199,12 @@ export default function SessionList() {
             onDelete={() => removeSession(session.id)}
           />
         ))}
+        {data.isLoadingMore && (
+          <div className="flex justify-center py-4 text-muted">
+            <Spinner />
+          </div>
+        )}
+        <div ref={sentinelRef} aria-hidden />
       </div>
     );
   }

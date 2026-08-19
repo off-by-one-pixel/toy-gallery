@@ -1,27 +1,35 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useSort } from '../../providers/SortProvider';
 import {
   fetchMediaIndicators,
-  fetchToys,
   fetchSessions,
+  fetchToys,
   MEDIA_INDICATORS_CHANGED_EVENT,
   type MediaIndicators,
   notifySessionsChanged,
 } from '../../services/api';
-import { type FilterKey, filterSessions, toysById as buildToysById } from '../../services/session';
+import {
+  type FilterKey,
+  filterStartDate,
+  mergeSessions,
+  sessionOrderingParam,
+  type SessionSort,
+  toysById as buildToysById,
+} from '../../services/session';
 import type { Session, Toy } from '../../services/types';
 
 export type SessionListData = Readonly<{
-  /** Raw session count, used for chrome subtitle + empty-state copy. */
   sessionCount: number;
-  /** Sessions after applying the current filter, ready to render. */
-  visibleSessions: Session[];
-  /** id → toy map for resolving entry.toy references. */
+  sessions: Session[];
   toysById: Map<number, Toy>;
   mediaSessionIds: Set<number>;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  loadMore: () => void;
   prependSession: (session: Session) => void;
   reload: () => void;
 
@@ -32,45 +40,70 @@ export type SessionListData = Readonly<{
   error: string | null;
 }>;
 
-/** Loads sessions + toys in parallel and exposes everything the
- *  SessionList page needs to render: filtered session list, toy
- *  lookup, filter state. The page is a dumb composition over this
- *  facade. */
 export function useSessionList(): SessionListData {
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [toys, setToys] = useState<Toy[]>([]);
   const [media, setMedia] = useState<MediaIndicators>(() => ({ configured: false, sessionIds: new Set() }));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
   const [loadCount, setLoadCount] = useState(0);
+  const [mediaLoadCount, setMediaLoadCount] = useState(0);
+  const generationRef = useRef(0);
+  const { sort } = useSort();
 
   const runInline = useAsyncAction(setError);
+  const runToast = useAsyncAction();
 
   useEffect(() => {
-    const onIndicatorsChanged = () => setLoadCount((n) => n + 1);
+    const onIndicatorsChanged = () => setMediaLoadCount((n) => n + 1);
     window.addEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
     return () => window.removeEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
+    fetchMediaIndicators()
+      .then((indicators) => {
+        if (!cancelled) setMedia(indicators);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [mediaLoadCount, loadCount]);
+
+  const listQuery = useCallback(
+    (pageNumber: number) =>
+      fetchSessions({
+        page: pageNumber,
+        start: filterStartDate(filter),
+        ordering: sessionOrderingParam(sort as SessionSort | null),
+      }),
+    [filter, sort],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    generationRef.current += 1;
     runInline(
       async () => {
-        const [s, t, m] = await Promise.all([
-          fetchSessions(),
-          fetchToys(),
-          fetchMediaIndicators().catch((): MediaIndicators => ({ configured: false, sessionIds: new Set() })),
-        ]);
-        return { sessions: s, toys: t, media: m };
+        const [firstPage, loadedToys] = await Promise.all([listQuery(1), fetchToys()]);
+        return { firstPage, loadedToys };
       },
       {
         busy: setIsLoading,
         onSuccess: (loaded) => {
           if (cancelled) return;
-          setSessions(loaded.sessions);
-          setToys(loaded.toys);
-          setMedia(loaded.media);
+          setSessions(loaded.firstPage.sessions);
+          setCount(loaded.firstPage.count);
+          setHasMore(loaded.firstPage.hasMore);
+          setPage(1);
+          setToys(loaded.loadedToys);
           setError(null);
         },
       },
@@ -78,18 +111,37 @@ export function useSessionList(): SessionListData {
     return () => {
       cancelled = true;
     };
-  }, [runInline, loadCount]);
+  }, [runInline, listQuery, loadCount]);
+
+  const loadMore = useCallback(() => {
+    if (!hasMore || isLoadingMore || isLoading) return;
+    const generation = generationRef.current;
+    const nextPage = page + 1;
+    void runToast(() => listQuery(nextPage), {
+      busy: setIsLoadingMore,
+      onSuccess: (loaded) => {
+        if (generationRef.current !== generation) return;
+        setSessions((prev) => mergeSessions(prev, loaded.sessions));
+        setCount(loaded.count);
+        setHasMore(loaded.hasMore);
+        setPage(nextPage);
+      },
+    });
+  }, [hasMore, isLoadingMore, isLoading, page, listQuery, runToast]);
 
   const toysById = useMemo(() => buildToysById(toys), [toys]);
-  const visibleSessions = useMemo(() => filterSessions(sessions, filter), [sessions, filter]);
 
   return {
-    sessionCount: sessions.length,
-    visibleSessions,
+    sessionCount: count,
+    sessions,
     toysById,
     mediaSessionIds: media.sessionIds,
+    hasMore,
+    isLoadingMore,
+    loadMore,
     prependSession: (session: Session) => {
-      setSessions((prev) => [session, ...prev]);
+      setSessions((prev) => mergeSessions([session], prev));
+      setCount((c) => c + 1);
       notifySessionsChanged();
     },
     reload: () => {

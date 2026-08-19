@@ -246,7 +246,8 @@
     "column": {
       "name": "Brand / Model",
       "popularity": "Popularity",
-      "duration": "Time used"
+      "duration": "Time used",
+      "date": "Date"
     }
   },
   "colorPicker": {
