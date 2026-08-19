@@ -1,6 +1,6 @@
 import {
   toysChangePasswordCreate,
-  toysSessionsActivityRetrieve,
+  toysSessionsStatsRetrieve,
   toysSessionsCreate,
   toysSessionsDestroy,
   toysSessionsMediaIndicatorsRetrieve,
@@ -30,7 +30,7 @@ import type {
 } from './generated/schemas';
 import {
   APIError,
-  type ActivityDay,
+  type StatsGroup,
   type Session,
   type SessionMedia,
   type SessionMediaItem,
@@ -163,6 +163,11 @@ export const fetchLiveSession = async (): Promise<Session | null> => {
 };
 
 export const MEDIA_INDICATORS_CHANGED_EVENT = 'mediaIndicatorsChanged';
+export const SESSIONS_CHANGED_EVENT = 'sessionsChanged';
+
+export const notifySessionsChanged = (): void => {
+  window.dispatchEvent(new Event(SESSIONS_CHANGED_EVENT));
+};
 
 export type MediaIndicators = { configured: boolean; sessionIds: Set<number> };
 
@@ -184,7 +189,25 @@ export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia
   };
 };
 
-export const fetchActivity = async (): Promise<ActivityDay[]> => {
-  const { data } = await toysSessionsActivityRetrieve();
-  return data.days.map((d) => snakeToCamel<ActivityDay>(d));
+export const browserTimeZone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
+};
+
+export const fetchSessionStats = async (
+  groupBy: 'date' | 'hour' | 'weekday',
+  metrics: readonly string[],
+  opts: { start?: string; end?: string } = {},
+): Promise<StatsGroup[]> => {
+  const { data } = await toysSessionsStatsRetrieve({
+    group_by: groupBy,
+    metrics: metrics.join(','),
+    start: opts.start,
+    end: opts.end,
+    tz: browserTimeZone(),
+  });
+  return data.groups;
 };

@@ -4,17 +4,16 @@ import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { buildWeekday } from '../../services/weekday';
-import type { Session } from '../../services/types';
 import FrequencyStrip from './FrequencyStrip';
 
-type Props = Readonly<{ sessions: readonly Session[] }>;
+type Props = Readonly<{ counts: readonly number[] }>;
 
 const REFERENCE_MONDAY = new Date(2001, 0, 1);
 
-export default function WeekdayStrip({ sessions }: Props) {
+export default function WeekdayStrip({ counts }: Props) {
   const t = useTranslations('session.weekday');
   const locale = useLocale();
-  const weekday = useMemo(() => buildWeekday(sessions), [sessions]);
+  const weekday = useMemo(() => buildWeekday(counts), [counts]);
 
   const dayLabel = (dow: number) =>
     new Date(REFERENCE_MONDAY.getFullYear(), 0, REFERENCE_MONDAY.getDate() + dow).toLocaleDateString(locale, {

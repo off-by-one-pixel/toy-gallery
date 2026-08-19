@@ -1,22 +1,18 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
-import { useGirth } from '../../providers/GirthProvider';
 import {
-  fetchActivity,
   fetchMediaIndicators,
   fetchToys,
   fetchSessions,
   MEDIA_INDICATORS_CHANGED_EVENT,
   type MediaIndicators,
+  notifySessionsChanged,
 } from '../../services/api';
-import { type ActivityHeatmap, buildActivityHeatmap } from '../../services/activity';
 import { type FilterKey, filterSessions, toysById as buildToysById } from '../../services/session';
-import type { ActivityDay, Session, Toy } from '../../services/types';
-import { type Unit } from '../../services/units';
+import type { Session, Toy } from '../../services/types';
 
 export type SessionListData = Readonly<{
   /** Raw session count, used for chrome subtitle + empty-state copy. */
@@ -25,8 +21,6 @@ export type SessionListData = Readonly<{
   visibleSessions: Session[];
   /** id → toy map for resolving entry.toy references. */
   toysById: Map<number, Toy>;
-  /** Prebuilt activity heatmap for the page header. */
-  heatmap: ActivityHeatmap;
   mediaSessionIds: Set<number>;
   prependSession: (session: Session) => void;
   reload: () => void;
@@ -38,18 +32,13 @@ export type SessionListData = Readonly<{
   error: string | null;
 }>;
 
-/** Loads sessions + toys + activity in parallel and exposes everything
- *  the SessionList page needs to render: filtered session list, toy
- *  lookup, activity heatmap, filter state. The page is a dumb
- *  composition over this facade. */
-export function useSessionList(unit: Unit): SessionListData {
-  const locale = useLocale();
-  const t = useTranslations('common');
-  const tSession = useTranslations('session');
-  const { girth } = useGirth();
+/** Loads sessions + toys in parallel and exposes everything the
+ *  SessionList page needs to render: filtered session list, toy
+ *  lookup, filter state. The page is a dumb composition over this
+ *  facade. */
+export function useSessionList(): SessionListData {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
-  const [activity, setActivity] = useState<ActivityDay[]>([]);
   const [media, setMedia] = useState<MediaIndicators>(() => ({ configured: false, sessionIds: new Set() }));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,13 +57,12 @@ export function useSessionList(unit: Unit): SessionListData {
     let cancelled = false;
     runInline(
       async () => {
-        const [s, t, a, m] = await Promise.all([
+        const [s, t, m] = await Promise.all([
           fetchSessions(),
           fetchToys(),
-          fetchActivity(),
           fetchMediaIndicators().catch((): MediaIndicators => ({ configured: false, sessionIds: new Set() })),
         ]);
-        return { sessions: s, toys: t, activity: a, media: m };
+        return { sessions: s, toys: t, media: m };
       },
       {
         busy: setIsLoading,
@@ -82,7 +70,6 @@ export function useSessionList(unit: Unit): SessionListData {
           if (cancelled) return;
           setSessions(loaded.sessions);
           setToys(loaded.toys);
-          setActivity(loaded.activity);
           setMedia(loaded.media);
           setError(null);
         },
@@ -93,17 +80,6 @@ export function useSessionList(unit: Unit): SessionListData {
     };
   }, [runInline, loadCount]);
 
-  const heatmap = useMemo(
-    () =>
-      buildActivityHeatmap(
-        activity,
-        unit,
-        locale,
-        { length: t('length'), circumference: t(girth), sessions: tSession('perDayTitle') },
-        { girth },
-      ),
-    [activity, unit, locale, t, tSession, girth],
-  );
   const toysById = useMemo(() => buildToysById(toys), [toys]);
   const visibleSessions = useMemo(() => filterSessions(sessions, filter), [sessions, filter]);
 
@@ -111,10 +87,15 @@ export function useSessionList(unit: Unit): SessionListData {
     sessionCount: sessions.length,
     visibleSessions,
     toysById,
-    heatmap,
     mediaSessionIds: media.sessionIds,
-    prependSession: (session: Session) => setSessions((prev) => [session, ...prev]),
-    reload: () => setLoadCount((n) => n + 1),
+    prependSession: (session: Session) => {
+      setSessions((prev) => [session, ...prev]);
+      notifySessionsChanged();
+    },
+    reload: () => {
+      setLoadCount((n) => n + 1);
+      notifySessionsChanged();
+    },
     filter,
     setFilter,
     isLoading,

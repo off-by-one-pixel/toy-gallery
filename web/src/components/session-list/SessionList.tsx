@@ -14,7 +14,6 @@ import { deleteSession } from '../../services/api';
 import { FILTERS, type FilterKey } from '../../services/session';
 import type { Session } from '../../services/types';
 import { ActionBar, ActionFabs, type ActionDef } from '../ActionButtons';
-import ActivityTracker from '../ActivityTracker';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
 import LiveSessionBanner from '../LiveSessionBanner';
 import Switcher, { type SwitcherItem } from '../Switcher';
@@ -23,14 +22,13 @@ import GirthToggle from '../GirthToggle';
 import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
 import SessionRow from './SessionRow';
-import TimeOfDayStrip from './TimeOfDayStrip';
-import WeekdayStrip from './WeekdayStrip';
+import SessionStats from './SessionStats';
 import { useSessionList } from './useSessionList';
 
 export default function SessionList() {
   const router = useRouter();
   const { unit } = useUnit();
-  const data = useSessionList(unit);
+  const data = useSessionList();
   const t = useTranslations('session');
   const common = useTranslations('common');
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -131,14 +129,7 @@ export default function SessionList() {
             <Alert.Description>{data.error}</Alert.Description>
           </Alert>
         )}
-        {!data.isLoading && (
-          <div className="mb-4">
-            <ActivityTracker heatmap={data.heatmap}>
-              <TimeOfDayStrip sessions={data.visibleSessions} />
-              <WeekdayStrip sessions={data.visibleSessions} />
-            </ActivityTracker>
-          </div>
-        )}
+        <SessionStats filter={data.filter} />
         {renderBody()}
       </main>
     </>

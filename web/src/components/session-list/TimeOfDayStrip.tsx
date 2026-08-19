@@ -4,15 +4,14 @@ import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { buildTimeOfDay } from '../../services/timeOfDay';
-import type { Session } from '../../services/types';
 import FrequencyStrip from './FrequencyStrip';
 
-type Props = Readonly<{ sessions: readonly Session[] }>;
+type Props = Readonly<{ counts: readonly number[] }>;
 
-export default function TimeOfDayStrip({ sessions }: Props) {
+export default function TimeOfDayStrip({ counts }: Props) {
   const t = useTranslations('session.timeOfDay');
   const locale = useLocale();
-  const tod = useMemo(() => buildTimeOfDay(sessions), [sessions]);
+  const tod = useMemo(() => buildTimeOfDay(counts), [counts]);
 
   const hourLabel = (hour: number) => new Date(2000, 0, 1, hour).toLocaleTimeString(locale, { hour: 'numeric' });
 

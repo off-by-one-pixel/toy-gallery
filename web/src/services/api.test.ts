@@ -21,7 +21,6 @@ vi.mock('./generated/sdk', () => ({
   toysSessionsCreate: vi.fn(),
   toysSessionsUpdate: vi.fn(),
   toysSessionsDestroy: vi.fn(),
-  toysSessionsActivityRetrieve: vi.fn(),
 }));
 
 import {

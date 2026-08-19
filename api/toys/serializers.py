@@ -1,9 +1,11 @@
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
-from . import models
+from . import models, stats
 from .dimensions import SessionDimensions
 
 
@@ -189,15 +191,60 @@ class LiveSessionResponseSerializer(serializers.Serializer):
     session = SessionSerializer(allow_null=True)
 
 
-class ActivityDaySerializer(serializers.Serializer):
-    date = serializers.DateField()
-    session_count = serializers.IntegerField()
-    max_insertable_length = serializers.FloatField(allow_null=True)
-    max_circumference = serializers.FloatField(allow_null=True)
+class SessionStatsQuerySerializer(serializers.Serializer):
+    group_by = serializers.ChoiceField(choices=["date", "hour", "weekday"])
+    metrics = serializers.CharField(
+        help_text=(
+            "Comma-separated metrics: 'count' or '<func>:<field>' with func in "
+            "min|max|avg|sum|first|last and field in insertable_length|circumference|duration."
+        )
+    )
+    start = serializers.DateField(required=False)
+    end = serializers.DateField(required=False)
+    tz = serializers.CharField(required=False, default="UTC")
+
+    def validate_metrics(self, value):
+        parsed = []
+        seen = set()
+        for raw in value.split(","):
+            token = raw.strip()
+            if not token:
+                continue
+            if token in seen:
+                continue
+            seen.add(token)
+            parsed.append((token, *self._split_metric(token)))
+        if not parsed:
+            raise serializers.ValidationError("At least one metric is required.")
+        return parsed
+
+    def _split_metric(self, token):
+        if token == "count":
+            return "count", None
+        func, sep, field = token.partition(":")
+        if not sep or func not in stats.REDUCERS or field not in stats.FIELD_EXTRACTORS:
+            raise serializers.ValidationError(f"Unsupported metric '{token}'.")
+        return func, field
+
+    def validate(self, attrs):
+        start = attrs.get("start")
+        end = attrs.get("end")
+        if start and end and end < start:
+            raise serializers.ValidationError({"end": "end must not precede start."})
+        try:
+            attrs["tz"] = ZoneInfo(attrs.get("tz") or "UTC")
+        except (ZoneInfoNotFoundError, ValueError) as err:
+            raise serializers.ValidationError({"tz": "Unknown timezone."}) from err
+        return attrs
 
 
-class ActivityResponseSerializer(serializers.Serializer):
-    days = ActivityDaySerializer(many=True)
+class StatsGroupSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    values = serializers.DictField(child=serializers.FloatField(allow_null=True))
+
+
+class SessionStatsResponseSerializer(serializers.Serializer):
+    groups = StatsGroupSerializer(many=True)
 
 
 SESSION_MEDIA_KINDS = ["image", "video"]
