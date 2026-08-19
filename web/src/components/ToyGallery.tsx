@@ -157,6 +157,7 @@ const ToyGallery = () => {
     <>
       <TopBar subtitle={isLoading ? null : t('toy.items', { count: toys.length })} />
       <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
+        <LiveSessionBanner />
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <div className="min-w-0 flex-1 sm:w-auto sm:flex-initial">
             <SearchInput value={query} onChange={setQuery} />
@@ -194,7 +195,6 @@ const ToyGallery = () => {
           </Button>
         </div>
       </header>
-      <LiveSessionBanner />
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {openToyActions && <ActionFabs actions={openToyActions} />}

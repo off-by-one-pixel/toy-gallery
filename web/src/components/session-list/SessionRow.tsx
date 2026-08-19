@@ -63,7 +63,7 @@ export default function SessionRow({
       className={
         'group relative rounded-xl border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
         (session.isLive ? 'border-emerald-500 ' : 'border-border ') +
-        (selected ? 'ring-2 ring-accent ' : '') +
+        (selected ? (session.isLive ? 'ring-2 ring-emerald-500 ' : 'ring-2 ring-accent ') : '') +
         (flash ? 'row-flash' : '')
       }
     >

@@ -17,11 +17,20 @@ export default function LiveSessionBanner() {
   const t = useTranslations('session');
   const locale = useLocale();
   const [now, setNow] = useState(() => new Date());
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (!liveSession) return;
     const timer = setInterval(() => setNow(new Date()), TICK_MS);
     return () => clearInterval(timer);
+  }, [liveSession]);
+
+  useEffect(() => {
+    if (!liveSession) return;
+    const onScroll = () => setCollapsed(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, [liveSession]);
 
   if (!liveSession) return null;
@@ -31,7 +40,9 @@ export default function LiveSessionBanner() {
 
   return (
     <div className="banner-in border-b border-emerald-600/30 bg-emerald-500/10">
-      <div className="mx-auto flex max-w-300 items-center gap-3 px-4 py-2 sm:px-6">
+      <div
+        className={`mx-auto flex max-w-300 items-center gap-3 px-4 transition-all sm:px-6 ${collapsed ? 'py-1' : 'py-2'}`}
+      >
         <span className="relative flex h-2.5 w-2.5 shrink-0">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
@@ -45,14 +56,16 @@ export default function LiveSessionBanner() {
           </span>
           <span className="font-medium tabular-nums">{formatDuration(elapsed, locale)}</span>
         </span>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0 bg-surface"
-          onPress={() => router.push(`/sessions/edit?id=${liveSession.id}`)}
-        >
-          {t('live.openButton')}
-        </Button>
+        {!collapsed && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 bg-surface"
+            onPress={() => router.push(`/sessions/edit?id=${liveSession.id}`)}
+          >
+            {t('live.openButton')}
+          </Button>
+        )}
       </div>
     </div>
   );
