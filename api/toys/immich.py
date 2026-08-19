@@ -1,3 +1,4 @@
+import functools
 import hashlib
 import logging
 from dataclasses import dataclass
@@ -226,6 +227,27 @@ def _links_by_session(links: list[SharedLink]) -> dict[int, list[SharedLink]]:
     return by_session
 
 
+def _media_operation(unconfigured, degraded):
+    def wrap(fn):
+        @functools.wraps(fn)
+        def guarded(self, *args, **kwargs):
+            if not self.client.is_configured():
+                return unconfigured
+            try:
+                return fn(self, *args, **kwargs)
+            except (ImmichError, requests.RequestException) as err:
+                logger.warning("immich: %s failed: %s", fn.__name__, err)
+                return degraded
+        return guarded
+    return wrap
+
+
+UNCONFIGURED_REFRESH = MediaRefreshResult(configured=False, authoritative=False, session_ids=[])
+DEGRADED_REFRESH = MediaRefreshResult(configured=True, authoritative=False, session_ids=[])
+UNCONFIGURED_MEDIA = SessionMediaResult(configured=False, authoritative=False, items=[])
+DEGRADED_MEDIA = SessionMediaResult(configured=True, authoritative=False, items=[])
+
+
 class ImmichMediaProvider(SessionMediaProvider):
     def __init__(self):
         self.client = ImmichClient()
@@ -233,30 +255,27 @@ class ImmichMediaProvider(SessionMediaProvider):
     def is_configured(self) -> bool:
         return self.client.is_configured()
 
-    def refresh_all_media(self, sessions: list[tuple[int, datetime]]) -> MediaRefreshResult:
-        if not self.client.is_configured():
-            return MediaRefreshResult(configured=False, authoritative=False, session_ids=[])
-        try:
-            windows = {sid: session_media_window(started) for sid, started in sessions}
-            if not windows:
-                return MediaRefreshResult(configured=True, authoritative=True, session_ids=[])
+    @_media_operation(UNCONFIGURED_REFRESH, DEGRADED_REFRESH)
+    def refresh_all_media(
+        self, sessions: list[tuple[int, datetime, datetime | None]]
+    ) -> MediaRefreshResult:
+        windows = {sid: session_media_window(started, ended) for sid, started, ended in sessions}
+        if not windows:
+            return MediaRefreshResult(configured=True, authoritative=True, session_ids=[])
 
-            overall_start = min(w[0] for w in windows.values())
-            overall_end = max(w[1] for w in windows.values())
-            assets = self.client.search_assets(overall_start, overall_end)
-            links_by_session = _links_by_session(self.client.shared_links())
+        overall_start = min(w[0] for w in windows.values())
+        overall_end = max(w[1] for w in windows.values())
+        assets = self.client.search_assets(overall_start, overall_end)
+        links_by_session = _links_by_session(self.client.shared_links())
 
-            session_ids = [
-                sid
-                for sid, asset_ids in _assets_by_session(assets, windows).items()
-                if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, []))
-            ]
-            return MediaRefreshResult(
-                configured=True, authoritative=True, session_ids=sorted(session_ids)
-            )
-        except (ImmichError, requests.RequestException) as err:
-            logger.warning("immich: media refresh failed: %s", err)
-            return MediaRefreshResult(configured=True, authoritative=False, session_ids=[])
+        session_ids = [
+            sid
+            for sid, asset_ids in _assets_by_session(assets, windows).items()
+            if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, []))
+        ]
+        return MediaRefreshResult(
+            configured=True, authoritative=True, session_ids=sorted(session_ids)
+        )
 
     def _sync_session_links(
         self, session_id: int, asset_ids: list[str], existing: list[SharedLink]
@@ -277,29 +296,25 @@ class ImmichMediaProvider(SessionMediaProvider):
             self.client._create_link(marker, asset_ids)
         return True
 
-    def session_media(self, session_id: int, started_at: datetime) -> SessionMediaResult:
-        if not self.client.is_configured():
-            return SessionMediaResult(configured=False, authoritative=False, items=[])
-        try:
-            start, end = session_media_window(started_at)
-            assets = self.client.search_assets(start, end)
-            if not assets:
-                self.client.clear_session_links(session_id)
-                return SessionMediaResult(configured=True, authoritative=True, items=[])
-            key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
-            items = []
-            for asset in assets:
-                thumbnail_url, full_url = self.client.asset_urls(asset, key)
-                items.append(
-                    {
-                        "id": asset.id,
-                        "kind": asset.kind,
-                        "taken_at": asset.taken_at,
-                        "thumbnail_url": thumbnail_url,
-                        "full_url": full_url,
-                    }
-                )
-            return SessionMediaResult(configured=True, authoritative=True, items=items)
-        except (ImmichError, requests.RequestException) as err:
-            logger.warning("immich: media lookup failed: %s", err)
-            return SessionMediaResult(configured=True, authoritative=False, items=[])
+    @_media_operation(UNCONFIGURED_MEDIA, DEGRADED_MEDIA)
+    def session_media(
+        self, session_id: int, started_at: datetime, ended_at: datetime | None
+    ) -> SessionMediaResult:
+        start, end = session_media_window(started_at, ended_at)
+        assets = self.client.search_assets(start, end)
+        if not assets:
+            self.client.clear_session_links(session_id)
+            return SessionMediaResult(configured=True, authoritative=True, items=[])
+        key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
+        items = [self._media_item(asset, key) for asset in assets]
+        return SessionMediaResult(configured=True, authoritative=True, items=items)
+
+    def _media_item(self, asset: MediaAsset, key: str) -> dict:
+        thumbnail_url, full_url = self.client.asset_urls(asset, key)
+        return {
+            "id": asset.id,
+            "kind": asset.kind,
+            "taken_at": asset.taken_at,
+            "thumbnail_url": thumbnail_url,
+            "full_url": full_url,
+        }

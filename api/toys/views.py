@@ -112,7 +112,9 @@ class SessionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="media")
     def media(self, request, pk=None):
         session = self.get_object()
-        result = media.get_provider().session_media(session.id, session.started_at)
+        result = media.get_provider().session_media(
+            session.id, session.started_at, session.ended_at
+        )
         if result.authoritative:
             has_media = bool(result.items)
             if session.has_media != has_media:
@@ -132,7 +134,9 @@ class SessionViewSet(viewsets.ModelViewSet):
     @extend_schema(request=None, responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["post"], url_path="refresh-media")
     def refresh_media(self, request):
-        sessions = list(models.Session.objects.order_by("id").values_list("id", "started_at"))
+        sessions = list(
+            models.Session.objects.order_by("id").values_list("id", "started_at", "ended_at")
+        )
         result = media.get_provider().refresh_all_media(sessions)
         if result.authoritative:
             models.Session.objects.filter(id__in=result.session_ids).update(has_media=True)
