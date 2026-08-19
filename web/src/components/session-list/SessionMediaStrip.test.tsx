@@ -93,4 +93,30 @@ describe('SessionMediaStrip', () => {
     fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
     await waitFor(() => expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull());
   });
+
+  it('pushes a history entry on open and closes on browser back', async () => {
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    render(wrap(<SessionMediaStrip sessionId={1} />));
+    const thumbs = await screen.findAllByRole('button', { name: en.session.media.openLabel });
+
+    fireEvent.click(thumbs[0]);
+    await screen.findByRole('button', { name: en.session.media.closeLabel });
+    expect(window.history.state?.mediaLightbox).toBe(true);
+
+    fireEvent(window, new PopStateEvent('popstate'));
+    await waitFor(() => expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull());
+  });
+
+  it('consumes its history entry when closed from the UI', async () => {
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+    render(wrap(<SessionMediaStrip sessionId={1} />));
+    const thumbs = await screen.findAllByRole('button', { name: en.session.media.openLabel });
+
+    fireEvent.click(thumbs[0]);
+    await screen.findByRole('button', { name: en.session.media.closeLabel });
+    fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
+    await waitFor(() => expect(backSpy).toHaveBeenCalledTimes(1));
+    backSpy.mockRestore();
+  });
 });
