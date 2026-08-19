@@ -16,6 +16,8 @@ vi.mock('../../services/api', () => ({
   fetchMediaIndicators: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
   MEDIA_INDICATORS_CHANGED_EVENT: 'mediaIndicatorsChanged',
+  SESSIONS_CHANGED_EVENT: 'sessionsChanged',
+  notifySessionsChanged: vi.fn(),
   fetchSessionMedia: vi.fn(),
   deleteSession: vi.fn(),
   fetchLiveSession: vi.fn(),

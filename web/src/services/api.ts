@@ -163,6 +163,11 @@ export const fetchLiveSession = async (): Promise<Session | null> => {
 };
 
 export const MEDIA_INDICATORS_CHANGED_EVENT = 'mediaIndicatorsChanged';
+export const SESSIONS_CHANGED_EVENT = 'sessionsChanged';
+
+export const notifySessionsChanged = (): void => {
+  window.dispatchEvent(new Event(SESSIONS_CHANGED_EVENT));
+};
 
 export type MediaIndicators = { configured: boolean; sessionIds: Set<number> };
 
