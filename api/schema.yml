@@ -201,6 +201,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
           description: ''
+  /toys/sessions/live/:
+    get:
+      operationId: toys_sessions_live_retrieve
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSessionResponse'
+          description: ''
   /toys/sessions/media-indicators/:
     get:
       operationId: toys_sessions_media_indicators_retrieve
@@ -228,6 +242,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SessionMediaIndicators'
+          description: ''
+  /toys/sessions/start/:
+    post:
+      operationId: toys_sessions_start_create
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
           description: ''
   /toys/token/:
     post:
@@ -601,6 +629,15 @@ components:
         * `USED` - Used
         * `INSERTED` - Inserted
         * `FULLY_INSERTED` - Fully inserted
+    LiveSessionResponse:
+      type: object
+      properties:
+        session:
+          allOf:
+          - $ref: '#/components/schemas/Session'
+          nullable: true
+      required:
+      - session
     PatchedSessionRequest:
       type: object
       properties:
@@ -683,6 +720,9 @@ components:
           type: string
           format: date-time
           nullable: true
+        is_live:
+          type: boolean
+          readOnly: true
         entries:
           type: array
           items:
@@ -700,6 +740,7 @@ components:
       required:
       - entries
       - id
+      - is_live
       - max_circumference
       - max_insertable_length
       - started_at

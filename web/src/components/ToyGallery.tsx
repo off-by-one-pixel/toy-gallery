@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
-import { CalendarClock, Plus } from 'lucide-react';
+import { CalendarClock, CirclePlay, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { deleteToy, fetchToys } from '../services/api';
@@ -24,6 +24,8 @@ import ToyCards from './ToyCards';
 import ToyEditModal from './toy-edit/ToyEditModal';
 import ToyList from './ToyList';
 import GirthToggle from './GirthToggle';
+import LiveSessionBanner from './LiveSessionBanner';
+import { useLiveSession } from '../providers/LiveSessionProvider';
 import UnitToggle from './UnitToggle';
 import ViewToggle from './ViewToggle';
 
@@ -59,6 +61,8 @@ const ToyGallery = () => {
   const updateLastChanged = () => setLastChanged(Date.now());
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
+  const { liveSession, isLoaded: liveLoaded, start: startLive } = useLiveSession();
+  const showStartLive = liveLoaded && !liveSession;
 
   useEffect(() => {
     runInline(fetchToys, {
@@ -84,6 +88,17 @@ const ToyGallery = () => {
   const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
 
   const newActions: ActionDef[] = [
+    ...(showStartLive
+      ? [
+          {
+            key: 'start-live',
+            label: t('session.live.startButton'),
+            icon: CirclePlay,
+            variant: 'outline',
+            onPress: () => void runToast(startLive),
+          } satisfies ActionDef,
+        ]
+      : []),
     {
       key: 'new-session',
       label: t('session.newButton'),
@@ -156,6 +171,12 @@ const ToyGallery = () => {
             <GirthToggle />
           </div>
           <div className="hidden flex-1 sm:block" />
+          {showStartLive && (
+            <Button variant="outline" size="sm" className="max-sm:hidden" onPress={() => void runToast(startLive)}>
+              <CirclePlay size={14} strokeWidth={1.8} />
+              <span className="hidden md:inline">{t('session.live.startButton')}</span>
+            </Button>
+          )}
           <Button variant="outline" size="sm" className="max-sm:hidden" onPress={() => router.push('/sessions/new')}>
             <CalendarClock size={14} strokeWidth={1.8} />
             <span className="hidden md:inline">{t('session.newButton')}</span>
@@ -166,6 +187,7 @@ const ToyGallery = () => {
           </Button>
         </div>
       </header>
+      <LiveSessionBanner />
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {openToyActions && <ActionFabs actions={openToyActions} />}

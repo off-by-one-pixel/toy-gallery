@@ -122,10 +122,12 @@ class SessionSerializer(serializers.ModelSerializer):
             "id",
             "started_at",
             "ended_at",
+            "is_live",
             "entries",
             "max_insertable_length",
             "max_circumference",
         ]
+        read_only_fields = ["is_live"]
 
     def get_max_insertable_length(self, obj) -> float | None:
         return SessionDimensions.peak_length(obj)
@@ -164,6 +166,8 @@ class SessionSerializer(serializers.ModelSerializer):
         entries_data = validated_data.pop("entries", None)
         instance.started_at = validated_data.get("started_at", instance.started_at)
         instance.ended_at = validated_data.get("ended_at", instance.ended_at)
+        if instance.ended_at is not None:
+            instance.is_live = False
         instance.save()
         if entries_data is not None:
             instance.entries.all().delete()
@@ -171,6 +175,10 @@ class SessionSerializer(serializers.ModelSerializer):
                 [models.ToySessionEntry(session=instance, **e) for e in entries_data]
             )
         return instance
+
+
+class LiveSessionResponseSerializer(serializers.Serializer):
+    session = SessionSerializer(allow_null=True)
 
 
 class ActivityDaySerializer(serializers.Serializer):

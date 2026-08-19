@@ -7,6 +7,8 @@ import {
   toysSessionsMediaRetrieve,
   toysSessionsRefreshMediaCreate,
   toysSessionsList,
+  toysSessionsLiveRetrieve,
+  toysSessionsStartCreate,
   toysSessionsRetrieve,
   toysSessionsUpdate,
   toysTokenCreate,
@@ -149,6 +151,16 @@ export const updateSession = async (id: number, payload: SessionPayload): Promis
 };
 
 export const deleteSession = (id: number) => toysSessionsDestroy(id);
+
+export const startLiveSession = async (): Promise<Session> => {
+  const { data } = await toysSessionsStartCreate();
+  return snakeToCamel<Session>(data);
+};
+
+export const fetchLiveSession = async (): Promise<Session | null> => {
+  const { data } = await toysSessionsLiveRetrieve();
+  return data.session ? snakeToCamel<Session>(data.session) : null;
+};
 
 export type MediaIndicators = { configured: boolean; sessionIds: Set<number> };
 

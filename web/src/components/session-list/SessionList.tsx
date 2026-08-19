@@ -2,17 +2,19 @@
 
 import { useState } from 'react';
 import { Alert, Button, Spinner, Toast } from '@heroui/react';
-import { Image as ImageIcon, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { CirclePlay, Image as ImageIcon, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useLiveSession } from '../../providers/LiveSessionProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
 import { FILTERS, type FilterKey } from '../../services/session';
 import { ActionFabs, type ActionDef } from '../ActionButtons';
 import ActivityTracker from '../ActivityTracker';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
+import LiveSessionBanner from '../LiveSessionBanner';
 import Switcher, { type SwitcherItem } from '../Switcher';
 import TopBar from '../TopBar';
 import GirthToggle from '../GirthToggle';
@@ -32,6 +34,8 @@ export default function SessionList() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [refreshingMedia, setRefreshingMedia] = useState(false);
   const runToast = useAsyncAction();
+  const { liveSession, isLoaded: liveLoaded, start: startLive, refresh: refreshLive } = useLiveSession();
+  const showStartLive = liveLoaded && !liveSession;
 
   const refreshMedia = () => {
     runToast(data.refreshMedia, {
@@ -47,6 +51,7 @@ export default function SessionList() {
       onDone: () => {
         setSelectedId(null);
         data.reload();
+        void refreshLive();
       },
     });
   };
@@ -94,6 +99,12 @@ export default function SessionList() {
             <GirthToggle />
           </div>
           <div className="flex-1" />
+          {showStartLive && (
+            <Button variant="outline" size="sm" className="max-sm:hidden" onPress={() => void runToast(startLive)}>
+              <CirclePlay size={14} strokeWidth={1.8} />
+              <span className="hidden md:inline">{t('live.startButton')}</span>
+            </Button>
+          )}
           {data.mediaConfigured && (
             <Button
               variant="outline"
@@ -120,11 +131,23 @@ export default function SessionList() {
           </Button>
         </div>
       </header>
+      <LiveSessionBanner />
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {selectedActions && <ActionFabs actions={selectedActions} />}
         <ActionFabs
           actions={[
+            ...(showStartLive
+              ? [
+                  {
+                    key: 'start-live',
+                    label: t('live.startButton'),
+                    icon: CirclePlay,
+                    variant: 'outline',
+                    onPress: () => void runToast(startLive),
+                  } satisfies ActionDef,
+                ]
+              : []),
             {
               key: 'new',
               label: t('newButton'),

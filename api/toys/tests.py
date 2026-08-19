@@ -3,6 +3,7 @@ from pathlib import Path
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from toy_gallery.urls import _resolve_spa_html
@@ -563,6 +564,104 @@ class DeleteCollectionTests(TestCase):
         response = self.client.delete("/toys/toys/delete_all/")
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.data, {"toys_deleted": 0, "sessions_deleted": 0})
+
+
+class LiveSessionTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(username="u", password="p")
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+
+    def _create_toy(self):
+        payload = _payload(section_circumferences=(None, 220.0, None))
+        payload["name"] = "L"
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.data["id"]
+
+    def test_start_creates_empty_live_session_stamped_now(self):
+        before = timezone.now()
+        response = self.client.post("/toys/sessions/start/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertTrue(response.data["is_live"])
+        self.assertEqual(response.data["entries"], [])
+        self.assertIsNone(response.data["ended_at"])
+        started = models.Session.objects.get(pk=response.data["id"]).started_at
+        self.assertGreaterEqual(started, before)
+        self.assertLessEqual(started, timezone.now())
+
+    def test_start_is_idempotent_while_live(self):
+        first = self.client.post("/toys/sessions/start/")
+        second = self.client.post("/toys/sessions/start/")
+        self.assertEqual(first.data["id"], second.data["id"])
+        self.assertEqual(models.Session.objects.filter(is_live=True).count(), 1)
+
+    def test_live_endpoint_returns_null_then_session(self):
+        empty = self.client.get("/toys/sessions/live/")
+        self.assertEqual(empty.status_code, 200)
+        self.assertIsNone(empty.data["session"])
+
+        started = self.client.post("/toys/sessions/start/")
+        response = self.client.get("/toys/sessions/live/")
+        self.assertEqual(response.data["session"]["id"], started.data["id"])
+        self.assertTrue(response.data["session"]["is_live"])
+
+    def test_saving_an_end_time_ends_the_live_session(self):
+        toy = self._create_toy()
+        started = self.client.post("/toys/sessions/start/")
+        payload = {
+            "started_at": started.data["started_at"],
+            "ended_at": "2999-01-01T00:00:00Z",
+            "entries": [{"toy": toy, "involvement": "USED"}],
+        }
+        update = self.client.put(
+            f"/toys/sessions/{started.data['id']}/", payload, format="json"
+        )
+        self.assertEqual(update.status_code, 200, update.content)
+        self.assertFalse(update.data["is_live"])
+        self.assertIsNone(self.client.get("/toys/sessions/live/").data["session"])
+
+    def test_saving_without_end_time_keeps_session_live(self):
+        toy = self._create_toy()
+        started = self.client.post("/toys/sessions/start/")
+        payload = {
+            "started_at": started.data["started_at"],
+            "ended_at": None,
+            "entries": [{"toy": toy, "involvement": "USED"}],
+        }
+        update = self.client.put(
+            f"/toys/sessions/{started.data['id']}/", payload, format="json"
+        )
+        self.assertEqual(update.status_code, 200, update.content)
+        self.assertTrue(update.data["is_live"])
+
+    def test_clearing_end_time_does_not_resurrect_liveness(self):
+        toy = self._create_toy()
+        session = models.Session.objects.create(
+            started_at="2026-05-02T21:14:00Z", ended_at="2026-05-02T22:00:00Z"
+        )
+        payload = {
+            "started_at": "2026-05-02T21:14:00Z",
+            "ended_at": None,
+            "entries": [{"toy": toy, "involvement": "USED"}],
+        }
+        update = self.client.put(f"/toys/sessions/{session.pk}/", payload, format="json")
+        self.assertEqual(update.status_code, 200, update.content)
+        self.assertFalse(update.data["is_live"])
+
+    def test_is_live_cannot_be_set_through_the_write_api(self):
+        toy = self._create_toy()
+        response = self.client.post(
+            "/toys/sessions/",
+            {
+                "started_at": "2026-05-02T21:14:00Z",
+                "is_live": True,
+                "entries": [{"toy": toy, "involvement": "USED"}],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertFalse(response.data["is_live"])
 
 
 class SessionTests(TestCase):
