@@ -29,6 +29,20 @@ class SessionMediaWindowTests(TestCase):
         start, end = media.session_media_window(started)
         self.assertEqual(end - start, timedelta(minutes=30))
 
+    def test_window_extends_to_session_end_when_set(self):
+        started = datetime(2026, 6, 1, 20, 0, tzinfo=UTC)
+        ended = datetime(2026, 6, 2, 7, 30, tzinfo=UTC)
+        start, end = media.session_media_window(started, ended)
+        self.assertEqual(start, started - timedelta(minutes=60))
+        self.assertEqual(end, ended + timedelta(minutes=60))
+
+    def test_window_ignores_missing_end(self):
+        started = datetime(2026, 6, 1, 20, 0, tzinfo=UTC)
+        self.assertEqual(
+            media.session_media_window(started, None),
+            media.session_media_window(started),
+        )
+
 
 @override_settings(
     IMMICH_URL="https://immich", IMMICH_PUBLIC_URL="https://photos.example", IMMICH_API_KEY="k"
@@ -282,6 +296,19 @@ class SessionMediaEndpointTests(TestCase):
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"configured": False, "items": []})
+
+    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
+    @mock.patch("toys.immich.ImmichClient.clear_session_links")
+    @mock.patch("toys.immich.ImmichClient.search_assets", return_value=[])
+    def test_search_window_extends_to_session_end(self, search_mock, _clear_mock):
+        self.session.ended_at = datetime(2026, 6, 2, 7, 30, tzinfo=UTC)
+        self.session.save(update_fields=["ended_at"])
+        self.session.refresh_from_db()
+        response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
+        self.assertEqual(response.status_code, 200)
+        start, end = search_mock.call_args.args
+        self.assertEqual(start, self.session.started_at - timedelta(minutes=60))
+        self.assertEqual(end, self.session.ended_at + timedelta(minutes=60))
 
     @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
     @mock.patch("toys.immich.ImmichClient.ensure_shared_link", return_value="KEY")
