@@ -46,6 +46,7 @@ export default function SessionRow({
   const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
+  const selectionRing = session.isLive ? 'ring-2 ring-emerald-500 ' : 'ring-2 ring-accent ';
   const orderedEntries = sortEntriesByInvolvement(session.entries);
   const visibleEntries = selected ? orderedEntries : orderedEntries.slice(0, STRIP_LIMIT);
   const overflow = orderedEntries.length - visibleEntries.length;
@@ -63,7 +64,7 @@ export default function SessionRow({
       className={
         'group relative rounded-xl border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
         (session.isLive ? 'border-emerald-500 ' : 'border-border ') +
-        (selected ? (session.isLive ? 'ring-2 ring-emerald-500 ' : 'ring-2 ring-accent ') : '') +
+        (selected ? selectionRing : '') +
         (flash ? 'row-flash' : '')
       }
     >
