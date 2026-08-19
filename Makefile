@@ -53,3 +53,13 @@ sonar:
 		-Dsonar.projectName="Toy Gallery (local)" \
 		-Dsonar.host.url=$(SONAR_HOST_URL) \
 		-Dsonar.token=$(SONAR_TOKEN)
+	@taskId=$$(sed -n 's/^ceTaskId=//p' .scannerwork/report-task.txt); \
+	for i in $$(seq 1 60); do \
+		status=$$(curl -sf -u $(SONAR_TOKEN): "$(SONAR_HOST_URL)/api/ce/task?id=$$taskId" | sed -n 's/.*"status":"\([A-Z_]*\)".*/\1/p'); \
+		case $$status in \
+			SUCCESS) echo "analysis processed"; exit 0;; \
+			FAILED|CANCELED) echo "analysis processing $$status"; exit 1;; \
+		esac; \
+		sleep 2; \
+	done; \
+	echo "timed out waiting for analysis processing"; exit 1
