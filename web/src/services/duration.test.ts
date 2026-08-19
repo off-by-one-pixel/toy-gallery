@@ -4,17 +4,21 @@ import { formatDuration, minutesBetween, totalDuration } from './duration';
 
 describe('formatDuration', () => {
   it('formats minutes only', () => {
-    expect(formatDuration(45)).toBe('45m');
-    expect(formatDuration(0)).toBe('0m');
+    expect(formatDuration(45, 'en')).toBe('45m');
+    expect(formatDuration(0, 'en')).toBe('0m');
   });
 
   it('formats whole hours without a minutes part', () => {
-    expect(formatDuration(60)).toBe('1h');
-    expect(formatDuration(120)).toBe('2h');
+    expect(formatDuration(60, 'en')).toBe('1h');
+    expect(formatDuration(120, 'en')).toBe('2h');
   });
 
   it('formats mixed hours and minutes', () => {
-    expect(formatDuration(95)).toBe('1h 35m');
+    expect(formatDuration(95, 'en')).toBe('1h 35m');
+  });
+
+  it('localizes unit labels', () => {
+    expect(formatDuration(95, 'ru')).toBe('1 ч 35 мин');
   });
 });
 

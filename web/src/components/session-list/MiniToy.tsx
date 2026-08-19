@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '../../services/converters/toyShape';
 import { formatDuration } from '../../services/duration';
@@ -22,6 +22,7 @@ type Props = Readonly<{
 
 export default function MiniToy({ entry, toy, heightRatio }: Props) {
   const t = useTranslations('session');
+  const locale = useLocale();
   if (!toy) {
     return (
       <div className="flex w-20 flex-col items-center gap-1.5 text-center">
@@ -51,7 +52,7 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
         {toy.size && <span className="text-muted"> {toy.size}</span>}
       </div>
       {entry.durationMinutes != null && (
-        <div className="text-xs tabular-nums text-muted">{formatDuration(entry.durationMinutes)}</div>
+        <div className="text-xs tabular-nums text-muted">{formatDuration(entry.durationMinutes, locale)}</div>
       )}
     </div>
   );

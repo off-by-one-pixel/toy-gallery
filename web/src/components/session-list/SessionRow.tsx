@@ -110,7 +110,7 @@ export default function SessionRow({
             <div className="flex items-baseline gap-2 py-0.5 sm:justify-end">
               <span className="text-caption uppercase tracking-wider text-text-tertiary">{t('totalTime')}</span>
               <span className="text-[15px] font-semibold tracking-tight tabular-nums text-foreground sm:text-[17px]">
-                {formatDuration(totalMinutes)}
+                {formatDuration(totalMinutes, locale)}
               </span>
             </div>
           )}

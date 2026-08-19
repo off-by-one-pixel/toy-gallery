@@ -2,7 +2,7 @@
 
 import { Chip } from '@heroui/react';
 import { Check, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { DURATION_INCREMENTS_MINUTES, formatDuration } from '../services/duration';
@@ -59,6 +59,7 @@ export default function ToyChipSelector({
 }: Props) {
   const t = useTranslations('involvement');
   const tDuration = useTranslations('session.duration');
+  const locale = useLocale();
   const editorToy = toyShapeToEditor(toy.shape);
 
   const handlePick = (next: Involvement) => {
@@ -134,7 +135,7 @@ export default function ToyChipSelector({
               <span className="text-caption font-medium uppercase tracking-wider text-muted">{tDuration('label')}</span>
               <span className="flex items-center gap-1">
                 <span className="text-xs font-semibold tabular-nums text-foreground">
-                  {duration != null ? formatDuration(duration) : '—'}
+                  {duration != null ? formatDuration(duration, locale) : '—'}
                 </span>
                 {duration != null && (
                   <button
@@ -160,7 +161,7 @@ export default function ToyChipSelector({
                 }}
                 className="mt-1.5 h-8 w-full rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
               >
-                {tDuration('wholeSession')} · {formatDuration(wholeSessionMinutes)}
+                {tDuration('wholeSession')} · {formatDuration(wholeSessionMinutes, locale)}
               </button>
             )}
             <div className="mt-1.5 grid grid-cols-4 gap-1">
@@ -174,7 +175,7 @@ export default function ToyChipSelector({
                   }}
                   className="h-8 rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
                 >
-                  +{formatDuration(minutes)}
+                  +{formatDuration(minutes, locale)}
                 </button>
               ))}
             </div>
