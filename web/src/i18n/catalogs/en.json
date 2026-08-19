@@ -84,6 +84,11 @@
     "recorded": "recorded",
     "detailsToggleLabel": "Toggle session details",
     "totalTime": "Time",
+    "live": {
+      "startButton": "Start session",
+      "badge": "Live",
+      "openButton": "Open"
+    },
     "startedLabel": "Started",
     "endedLabel": "Ended",
     "clearEndedLabel": "Clear end time",

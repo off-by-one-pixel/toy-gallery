@@ -1,18 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, Button, Spinner, Toast } from '@heroui/react';
-import { Image as ImageIcon, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { Alert, Button, Spinner } from '@heroui/react';
+import { Pencil, Play, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useLiveSession } from '../../providers/LiveSessionProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
 import { FILTERS, type FilterKey } from '../../services/session';
+import type { Session } from '../../services/types';
 import { ActionFabs, type ActionDef } from '../ActionButtons';
 import ActivityTracker from '../ActivityTracker';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
+import LiveSessionBanner from '../LiveSessionBanner';
 import Switcher, { type SwitcherItem } from '../Switcher';
 import TopBar from '../TopBar';
 import GirthToggle from '../GirthToggle';
@@ -30,14 +33,14 @@ export default function SessionList() {
   const t = useTranslations('session');
   const common = useTranslations('common');
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [refreshingMedia, setRefreshingMedia] = useState(false);
+  const [flashId, setFlashId] = useState<number | null>(null);
   const runToast = useAsyncAction();
+  const { liveSession, isLoaded: liveLoaded, start: startLive, refresh: refreshLive } = useLiveSession();
+  const showStartLive = liveLoaded && !liveSession;
 
-  const refreshMedia = () => {
-    runToast(data.refreshMedia, {
-      busy: setRefreshingMedia,
-      onSuccess: (count) => Toast.toast.success(t('media.refreshedToast', { count })),
-    });
+  const addStartedSession = (session: Session) => {
+    data.prependSession(session);
+    setFlashId(session.id);
   };
 
   const editSession = (id: number) => router.push(`/sessions/edit?id=${id}`);
@@ -47,6 +50,7 @@ export default function SessionList() {
       onDone: () => {
         setSelectedId(null);
         data.reload();
+        void refreshLive();
       },
     });
   };
@@ -94,20 +98,15 @@ export default function SessionList() {
             <GirthToggle />
           </div>
           <div className="flex-1" />
-          {data.mediaConfigured && (
+          {showStartLive && (
             <Button
-              variant="outline"
+              variant="primary"
               size="sm"
-              aria-label={t('media.refreshButton')}
-              isDisabled={refreshingMedia}
-              onPress={refreshMedia}
+              className="max-sm:hidden bg-emerald-600 text-white hover:bg-emerald-500"
+              onPress={() => void runToast(startLive, { onSuccess: addStartedSession })}
             >
-              {refreshingMedia ? (
-                <RefreshCw size={14} strokeWidth={2.2} className="animate-spin" />
-              ) : (
-                <ImageIcon size={14} strokeWidth={2.2} />
-              )}
-              <span className="hidden sm:inline">{t('media.refreshButtonLabel')}</span>
+              <Play size={14} strokeWidth={2.2} />
+              <span className="hidden md:inline">{t('live.startButton')}</span>
             </Button>
           )}
           <DisplayOptionsMenu>
@@ -120,11 +119,25 @@ export default function SessionList() {
           </Button>
         </div>
       </header>
+      <LiveSessionBanner />
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {selectedActions && <ActionFabs actions={selectedActions} />}
         <ActionFabs
           actions={[
+            ...(showStartLive
+              ? [
+                  {
+                    key: 'start-live',
+                    label: t('live.startButton'),
+                    icon: Play,
+                    variant: 'primary',
+                    fabClassName: 'bg-emerald-600 text-white hover:bg-emerald-500',
+                    fabIconSize: 22,
+                    onPress: () => void runToast(startLive, { onSuccess: addStartedSession }),
+                  } satisfies ActionDef,
+                ]
+              : []),
             {
               key: 'new',
               label: t('newButton'),
@@ -176,6 +189,7 @@ export default function SessionList() {
             unit={unit}
             hasMedia={data.mediaSessionIds.has(session.id)}
             selected={selectedId === session.id}
+            flash={flashId === session.id}
             onToggleSelect={() => setSelectedId((cur) => (cur === session.id ? null : session.id))}
             onEdit={() => editSession(session.id)}
             onDelete={() => removeSession(session.id)}

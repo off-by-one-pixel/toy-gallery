@@ -69,6 +69,16 @@ class Session(models.Model):
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField(null=True, blank=True)
     has_media = models.BooleanField(default=False)
+    is_live = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_live"],
+                condition=models.Q(is_live=True),
+                name="unique_live_session",
+            )
+        ]
 
     if TYPE_CHECKING:
         # Reverse relation from ToySessionEntry.session (related_name="entries").

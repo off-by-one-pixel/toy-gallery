@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import timedelta
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
@@ -89,6 +89,27 @@ class SessionViewSet(viewsets.ModelViewSet):
         .order_by("-started_at")
     )
     serializer_class = serializers.SessionSerializer
+
+    @extend_schema(request=None, responses=serializers.SessionSerializer)
+    @action(detail=False, methods=["post"], url_path="start")
+    def start(self, request):
+        live = models.Session.objects.filter(is_live=True).first()
+        if live is None:
+            try:
+                with transaction.atomic():
+                    live = models.Session.objects.create(
+                        started_at=timezone.now(), is_live=True
+                    )
+            except IntegrityError:
+                live = models.Session.objects.filter(is_live=True).first()
+        return Response(serializers.SessionSerializer(live).data)
+
+    @extend_schema(responses=serializers.LiveSessionResponseSerializer)
+    @action(detail=False, methods=["get"], url_path="live")
+    def live(self, request):
+        live = models.Session.objects.filter(is_live=True).first()
+        session = serializers.SessionSerializer(live).data if live else None
+        return Response({"session": session})
 
     @extend_schema(responses=serializers.SessionMediaResponseSerializer)
     @action(detail=True, methods=["get"], url_path="media")

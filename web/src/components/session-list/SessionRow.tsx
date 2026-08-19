@@ -23,6 +23,7 @@ type Props = Readonly<{
   unit: Unit;
   hasMedia: boolean;
   selected: boolean;
+  flash?: boolean;
   onToggleSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -34,6 +35,7 @@ export default function SessionRow({
   unit,
   hasMedia,
   selected,
+  flash = false,
   onToggleSelect,
   onEdit,
   onDelete,
@@ -59,8 +61,10 @@ export default function SessionRow({
   return (
     <div
       className={
-        'group relative rounded-xl border border-border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
-        (selected ? 'ring-2 ring-accent' : '')
+        'group relative rounded-xl border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
+        (session.isLive ? 'border-emerald-500 ' : 'border-border ') +
+        (selected ? 'ring-2 ring-accent ' : '') +
+        (flash ? 'row-flash' : '')
       }
     >
       <button
@@ -73,6 +77,15 @@ export default function SessionRow({
       <div className="flex items-center justify-between gap-3 sm:contents">
         <div className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground sm:order-1">
           {formatWhen(session.startedAt, new Date(), locale, whenT)}
+          {session.isLive && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-600">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </span>
+              {t('live.badge')}
+            </span>
+          )}
           {hasMedia && (
             <span
               aria-label={t('media.indicatorLabel')}

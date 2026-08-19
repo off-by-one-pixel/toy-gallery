@@ -17,6 +17,8 @@ export type ActionDef = Readonly<{
   icon: LucideIcon;
   variant: ButtonVariant;
   onPress: () => void;
+  fabClassName?: string;
+  fabIconSize?: number;
 }>;
 
 type Props = Readonly<{
@@ -43,16 +45,16 @@ export function ActionButtons({ actions, stopPropagation }: Props) {
 export function ActionFabs({ actions }: Readonly<{ actions: readonly ActionDef[] }>) {
   return (
     <>
-      {actions.map(({ key, label, icon: Icon, variant, onPress }) => (
+      {actions.map(({ key, label, icon: Icon, variant, onPress, fabClassName, fabIconSize }) => (
         <Button
           key={key}
           variant={variant === 'danger-soft' ? 'danger' : variant}
           size="sm"
           aria-label={label}
-          className={`h-12 w-12 rounded-full shadow-lg ${variant === 'outline' ? 'bg-surface' : ''}`}
+          className={`h-12 w-12 rounded-full shadow-lg ${variant === 'outline' ? 'bg-surface' : ''} ${fabClassName ?? ''}`}
           onPress={onPress}
         >
-          <Icon size={FAB_ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />
+          <Icon size={fabIconSize ?? FAB_ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />
         </Button>
       ))}
     </>

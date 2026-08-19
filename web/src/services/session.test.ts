@@ -18,6 +18,7 @@ const whenT = (key: 'today' | 'yesterday') => (key === 'today' ? 'Today' : 'Yest
 const session = (id: number, isoDay: string): Session => ({
   id,
   startedAt: `${isoDay}T10:00:00`,
+  isLive: false,
   entries: [],
   maxInsertableLength: null,
   maxCircumference: null,

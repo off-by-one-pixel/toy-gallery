@@ -10,8 +10,8 @@ import {
   fetchMediaIndicators,
   fetchToys,
   fetchSessions,
+  MEDIA_INDICATORS_CHANGED_EVENT,
   type MediaIndicators,
-  refreshAllSessionMedia,
 } from '../../services/api';
 import { type ActivityHeatmap, buildActivityHeatmap } from '../../services/activity';
 import { type FilterKey, filterSessions, toysById as buildToysById } from '../../services/session';
@@ -28,8 +28,7 @@ export type SessionListData = Readonly<{
   /** Prebuilt activity heatmap for the page header. */
   heatmap: ActivityHeatmap;
   mediaSessionIds: Set<number>;
-  mediaConfigured: boolean;
-  refreshMedia: () => Promise<number>;
+  prependSession: (session: Session) => void;
   reload: () => void;
 
   filter: FilterKey;
@@ -58,6 +57,12 @@ export function useSessionList(unit: Unit): SessionListData {
   const [loadCount, setLoadCount] = useState(0);
 
   const runInline = useAsyncAction(setError);
+
+  useEffect(() => {
+    const onIndicatorsChanged = () => setLoadCount((n) => n + 1);
+    window.addEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
+    return () => window.removeEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,12 +113,7 @@ export function useSessionList(unit: Unit): SessionListData {
     toysById,
     heatmap,
     mediaSessionIds: media.sessionIds,
-    mediaConfigured: media.configured,
-    refreshMedia: async () => {
-      const next = await refreshAllSessionMedia();
-      setMedia(next);
-      return next.sessionIds.size;
-    },
+    prependSession: (session: Session) => setSessions((prev) => [session, ...prev]),
     reload: () => setLoadCount((n) => n + 1),
     filter,
     setFilter,

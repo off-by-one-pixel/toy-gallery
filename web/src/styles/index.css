@@ -71,7 +71,7 @@ html {
   font-size: 14px;
   /* Same stack as the mockups — system font first so we get San Francisco
      on macOS, Segoe UI on Windows, Roboto on Linux when Inter isn't loaded. */
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 @layer base {
@@ -105,4 +105,35 @@ html {
 
 .react-calendar-heatmap-weekday-label {
   transform: translateX(-15px);
+}
+
+@keyframes row-flash {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-emerald-500) 70%, transparent);
+  }
+  75% {
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-emerald-500) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.row-flash {
+  animation: row-flash 1.1s ease-out;
+}
+
+@keyframes banner-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.banner-in {
+  animation: banner-in 0.35s ease-out;
 }
