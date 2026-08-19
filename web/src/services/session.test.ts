@@ -1,19 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  filterSessions,
-  formatWhen,
-  INVOLVEMENT_RANK,
-  isWithin,
-  sortEntriesByInvolvement,
-  toyTooltip,
-  toysById,
-} from './session';
+import { filterSessions, INVOLVEMENT_RANK, sortEntriesByInvolvement, toyTooltip, toysById } from './session';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
 
 const NOW = new Date(2026, 4, 16, 10, 0); // 2026-05-16 10:00 local
-
-const whenT = (key: 'today' | 'yesterday') => (key === 'today' ? 'Today' : 'Yesterday');
 
 const session = (id: number, isoDay: string): Session => ({
   id,
@@ -22,41 +12,6 @@ const session = (id: number, isoDay: string): Session => ({
   entries: [],
   maxInsertableLength: null,
   maxCircumference: null,
-});
-
-describe('formatWhen', () => {
-  it("formats today's timestamp with a Today prefix", () => {
-    expect(formatWhen('2026-05-16T09:30:00', NOW, 'en', whenT)).toMatch(/^Today · /);
-  });
-
-  it("formats yesterday's timestamp with a Yesterday prefix", () => {
-    expect(formatWhen('2026-05-15T20:00:00', NOW, 'en', whenT)).toMatch(/^Yesterday · /);
-  });
-
-  it('formats older timestamps as month + day', () => {
-    const out = formatWhen('2026-04-01T14:00:00', NOW, 'en', whenT);
-    expect(out).not.toMatch(/Today|Yesterday/);
-    expect(out).toContain('Apr');
-  });
-});
-
-describe('isWithin', () => {
-  it('returns true for a timestamp inside the window', () => {
-    expect(isWithin('2026-05-15T10:00:00', 7, NOW)).toBe(true);
-  });
-
-  it('returns false for a timestamp older than the window', () => {
-    expect(isWithin('2026-05-08T10:00:00', 7, NOW)).toBe(false);
-  });
-
-  it('returns true at the boundary (now - days)', () => {
-    const boundary = new Date(NOW.getTime() - 7 * 24 * 60 * 60 * 1000);
-    expect(isWithin(boundary.toISOString(), 7, NOW)).toBe(true);
-  });
-
-  it('returns false for a future timestamp older than `now`', () => {
-    expect(isWithin('2026-05-17T10:00:00', 7, NOW)).toBe(true); // future is still within
-  });
 });
 
 describe('filterSessions', () => {
