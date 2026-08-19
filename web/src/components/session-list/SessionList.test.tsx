@@ -5,8 +5,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   usePathname: () => '/sessions',
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock('../../services/api', () => ({

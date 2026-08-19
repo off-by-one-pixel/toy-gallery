@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import Lightbox, { type Slide } from 'yet-another-react-lightbox';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import Video from 'yet-another-react-lightbox/plugins/video';
@@ -30,26 +29,8 @@ const toSlide = (item: SessionMediaItem): Slide =>
       }
     : { src: item.fullUrl };
 
-const HISTORY_FLAG = 'mediaLightbox';
-
-function useCloseOnBack(onClose: () => void) {
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose;
-
-  useEffect(() => {
-    window.history.pushState({ ...window.history.state, [HISTORY_FLAG]: true }, '');
-    const onPop = () => closeRef.current();
-    window.addEventListener('popstate', onPop);
-    return () => {
-      window.removeEventListener('popstate', onPop);
-      if (window.history.state?.[HISTORY_FLAG]) window.history.back();
-    };
-  }, []);
-}
-
 export default function MediaLightbox({ items, initialIndex, onClose }: Props) {
   const t = useTranslations('session.media');
-  useCloseOnBack(onClose);
 
   return (
     <Lightbox

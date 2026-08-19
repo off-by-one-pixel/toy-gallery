@@ -8,6 +8,15 @@ vi.mock('../../services/api', () => ({
   fetchSessionMedia: vi.fn(),
 }));
 
+const push = vi.fn();
+let search = '';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push, replace: vi.fn() }),
+  usePathname: () => '/sessions',
+  useSearchParams: () => new URLSearchParams(search),
+}));
+
 import en from '../../i18n/catalogs/en.json';
 import { PrivacyProvider } from '../../providers/PrivacyProvider';
 import { fetchSessionMedia } from '../../services/api';
@@ -52,6 +61,7 @@ describe('SessionMediaStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    search = '';
   });
 
   it('renders nothing when the backend is not configured', async () => {
@@ -80,7 +90,7 @@ describe('SessionMediaStrip', () => {
     expect(await screen.findByText(en.session.media.loadError)).toBeTruthy();
   });
 
-  it('renders a thumbnail per item and opens the lightbox on click', async () => {
+  it('opens the lightbox by pushing the media URL param', async () => {
     vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
     render(wrap(<SessionMediaStrip sessionId={1} />));
     const thumbs = await screen.findAllByRole('button', { name: en.session.media.openLabel });
@@ -88,35 +98,32 @@ describe('SessionMediaStrip', () => {
     expect(thumbs[0].querySelector('img')?.getAttribute('src')).toBe(image.thumbnailUrl);
 
     fireEvent.click(thumbs[1]);
+    expect(push).toHaveBeenCalledWith('/sessions?media=1%3A1', { scroll: false });
+  });
+
+  it('shows the lightbox when the media param addresses this session', async () => {
+    search = 'media=1:1';
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
+    render(wrap(<SessionMediaStrip sessionId={1} />));
     expect(await screen.findByRole('button', { name: en.session.media.closeLabel })).toBeTruthy();
-
-    fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
-    await waitFor(() => expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull());
   });
 
-  it('pushes a history entry on open and closes on browser back', async () => {
+  it('ignores media params for other sessions or out-of-range indexes', async () => {
     vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
-    render(wrap(<SessionMediaStrip sessionId={1} />));
-    const thumbs = await screen.findAllByRole('button', { name: en.session.media.openLabel });
-
-    fireEvent.click(thumbs[0]);
-    await screen.findByRole('button', { name: en.session.media.closeLabel });
-    expect(window.history.state?.mediaLightbox).toBe(true);
-
-    fireEvent(window, new PopStateEvent('popstate'));
-    await waitFor(() => expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull());
+    for (const value of ['media=2:0', 'media=1:5', 'media=junk']) {
+      search = value;
+      const view = render(wrap(<SessionMediaStrip sessionId={1} />));
+      await screen.findAllByRole('button', { name: en.session.media.openLabel });
+      expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull();
+      view.unmount();
+    }
   });
 
-  it('consumes its history entry when closed from the UI', async () => {
+  it('closes by clearing the media param', async () => {
+    search = 'media=1:0';
     vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
-    const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
     render(wrap(<SessionMediaStrip sessionId={1} />));
-    const thumbs = await screen.findAllByRole('button', { name: en.session.media.openLabel });
-
-    fireEvent.click(thumbs[0]);
-    await screen.findByRole('button', { name: en.session.media.closeLabel });
-    fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
-    await waitFor(() => expect(backSpy).toHaveBeenCalledTimes(1));
-    backSpy.mockRestore();
+    fireEvent.click(await screen.findByRole('button', { name: en.session.media.closeLabel }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/sessions', { scroll: false }));
   });
 });
