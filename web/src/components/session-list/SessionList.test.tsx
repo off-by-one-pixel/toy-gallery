@@ -12,7 +12,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('../../services/api', () => ({
   fetchSessions: vi.fn(),
   fetchToys: vi.fn(),
-  fetchActivity: vi.fn(),
+  fetchSessionStats: vi.fn(),
   fetchMediaIndicators: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
   MEDIA_INDICATORS_CHANGED_EVENT: 'mediaIndicatorsChanged',
@@ -30,11 +30,11 @@ import { PrivacyProvider } from '../../providers/PrivacyProvider';
 import { ThemeProvider } from '../../providers/ThemeProvider';
 import { UnitProvider } from '../../providers/UnitProvider';
 import {
-  fetchActivity,
   fetchLiveSession,
   fetchMediaIndicators,
   fetchSessionMedia,
   fetchSessions,
+  fetchSessionStats,
   fetchToys,
   MEDIA_INDICATORS_CHANGED_EVENT,
   startLiveSession,
@@ -73,7 +73,7 @@ describe('SessionList', () => {
     localStorage.clear();
     vi.mocked(fetchSessions).mockResolvedValue([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00')]);
     vi.mocked(fetchToys).mockResolvedValue([]);
-    vi.mocked(fetchActivity).mockResolvedValue([]);
+    vi.mocked(fetchSessionStats).mockResolvedValue([]);
     vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: true, sessionIds: new Set([2]) });
     vi.mocked(fetchSessionMedia).mockResolvedValue({ configured: false, items: [] });
     vi.mocked(fetchLiveSession).mockResolvedValue(null);
@@ -116,6 +116,21 @@ describe('SessionList', () => {
     expect(screen.queryAllByRole('button', { name: en.session.live.startButton })).toHaveLength(0);
     expect(screen.getByRole('button', { name: en.session.live.openButton })).toBeTruthy();
     expect(screen.getAllByText(en.session.live.badge).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('requests strip stats with the filter window', async () => {
+    render(wrap(<SessionList />));
+    await screen.findByText(`2 ${en.session.recorded}`);
+    const hourCalls = vi.mocked(fetchSessionStats).mock.calls.filter(([g]) => g === 'hour');
+    expect(hourCalls.length).toBeGreaterThan(0);
+    expect(hourCalls[hourCalls.length - 1][2]).toEqual({ start: undefined });
+
+    fireEvent.click(screen.getByText(en.session.filter.week));
+    await waitFor(() => {
+      const calls = vi.mocked(fetchSessionStats).mock.calls.filter(([g]) => g === 'hour');
+      const last = calls[calls.length - 1][2] as { start?: string };
+      expect(last.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
   });
 
   it('toggles row selection through the overlay button', async () => {

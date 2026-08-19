@@ -1,5 +1,3 @@
-from collections import defaultdict
-from datetime import timedelta
 
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Sum
@@ -13,8 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import export as export_mod
-from . import media, models, serializers
-from .dimensions import SessionDimensions, max_or_none
+from . import media, models, serializers, stats
 
 
 class ToyViewSet(viewsets.ModelViewSet):
@@ -83,9 +80,6 @@ class ToyViewSet(viewsets.ModelViewSet):
         )
 
 
-ACTIVITY_WINDOW_DAYS = 365
-
-
 class SessionViewSet(viewsets.ModelViewSet):
     queryset = (
         models.Session.objects.prefetch_related("entries", "entries__toy")
@@ -145,36 +139,23 @@ class SessionViewSet(viewsets.ModelViewSet):
             models.Session.objects.exclude(id__in=result.session_ids).update(has_media=False)
         return Response({"configured": result.configured, "session_ids": result.session_ids})
 
-    @extend_schema(responses=serializers.ActivityResponseSerializer)
-    @action(detail=False, methods=["get"], url_path="activity")
-    def activity(self, request):
-        cutoff = timezone.now() - timedelta(days=ACTIVITY_WINDOW_DAYS - 1)
-        sessions = (
-            models.Session.objects.filter(started_at__gte=cutoff)
-            .prefetch_related("entries", "entries__toy", "entries__toy__shape__sections")
-        )
-
-        buckets: dict = defaultdict(list)
-        for session in sessions:
-            local_date = timezone.localtime(session.started_at).date()
-            buckets[local_date].append(session)
-
-        days = []
-        for day, day_sessions in sorted(buckets.items()):
-            days.append(
-                {
-                    "date": day,
-                    "session_count": len(day_sessions),
-                    "max_insertable_length": max_or_none(
-                        SessionDimensions.peak_length(s) for s in day_sessions
-                    ),
-                    "max_circumference": max_or_none(
-                        SessionDimensions.peak_circumference(s) for s in day_sessions
-                    ),
-                }
-            )
-
-        return Response({"days": days})
+    @extend_schema(
+        parameters=[serializers.SessionStatsQuerySerializer],
+        responses=serializers.SessionStatsResponseSerializer,
+    )
+    @action(detail=False, methods=["get"], url_path="stats")
+    def stats(self, request):
+        query = serializers.SessionStatsQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        params = query.validated_data
+        lower, upper = stats.range_bounds(params.get("start"), params.get("end"), params["tz"])
+        sessions = models.Session.objects.prefetch_related("entries", "entries__toy")
+        if lower is not None:
+            sessions = sessions.filter(started_at__gte=lower)
+        if upper is not None:
+            sessions = sessions.filter(started_at__lt=upper)
+        groups = stats.compute_stats(sessions, params["group_by"], params["metrics"], params["tz"])
+        return Response({"groups": groups})
 
 
 class ChangePasswordView(APIView):

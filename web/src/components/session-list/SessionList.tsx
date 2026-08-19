@@ -134,8 +134,8 @@ export default function SessionList() {
         {!data.isLoading && (
           <div className="mb-4">
             <ActivityTracker heatmap={data.heatmap}>
-              <TimeOfDayStrip sessions={data.visibleSessions} />
-              <WeekdayStrip sessions={data.visibleSessions} />
+              <TimeOfDayStrip counts={data.hourCounts} />
+              <WeekdayStrip counts={data.weekdayCounts} />
             </ActivityTracker>
           </div>
         )}

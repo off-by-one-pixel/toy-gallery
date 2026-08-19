@@ -1,6 +1,5 @@
 import { InvolvementEnum, SectionShapeEnum } from './generated/schemas';
 import type {
-  ActivityDay as ApiActivityDay,
   Session as ApiSession,
   SessionMediaItem as ApiSessionMediaItem,
   SessionMediaResponse as ApiSessionMediaResponse,
@@ -42,7 +41,13 @@ export type SessionEntry = SnakeToCamel<ApiSessionEntry>;
 export type Session = SnakeToCamel<ApiSession>;
 export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
 
-export type ActivityDay = SnakeToCamel<ApiActivityDay>;
+export type ActivityDay = {
+  date: string;
+  sessionCount: number;
+  maxInsertableLength: number | null;
+  maxCircumference: number | null;
+};
+export type { StatsGroup } from './generated/schemas';
 export type SessionMediaItem = SnakeToCamel<ApiSessionMediaItem>;
 export type SessionMedia = Omit<SnakeToCamel<ApiSessionMediaResponse>, 'items'> & { items: SessionMediaItem[] };
 

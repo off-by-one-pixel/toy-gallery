@@ -1,3 +1,4 @@
+import { daysAgoDateString } from './stats';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -44,6 +45,12 @@ export const FILTERS: readonly FilterOption[] = [
 ];
 
 /** Filter sessions by recency. Pass `now` for deterministic tests. */
+export function filterStartDate(filter: FilterKey, now: Date = new Date()): string | undefined {
+  const days = FILTERS.find((f) => f.key === filter)?.days;
+  if (days == null) return undefined;
+  return daysAgoDateString(days, now);
+}
+
 export function filterSessions(sessions: readonly Session[], filter: FilterKey, now: Date = new Date()): Session[] {
   const option = FILTERS.find((f) => f.key === filter);
   if (option?.days == null) return [...sessions];

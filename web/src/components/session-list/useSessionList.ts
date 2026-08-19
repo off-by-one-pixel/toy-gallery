@@ -6,16 +6,24 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { useGirth } from '../../providers/GirthProvider';
 import {
-  fetchActivity,
   fetchMediaIndicators,
+  fetchSessionStats,
   fetchToys,
   fetchSessions,
   MEDIA_INDICATORS_CHANGED_EVENT,
   type MediaIndicators,
 } from '../../services/api';
-import { type ActivityHeatmap, buildActivityHeatmap } from '../../services/activity';
-import { type FilterKey, filterSessions, toysById as buildToysById } from '../../services/session';
-import type { ActivityDay, Session, Toy } from '../../services/types';
+import { ACTIVITY_WINDOW_DAYS, type ActivityHeatmap, buildActivityHeatmap } from '../../services/activity';
+import { type FilterKey, filterSessions, filterStartDate, toysById as buildToysById } from '../../services/session';
+import {
+  activityDaysFromStats,
+  countsFromGroups,
+  daysAgoDateString,
+  METRIC_COUNT,
+  METRIC_MAX_CIRCUMFERENCE,
+  METRIC_MAX_LENGTH,
+} from '../../services/stats';
+import type { Session, StatsGroup, Toy } from '../../services/types';
 import { type Unit } from '../../services/units';
 
 export type SessionListData = Readonly<{
@@ -28,6 +36,8 @@ export type SessionListData = Readonly<{
   /** Prebuilt activity heatmap for the page header. */
   heatmap: ActivityHeatmap;
   mediaSessionIds: Set<number>;
+  hourCounts: number[];
+  weekdayCounts: number[];
   prependSession: (session: Session) => void;
   reload: () => void;
 
@@ -49,12 +59,15 @@ export function useSessionList(unit: Unit): SessionListData {
   const { girth } = useGirth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [toys, setToys] = useState<Toy[]>([]);
-  const [activity, setActivity] = useState<ActivityDay[]>([]);
+  const [dateGroups, setDateGroups] = useState<StatsGroup[]>([]);
+  const [hourCounts, setHourCounts] = useState<number[]>(() => Array.from({ length: 24 }, () => 0));
+  const [weekdayCounts, setWeekdayCounts] = useState<number[]>(() => Array.from({ length: 7 }, () => 0));
   const [media, setMedia] = useState<MediaIndicators>(() => ({ configured: false, sessionIds: new Set() }));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
   const [loadCount, setLoadCount] = useState(0);
+  const [statsVersion, setStatsVersion] = useState(0);
 
   const runInline = useAsyncAction(setError);
 
@@ -66,15 +79,41 @@ export function useSessionList(unit: Unit): SessionListData {
 
   useEffect(() => {
     let cancelled = false;
+    const start = filterStartDate(filter);
+    runInline(
+      async () => {
+        const [hours, weekdays] = await Promise.all([
+          fetchSessionStats('hour', [METRIC_COUNT], { start }),
+          fetchSessionStats('weekday', [METRIC_COUNT], { start }),
+        ]);
+        return { hours, weekdays };
+      },
+      {
+        onSuccess: (loaded) => {
+          if (cancelled) return;
+          setHourCounts(countsFromGroups(loaded.hours, 24));
+          setWeekdayCounts(countsFromGroups(loaded.weekdays, 7));
+        },
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [runInline, filter, loadCount, statsVersion]);
+
+  useEffect(() => {
+    let cancelled = false;
     runInline(
       async () => {
         const [s, t, a, m] = await Promise.all([
           fetchSessions(),
           fetchToys(),
-          fetchActivity(),
+          fetchSessionStats('date', [METRIC_COUNT, METRIC_MAX_LENGTH, METRIC_MAX_CIRCUMFERENCE], {
+            start: daysAgoDateString(ACTIVITY_WINDOW_DAYS - 1),
+          }),
           fetchMediaIndicators().catch((): MediaIndicators => ({ configured: false, sessionIds: new Set() })),
         ]);
-        return { sessions: s, toys: t, activity: a, media: m };
+        return { sessions: s, toys: t, dateGroups: a, media: m };
       },
       {
         busy: setIsLoading,
@@ -82,7 +121,7 @@ export function useSessionList(unit: Unit): SessionListData {
           if (cancelled) return;
           setSessions(loaded.sessions);
           setToys(loaded.toys);
-          setActivity(loaded.activity);
+          setDateGroups(loaded.dateGroups);
           setMedia(loaded.media);
           setError(null);
         },
@@ -93,16 +132,17 @@ export function useSessionList(unit: Unit): SessionListData {
     };
   }, [runInline, loadCount]);
 
+  const activityDays = useMemo(() => activityDaysFromStats(dateGroups), [dateGroups]);
   const heatmap = useMemo(
     () =>
       buildActivityHeatmap(
-        activity,
+        activityDays,
         unit,
         locale,
         { length: t('length'), circumference: t(girth), sessions: tSession('perDayTitle') },
         { girth },
       ),
-    [activity, unit, locale, t, tSession, girth],
+    [activityDays, unit, locale, t, tSession, girth],
   );
   const toysById = useMemo(() => buildToysById(toys), [toys]);
   const visibleSessions = useMemo(() => filterSessions(sessions, filter), [sessions, filter]);
@@ -113,7 +153,12 @@ export function useSessionList(unit: Unit): SessionListData {
     toysById,
     heatmap,
     mediaSessionIds: media.sessionIds,
-    prependSession: (session: Session) => setSessions((prev) => [session, ...prev]),
+    hourCounts,
+    weekdayCounts,
+    prependSession: (session: Session) => {
+      setSessions((prev) => [session, ...prev]);
+      setStatsVersion((n) => n + 1);
+    },
     reload: () => setLoadCount((n) => n + 1),
     filter,
     setFilter,

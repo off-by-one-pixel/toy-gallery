@@ -187,20 +187,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/SessionMediaResponse'
           description: ''
-  /toys/sessions/activity/:
-    get:
-      operationId: toys_sessions_activity_retrieve
-      tags:
-      - toys
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ActivityResponse'
-          description: ''
   /toys/sessions/live/:
     get:
       operationId: toys_sessions_live_retrieve
@@ -256,6 +242,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
+          description: ''
+  /toys/sessions/stats/:
+    get:
+      operationId: toys_sessions_stats_retrieve
+      parameters:
+      - in: query
+        name: end
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: group_by
+        schema:
+          enum:
+          - date
+          - hour
+          - weekday
+          type: string
+          minLength: 1
+        description: |-
+          * `date` - date
+          * `hour` - hour
+          * `weekday` - weekday
+        required: true
+      - in: query
+        name: metrics
+        schema:
+          type: string
+          minLength: 1
+        description: 'Comma-separated metrics: ''count'' or ''<func>:<field>'' with
+          func in min|max|avg|sum|first|last and field in insertable_length|circumference|duration.'
+        required: true
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: tz
+        schema:
+          type: string
+          minLength: 1
+          default: UTC
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionStatsResponse'
           description: ''
   /toys/token/:
     post:
@@ -508,36 +547,6 @@ paths:
           description: ''
 components:
   schemas:
-    ActivityDay:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-        session_count:
-          type: integer
-        max_insertable_length:
-          type: number
-          format: double
-          nullable: true
-        max_circumference:
-          type: number
-          format: double
-          nullable: true
-      required:
-      - date
-      - max_circumference
-      - max_insertable_length
-      - session_count
-    ActivityResponse:
-      type: object
-      properties:
-        days:
-          type: array
-          items:
-            $ref: '#/components/schemas/ActivityDay'
-      required:
-      - days
     ChangePasswordRequest:
       type: object
       properties:
@@ -813,6 +822,29 @@ components:
       required:
       - entries
       - started_at
+    SessionStatsResponse:
+      type: object
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatsGroup'
+      required:
+      - groups
+    StatsGroup:
+      type: object
+      properties:
+        key:
+          type: string
+        values:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+            nullable: true
+      required:
+      - key
+      - values
     TokenObtainPair:
       type: object
       properties:
