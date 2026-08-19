@@ -1,23 +1,27 @@
 'use client';
 
-import { cloneElement, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, type ReactElement } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 
 import { ACTIVITY_PALETTE } from '../services/activityPalette';
 import type { ActivityCell, ActivityHeatmap, DimensionView } from '../services/activity';
+import TimeOfDayStrip from './session-list/TimeOfDayStrip';
+import WeekdayStrip from './session-list/WeekdayStrip';
 
 type Props = Readonly<{
   heatmap: ActivityHeatmap;
-  children?: ReactNode;
+  hourCounts: readonly number[];
+  weekdayCounts: readonly number[];
 }>;
 
-export default function ActivityTracker({ heatmap, children }: Props) {
+export default function ActivityTracker({ heatmap, hourCounts, weekdayCounts }: Props) {
   return (
     <div className="mx-auto grid max-w-300 grid-cols-1 gap-6 rounded-lg bg-surface/60 px-4 pt-3 pb-4 sm:grid-cols-2 sm:gap-8">
       <DimensionHeatmap view={heatmap.length} />
       <DimensionHeatmap view={heatmap.circumference} />
       <DimensionHeatmap view={heatmap.sessions} />
-      {children}
+      <TimeOfDayStrip counts={hourCounts} />
+      <WeekdayStrip counts={weekdayCounts} />
     </div>
   );
 }

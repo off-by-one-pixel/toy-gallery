@@ -19,8 +19,6 @@ import {
 } from '../../services/stats';
 import type { StatsGroup } from '../../services/types';
 import ActivityTracker from '../ActivityTracker';
-import TimeOfDayStrip from './TimeOfDayStrip';
-import WeekdayStrip from './WeekdayStrip';
 
 type Props = Readonly<{ filter: FilterKey }>;
 
@@ -106,10 +104,7 @@ export default function SessionStats({ filter }: Props) {
 
   return (
     <div className="mb-4">
-      <ActivityTracker heatmap={heatmap}>
-        <TimeOfDayStrip counts={hourCounts} />
-        <WeekdayStrip counts={weekdayCounts} />
-      </ActivityTracker>
+      <ActivityTracker heatmap={heatmap} hourCounts={hourCounts} weekdayCounts={weekdayCounts} />
     </div>
   );
 }
