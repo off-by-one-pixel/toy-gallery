@@ -25,6 +25,8 @@ export default function SortControl() {
         return common(girth);
       case 'popularity':
         return t('column.popularity');
+      case 'duration':
+        return t('column.duration');
     }
   };
   const activeLabel = sort ? columnLabel(sort.column) : t('label');

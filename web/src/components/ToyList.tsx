@@ -3,7 +3,8 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { formatDuration } from '../services/duration';
 import ToyThumbnail from './ToyThumbnail';
 
 import { useGirth } from '../providers/GirthProvider';
@@ -270,6 +271,7 @@ function Metric({
 function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
   const { unit } = useUnit();
   const t = useTranslations();
+  const locale = useLocale();
   const topShapeLabel = t(`shape.${toy.shape.topSectionShape ?? SectionShape.FLAT}`);
   return (
     <div className="border-b border-border bg-surface-secondary px-4 py-3.5 text-xs min-[640px]:px-5">
@@ -290,6 +292,9 @@ function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
 
         <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">{t('toy.timesUsed')}</dt>
         <dd className="text-foreground tabular-nums">{toy.usageCount ?? 0}</dd>
+
+        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">{t('toy.timeUsed')}</dt>
+        <dd className="text-foreground tabular-nums">{formatDuration(toy.totalDurationMinutes ?? 0, locale)}</dd>
 
         <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
           {t('toy.columns.topShape')}

@@ -904,12 +904,16 @@ components:
         usage_count:
           type: integer
           readOnly: true
+        total_duration_minutes:
+          type: integer
+          readOnly: true
       required:
       - brand
       - id
       - name
       - shape
       - size
+      - total_duration_minutes
       - usage_count
     ToyRequest:
       type: object

@@ -49,6 +49,7 @@
       "sections": "Sections"
     },
     "timesUsed": "Times used",
+    "timeUsed": "Time used",
     "topCap": "{shape} cap"
   },
   "viewToggle": {
@@ -244,7 +245,8 @@
     "label": "Sort",
     "column": {
       "name": "Brand / Model",
-      "popularity": "Popularity"
+      "popularity": "Popularity",
+      "duration": "Time used"
     }
   },
   "colorPicker": {
