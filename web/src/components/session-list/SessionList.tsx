@@ -86,6 +86,7 @@ export default function SessionList() {
     <>
       <TopBar subtitle={data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`} />
       <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
+        <LiveSessionBanner />
         <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
           <Switcher
             items={filterItems}
@@ -119,7 +120,6 @@ export default function SessionList() {
           </Button>
         </div>
       </header>
-      <LiveSessionBanner />
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {selectedActions && <ActionFabs actions={selectedActions} />}
