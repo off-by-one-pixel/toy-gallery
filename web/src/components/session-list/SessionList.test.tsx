@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import type { QueryClient } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,9 +31,6 @@ vi.mock('../../services/api', () => ({
   fetchSessionStats: vi.fn(),
   fetchMediaIndicators: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
-  MEDIA_INDICATORS_CHANGED_EVENT: 'mediaIndicatorsChanged',
-  SESSIONS_CHANGED_EVENT: 'sessionsChanged',
-  notifySessionsChanged: vi.fn(),
   fetchSessionMedia: vi.fn(),
   deleteSession: vi.fn(),
   fetchLiveSession: vi.fn(),
@@ -53,11 +51,10 @@ import {
   fetchSessions,
   fetchSessionStats,
   fetchToys,
-  MEDIA_INDICATORS_CHANGED_EVENT,
   startLiveSession,
 } from '../../services/api';
 import type { Session } from '../../services/types';
-import { QueryWrapper } from '../../test/QueryWrapper';
+import { createTestQueryClient, QueryWrapper } from '../../test/QueryWrapper';
 import SessionList from './SessionList';
 
 const session = (id: number, startedAt: string, isLive = false): Session => ({
@@ -75,9 +72,9 @@ const pageOf = (sessions: Session[], overrides: Partial<{ count: number; hasMore
   hasMore: overrides.hasMore ?? false,
 });
 
-const wrap = (ui: React.ReactNode) => (
+const wrap = (ui: React.ReactNode, client?: QueryClient) => (
   <NextIntlClientProvider locale="en" messages={en}>
-    <QueryWrapper>
+    <QueryWrapper client={client}>
       <ThemeProvider>
         <UnitProvider>
           <GirthProvider>
@@ -115,11 +112,12 @@ describe('SessionList', () => {
     expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(1);
   });
 
-  it('reloads indicators when the media-changed event fires', async () => {
-    render(wrap(<SessionList />));
+  it('reloads indicators when the media queries are invalidated', async () => {
+    const client = createTestQueryClient();
+    render(wrap(<SessionList />, client));
     await screen.findByText(`2 ${en.session.recorded}`);
     vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: true, sessionIds: new Set([1, 2]) });
-    fireEvent(window, new Event(MEDIA_INDICATORS_CHANGED_EVENT));
+    void client.invalidateQueries({ queryKey: ['media'] });
     await waitFor(() => expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(2));
   });
 

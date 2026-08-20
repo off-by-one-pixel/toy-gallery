@@ -1,19 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useReportError } from '../../hooks/useAsyncAction';
 import { useSortOf } from '../../hooks/useSortOf';
-import {
-  fetchMediaIndicators,
-  fetchSessions,
-  fetchToys,
-  MEDIA_INDICATORS_CHANGED_EVENT,
-  notifySessionsChanged,
-  type SessionPage,
-} from '../../services/api';
+import { fetchMediaIndicators, fetchSessions, fetchToys, type SessionPage } from '../../services/api';
 import { formatError } from '../../services/errors';
 import { queryKeys } from '../../services/queryKeys';
 import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '../../services/session';
@@ -60,12 +53,6 @@ export function useSessionList(): SessionListData {
   const { data: indicators } = useQuery({ queryKey: queryKeys.mediaIndicators, queryFn: fetchMediaIndicators });
   const { data: loadedToys, error: toysError } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
 
-  useEffect(() => {
-    const onIndicatorsChanged = () => void queryClient.invalidateQueries({ queryKey: queryKeys.media });
-    window.addEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
-    return () => window.removeEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
-  }, [queryClient]);
-
   const sessions = useMemo(
     () => (list.data?.pages ?? []).reduce<Session[]>((acc, page) => mergeSessions(acc, page.sessions), []),
     [list.data],
@@ -92,12 +79,11 @@ export function useSessionList(): SessionListData {
           })),
         },
     );
-    notifySessionsChanged();
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessionStats });
   };
 
   const reload = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
-    notifySessionsChanged();
   };
 
   const listError = list.data ? null : list.error;

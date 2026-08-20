@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 
-const createTestQueryClient = () =>
+export const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
@@ -10,7 +10,7 @@ const createTestQueryClient = () =>
     },
   });
 
-export function QueryWrapper({ children }: Readonly<{ children: ReactNode }>) {
-  const [client] = useState(createTestQueryClient);
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+export function QueryWrapper({ children, client }: Readonly<{ children: ReactNode; client?: QueryClient }>) {
+  const [fallback] = useState(createTestQueryClient);
+  return <QueryClientProvider client={client ?? fallback}>{children}</QueryClientProvider>;
 }
