@@ -28,6 +28,52 @@ paths:
   /toys/sessions/:
     get:
       operationId: toys_sessions_list
+      parameters:
+      - in: query
+        name: end
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: ordering
+        schema:
+          enum:
+          - started_at
+          - -started_at
+          - duration
+          - -duration
+          - length
+          - -length
+          - circumference
+          - -circumference
+          type: string
+          minLength: 1
+        description: |-
+          * `started_at` - started_at
+          * `-started_at` - -started_at
+          * `duration` - duration
+          * `-duration` - -duration
+          * `length` - length
+          * `-length` - -length
+          * `circumference` - circumference
+          * `-circumference` - -circumference
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: tz
+        schema:
+          type: string
+          minLength: 1
+          default: UTC
       tags:
       - toys
       security:
@@ -37,9 +83,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Session'
+                $ref: '#/components/schemas/PaginatedSessionList'
           description: ''
     post:
       operationId: toys_sessions_create
@@ -647,6 +691,29 @@ components:
           nullable: true
       required:
       - session
+    PaginatedSessionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
     PatchedSessionRequest:
       type: object
       properties:

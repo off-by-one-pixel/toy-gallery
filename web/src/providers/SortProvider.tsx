@@ -1,9 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { isSortColumn, type Sort } from '../services/sort';
-
-const DEFAULT_STORAGE_KEY = 'gallery.sort';
+import { isValidSort, type Sort, type SortConfig } from '../services/sort';
 
 interface SortContextValue {
   sort: Sort | null;
@@ -12,16 +10,8 @@ interface SortContextValue {
 
 const SortContext = createContext<SortContextValue | null>(null);
 
-const isValidSort = (v: unknown): v is Sort => {
-  if (typeof v !== 'object' || v === null) return false;
-  const s = v as { column?: unknown; direction?: unknown };
-  return isSortColumn(s.column) && (s.direction === 'asc' || s.direction === 'desc');
-};
-
-export function SortProvider({
-  children,
-  storageKey = DEFAULT_STORAGE_KEY,
-}: Readonly<{ children: ReactNode; storageKey?: string }>) {
+export function SortProvider({ children, config }: Readonly<{ children: ReactNode; config: SortConfig }>) {
+  const { storageKey } = config;
   const [sortState, setSortState] = useState<Sort | null>(null);
 
   useEffect(() => {
@@ -30,11 +20,11 @@ export function SortProvider({
     if (!stored) return;
     try {
       const parsed = JSON.parse(stored);
-      if (isValidSort(parsed)) setSortState(parsed);
+      if (isValidSort(parsed, config)) setSortState(parsed);
     } catch {
       // ignore corrupt value
     }
-  }, [storageKey]);
+  }, [storageKey, config]);
 
   const setSort = useCallback(
     (next: Sort | null) => {

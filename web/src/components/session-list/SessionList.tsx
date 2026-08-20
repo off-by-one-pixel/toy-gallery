@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useStartLiveAction } from '../../hooks/useStartLiveAction';
 import { useLiveSession } from '../../providers/LiveSessionProvider';
+import { SortProvider } from '../../providers/SortProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
 import { FILTERS, type FilterKey } from '../../services/session';
+import { SESSION_SORT } from '../../services/sessionSort';
 import type { Session } from '../../services/types';
 import { ActionBar, ActionFabs, type ActionDef } from '../ActionButtons';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
@@ -22,15 +25,25 @@ import GirthToggle from '../GirthToggle';
 import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
 import SessionRow from './SessionRow';
+import SessionSortControl from './SessionSortControl';
 import SessionStats from './SessionStats';
 import { useSessionList } from './useSessionList';
 
 export default function SessionList() {
+  return (
+    <SortProvider config={SESSION_SORT}>
+      <SessionListContent />
+    </SortProvider>
+  );
+}
+
+function SessionListContent() {
   const router = useRouter();
   const { unit } = useUnit();
   const data = useSessionList();
   const t = useTranslations('session');
   const common = useTranslations('common');
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
   const runToast = useAsyncAction();
@@ -85,6 +98,8 @@ export default function SessionList() {
     },
   ];
 
+  useInfiniteScroll(sentinelRef, data.loadMore, data.hasMore && !data.isLoading && !data.isLoadingMore);
+
   const filterLongLabel = (key: FilterKey) => t(`filter.${key}`);
   const filterShortLabel = (key: FilterKey) => t(`filter.${key}Short`);
   const filterItems: SwitcherItem<FilterKey>[] = FILTERS.map((f) => ({
@@ -113,6 +128,7 @@ export default function SessionList() {
           <DisplayOptionsMenu>
             <UnitToggle />
             <GirthToggle />
+            <SessionSortControl />
           </DisplayOptionsMenu>
           <ActionBar actions={newActions} />
         </div>
@@ -130,6 +146,9 @@ export default function SessionList() {
           </Alert>
         )}
         <SessionStats filter={data.filter} />
+        <div className="mt-4 mb-3 hidden justify-end sm:flex">
+          <SessionSortControl />
+        </div>
         {renderBody()}
       </main>
     </>
@@ -143,12 +162,17 @@ export default function SessionList() {
         </div>
       );
     }
-    if (data.visibleSessions.length === 0) {
-      return <EmptyState anyExist={data.sessionCount > 0} filterLabel={filterLongLabel(data.filter)} />;
+    if (data.sessions.length === 0) {
+      return (
+        <EmptyState
+          anyExist={data.sessionCount > 0 || data.filter !== 'all'}
+          filterLabel={filterLongLabel(data.filter)}
+        />
+      );
     }
     return (
       <div className="flex flex-col gap-3.5">
-        {data.visibleSessions.map((session) => (
+        {data.sessions.map((session) => (
           <SessionRow
             key={session.id}
             session={session}
@@ -162,6 +186,12 @@ export default function SessionList() {
             onDelete={() => removeSession(session.id)}
           />
         ))}
+        {data.isLoadingMore && (
+          <div className="flex justify-center py-4 text-muted">
+            <Spinner />
+          </div>
+        )}
+        <div ref={sentinelRef} aria-hidden />
       </div>
     );
   }

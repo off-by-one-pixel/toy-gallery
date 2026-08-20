@@ -25,6 +25,7 @@ import { localDateKey } from './dates';
 import { camelToSnake, snakeToCamel } from '../utils/case';
 import type {
   ExportEnvelopeRequest,
+  ToysSessionsListParams,
   PatchedToyRequest,
   SessionRequest as ApiSessionRequest,
   ToyRequest as ApiToyRequest,
@@ -131,9 +132,22 @@ export const deleteCollection = async (): Promise<{
 
 // ---------- Sessions ----------
 
-export const fetchSessions = async (): Promise<Session[]> => {
-  const { data } = await toysSessionsList();
-  return data.map((s) => snakeToCamel<Session>(s));
+export type SessionPage = Readonly<{ sessions: Session[]; count: number; hasMore: boolean }>;
+
+export const fetchSessions = async (
+  opts: Readonly<{ page?: number; start?: string; ordering?: string }> = {},
+): Promise<SessionPage> => {
+  const { data } = await toysSessionsList({
+    page: opts.page,
+    start: opts.start,
+    ordering: opts.ordering as ToysSessionsListParams['ordering'],
+    tz: browserTimeZone(),
+  });
+  return {
+    sessions: data.results.map((s) => snakeToCamel<Session>(s)),
+    count: data.count,
+    hasMore: data.next != null,
+  };
 };
 
 export const fetchSession = async (id: number): Promise<Session> => {

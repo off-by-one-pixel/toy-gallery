@@ -246,7 +246,11 @@
     "column": {
       "name": "Brand / Model",
       "popularity": "Popularity",
-      "duration": "Time used"
+      "duration": "Time used",
+      "date": "Date",
+      "peakLength": "Peak length",
+      "peakCircumference": "Peak circumference",
+      "peakDiameter": "Peak diameter"
     }
   },
   "colorPicker": {

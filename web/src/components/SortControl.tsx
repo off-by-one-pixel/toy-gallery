@@ -4,31 +4,17 @@ import { Dropdown } from '@heroui/react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '../providers/GirthProvider';
-import { useSort } from '../providers/SortProvider';
-import { cycleSort, sortColumns, type SortColumn } from '../services/sort';
+import { useSortOf } from '../hooks/useSortOf';
+import { cycleSort, type SortConfig } from '../services/sort';
 
-export default function SortControl() {
-  const { sort, setSort } = useSort();
-  const { girth } = useGirth();
+type Props<C extends string> = Readonly<{
+  config: SortConfig<C>;
+  columnLabel: (column: C) => string;
+}>;
+
+export default function SortControl<C extends string>({ config, columnLabel }: Props<C>) {
+  const { sort, setSort } = useSortOf(config);
   const t = useTranslations('sort');
-  const common = useTranslations('common');
-  const columnLabel = (column: SortColumn): string => {
-    switch (column) {
-      case 'name':
-        return t('column.name');
-      case 'insertable':
-        return common('insertable');
-      case 'total':
-        return common('totalLength');
-      case 'circumference':
-        return common(girth);
-      case 'popularity':
-        return t('column.popularity');
-      case 'duration':
-        return t('column.duration');
-    }
-  };
   const activeLabel = sort ? columnLabel(sort.column) : t('label');
   const DirArrow = sort?.direction === 'desc' ? ArrowDown : ArrowUp;
 
@@ -46,7 +32,7 @@ export default function SortControl() {
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom end">
           <Dropdown.Menu selectedKeys={sort ? [sort.column] : []}>
-            {sortColumns.map((column) => (
+            {config.columns.map((column) => (
               <Dropdown.Item key={column} id={column} onAction={() => setSort(cycleSort(sort, column))}>
                 <SortRow label={columnLabel(column)} direction={sort?.column === column ? sort.direction : null} />
               </Dropdown.Item>

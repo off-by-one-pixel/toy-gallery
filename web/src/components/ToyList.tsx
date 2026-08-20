@@ -8,11 +8,12 @@ import { formatDuration } from '../services/duration';
 import ToyThumbnail from './ToyThumbnail';
 
 import { useGirth } from '../providers/GirthProvider';
-import { useSort } from '../providers/SortProvider';
+import { useSortOf } from '../hooks/useSortOf';
 import { useUnit } from '../providers/UnitProvider';
 import { toyShapeToEditor } from '../services/converters/toyShape';
 import { displayGirth } from '../services/girth';
-import { cycleSort, type Sort, type SortColumn } from '../services/sort';
+import { cycleSort, type Sort } from '../services/sort';
+import { TOY_SORT, type ToySortColumn as SortColumn } from '../services/toySort';
 import { formatValue, type Unit } from '../services/units';
 import { SectionShape, type Toy } from '../services/types';
 import AttributesPanel from './AttributesPanel';
@@ -40,7 +41,7 @@ type Props = Readonly<{
 
 export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
-  const { sort, setSort } = useSort();
+  const { sort, setSort } = useSortOf(TOY_SORT);
   const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
 
   return (

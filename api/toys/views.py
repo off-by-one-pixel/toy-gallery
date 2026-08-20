@@ -1,12 +1,13 @@
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Sum
+from django.db.models import Case, Count, F, Max, Q, Sum, When
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -80,12 +81,76 @@ class ToyViewSet(viewsets.ModelViewSet):
         )
 
 
+class SessionPagination(PageNumberPagination):
+    page_size = 20
+
+
+def _session_ordering_annotation(field):
+    if field == "duration":
+        return Sum("entries__duration_minutes")
+    if field == "length":
+        return Max(
+            Case(
+                When(
+                    entries__involvement=models.ToySessionEntry.FULLY_INSERTED,
+                    then="entries__toy__insertable_length",
+                )
+            )
+        )
+    return Max(
+        Case(
+            When(
+                entries__involvement__in=[
+                    models.ToySessionEntry.INSERTED,
+                    models.ToySessionEntry.FULLY_INSERTED,
+                ],
+                then="entries__toy__circumference",
+            )
+        )
+    )
+
+
+def _apply_session_ordering(queryset, ordering):
+    field = ordering.removeprefix("-")
+    descending = ordering.startswith("-")
+    if field == "started_at":
+        expression = F("started_at")
+    else:
+        queryset = queryset.annotate(**{f"sort_{field}": _session_ordering_annotation(field)})
+        expression = F(f"sort_{field}")
+    ordered = expression.desc(nulls_last=True) if descending else expression.asc(nulls_last=True)
+    return queryset.order_by(F("is_live").desc(), ordered, "-id")
+
+
+@extend_schema_view(
+    list=extend_schema(parameters=[serializers.SessionListQuerySerializer]),
+)
 class SessionViewSet(viewsets.ModelViewSet):
-    queryset = (
-        models.Session.objects.prefetch_related("entries", "entries__toy")
-        .order_by("-started_at")
+    queryset = models.Session.objects.prefetch_related("entries", "entries__toy").order_by(
+        "-is_live", "-started_at", "-id"
     )
     serializer_class = serializers.SessionSerializer
+    pagination_class = SessionPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action != "list":
+            return queryset
+        query = serializers.SessionListQuerySerializer(data=self.request.query_params)
+        query.is_valid(raise_exception=True)
+        params = query.validated_data
+        lower, upper = stats.range_bounds(params.get("start"), params.get("end"), params["tz"])
+        window = Q()
+        if lower is not None:
+            window &= Q(started_at__gte=lower)
+        if upper is not None:
+            window &= Q(started_at__lt=upper)
+        if window:
+            queryset = queryset.filter(window | Q(is_live=True))
+        ordering = params.get("ordering")
+        if ordering:
+            queryset = _apply_session_ordering(queryset, ordering)
+        return queryset
 
     @extend_schema(request=None, responses=serializers.SessionSerializer)
     @action(detail=False, methods=["post"], url_path="start")

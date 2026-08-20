@@ -50,8 +50,3 @@ export function formatWhen(iso: string, now: Date, locale: string, t: (key: 'tod
   const date = d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
   return `${date} · ${time}`;
 }
-
-export function isWithin(iso: string, days: number, now: Date = new Date()): boolean {
-  const t = new Date(iso).getTime();
-  return now.getTime() - t <= days * MS_PER_DAY;
-}

@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { filterSessions, INVOLVEMENT_RANK, sortEntriesByInvolvement, toyTooltip, toysById } from './session';
+import { INVOLVEMENT_RANK, mergeSessions, sortEntriesByInvolvement, toyTooltip, toysById } from './session';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
-
-const NOW = new Date(2026, 4, 16, 10, 0); // 2026-05-16 10:00 local
 
 const session = (id: number, isoDay: string): Session => ({
   id,
@@ -14,40 +12,25 @@ const session = (id: number, isoDay: string): Session => ({
   maxCircumference: null,
 });
 
-describe('filterSessions', () => {
-  const today = session(1, '2026-05-16');
-  const yesterday = session(2, '2026-05-15');
-  // Comfortably outside a 7-day window from NOW (2026-05-16 10:00) but
-  // still inside the 30-day one.
-  const lastWeek = session(3, '2026-05-07');
-  // Outside both 7- and 30-day windows.
-  const lastMonth = session(4, '2026-04-10');
-  const longAgo = session(5, '2025-01-01');
-  const all = [today, yesterday, lastWeek, lastMonth, longAgo];
-
-  it('returns every session for filter=all', () => {
-    expect(filterSessions(all, 'all', NOW).map((s) => s.id)).toEqual([1, 2, 3, 4, 5]);
-  });
-
-  it('returns only sessions within 7 days for filter=week', () => {
-    expect(filterSessions(all, 'week', NOW).map((s) => s.id)).toEqual([1, 2]);
-  });
-
-  it('returns only sessions within 30 days for filter=month', () => {
-    expect(filterSessions(all, 'month', NOW).map((s) => s.id)).toEqual([1, 2, 3]);
-  });
-
-  it('returns a copy, not the input array', () => {
-    const result = filterSessions(all, 'all', NOW);
-    expect(result).not.toBe(all);
-    expect(result).toEqual([...all]);
-  });
-});
-
 describe('INVOLVEMENT_RANK', () => {
   it('orders USED < INSERTED < FULLY_INSERTED', () => {
     expect(INVOLVEMENT_RANK[Involvement.USED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.INSERTED]);
     expect(INVOLVEMENT_RANK[Involvement.INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.FULLY_INSERTED]);
+  });
+});
+
+describe('mergeSessions', () => {
+  it('appends only unseen ids preserving order', () => {
+    const a = session(1, '2026-06-05');
+    const b = session(2, '2026-06-04');
+    const c = session(3, '2026-06-03');
+    expect(mergeSessions([a, b], [b, c]).map((s) => s.id)).toEqual([1, 2, 3]);
+  });
+
+  it('handles empty sides', () => {
+    const a = session(1, '2026-06-05');
+    expect(mergeSessions([], [a]).map((s) => s.id)).toEqual([1]);
+    expect(mergeSessions([a], []).map((s) => s.id)).toEqual([1]);
   });
 });
 

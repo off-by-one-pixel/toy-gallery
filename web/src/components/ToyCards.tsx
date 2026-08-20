@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { heightScale } from '../services/scaling';
 import type { Toy } from '../services/types';
-import SortControl from './SortControl';
+import ToySortControl from './ToySortControl';
 import ToyCard from './ToyCard';
 
 type Props = Readonly<{
@@ -25,7 +25,7 @@ export default function ToyCards({ toys, openToyId, onToggleOpen, onEdit, onCopy
   return (
     <>
       <div className="mb-3 hidden justify-end sm:flex">
-        <SortControl />
+        <ToySortControl />
       </div>
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
         {toys.map((toy) => (

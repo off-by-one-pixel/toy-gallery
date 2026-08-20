@@ -10,15 +10,15 @@ import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useToyEditorWizardNav } from '../hooks/nav/useToyEditorWizardNav';
 import { useToyModalNav } from '../hooks/nav/useToyModalNav';
-import { useSort } from '../providers/SortProvider';
+import { useSortOf } from '../hooks/useSortOf';
 import { useViewMode, ViewMode } from '../providers/ViewModeProvider';
 import { filterToys } from '../services/search';
-import { sortToys } from '../services/sort';
+import { sortToys, TOY_SORT } from '../services/toySort';
 import { ActionBar, ActionFabs, type ActionDef } from './ActionButtons';
 import { toyActionDefs } from './ToyActionButtons';
 import DisplayOptionsMenu from './DisplayOptionsMenu';
 import SearchInput from './SearchInput';
-import SortControl from './SortControl';
+import ToySortControl from './ToySortControl';
 import TopBar from './TopBar';
 import ToyCards from './ToyCards';
 import ToyEditModal from './toy-edit/ToyEditModal';
@@ -46,7 +46,7 @@ const ToyGallery = () => {
   const [openCardId, setOpenCardId] = useState<number | null>(null);
   const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
   const { view, setView } = useViewMode();
-  const { sort } = useSort();
+  const { sort } = useSortOf(TOY_SORT);
   const sortedToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, sort, query]);
 
   const editorMode = useMemo<EditorMode>(() => {
@@ -154,7 +154,7 @@ const ToyGallery = () => {
             <ViewToggle view={view} onChange={setView} />
             <UnitToggle />
             <GirthToggle />
-            {view === ViewMode.cards && <SortControl />}
+            {view === ViewMode.cards && <ToySortControl />}
           </DisplayOptionsMenu>
           <div className="hidden sm:contents">
             <ViewToggle view={view} onChange={setView} />

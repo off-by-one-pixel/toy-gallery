@@ -10,16 +10,17 @@ import { createSession, fetchToys, fetchSession, updateSession } from '../servic
 import { Involvement, type Session, type Toy } from '../services/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
-import { SortProvider, useSort } from '../providers/SortProvider';
+import { SortProvider } from '../providers/SortProvider';
+import { useSortOf } from '../hooks/useSortOf';
 import { datetimeLocalValue } from '../services/dates';
 import { minutesBetween } from '../services/duration';
 import { filterToys } from '../services/search';
-import { sortToys } from '../services/sort';
+import { SESSION_FORM_TOY_SORT, sortToys } from '../services/toySort';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import SearchInput from './SearchInput';
 import SectionHeading from './SectionHeading';
 import SessionMediaStrip from './session-list/SessionMediaStrip';
-import SortControl from './SortControl';
+import ToySortControl from './ToySortControl';
 import ToyChipSelector from './ToyChipSelector';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
@@ -28,7 +29,7 @@ const datetimeLocalNow = () => datetimeLocalValue(new Date());
 
 export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }>) {
   return (
-    <SortProvider storageKey="session.toySort">
+    <SortProvider config={SESSION_FORM_TOY_SORT}>
       <SessionFormContent mode={mode} />
     </SortProvider>
   );
@@ -83,7 +84,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
     );
   }, [runInline, sessionId]);
 
-  const { sort } = useSort();
+  const { sort } = useSortOf(SESSION_FORM_TOY_SORT);
   const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
   const selectedCount = selections.size;
   const sessionSpan = startedAt && endedAt ? minutesBetween(startedAt, endedAt) : null;
@@ -239,7 +240,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
           </div>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <SearchInput value={query} onChange={setQuery} />
-            <SortControl />
+            <ToySortControl />
             <span className="text-sm text-muted">{t('toysHint')}</span>
           </div>
 

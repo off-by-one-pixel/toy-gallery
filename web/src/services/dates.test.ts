@@ -4,7 +4,6 @@ import {
   calendarDaysBetween,
   datetimeLocalValue,
   formatWhen,
-  isWithin,
   daysAgoDateString,
   formatDateKey,
   localDateKey,
@@ -98,24 +97,5 @@ describe('formatWhen', () => {
     const out = formatWhen('2026-04-01T14:00:00', NOW, 'en', whenT);
     expect(out).not.toMatch(/Today|Yesterday/);
     expect(out).toContain('Apr');
-  });
-});
-
-describe('isWithin', () => {
-  it('returns true for a timestamp inside the window', () => {
-    expect(isWithin('2026-05-15T10:00:00', 7, NOW)).toBe(true);
-  });
-
-  it('returns false for a timestamp older than the window', () => {
-    expect(isWithin('2026-05-08T10:00:00', 7, NOW)).toBe(false);
-  });
-
-  it('returns true at the boundary (now - days)', () => {
-    const boundary = new Date(NOW.getTime() - 7 * 24 * 60 * 60 * 1000);
-    expect(isWithin(boundary.toISOString(), 7, NOW)).toBe(true);
-  });
-
-  it('returns false for a future timestamp older than `now`', () => {
-    expect(isWithin('2026-05-17T10:00:00', 7, NOW)).toBe(true); // future is still within
   });
 });
