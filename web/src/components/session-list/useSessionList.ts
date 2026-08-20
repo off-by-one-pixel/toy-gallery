@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
-import { useSort } from '../../providers/SortProvider';
+import { useSortOf } from '../../hooks/useSortOf';
 import {
   fetchMediaIndicators,
   fetchSessions,
@@ -12,14 +12,8 @@ import {
   type MediaIndicators,
   notifySessionsChanged,
 } from '../../services/api';
-import {
-  type FilterKey,
-  filterStartDate,
-  mergeSessions,
-  sessionOrderingParam,
-  type SessionSort,
-  toysById as buildToysById,
-} from '../../services/session';
+import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '../../services/session';
+import { SESSION_SORT, sessionOrderingParam } from '../../services/sessionSort';
 import type { Session, Toy } from '../../services/types';
 
 export type SessionListData = Readonly<{
@@ -54,7 +48,7 @@ export function useSessionList(): SessionListData {
   const [loadCount, setLoadCount] = useState(0);
   const [mediaLoadCount, setMediaLoadCount] = useState(0);
   const generationRef = useRef(0);
-  const { sort } = useSort();
+  const { sort } = useSortOf(SESSION_SORT);
 
   const runInline = useAsyncAction(setError);
   const runToast = useAsyncAction();
@@ -82,7 +76,7 @@ export function useSessionList(): SessionListData {
       fetchSessions({
         page: pageNumber,
         start: filterStartDate(filter),
-        ordering: sessionOrderingParam(sort as SessionSort | null),
+        ordering: sessionOrderingParam(sort),
       }),
     [filter, sort],
   );

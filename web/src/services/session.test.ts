@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  INVOLVEMENT_RANK,
-  mergeSessions,
-  sessionOrderingParam,
-  sortEntriesByInvolvement,
-  toyTooltip,
-  toysById,
-} from './session';
+import { INVOLVEMENT_RANK, mergeSessions, sortEntriesByInvolvement, toyTooltip, toysById } from './session';
 import { Involvement, type Session, type SessionEntry, type Toy } from './types';
 
 const session = (id: number, isoDay: string): Session => ({
@@ -38,18 +31,6 @@ describe('mergeSessions', () => {
     const a = session(1, '2026-06-05');
     expect(mergeSessions([], [a]).map((s) => s.id)).toEqual([1]);
     expect(mergeSessions([a], []).map((s) => s.id)).toEqual([1]);
-  });
-});
-
-describe('sessionOrderingParam', () => {
-  it('maps sort state to the ordering query value', () => {
-    expect(sessionOrderingParam({ column: 'started_at', direction: 'asc' })).toBe('started_at');
-    expect(sessionOrderingParam({ column: 'duration', direction: 'desc' })).toBe('-duration');
-  });
-
-  it('returns undefined for no sort or unknown columns', () => {
-    expect(sessionOrderingParam(null)).toBeUndefined();
-    expect(sessionOrderingParam({ column: 'name', direction: 'asc' })).toBeUndefined();
   });
 });
 

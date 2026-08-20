@@ -7,6 +7,7 @@ import { GirthProvider } from '../providers/GirthProvider';
 import { LocaleProvider } from '../providers/LocaleProvider';
 import { PrivacyProvider } from '../providers/PrivacyProvider';
 import { SortProvider } from '../providers/SortProvider';
+import { TOY_SORT } from '../services/toySort';
 import { ThemeProvider } from '../providers/ThemeProvider';
 import { ToastProvider } from '../providers/ToastProvider';
 import { UnitProvider } from '../providers/UnitProvider';
@@ -48,7 +49,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <UnitProvider>
               <GirthProvider>
                 <ViewModeProvider>
-                  <SortProvider>
+                  <SortProvider config={TOY_SORT}>
                     <PrivacyProvider>
                       <AuthProvider>{children}</AuthProvider>
                     </PrivacyProvider>

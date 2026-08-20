@@ -20,16 +20,6 @@ export const FILTERS: readonly FilterOption[] = [
 ];
 
 /** Filter sessions by recency. Pass `now` for deterministic tests. */
-export const SESSION_SORT_COLUMNS = ['started_at', 'duration', 'length', 'circumference'] as const;
-export type SessionSortColumn = (typeof SESSION_SORT_COLUMNS)[number];
-
-export type SessionSort = Readonly<{ column: string; direction: 'asc' | 'desc' }>;
-
-export function sessionOrderingParam(sort: SessionSort | null): string | undefined {
-  if (!sort || !(SESSION_SORT_COLUMNS as readonly string[]).includes(sort.column)) return undefined;
-  return sort.direction === 'desc' ? `-${sort.column}` : sort.column;
-}
-
 export function mergeSessions(existing: readonly Session[], incoming: readonly Session[]): Session[] {
   const seen = new Set(existing.map((s) => s.id));
   return [...existing, ...incoming.filter((s) => !seen.has(s.id))];

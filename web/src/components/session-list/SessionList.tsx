@@ -10,11 +10,11 @@ import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useStartLiveAction } from '../../hooks/useStartLiveAction';
 import { useLiveSession } from '../../providers/LiveSessionProvider';
-import { useGirth } from '../../providers/GirthProvider';
 import { SortProvider } from '../../providers/SortProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
-import { FILTERS, type FilterKey, SESSION_SORT_COLUMNS } from '../../services/session';
+import { FILTERS, type FilterKey } from '../../services/session';
+import { SESSION_SORT } from '../../services/sessionSort';
 import type { Session } from '../../services/types';
 import { ActionBar, ActionFabs, type ActionDef } from '../ActionButtons';
 import DisplayOptionsMenu from '../DisplayOptionsMenu';
@@ -25,13 +25,13 @@ import GirthToggle from '../GirthToggle';
 import UnitToggle from '../UnitToggle';
 import EmptyState from './EmptyState';
 import SessionRow from './SessionRow';
-import SortControl from '../SortControl';
+import SessionSortControl from './SessionSortControl';
 import SessionStats from './SessionStats';
 import { useSessionList } from './useSessionList';
 
 export default function SessionList() {
   return (
-    <SortProvider storageKey="sessions.sort" columns={SESSION_SORT_COLUMNS}>
+    <SortProvider config={SESSION_SORT}>
       <SessionListContent />
     </SortProvider>
   );
@@ -40,11 +40,9 @@ export default function SessionList() {
 function SessionListContent() {
   const router = useRouter();
   const { unit } = useUnit();
-  const { girth } = useGirth();
   const data = useSessionList();
   const t = useTranslations('session');
   const common = useTranslations('common');
-  const tSort = useTranslations('sort');
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
@@ -100,19 +98,6 @@ function SessionListContent() {
     },
   ];
 
-  const sortColumnLabel = (column: string): string => {
-    switch (column) {
-      case 'started_at':
-        return tSort('column.date');
-      case 'duration':
-        return tSort('column.duration');
-      case 'length':
-        return t('peakLength');
-      default:
-        return girth === 'diameter' ? t('peakDiameter') : t('peakCircumference');
-    }
-  };
-
   useInfiniteScroll(sentinelRef, data.loadMore, data.hasMore && !data.isLoading && !data.isLoadingMore);
 
   const filterLongLabel = (key: FilterKey) => t(`filter.${key}`);
@@ -138,13 +123,12 @@ function SessionListContent() {
           <div className="hidden sm:contents">
             <UnitToggle />
             <GirthToggle />
-            <SortControl columns={SESSION_SORT_COLUMNS} columnLabel={sortColumnLabel} />
           </div>
           <div className="flex-1" />
           <DisplayOptionsMenu>
             <UnitToggle />
             <GirthToggle />
-            <SortControl columns={SESSION_SORT_COLUMNS} columnLabel={sortColumnLabel} />
+            <SessionSortControl />
           </DisplayOptionsMenu>
           <ActionBar actions={newActions} />
         </div>
@@ -162,6 +146,9 @@ function SessionListContent() {
           </Alert>
         )}
         <SessionStats filter={data.filter} />
+        <div className="mt-4 mb-3 hidden justify-end sm:flex">
+          <SessionSortControl />
+        </div>
         {renderBody()}
       </main>
     </>

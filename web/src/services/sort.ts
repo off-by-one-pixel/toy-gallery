@@ -1,39 +1,24 @@
-import type { Toy } from './types';
-
-type Accessor = (t: Toy) => number | string;
-
-const COLUMNS = {
-  name: (t: Toy) => `${t.brand} ${t.name}`.toLowerCase(),
-  insertable: (t: Toy) => t.insertableLength ?? -Infinity,
-  total: (t: Toy) => t.totalLength ?? -Infinity,
-  circumference: (t: Toy) => t.circumference ?? -Infinity,
-  popularity: (t: Toy) => t.usageCount ?? 0,
-  duration: (t: Toy) => t.totalDurationMinutes ?? 0,
-} as const satisfies Record<string, Accessor>;
-
-export type SortColumn = keyof typeof COLUMNS;
 export type SortDirection = 'asc' | 'desc';
-export type Sort = { column: string; direction: SortDirection };
+export type Sort<C extends string = string> = Readonly<{ column: C; direction: SortDirection }>;
 
-export const sortColumns = Object.keys(COLUMNS) as SortColumn[];
+export interface SortConfig<C extends string = string> {
+  readonly storageKey: string;
+  readonly columns: readonly C[];
+}
 
-export const isSortColumn = (v: unknown): v is SortColumn => typeof v === 'string' && v in COLUMNS;
-
-export const sortToys = (toys: Toy[], sort: Sort | null): Toy[] => {
-  if (!sort || !isSortColumn(sort.column)) return toys;
-  const accessor = COLUMNS[sort.column];
-  const mul = sort.direction === 'asc' ? 1 : -1;
-  return toys.slice().sort((a, b) => {
-    const av = accessor(a);
-    const bv = accessor(b);
-    if (av < bv) return -1 * mul;
-    if (av > bv) return 1 * mul;
-    return 0;
-  });
-};
-
-// Click-same-column → flip direction; click new column → keep current direction.
-export const cycleSort = (current: Sort | null, column: string): Sort =>
+export const cycleSort = <C extends string>(current: Sort<C> | null, column: C): Sort<C> =>
   current?.column === column
     ? { column, direction: current.direction === 'asc' ? 'desc' : 'asc' }
     : { column, direction: current?.direction ?? 'asc' };
+
+export const isColumnOf = <C extends string>(config: SortConfig<C>, value: unknown): value is C =>
+  typeof value === 'string' && (config.columns as readonly string[]).includes(value);
+
+export const narrowSort = <C extends string>(config: SortConfig<C>, sort: Sort | null): Sort<C> | null =>
+  sort && isColumnOf(config, sort.column) ? (sort as Sort<C>) : null;
+
+export const isValidSort = (value: unknown, config: SortConfig): value is Sort => {
+  if (typeof value !== 'object' || value === null) return false;
+  const s = value as { column?: unknown; direction?: unknown };
+  return isColumnOf(config, s.column) && (s.direction === 'asc' || s.direction === 'desc');
+};

@@ -4,38 +4,18 @@ import { Dropdown } from '@heroui/react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '../providers/GirthProvider';
-import { useSort } from '../providers/SortProvider';
-import { cycleSort, sortColumns, type SortColumn } from '../services/sort';
+import { useSortOf } from '../hooks/useSortOf';
+import { cycleSort, type SortConfig } from '../services/sort';
 
-type Props = Readonly<{
-  columns?: readonly string[];
-  columnLabel?: (column: string) => string;
+type Props<C extends string> = Readonly<{
+  config: SortConfig<C>;
+  columnLabel: (column: C) => string;
 }>;
 
-export default function SortControl({ columns = sortColumns, columnLabel }: Props) {
-  const { sort, setSort } = useSort();
-  const { girth } = useGirth();
+export default function SortControl<C extends string>({ config, columnLabel }: Props<C>) {
+  const { sort, setSort } = useSortOf(config);
   const t = useTranslations('sort');
-  const common = useTranslations('common');
-  const toyColumnLabel = (column: string): string => {
-    switch (column as SortColumn) {
-      case 'name':
-        return t('column.name');
-      case 'insertable':
-        return common('insertable');
-      case 'total':
-        return common('totalLength');
-      case 'circumference':
-        return common(girth);
-      case 'popularity':
-        return t('column.popularity');
-      case 'duration':
-        return t('column.duration');
-    }
-  };
-  const labelFor = columnLabel ?? toyColumnLabel;
-  const activeLabel = sort ? labelFor(sort.column) : t('label');
+  const activeLabel = sort ? columnLabel(sort.column) : t('label');
   const DirArrow = sort?.direction === 'desc' ? ArrowDown : ArrowUp;
 
   const flipDirection = () => {
@@ -52,9 +32,9 @@ export default function SortControl({ columns = sortColumns, columnLabel }: Prop
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom end">
           <Dropdown.Menu selectedKeys={sort ? [sort.column] : []}>
-            {columns.map((column) => (
+            {config.columns.map((column) => (
               <Dropdown.Item key={column} id={column} onAction={() => setSort(cycleSort(sort, column))}>
-                <SortRow label={labelFor(column)} direction={sort?.column === column ? sort.direction : null} />
+                <SortRow label={columnLabel(column)} direction={sort?.column === column ? sort.direction : null} />
               </Dropdown.Item>
             ))}
           </Dropdown.Menu>
