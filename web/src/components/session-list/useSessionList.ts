@@ -1,18 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { useQuery } from '@tanstack/react-query';
+import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useReportError } from '../../hooks/useAsyncAction';
 import { useSortOf } from '../../hooks/useSortOf';
 import {
   fetchMediaIndicators,
   fetchSessions,
   fetchToys,
   MEDIA_INDICATORS_CHANGED_EVENT,
-  type MediaIndicators,
   notifySessionsChanged,
+  type SessionPage,
 } from '../../services/api';
 import { formatError } from '../../services/errors';
 import { queryKeys } from '../../services/queryKeys';
@@ -24,7 +24,7 @@ export type SessionListData = Readonly<{
   sessionCount: number;
   sessions: Session[];
   toysById: Map<number, Toy>;
-  mediaSessionIds: Set<number>;
+  mediaSessionIds: ReadonlySet<number>;
   hasMore: boolean;
   isLoadingMore: boolean;
   loadMore: () => void;
@@ -38,111 +38,83 @@ export type SessionListData = Readonly<{
   error: string | null;
 }>;
 
+const NO_MEDIA_IDS: ReadonlySet<number> = new Set<number>();
+
 export function useSessionList(): SessionListData {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [count, setCount] = useState(0);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [media, setMedia] = useState<MediaIndicators>(() => ({ configured: false, sessionIds: new Set() }));
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
-  const [loadCount, setLoadCount] = useState(0);
-  const [mediaLoadCount, setMediaLoadCount] = useState(0);
-  const generationRef = useRef(0);
   const { sort } = useSortOf(SESSION_SORT);
+  const queryClient = useQueryClient();
+  const reportError = useReportError();
 
-  const runInline = useAsyncAction(setError);
-  const runToast = useAsyncAction();
+  const ordering = sessionOrderingParam(sort);
+  const listKey = queryKeys.sessionList(filter, ordering);
 
-  useEffect(() => {
-    const onIndicatorsChanged = () => setMediaLoadCount((n) => n + 1);
-    window.addEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
-    return () => window.removeEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
-  }, []);
+  const list = useInfiniteQuery({
+    queryKey: listKey,
+    queryFn: ({ pageParam }) => fetchSessions({ page: pageParam, start: filterStartDate(filter), ordering }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: SessionPage, pages: SessionPage[]) =>
+      lastPage.hasMore ? pages.length + 1 : undefined,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchMediaIndicators()
-      .then((indicators) => {
-        if (!cancelled) setMedia(indicators);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [mediaLoadCount, loadCount]);
-
-  const listQuery = useCallback(
-    (pageNumber: number) =>
-      fetchSessions({
-        page: pageNumber,
-        start: filterStartDate(filter),
-        ordering: sessionOrderingParam(sort),
-      }),
-    [filter, sort],
-  );
-
+  const { data: indicators } = useQuery({ queryKey: queryKeys.mediaIndicators, queryFn: fetchMediaIndicators });
   const { data: loadedToys, error: toysError } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
 
   useEffect(() => {
-    let cancelled = false;
-    generationRef.current += 1;
-    runInline(() => listQuery(1), {
-      busy: setIsLoading,
-      onSuccess: (firstPage) => {
-        if (cancelled) return;
-        setSessions(firstPage.sessions);
-        setCount(firstPage.count);
-        setHasMore(firstPage.hasMore);
-        setPage(1);
-        setError(null);
-      },
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [runInline, listQuery, loadCount]);
+    const onIndicatorsChanged = () => void queryClient.invalidateQueries({ queryKey: queryKeys.media });
+    window.addEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
+    return () => window.removeEventListener(MEDIA_INDICATORS_CHANGED_EVENT, onIndicatorsChanged);
+  }, [queryClient]);
 
-  const loadMore = useCallback(() => {
-    if (!hasMore || isLoadingMore || isLoading) return;
-    const generation = generationRef.current;
-    const nextPage = page + 1;
-    void runToast(() => listQuery(nextPage), {
-      busy: setIsLoadingMore,
-      onSuccess: (loaded) => {
-        if (generationRef.current !== generation) return;
-        setSessions((prev) => mergeSessions(prev, loaded.sessions));
-        setCount(loaded.count);
-        setHasMore(loaded.hasMore);
-        setPage(nextPage);
-      },
-    });
-  }, [hasMore, isLoadingMore, isLoading, page, listQuery, runToast]);
-
+  const sessions = useMemo(
+    () => (list.data?.pages ?? []).reduce<Session[]>((acc, page) => mergeSessions(acc, page.sessions), []),
+    [list.data],
+  );
   const toysById = useMemo(() => buildToysById(loadedToys ?? []), [loadedToys]);
 
+  const loadMore = () => {
+    if (!list.hasNextPage || list.isFetchingNextPage) return;
+    void list.fetchNextPage().then((result) => {
+      if (result.error) reportError(result.error);
+    });
+  };
+
+  const prependSession = (session: Session) => {
+    queryClient.setQueryData<InfiniteData<SessionPage>>(
+      listKey,
+      (data) =>
+        data && {
+          ...data,
+          pages: data.pages.map((page, index) => ({
+            ...page,
+            count: page.count + 1,
+            sessions: index === 0 ? mergeSessions([session], page.sessions) : page.sessions,
+          })),
+        },
+    );
+    notifySessionsChanged();
+  };
+
+  const reload = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+    notifySessionsChanged();
+  };
+
+  const listError = list.data ? null : list.error;
+
   return {
-    sessionCount: count,
+    sessionCount: list.data?.pages.at(-1)?.count ?? 0,
     sessions,
     toysById,
-    mediaSessionIds: media.sessionIds,
-    hasMore,
-    isLoadingMore,
+    mediaSessionIds: indicators?.sessionIds ?? NO_MEDIA_IDS,
+    hasMore: list.hasNextPage,
+    isLoadingMore: list.isFetchingNextPage,
     loadMore,
-    prependSession: (session: Session) => {
-      setSessions((prev) => mergeSessions([session], prev));
-      setCount((c) => c + 1);
-      notifySessionsChanged();
-    },
-    reload: () => {
-      setLoadCount((n) => n + 1);
-      notifySessionsChanged();
-    },
+    prependSession,
+    reload,
     filter,
     setFilter,
-    isLoading,
-    error: error ?? (toysError ? formatError(toysError) : null),
+    isLoading: list.isPending,
+    error: (listError && formatError(listError)) ?? (toysError ? formatError(toysError) : null),
   };
 }
