@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Dropdown, Toast } from '@heroui/react';
 import { Image as ImageIcon, LogOut, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -10,6 +10,7 @@ import { APP_COMMIT_SHA, APP_VERSION } from '../config';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../providers/AuthProvider';
 import { fetchMediaIndicators, MEDIA_INDICATORS_CHANGED_EVENT, refreshAllSessionMedia } from '../services/api';
+import { queryKeys } from '../services/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from './ActionDropdownMenu';
 
 export default function AppMenu() {
@@ -18,24 +19,15 @@ export default function AppMenu() {
   const router = useRouter();
   const { username, logout } = useAuth();
   const runToast = useAsyncAction();
-  const [mediaConfigured, setMediaConfigured] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchMediaIndicators()
-      .then((indicators) => {
-        if (!cancelled) setMediaConfigured(indicators.configured);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const queryClient = useQueryClient();
+  const { data: indicators } = useQuery({ queryKey: queryKeys.mediaIndicators, queryFn: fetchMediaIndicators });
+  const mediaConfigured = indicators?.configured ?? false;
 
   const refreshMedia = () => {
     void runToast(refreshAllSessionMedia, {
-      onSuccess: (indicators) => {
-        Toast.toast.success(tMedia('refreshedToast', { count: indicators.sessionIds.size }));
+      onSuccess: (refreshed) => {
+        Toast.toast.success(tMedia('refreshedToast', { count: refreshed.sessionIds.size }));
+        void queryClient.invalidateQueries({ queryKey: queryKeys.media });
         window.dispatchEvent(new Event(MEDIA_INDICATORS_CHANGED_EVENT));
       },
     });

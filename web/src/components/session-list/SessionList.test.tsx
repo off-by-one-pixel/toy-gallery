@@ -57,6 +57,7 @@ import {
   startLiveSession,
 } from '../../services/api';
 import type { Session } from '../../services/types';
+import { QueryWrapper } from '../../test/QueryWrapper';
 import SessionList from './SessionList';
 
 const session = (id: number, startedAt: string, isLive = false): Session => ({
@@ -76,17 +77,19 @@ const pageOf = (sessions: Session[], overrides: Partial<{ count: number; hasMore
 
 const wrap = (ui: React.ReactNode) => (
   <NextIntlClientProvider locale="en" messages={en}>
-    <ThemeProvider>
-      <UnitProvider>
-        <GirthProvider>
-          <PrivacyProvider>
-            <AuthProvider>
-              <LiveSessionProvider>{ui}</LiveSessionProvider>
-            </AuthProvider>
-          </PrivacyProvider>
-        </GirthProvider>
-      </UnitProvider>
-    </ThemeProvider>
+    <QueryWrapper>
+      <ThemeProvider>
+        <UnitProvider>
+          <GirthProvider>
+            <PrivacyProvider>
+              <AuthProvider>
+                <LiveSessionProvider>{ui}</LiveSessionProvider>
+              </AuthProvider>
+            </PrivacyProvider>
+          </GirthProvider>
+        </UnitProvider>
+      </ThemeProvider>
+    </QueryWrapper>
   </NextIntlClientProvider>
 );
 

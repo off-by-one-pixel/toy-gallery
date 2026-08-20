@@ -20,13 +20,16 @@ globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS
 import en from '../i18n/catalogs/en.json';
 import { AuthProvider } from '../providers/AuthProvider';
 import { fetchMediaIndicators, refreshAllSessionMedia } from '../services/api';
+import { QueryWrapper } from '../test/QueryWrapper';
 import AppMenu from './AppMenu';
 
 const wrap = (
   <NextIntlClientProvider locale="en" messages={en}>
-    <AuthProvider>
-      <AppMenu />
-    </AuthProvider>
+    <QueryWrapper>
+      <AuthProvider>
+        <AppMenu />
+      </AuthProvider>
+    </QueryWrapper>
   </NextIntlClientProvider>
 );
 
