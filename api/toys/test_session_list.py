@@ -116,6 +116,22 @@ class SessionListTests(TestCase):
             [s["id"] for s in circumference["results"]], [s_small.id, s_big.id, s_used.id]
         )
 
+    def test_live_session_is_first_regardless_of_window_and_ordering(self):
+        toy = self._create_toy("L2")
+        recent = self._make_session(
+            _utc("2026-06-08T10:00:00"), [{"toy": toy, "duration_minutes": 10}]
+        )
+        live = models.Session.objects.create(started_at=_utc("2026-01-01T10:00:00"), is_live=True)
+
+        windowed = self._get(start="2026-06-08")
+        self.assertEqual([s["id"] for s in windowed["results"]], [live.id, recent.id])
+
+        by_duration = self._get(ordering="duration")
+        self.assertEqual(by_duration["results"][0]["id"], live.id)
+
+        by_date_asc = self._get(ordering="started_at")
+        self.assertEqual(by_date_asc["results"][0]["id"], live.id)
+
     def test_invalid_parameters_return_400(self):
         cases = [
             {"start": "2026-06-10", "end": "2026-06-01"},
