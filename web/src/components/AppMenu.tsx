@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { APP_COMMIT_SHA, APP_VERSION } from '../config';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../providers/AuthProvider';
-import { fetchMediaIndicators, MEDIA_INDICATORS_CHANGED_EVENT, refreshAllSessionMedia } from '../services/api';
+import { fetchMediaIndicators, refreshAllSessionMedia } from '../services/api';
 import { queryKeys } from '../services/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from './ActionDropdownMenu';
 
@@ -28,7 +28,6 @@ export default function AppMenu() {
       onSuccess: (refreshed) => {
         Toast.toast.success(tMedia('refreshedToast', { count: refreshed.sessionIds.size }));
         void queryClient.invalidateQueries({ queryKey: queryKeys.media });
-        window.dispatchEvent(new Event(MEDIA_INDICATORS_CHANGED_EVENT));
       },
     });
   };
