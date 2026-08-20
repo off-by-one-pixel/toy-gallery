@@ -1,38 +1,26 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { Unit, defaultUnit, unitById } from '../services/units';
+import { useMemo } from 'react';
 
-const STORAGE_KEY = 'units';
+import { defaultUnit, Unit, unitById } from '../services/units';
+import { createPersistedProvider } from './createPersistedProvider';
 
 interface UnitContextValue {
   unit: Unit;
   setUnit: (unit: Unit) => void;
 }
 
-const UnitContext = createContext<UnitContextValue | null>(null);
+const { Provider, useValue } = createPersistedProvider<Unit>({
+  storageKey: 'units',
+  defaultValue: defaultUnit,
+  decode: unitById,
+  encode: (unit) => unit.id,
+  errorMessage: 'useUnit must be used within UnitProvider',
+});
 
-export function UnitProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [unitState, setUnitState] = useState<Unit>(defaultUnit);
-
-  useEffect(() => {
-    const stored = globalThis.window !== undefined ? localStorage.getItem(STORAGE_KEY) : null;
-    const restored = stored ? unitById(stored) : undefined;
-    if (restored) setUnitState(restored);
-  }, []);
-
-  const setUnit = useCallback((next: Unit) => {
-    setUnitState(next);
-    if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next.id);
-  }, []);
-
-  const value = useMemo(() => ({ unit: unitState, setUnit }), [unitState, setUnit]);
-
-  return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>;
-}
+export const UnitProvider = Provider;
 
 export function useUnit(): UnitContextValue {
-  const ctx = useContext(UnitContext);
-  if (!ctx) throw new Error('useUnit must be used within UnitProvider');
-  return ctx;
+  const { value, setValue } = useValue();
+  return useMemo(() => ({ unit: value, setUnit: setValue }), [value, setValue]);
 }

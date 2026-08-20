@@ -1,39 +1,31 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { useMemo } from 'react';
 
-const STORAGE_KEY = 'hideSensitive';
+import { createPersistedProvider } from './createPersistedProvider';
 
 interface PrivacyContextValue {
   hideSensitive: boolean;
   toggleHideSensitive: () => void;
 }
 
-const PrivacyContext = createContext<PrivacyContextValue | null>(null);
+const decodeFlag = (stored: string): boolean | undefined => {
+  if (stored === '1') return true;
+  if (stored === '0') return false;
+  return undefined;
+};
 
-export function PrivacyProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [hideSensitive, setHideSensitive] = useState(false);
+const { Provider, useValue } = createPersistedProvider<boolean>({
+  storageKey: 'hideSensitive',
+  defaultValue: false,
+  decode: decodeFlag,
+  encode: (hide) => (hide ? '1' : '0'),
+  errorMessage: 'usePrivacy must be used within PrivacyProvider',
+});
 
-  useEffect(() => {
-    const stored = globalThis.window !== undefined ? localStorage.getItem(STORAGE_KEY) : null;
-    if (stored === '1') setHideSensitive(true);
-  }, []);
-
-  const toggleHideSensitive = useCallback(() => {
-    setHideSensitive((current) => {
-      const next = !current;
-      if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next ? '1' : '0');
-      return next;
-    });
-  }, []);
-
-  const value = useMemo(() => ({ hideSensitive, toggleHideSensitive }), [hideSensitive, toggleHideSensitive]);
-
-  return <PrivacyContext.Provider value={value}>{children}</PrivacyContext.Provider>;
-}
+export const PrivacyProvider = Provider;
 
 export function usePrivacy(): PrivacyContextValue {
-  const ctx = useContext(PrivacyContext);
-  if (!ctx) throw new Error('usePrivacy must be used within PrivacyProvider');
-  return ctx;
+  const { value, setValue } = useValue();
+  return useMemo(() => ({ hideSensitive: value, toggleHideSensitive: () => setValue(!value) }), [value, setValue]);
 }
