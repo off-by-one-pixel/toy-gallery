@@ -1,6 +1,8 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { useMemo } from 'react';
+
+import { createPersistedProvider } from './createPersistedProvider';
 
 export const ViewMode = {
   cards: 'cards',
@@ -8,35 +10,24 @@ export const ViewMode = {
 } as const;
 export type ViewMode = (typeof ViewMode)[keyof typeof ViewMode];
 
-const STORAGE_KEY = 'gallery.view';
-
 interface ViewModeContextValue {
   view: ViewMode;
   setView: (view: ViewMode) => void;
 }
 
-const ViewModeContext = createContext<ViewModeContextValue | null>(null);
+const isViewMode = (value: string): value is ViewMode => value === ViewMode.cards || value === ViewMode.list;
 
-export function ViewModeProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [viewState, setViewState] = useState<ViewMode>(ViewMode.cards);
+const { Provider, useValue } = createPersistedProvider<ViewMode>({
+  storageKey: 'gallery.view',
+  defaultValue: ViewMode.cards,
+  decode: (stored) => (isViewMode(stored) ? stored : undefined),
+  encode: (view) => view,
+  errorMessage: 'useViewMode must be used within ViewModeProvider',
+});
 
-  useEffect(() => {
-    const stored = globalThis.window !== undefined ? localStorage.getItem(STORAGE_KEY) : null;
-    if (stored === ViewMode.cards || stored === ViewMode.list) setViewState(stored);
-  }, []);
-
-  const setView = useCallback((next: ViewMode) => {
-    setViewState(next);
-    if (globalThis.window !== undefined) localStorage.setItem(STORAGE_KEY, next);
-  }, []);
-
-  const value = useMemo(() => ({ view: viewState, setView }), [viewState, setView]);
-
-  return <ViewModeContext.Provider value={value}>{children}</ViewModeContext.Provider>;
-}
+export const ViewModeProvider = Provider;
 
 export function useViewMode(): ViewModeContextValue {
-  const ctx = useContext(ViewModeContext);
-  if (!ctx) throw new Error('useViewMode must be used within ViewModeProvider');
-  return ctx;
+  const { value, setValue } = useValue();
+  return useMemo(() => ({ view: value, setView: setValue }), [value, setValue]);
 }
