@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { deleteToy, fetchToys } from '../services/api';
+import { formatError } from '../services/errors';
+import { queryKeys } from '../services/queryKeys';
 import type { Toy } from '../services/types';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useToyEditorWizardNav } from '../hooks/nav/useToyEditorWizardNav';
@@ -38,10 +41,14 @@ const ToyGallery = () => {
   const t = useTranslations();
   const common = useTranslations('common');
 
-  const [toys, setToys] = useState<Toy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastChanged, setLastChanged] = useState(0);
+  const queryClient = useQueryClient();
+  const {
+    data: toysData,
+    isPending: isLoading,
+    error: toysError,
+  } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
+  const toys = useMemo(() => toysData ?? [], [toysData]);
+  const error = toysError ? formatError(toysError) : null;
   const [query, setQuery] = useState('');
   const [openCardId, setOpenCardId] = useState<number | null>(null);
   const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
@@ -58,29 +65,18 @@ const ToyGallery = () => {
     return { kind: 'closed' };
   }, [toyModal.kind, toyModal.toyId, toys]);
 
-  const updateLastChanged = () => setLastChanged(Date.now());
-  const runInline = useAsyncAction(setError);
+  const invalidateToys = () => void queryClient.invalidateQueries({ queryKey: queryKeys.toys });
   const runToast = useAsyncAction();
   const startLiveAction = useStartLiveAction();
 
-  useEffect(() => {
-    runInline(fetchToys, {
-      busy: setIsLoading,
-      onSuccess: (loaded) => {
-        setToys(loaded);
-        setError(null);
-      },
-    });
-  }, [lastChanged, runInline]);
-
   const handleDelete = async (toy: Toy) => {
     if (!confirm(t('toy.deleteConfirm', { brand: toy.brand, name: toy.name }))) return;
-    await runToast(() => deleteToy(toy.id), { onDone: updateLastChanged });
+    await runToast(() => deleteToy(toy.id), { onDone: invalidateToys });
   };
 
   const handleEditorSaved = () => {
     toyModal.close();
-    updateLastChanged();
+    invalidateToys();
   };
 
   const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
