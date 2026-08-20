@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Spinner, Toast } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { createSession, fetchToys, fetchSession, updateSession } from '../services/api';
-import { Involvement, type Session, type Toy } from '../services/types';
+import { formatError } from '../services/errors';
+import { queryKeys } from '../services/queryKeys';
+import { Involvement } from '../services/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
 import { SortProvider } from '../providers/SortProvider';
@@ -39,8 +42,6 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const router = useRouter();
   const t = useTranslations('session');
   const common = useTranslations('common');
-  const [toys, setToys] = useState<Toy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [startedAt, setStartedAt] = useState(datetimeLocalNow);
@@ -53,36 +54,36 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
 
   const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
 
+  const {
+    data: toysData,
+    isPending: toysPending,
+    error: toysError,
+  } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
+  const toys = useMemo(() => toysData ?? [], [toysData]);
+  const [sessionLoading, setSessionLoading] = useState(sessionId !== null);
+
   useEffect(() => {
-    runInline(
-      async () => {
-        const toysPromise = fetchToys();
-        const sessionPromise: Promise<Session | null> =
-          sessionId !== null ? fetchSession(sessionId) : Promise.resolve(null);
-        const [loadedToys, loadedSession] = await Promise.all([toysPromise, sessionPromise]);
-        return { loadedToys, loadedSession };
+    if (sessionId === null) return;
+    runInline(() => fetchSession(sessionId), {
+      busy: setSessionLoading,
+      onSuccess: (loadedSession) => {
+        setStartedAt(datetimeLocalValue(new Date(loadedSession.startedAt)));
+        setEndedAt(loadedSession.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '');
+        setSelections(
+          new Map(
+            loadedSession.entries.map((e) => [
+              e.toy,
+              { involvement: e.involvement, durationMinutes: e.durationMinutes ?? null },
+            ]),
+          ),
+        );
+        setError(null);
       },
-      {
-        busy: setIsLoading,
-        onSuccess: ({ loadedToys, loadedSession }) => {
-          setToys(loadedToys);
-          if (loadedSession) {
-            setStartedAt(datetimeLocalValue(new Date(loadedSession.startedAt)));
-            setEndedAt(loadedSession.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '');
-            setSelections(
-              new Map(
-                loadedSession.entries.map((e) => [
-                  e.toy,
-                  { involvement: e.involvement, durationMinutes: e.durationMinutes ?? null },
-                ]),
-              ),
-            );
-          }
-          setError(null);
-        },
-      },
-    );
+    });
   }, [runInline, sessionId]);
+
+  const isLoading = toysPending || sessionLoading;
+  const errorMessage = error ?? (toysError ? formatError(toysError) : null);
 
   const { sort } = useSortOf(SESSION_FORM_TOY_SORT);
   const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
@@ -155,9 +156,9 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
       </header>
 
       <main className="mx-auto max-w-300 px-6 py-6 pb-24">
-        {error && (
+        {errorMessage && (
           <Alert status="danger" className="mb-4">
-            <Alert.Description>{error}</Alert.Description>
+            <Alert.Description>{errorMessage}</Alert.Description>
           </Alert>
         )}
 

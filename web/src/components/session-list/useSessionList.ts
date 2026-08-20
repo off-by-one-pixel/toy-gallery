@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useQuery } from '@tanstack/react-query';
+
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { useSortOf } from '../../hooks/useSortOf';
 import {
@@ -12,6 +14,8 @@ import {
   type MediaIndicators,
   notifySessionsChanged,
 } from '../../services/api';
+import { formatError } from '../../services/errors';
+import { queryKeys } from '../../services/queryKeys';
 import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '../../services/session';
 import { SESSION_SORT, sessionOrderingParam } from '../../services/sessionSort';
 import type { Session, Toy } from '../../services/types';
@@ -40,7 +44,6 @@ export function useSessionList(): SessionListData {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [toys, setToys] = useState<Toy[]>([]);
   const [media, setMedia] = useState<MediaIndicators>(() => ({ configured: false, sessionIds: new Set() }));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,27 +84,22 @@ export function useSessionList(): SessionListData {
     [filter, sort],
   );
 
+  const { data: loadedToys, error: toysError } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
+
   useEffect(() => {
     let cancelled = false;
     generationRef.current += 1;
-    runInline(
-      async () => {
-        const [firstPage, loadedToys] = await Promise.all([listQuery(1), fetchToys()]);
-        return { firstPage, loadedToys };
+    runInline(() => listQuery(1), {
+      busy: setIsLoading,
+      onSuccess: (firstPage) => {
+        if (cancelled) return;
+        setSessions(firstPage.sessions);
+        setCount(firstPage.count);
+        setHasMore(firstPage.hasMore);
+        setPage(1);
+        setError(null);
       },
-      {
-        busy: setIsLoading,
-        onSuccess: (loaded) => {
-          if (cancelled) return;
-          setSessions(loaded.firstPage.sessions);
-          setCount(loaded.firstPage.count);
-          setHasMore(loaded.firstPage.hasMore);
-          setPage(1);
-          setToys(loaded.loadedToys);
-          setError(null);
-        },
-      },
-    );
+    });
     return () => {
       cancelled = true;
     };
@@ -123,7 +121,7 @@ export function useSessionList(): SessionListData {
     });
   }, [hasMore, isLoadingMore, isLoading, page, listQuery, runToast]);
 
-  const toysById = useMemo(() => buildToysById(toys), [toys]);
+  const toysById = useMemo(() => buildToysById(loadedToys ?? []), [loadedToys]);
 
   return {
     sessionCount: count,
@@ -145,6 +143,6 @@ export function useSessionList(): SessionListData {
     filter,
     setFilter,
     isLoading,
-    error,
+    error: error ?? (toysError ? formatError(toysError) : null),
   };
 }
