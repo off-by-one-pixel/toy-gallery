@@ -8,7 +8,7 @@ import { useReportError } from '@/hooks/useAsyncAction';
 import { useSortOf } from '@/hooks/useSortOf';
 import { fetchSessions, fetchToys, type SessionPage } from '@/api';
 import { formatError } from '@/api/errors';
-import { queryKeys } from '@/api/queryKeys';
+import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
 import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '@/features/sessions/session';
 import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
 import type { Session, Toy } from '@/api/types';
@@ -84,9 +84,7 @@ export function useSessionList(): SessionListData {
   };
 
   const reload = () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.live });
+    invalidateSessionData(queryClient);
   };
 
   const listError = list.data ? null : list.error;

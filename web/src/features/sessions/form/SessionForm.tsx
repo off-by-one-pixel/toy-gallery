@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 
 import { createSession, fetchToys, fetchSession, updateSession } from '@/api';
 import { formatError } from '@/api/errors';
-import { queryKeys } from '@/api/queryKeys';
+import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
 import { Involvement } from '@/api/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
@@ -136,9 +136,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         if (sessionId !== null) {
           void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
         }
-        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
-        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
-        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.live });
+        invalidateSessionData(queryClient);
         router.push('/sessions');
       },
     });
