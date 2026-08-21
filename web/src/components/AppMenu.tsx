@@ -11,7 +11,7 @@ import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchMediaIndicators, refreshAllSessionMedia } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
-import ActionDropdownMenu, { type ActionMenuItem } from './ActionDropdownMenu';
+import ActionDropdownMenu, { type ActionMenuItem } from '@/components/ActionDropdownMenu';
 
 export default function AppMenu() {
   const t = useTranslations('collection');

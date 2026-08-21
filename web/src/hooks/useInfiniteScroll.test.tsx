@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { useInfiniteScroll } from './useInfiniteScroll';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 type IOCallback = (entries: Array<{ isIntersecting: boolean }>) => void;
 

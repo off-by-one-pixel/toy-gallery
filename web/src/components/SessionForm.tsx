@@ -17,14 +17,14 @@ import { SortProvider } from '@/providers/SortProvider';
 import { useSortOf } from '@/hooks/useSortOf';
 import { datetimeLocalValue } from '@/lib/dates';
 import { minutesBetween } from '@/lib/duration';
-import { filterToys } from '@/services/search';
-import { SESSION_FORM_TOY_SORT, sortToys } from '@/services/toySort';
+import { filterToys } from '@/features/toys/search';
+import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import SearchInput from './SearchInput';
-import SectionHeading from './SectionHeading';
-import SessionMediaStrip from './session-list/SessionMediaStrip';
-import ToySortControl from './ToySortControl';
-import ToyChipSelector from './ToyChipSelector';
+import SearchInput from '@/components/SearchInput';
+import SectionHeading from '@/components/SectionHeading';
+import SessionMediaStrip from '@/components/session-list/SessionMediaStrip';
+import ToySortControl from '@/features/toys/gallery/ToySortControl';
+import ToyChipSelector from '@/components/ToyChipSelector';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
 

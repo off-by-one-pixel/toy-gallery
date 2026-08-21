@@ -6,7 +6,7 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import { ACTIVITY_PALETTE } from '@/services/activityPalette';
 import type { ActivityCell, DimensionView } from '@/services/activity';
 import type { StatViewItem } from '@/services/statsView';
-import FrequencyStrip from './session-list/FrequencyStrip';
+import FrequencyStrip from '@/components/session-list/FrequencyStrip';
 
 type Props = Readonly<{ items: readonly StatViewItem[] }>;
 

@@ -3,7 +3,7 @@
 import { Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import TextInput from './TextInput';
+import TextInput from '@/components/TextInput';
 
 type Props = Readonly<{
   value: string;

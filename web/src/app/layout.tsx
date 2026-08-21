@@ -8,7 +8,7 @@ import { LocaleProvider } from '@/providers/LocaleProvider';
 import { PrivacyProvider } from '@/providers/PrivacyProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { SortProvider } from '@/providers/SortProvider';
-import { TOY_SORT } from '@/services/toySort';
+import { TOY_SORT } from '@/features/toys/toySort';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import { ToastProvider } from '@/providers/ToastProvider';
 import { UnitProvider } from '@/providers/UnitProvider';

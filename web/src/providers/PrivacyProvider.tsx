@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { createPersistedProvider } from './createPersistedProvider';
+import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 interface PrivacyContextValue {
   hideSensitive: boolean;

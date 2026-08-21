@@ -4,9 +4,9 @@ import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import type { ActionDef } from '@/components/ActionButtons';
-import { useLiveSession } from './useLiveSession';
+import { useLiveSession } from '@/hooks/useLiveSession';
 import type { Session } from '@/api/types';
-import { useAsyncAction } from './useAsyncAction';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
 
 export function useStartLiveAction(onStarted?: (session: Session) => void): ActionDef | null {
   const { liveSession, isLoaded, start } = useLiveSession();

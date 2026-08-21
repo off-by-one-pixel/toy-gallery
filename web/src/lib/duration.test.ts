@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDuration, minutesBetween, totalDuration } from './duration';
+import { formatDuration, minutesBetween, totalDuration } from '@/lib/duration';
 
 describe('formatDuration', () => {
   it('formats minutes only', () => {

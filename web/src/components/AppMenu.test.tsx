@@ -21,7 +21,7 @@ import en from '@/i18n/catalogs/en.json';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { fetchMediaIndicators, refreshAllSessionMedia } from '@/api';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
-import AppMenu from './AppMenu';
+import AppMenu from '@/components/AppMenu';
 
 const wrap = (client?: QueryClient) => (
   <NextIntlClientProvider locale="en" messages={en}>

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./generated/sdk', () => ({
+vi.mock('@/api/generated/sdk', () => ({
   toysSessionsMediaIndicatorsRetrieve: vi.fn(),
   toysSessionsRefreshMediaCreate: vi.fn(),
   toysSessionsMediaRetrieve: vi.fn(),
@@ -10,8 +10,8 @@ import {
   toysSessionsMediaIndicatorsRetrieve,
   toysSessionsMediaRetrieve,
   toysSessionsRefreshMediaCreate,
-} from './generated/sdk';
-import { fetchMediaIndicators, fetchSessionMedia, refreshAllSessionMedia } from './index';
+} from '@/api/generated/sdk';
+import { fetchMediaIndicators, fetchSessionMedia, refreshAllSessionMedia } from '@/api/index';
 
 describe('media API wrappers', () => {
   beforeEach(() => vi.clearAllMocks());

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import TextInput from './TextInput';
+import TextInput from '@/components/TextInput';
 
 const LoginPage = () => {
   const router = useRouter();

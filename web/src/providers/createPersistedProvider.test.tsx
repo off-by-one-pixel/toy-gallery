@@ -3,7 +3,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createPersistedProvider } from './createPersistedProvider';
+import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 const { Provider, useValue } = createPersistedProvider<number>({
   storageKey: 'test.count',

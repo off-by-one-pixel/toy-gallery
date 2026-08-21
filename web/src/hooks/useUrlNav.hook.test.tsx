@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useUrlUpdate } from './useUrlNav';
+import { useUrlUpdate } from '@/hooks/useUrlNav';
 
 const push = vi.fn();
 const replace = vi.fn();

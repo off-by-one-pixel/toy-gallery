@@ -54,7 +54,7 @@ import {
 } from '@/api';
 import type { Session } from '@/api/types';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
-import SessionList from './SessionList';
+import SessionList from '@/components/session-list/SessionList';
 
 const session = (id: number, startedAt: string, isLive = false): Session => ({
   id,

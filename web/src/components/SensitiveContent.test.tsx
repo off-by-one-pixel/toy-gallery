@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import en from '@/i18n/catalogs/en.json';
 import { PrivacyProvider } from '@/providers/PrivacyProvider';
-import PrivacyToggle from './PrivacyToggle';
-import SensitiveContent from './SensitiveContent';
+import PrivacyToggle from '@/components/PrivacyToggle';
+import SensitiveContent from '@/components/SensitiveContent';
 
 const wrap = (ui: React.ReactNode) => (
   <NextIntlClientProvider locale="en" messages={en}>

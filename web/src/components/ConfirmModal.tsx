@@ -3,7 +3,7 @@
 import { Button, Modal, useOverlayState } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 
-import SectionHeading from './SectionHeading';
+import SectionHeading from '@/components/SectionHeading';
 
 type Props = Readonly<{
   onClose: () => void;

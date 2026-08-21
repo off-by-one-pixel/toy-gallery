@@ -6,7 +6,7 @@ vi.mock('@/config', () => ({
   API_CONFIG: { baseUrl: 'http://test.local' },
 }));
 
-vi.mock('./generated/sdk', () => ({
+vi.mock('@/api/generated/sdk', () => ({
   toysTokenCreate: vi.fn(),
   toysChangePasswordCreate: vi.fn(),
   toysToysList: vi.fn(),
@@ -29,9 +29,9 @@ import {
   toysToysCreate,
   toysToysExportRetrieve,
   toysToysImportCreate,
-} from './generated/sdk';
-import { createSession, createToy, downloadExport, importFromFile, login, refreshTokens } from './index';
-import { APIError } from './types';
+} from '@/api/generated/sdk';
+import { createSession, createToy, downloadExport, importFromFile, login, refreshTokens } from '@/api/index';
+import { APIError } from '@/api/types';
 
 const fetchMock = vi.fn<(...args: Parameters<typeof fetch>) => Promise<Response>>();
 

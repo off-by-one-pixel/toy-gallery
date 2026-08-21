@@ -4,10 +4,10 @@ import { Chip } from '@heroui/react';
 import { Check, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { toyShapeToEditor } from '@/services/converters/toyShape';
+import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { DURATION_INCREMENTS_MINUTES, formatDuration } from '@/lib/duration';
 import { Involvement, type Toy } from '@/api/types';
-import ToyThumbnail from './ToyThumbnail';
+import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 type Props = Readonly<{
   toy: Toy;

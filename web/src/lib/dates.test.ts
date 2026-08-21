@@ -10,7 +10,7 @@ import {
   localizedHourLabel,
   localizedWeekdayLabel,
   startOfDay,
-} from './dates';
+} from '@/lib/dates';
 import { filterStartDate } from '@/services/session';
 
 describe('localDateKey', () => {

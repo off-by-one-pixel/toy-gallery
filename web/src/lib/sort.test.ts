@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cycleSort, isValidSort, narrowSort } from './sort';
+import { cycleSort, isValidSort, narrowSort } from '@/lib/sort';
 
 describe('cycleSort', () => {
   it('starts ascending on a fresh column', () => {

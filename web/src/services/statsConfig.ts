@@ -1,7 +1,7 @@
-import { ACTIVITY_PALETTE } from './activityPalette';
+import { ACTIVITY_PALETTE } from '@/services/activityPalette';
 import { localizedHourLabel, localizedWeekdayLabel } from '@/lib/dates';
-import { displayGirth } from './girth';
-import type { StatDef } from './statsView';
+import { displayGirth } from '@/services/girth';
+import type { StatDef } from '@/services/statsView';
 
 export const METRIC_COUNT = 'count';
 export const METRIC_MAX_LENGTH = 'max:insertable_length';

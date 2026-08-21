@@ -1,6 +1,6 @@
 import { API_CONFIG } from '@/config';
-import { refreshTokens } from './index';
-import { APIError, type TokenPair } from './types';
+import { refreshTokens } from '@/api/index';
+import { APIError, type TokenPair } from '@/api/types';
 
 // ---------- Token storage ----------
 

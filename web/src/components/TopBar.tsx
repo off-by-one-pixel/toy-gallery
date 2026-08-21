@@ -5,10 +5,10 @@ import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
-import AppMenu from './AppMenu';
-import PrivacyToggle from './PrivacyToggle';
-import SectionTabs from './SectionTabs';
-import ThemeToggle from './ThemeToggle';
+import AppMenu from '@/components/AppMenu';
+import PrivacyToggle from '@/components/PrivacyToggle';
+import SectionTabs from '@/components/SectionTabs';
+import ThemeToggle from '@/components/ThemeToggle';
 
 type Props = Readonly<{
   subtitle?: ReactNode;

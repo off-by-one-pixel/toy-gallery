@@ -21,7 +21,7 @@ import { useLiveSession } from '@/hooks/useLiveSession';
 import { fetchLiveSession, startLiveSession } from '@/api';
 import type { Session } from '@/api/types';
 import { QueryWrapper } from '@/test/QueryWrapper';
-import LiveSessionBanner from './LiveSessionBanner';
+import LiveSessionBanner from '@/components/LiveSessionBanner';
 
 const live = (startedAt: string): Session => ({
   id: 5,

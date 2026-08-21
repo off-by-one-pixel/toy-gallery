@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 
-import Switcher, { type SwitcherItem } from './Switcher';
+import Switcher, { type SwitcherItem } from '@/components/Switcher';
 
 type Key = 'gallery' | 'sessions';
 

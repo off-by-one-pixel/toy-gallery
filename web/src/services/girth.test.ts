@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_GIRTH, displayGirth, isGirth } from './girth';
+import { DEFAULT_GIRTH, displayGirth, isGirth } from '@/services/girth';
 
 describe('girth', () => {
   it('defaults to circumference', () => {

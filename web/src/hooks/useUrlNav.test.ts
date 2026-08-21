@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyUpdate, buildHref, parseEnumParam, parseIntParam } from './useUrlNav';
+import { applyUpdate, buildHref, parseEnumParam, parseIntParam } from '@/hooks/useUrlNav';
 
 describe('applyUpdate', () => {
   it('sets a new key', () => {

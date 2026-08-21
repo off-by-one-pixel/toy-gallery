@@ -5,12 +5,12 @@ import {
   type DimensionView,
   extent,
   legendGradient,
-} from './activity';
+} from '@/services/activity';
 import { daysAgoDateString, formatDateKey, localDateKey, MS_PER_DAY, startOfDay } from '@/lib/dates';
-import type { Girth } from './girth';
-import { type FilterKey, filterStartDate } from './session';
+import type { Girth } from '@/services/girth';
+import { type FilterKey, filterStartDate } from '@/services/session';
 import type { StatsGroup } from '@/api/types';
-import { formatValue, type Unit } from './units';
+import { formatValue, type Unit } from '@/services/units';
 
 export type StatContext = Readonly<{
   unit: Unit;

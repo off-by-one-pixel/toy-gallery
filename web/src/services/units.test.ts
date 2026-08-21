@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { ToySection } from 'toy-editor';
 
-import { Unit, convertSections, formatValue, fromMm, toMm } from './units';
+import { Unit, convertSections, formatValue, fromMm, toMm } from '@/services/units';
 
 describe('toMm / fromMm', () => {
   it('passes mm through unchanged', () => {

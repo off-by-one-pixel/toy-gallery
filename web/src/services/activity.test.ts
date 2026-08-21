@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { colorFor, extent, legendGradient, pluck } from './activity';
-import { ACTIVITY_PALETTE } from './activityPalette';
+import { colorFor, extent, legendGradient, pluck } from '@/services/activity';
+import { ACTIVITY_PALETTE } from '@/services/activityPalette';
 
 describe('extent', () => {
   it('returns the min and max of a non-empty array', () => {

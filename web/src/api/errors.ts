@@ -1,4 +1,4 @@
-import { APIError } from './types';
+import { APIError } from '@/api/types';
 
 const FALLBACK = 'Something went wrong';
 

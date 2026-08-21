@@ -22,11 +22,11 @@ import Switcher, { type SwitcherItem } from '@/components/Switcher';
 import TopBar from '@/components/TopBar';
 import GirthToggle from '@/components/GirthToggle';
 import UnitToggle from '@/components/UnitToggle';
-import EmptyState from './EmptyState';
-import SessionRow from './SessionRow';
-import SessionSortControl from './SessionSortControl';
-import SessionStats from './SessionStats';
-import { useSessionList } from './useSessionList';
+import EmptyState from '@/components/session-list/EmptyState';
+import SessionRow from '@/components/session-list/SessionRow';
+import SessionSortControl from '@/components/session-list/SessionSortControl';
+import SessionStats from '@/components/session-list/SessionStats';
+import { useSessionList } from '@/components/session-list/useSessionList';
 
 export default function SessionList() {
   return (

@@ -1,4 +1,4 @@
-import { InvolvementEnum, SectionShapeEnum } from './generated/schemas';
+import { InvolvementEnum, SectionShapeEnum } from '@/api/generated/schemas';
 import type {
   Session as ApiSession,
   SessionMediaItem as ApiSessionMediaItem,
@@ -9,7 +9,7 @@ import type {
   ToyShape as ApiShape,
   ToyShapeSection as ApiSection,
   ToySessionEntry as ApiSessionEntry,
-} from './generated/schemas';
+} from '@/api/generated/schemas';
 import type { SnakeToCamel } from '@/api/case';
 
 // Domain types are derived mechanically from the generated API schemas by
@@ -41,7 +41,7 @@ export type SessionEntry = SnakeToCamel<ApiSessionEntry>;
 export type Session = SnakeToCamel<ApiSession>;
 export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
 
-export type { StatsGroup } from './generated/schemas';
+export type { StatsGroup } from '@/api/generated/schemas';
 export type SessionMediaItem = SnakeToCamel<ApiSessionMediaItem>;
 export type SessionMedia = Omit<SnakeToCamel<ApiSessionMediaResponse>, 'items'> & { items: SessionMediaItem[] };
 

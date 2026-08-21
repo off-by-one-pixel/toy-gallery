@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { ViewMode } from '@/providers/ViewModeProvider';
-import Switcher, { type SwitcherItem } from './Switcher';
+import Switcher, { type SwitcherItem } from '@/components/Switcher';
 
 const VIEW_MODE_ICON: Record<ViewMode, ReactNode> = {
   [ViewMode.cards]: <LayoutGrid size={13} strokeWidth={2} />,

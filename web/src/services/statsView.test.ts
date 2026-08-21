@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { localDateKey } from '@/lib/dates';
-import { ACTIVITY_PALETTE } from './activityPalette';
-import { METRIC_COUNT, METRIC_MAX_CIRCUMFERENCE, METRIC_MAX_LENGTH, SESSION_STATS } from './statsConfig';
+import { ACTIVITY_PALETTE } from '@/services/activityPalette';
+import { METRIC_COUNT, METRIC_MAX_CIRCUMFERENCE, METRIC_MAX_LENGTH, SESSION_STATS } from '@/services/statsConfig';
 import {
   buildCalendarView,
   buildFrequencyView,
@@ -11,7 +11,7 @@ import {
   type FrequencyStatDef,
   type StatContext,
   startFor,
-} from './statsView';
+} from '@/services/statsView';
 import type { StatsGroup } from '@/api/types';
 
 const MM: StatContext['unit'] = { id: 'mm', factor: 1, decimals: 0 };

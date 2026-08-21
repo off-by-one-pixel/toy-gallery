@@ -19,7 +19,7 @@ import {
   toysToysImportCreate,
   toysToysList,
   toysToysPartialUpdate,
-} from './generated/sdk';
+} from '@/api/generated/sdk';
 import { API_CONFIG } from '@/config';
 import { localDateKey } from '@/lib/dates';
 import { camelToSnake, snakeToCamel } from '@/api/case';
@@ -29,7 +29,7 @@ import type {
   PatchedToyRequest,
   SessionRequest as ApiSessionRequest,
   ToyRequest as ApiToyRequest,
-} from './generated/schemas';
+} from '@/api/generated/schemas';
 import {
   APIError,
   type StatsGroup,
@@ -40,7 +40,7 @@ import {
   type TokenPair,
   type Toy,
   type ToyPayload,
-} from './types';
+} from '@/api/types';
 
 // ---------- Token endpoints ----------
 

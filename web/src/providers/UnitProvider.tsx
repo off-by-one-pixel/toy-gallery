@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 
 import { defaultUnit, Unit, unitById } from '@/services/units';
-import { createPersistedProvider } from './createPersistedProvider';
+import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 interface UnitContextValue {
   unit: Unit;
