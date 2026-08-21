@@ -19,9 +19,9 @@ const session = (id: number, isoDay: string): Session => ({
 });
 
 describe('INVOLVEMENT_RANK', () => {
-  it('orders USED < INSERTED < FULLY_INSERTED', () => {
-    expect(INVOLVEMENT_RANK[Involvement.USED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.INSERTED]);
-    expect(INVOLVEMENT_RANK[Involvement.INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.FULLY_INSERTED]);
+  it('orders FULLY_INSERTED < INSERTED < USED', () => {
+    expect(INVOLVEMENT_RANK[Involvement.FULLY_INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.INSERTED]);
+    expect(INVOLVEMENT_RANK[Involvement.INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.USED]);
   });
 });
 
@@ -41,19 +41,48 @@ describe('mergeSessions', () => {
 });
 
 describe('sortEntriesByInvolvement', () => {
+  const toy = (id: number, circumference: number | null): Toy =>
+    ({
+      id,
+      brand: 'B',
+      name: `t${id}`,
+      size: '',
+      usageCount: 0,
+      totalDurationMinutes: 0,
+      circumference,
+      shape: { sections: [] },
+    }) as Toy;
+  const toys = new Map([1, 2, 3, 4].map((id) => [id, toy(id, id === 4 ? 90 : 100 + id * 10)]));
   const entries: SessionEntry[] = [
     { toy: 1, involvement: Involvement.FULLY_INSERTED },
     { toy: 2, involvement: Involvement.USED },
     { toy: 3, involvement: Involvement.INSERTED },
   ];
 
-  it('sorts ascending by involvement rank', () => {
-    expect(sortEntriesByInvolvement(entries).map((e) => e.toy)).toEqual([2, 3, 1]);
+  it('sorts by involvement rank, deepest first', () => {
+    expect(sortEntriesByInvolvement(entries, toys).map((e) => e.toy)).toEqual([1, 3, 2]);
+  });
+
+  it('puts the biggest circumference first within the same involvement', () => {
+    const sameRank: SessionEntry[] = [
+      { toy: 4, involvement: Involvement.INSERTED },
+      { toy: 3, involvement: Involvement.INSERTED },
+      { toy: 2, involvement: Involvement.INSERTED },
+    ];
+    expect(sortEntriesByInvolvement(sameRank, toys).map((e) => e.toy)).toEqual([3, 2, 4]);
+  });
+
+  it('sorts unknown or unmeasured toys after measured ones', () => {
+    const sameRank: SessionEntry[] = [
+      { toy: 9, involvement: Involvement.USED },
+      { toy: 3, involvement: Involvement.USED },
+    ];
+    expect(sortEntriesByInvolvement(sameRank, toys).map((e) => e.toy)).toEqual([3, 9]);
   });
 
   it('does not mutate the input', () => {
     const before = entries.map((e) => e.toy);
-    sortEntriesByInvolvement(entries);
+    sortEntriesByInvolvement(entries, toys);
     expect(entries.map((e) => e.toy)).toEqual(before);
   });
 });

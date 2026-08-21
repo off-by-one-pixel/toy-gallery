@@ -33,17 +33,20 @@ export function filterStartDate(filter: FilterKey, now: Date = new Date()): stri
 
 // -------- Entry sort --------
 
-/** Sort priority within a session: USED first (smallest impact),
- *  then INSERTED, then FULLY_INSERTED. Visual layout uses this. */
 export const INVOLVEMENT_RANK: Record<Involvement, number> = {
-  [Involvement.USED]: 0,
+  [Involvement.FULLY_INSERTED]: 0,
   [Involvement.INSERTED]: 1,
-  [Involvement.FULLY_INSERTED]: 2,
+  [Involvement.USED]: 2,
 };
 
-/** Stable sort of a session's entries by involvement rank. */
-export function sortEntriesByInvolvement(entries: readonly SessionEntry[]): SessionEntry[] {
-  return [...entries].sort((a, b) => INVOLVEMENT_RANK[a.involvement] - INVOLVEMENT_RANK[b.involvement]);
+export function sortEntriesByInvolvement(
+  entries: readonly SessionEntry[],
+  toys: ReadonlyMap<number, Toy>,
+): SessionEntry[] {
+  const girthOf = (entry: SessionEntry) => toys.get(entry.toy)?.circumference ?? -1;
+  return [...entries].sort(
+    (a, b) => INVOLVEMENT_RANK[a.involvement] - INVOLVEMENT_RANK[b.involvement] || girthOf(b) - girthOf(a),
+  );
 }
 
 // -------- Toy lookup --------

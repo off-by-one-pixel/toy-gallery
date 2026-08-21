@@ -56,7 +56,7 @@ export default function SessionRow({
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
   const selectionRing = session.isLive ? 'ring-2 ring-emerald-500 ' : 'ring-2 ring-accent ';
-  const orderedEntries = sortEntriesByInvolvement(session.entries);
+  const orderedEntries = sortEntriesByInvolvement(session.entries, toysById);
   const visibleEntries = selected ? orderedEntries : orderedEntries.slice(0, STRIP_LIMIT);
   const overflow = orderedEntries.length - visibleEntries.length;
 
