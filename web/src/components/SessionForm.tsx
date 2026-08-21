@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, Spinner, Toast } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -42,14 +42,13 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const router = useRouter();
   const t = useTranslations('session');
   const common = useTranslations('common');
-  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [startedAt, setStartedAt] = useState(datetimeLocalNow);
   const [endedAt, setEndedAt] = useState('');
   const [query, setQuery] = useState('');
   const [selections, setSelections] = useState<Map<number, ToySelection>>(() => new Map());
 
-  const runInline = useAsyncAction(setError);
+  const queryClient = useQueryClient();
   const runToast = useAsyncAction();
 
   const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
@@ -58,32 +57,35 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
     data: toysData,
     isPending: toysPending,
     error: toysError,
-  } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
+  } = useQuery({ queryKey: queryKeys.toys.all, queryFn: fetchToys });
   const toys = useMemo(() => toysData ?? [], [toysData]);
-  const [sessionLoading, setSessionLoading] = useState(sessionId !== null);
 
+  const detail = useQuery({
+    queryKey: queryKeys.sessions.detail(sessionId ?? 0),
+    queryFn: () => fetchSession(sessionId ?? 0),
+    enabled: sessionId !== null,
+  });
+
+  const loadedSession = detail.data;
+  const hasSeededDraft = useRef(false);
   useEffect(() => {
-    if (sessionId === null) return;
-    runInline(() => fetchSession(sessionId), {
-      busy: setSessionLoading,
-      onSuccess: (loadedSession) => {
-        setStartedAt(datetimeLocalValue(new Date(loadedSession.startedAt)));
-        setEndedAt(loadedSession.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '');
-        setSelections(
-          new Map(
-            loadedSession.entries.map((e) => [
-              e.toy,
-              { involvement: e.involvement, durationMinutes: e.durationMinutes ?? null },
-            ]),
-          ),
-        );
-        setError(null);
-      },
-    });
-  }, [runInline, sessionId]);
+    if (!loadedSession || hasSeededDraft.current) return;
+    hasSeededDraft.current = true;
+    setStartedAt(datetimeLocalValue(new Date(loadedSession.startedAt)));
+    setEndedAt(loadedSession.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '');
+    setSelections(
+      new Map(
+        loadedSession.entries.map((e) => [
+          e.toy,
+          { involvement: e.involvement, durationMinutes: e.durationMinutes ?? null },
+        ]),
+      ),
+    );
+  }, [loadedSession]);
 
-  const isLoading = toysPending || sessionLoading;
-  const errorMessage = error ?? (toysError ? formatError(toysError) : null);
+  const isLoading = toysPending || (sessionId !== null && detail.isPending);
+  const loadError = toysError ?? detail.error;
+  const errorMessage = loadError ? formatError(loadError) : null;
 
   const { sort } = useSortOf(SESSION_FORM_TOY_SORT);
   const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
@@ -132,6 +134,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
       busy: setSaving,
       onSuccess: () => {
         Toast.toast.success(t('savedToast'));
+        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
         router.push('/sessions');
       },
     });

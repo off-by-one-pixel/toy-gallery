@@ -24,7 +24,7 @@ export default function SessionMediaStrip({ sessionId, showHeading = true }: Pro
     isPending,
     isError,
   } = useQuery({
-    queryKey: queryKeys.sessionMedia(sessionId),
+    queryKey: queryKeys.media.session(sessionId),
     queryFn: () => fetchSessionMedia(sessionId),
   });
 

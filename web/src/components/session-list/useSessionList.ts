@@ -40,7 +40,7 @@ export function useSessionList(): SessionListData {
   const reportError = useReportError();
 
   const ordering = sessionOrderingParam(sort);
-  const listKey = queryKeys.sessionList(filter, ordering);
+  const listKey = queryKeys.sessions.list(filter, ordering);
 
   const list = useInfiniteQuery({
     queryKey: listKey,
@@ -50,8 +50,8 @@ export function useSessionList(): SessionListData {
       lastPage.hasMore ? pages.length + 1 : undefined,
   });
 
-  const { data: indicators } = useQuery({ queryKey: queryKeys.mediaIndicators, queryFn: fetchMediaIndicators });
-  const { data: loadedToys, error: toysError } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
+  const { data: indicators } = useQuery({ queryKey: queryKeys.media.indicators, queryFn: fetchMediaIndicators });
+  const { data: loadedToys, error: toysError } = useQuery({ queryKey: queryKeys.toys.all, queryFn: fetchToys });
 
   const sessions = useMemo(
     () => (list.data?.pages ?? []).reduce<Session[]>((acc, page) => mergeSessions(acc, page.sessions), []),
@@ -79,11 +79,11 @@ export function useSessionList(): SessionListData {
           })),
         },
     );
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessionStats });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
   };
 
   const reload = () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
   };
 
   const listError = list.data ? null : list.error;

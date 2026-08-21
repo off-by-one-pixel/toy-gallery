@@ -20,14 +20,14 @@ export default function AppMenu() {
   const { username, logout } = useAuth();
   const runToast = useAsyncAction();
   const queryClient = useQueryClient();
-  const { data: indicators } = useQuery({ queryKey: queryKeys.mediaIndicators, queryFn: fetchMediaIndicators });
+  const { data: indicators } = useQuery({ queryKey: queryKeys.media.indicators, queryFn: fetchMediaIndicators });
   const mediaConfigured = indicators?.configured ?? false;
 
   const refreshMedia = () => {
     void runToast(refreshAllSessionMedia, {
       onSuccess: (refreshed) => {
         Toast.toast.success(tMedia('refreshedToast', { count: refreshed.sessionIds.size }));
-        void queryClient.invalidateQueries({ queryKey: queryKeys.media });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.media.all });
       },
     });
   };

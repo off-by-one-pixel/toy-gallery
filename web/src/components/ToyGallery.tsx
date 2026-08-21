@@ -46,7 +46,7 @@ const ToyGallery = () => {
     data: toysData,
     isPending: isLoading,
     error: toysError,
-  } = useQuery({ queryKey: queryKeys.toys, queryFn: fetchToys });
+  } = useQuery({ queryKey: queryKeys.toys.all, queryFn: fetchToys });
   const toys = useMemo(() => toysData ?? [], [toysData]);
   const error = toysError ? formatError(toysError) : null;
   const [query, setQuery] = useState('');
@@ -65,7 +65,7 @@ const ToyGallery = () => {
     return { kind: 'closed' };
   }, [toyModal.kind, toyModal.toyId, toys]);
 
-  const invalidateToys = () => void queryClient.invalidateQueries({ queryKey: queryKeys.toys });
+  const invalidateToys = () => void queryClient.invalidateQueries({ queryKey: queryKeys.toys.all });
   const runToast = useAsyncAction();
   const startLiveAction = useStartLiveAction();
 
