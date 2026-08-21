@@ -79,7 +79,6 @@ export function useSessionList(): SessionListData {
           })),
         },
     );
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
   };
 
   const reload = () => {
