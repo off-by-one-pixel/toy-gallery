@@ -1,11 +1,13 @@
 import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 import { localizedHourLabel, localizedWeekdayLabel } from '@/lib/dates';
+import { formatDuration } from '@/lib/duration';
 import { displayGirth } from '@/features/preferences/girth';
 import type { StatDef } from '@/features/sessions/stats/statsView';
 
 export const METRIC_COUNT = 'count';
 export const METRIC_MAX_LENGTH = 'max:insertable_length';
 export const METRIC_MAX_CIRCUMFERENCE = 'max:circumference';
+export const METRIC_TOTAL_DURATION = 'sum:duration';
 
 export const SESSION_STATS: readonly StatDef[] = [
   {
@@ -15,7 +17,7 @@ export const SESSION_STATS: readonly StatDef[] = [
     window: 'year',
     metric: METRIC_MAX_LENGTH,
     hue: ACTIVITY_PALETTE.lengthHue,
-    title: (ctx) => ctx.t('common.length'),
+    title: (ctx) => ctx.t('common.depth'),
   },
   {
     kind: 'calendar',
@@ -24,7 +26,7 @@ export const SESSION_STATS: readonly StatDef[] = [
     window: 'year',
     metric: METRIC_MAX_CIRCUMFERENCE,
     hue: ACTIVITY_PALETTE.circumferenceHue,
-    title: (ctx) => ctx.t(`common.${ctx.girth}`),
+    title: (ctx) => ctx.t('common.girth'),
     value: (raw, ctx) => displayGirth(raw, ctx.girth),
   },
   {
@@ -37,6 +39,17 @@ export const SESSION_STATS: readonly StatDef[] = [
     gamma: ACTIVITY_PALETTE.sessionsGamma,
     title: (ctx) => ctx.t('session.perDayTitle'),
     formatLegend: (value) => `${Math.round(value)}`,
+  },
+  {
+    kind: 'calendar',
+    key: 'time-per-day',
+    groupBy: 'date',
+    window: 'year',
+    metric: METRIC_TOTAL_DURATION,
+    hue: ACTIVITY_PALETTE.durationHue,
+    gamma: ACTIVITY_PALETTE.sessionsGamma,
+    title: (ctx) => ctx.t('session.timePerDayTitle'),
+    formatLegend: (value, ctx) => formatDuration(Math.round(value), ctx.locale),
   },
   {
     kind: 'frequency',
