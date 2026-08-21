@@ -5,7 +5,7 @@ import { Button } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { useLiveSession } from '../providers/LiveSessionProvider';
+import { useLiveSession } from '../hooks/useLiveSession';
 import { formatDuration, minutesBetween } from '../services/duration';
 import { formatWhen } from '../services/dates';
 

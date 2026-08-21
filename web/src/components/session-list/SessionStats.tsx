@@ -30,7 +30,7 @@ export default function SessionStats({ filter, defs = SESSION_STATS }: Props) {
     queries: queries.map((query) => {
       const start = startFor(query.window, filter);
       return {
-        queryKey: queryKeys.sessionStatsQuery(query.groupBy, query.metrics, start),
+        queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, start),
         queryFn: () => fetchSessionStats(query.groupBy, query.metrics, { start }),
         placeholderData: keepPreviousData,
       };

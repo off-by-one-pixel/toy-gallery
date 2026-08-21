@@ -39,7 +39,6 @@ vi.mock('../../services/api', () => ({
 
 import en from '../../i18n/catalogs/en.json';
 import { AuthProvider } from '../../providers/AuthProvider';
-import { LiveSessionProvider } from '../../providers/LiveSessionProvider';
 import { GirthProvider } from '../../providers/GirthProvider';
 import { PrivacyProvider } from '../../providers/PrivacyProvider';
 import { ThemeProvider } from '../../providers/ThemeProvider';
@@ -79,9 +78,7 @@ const wrap = (ui: React.ReactNode, client?: QueryClient) => (
         <UnitProvider>
           <GirthProvider>
             <PrivacyProvider>
-              <AuthProvider>
-                <LiveSessionProvider>{ui}</LiveSessionProvider>
-              </AuthProvider>
+              <AuthProvider>{ui}</AuthProvider>
             </PrivacyProvider>
           </GirthProvider>
         </UnitProvider>

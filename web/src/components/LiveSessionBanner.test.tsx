@@ -17,9 +17,10 @@ vi.mock('../services/api', () => ({
 }));
 
 import en from '../i18n/catalogs/en.json';
-import { LiveSessionProvider, useLiveSession } from '../providers/LiveSessionProvider';
+import { useLiveSession } from '../hooks/useLiveSession';
 import { fetchLiveSession, startLiveSession } from '../services/api';
 import type { Session } from '../services/types';
+import { QueryWrapper } from '../test/QueryWrapper';
 import LiveSessionBanner from './LiveSessionBanner';
 
 const live = (startedAt: string): Session => ({
@@ -42,7 +43,7 @@ function StartProbe() {
 
 const wrap = (ui: React.ReactNode) => (
   <NextIntlClientProvider locale="en" messages={en}>
-    <LiveSessionProvider>{ui}</LiveSessionProvider>
+    <QueryWrapper>{ui}</QueryWrapper>
   </NextIntlClientProvider>
 );
 
@@ -77,7 +78,7 @@ describe('LiveSessionBanner', () => {
     vi.mocked(fetchLiveSession).mockResolvedValue(live(startedAt));
     render(wrap(<LiveSessionBanner />));
     await act(async () => {
-      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(0);
     });
     expect(screen.getByText('10m')).toBeTruthy();
 
@@ -88,7 +89,7 @@ describe('LiveSessionBanner', () => {
     vi.useRealTimers();
   });
 
-  it('start() stores the created session in the provider', async () => {
+  it('start() stores the created session in the query cache', async () => {
     vi.mocked(fetchLiveSession).mockResolvedValue(null);
     vi.mocked(startLiveSession).mockResolvedValue(live(new Date().toISOString()));
     render(wrap(<StartProbe />));

@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useStartLiveAction } from '../../hooks/useStartLiveAction';
-import { useLiveSession } from '../../providers/LiveSessionProvider';
 import { SortProvider } from '../../providers/SortProvider';
 import { useUnit } from '../../providers/UnitProvider';
 import { deleteSession } from '../../services/api';
@@ -47,7 +46,6 @@ function SessionListContent() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
   const runToast = useAsyncAction();
-  const { refresh: refreshLive } = useLiveSession();
 
   const addStartedSession = (session: Session) => {
     data.prependSession(session);
@@ -63,7 +61,6 @@ function SessionListContent() {
       onDone: () => {
         setSelectedId(null);
         data.reload();
-        void refreshLive();
       },
     });
   };
