@@ -154,7 +154,7 @@ export default function SessionRow({
       </div>
       {selected && (
         <div className="relative mt-3 sm:order-5 sm:col-span-4 sm:mt-1">
-          <SessionMediaStrip sessionId={session.id} />
+          <SessionMediaStrip sessionId={session.id} expectedCount={photoCount + videoCount} />
         </div>
       )}
     </div>
