@@ -1,3 +1,5 @@
+import type { QueryClient } from '@tanstack/react-query';
+
 export const queryKeys = {
   toys: {
     all: ['toys'] as const,
@@ -14,7 +16,13 @@ export const queryKeys = {
   },
   media: {
     all: ['media'] as const,
-    indicators: ['media', 'indicators'] as const,
+    status: ['media', 'status'] as const,
     session: (sessionId: number) => ['media', 'session', sessionId] as const,
   },
+};
+
+export const invalidateSessionData = (queryClient: QueryClient): void => {
+  void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.live });
 };

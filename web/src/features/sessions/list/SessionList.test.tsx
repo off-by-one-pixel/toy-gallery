@@ -26,10 +26,11 @@ class IntersectionObserverStub {
 vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
 
 vi.mock('@/api', () => ({
+  fetchMediaStatus: vi.fn(),
+  fetchSession: vi.fn(),
   fetchSessions: vi.fn(),
   fetchToys: vi.fn(),
   fetchSessionStats: vi.fn(),
-  fetchMediaIndicators: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
   fetchSessionMedia: vi.fn(),
   deleteSession: vi.fn(),
@@ -45,7 +46,7 @@ import { ThemeProvider } from '@/features/preferences/ThemeProvider';
 import { UnitProvider } from '@/features/preferences/UnitProvider';
 import {
   fetchLiveSession,
-  fetchMediaIndicators,
+  fetchMediaStatus,
   fetchSessionMedia,
   fetchSessions,
   fetchSessionStats,
@@ -56,10 +57,17 @@ import type { Session } from '@/api/types';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import SessionList from '@/features/sessions/list/SessionList';
 
-const session = (id: number, startedAt: string, isLive = false): Session => ({
+const session = (
+  id: number,
+  startedAt: string,
+  isLive = false,
+  media: { photos: number; videos: number } = { photos: 0, videos: 0 },
+): Session => ({
   id,
   startedAt,
   isLive,
+  photoCount: media.photos,
+  videoCount: media.videos,
   entries: [],
   maxInsertableLength: 120,
   maxCircumference: 110,
@@ -92,14 +100,11 @@ describe('SessionList', () => {
     vi.clearAllMocks();
     localStorage.clear();
     vi.mocked(fetchSessions).mockResolvedValue(
-      pageOf([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00')]),
+      pageOf([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 })]),
     );
     vi.mocked(fetchToys).mockResolvedValue([]);
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
     vi.mocked(fetchSessionStats).mockResolvedValue([]);
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({
-      configured: true,
-      counts: new Map([[2, { photos: 2, videos: 1 }]]),
-    });
     vi.mocked(fetchSessionMedia).mockResolvedValue({ configured: false, items: [], shareUrl: null });
     vi.mocked(fetchLiveSession).mockResolvedValue(null);
   });
@@ -112,18 +117,17 @@ describe('SessionList', () => {
     expect(screen.getAllByLabelText('2 photos, 1 videos')).toHaveLength(1);
   });
 
-  it('reloads indicators when the media queries are invalidated', async () => {
+  it('shows refreshed counts when the session list is invalidated', async () => {
     const client = createTestQueryClient();
     render(wrap(<SessionList />, client));
     await screen.findByText(`2 ${en.session.recorded}`);
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({
-      configured: true,
-      counts: new Map([
-        [1, { photos: 1, videos: 0 }],
-        [2, { photos: 2, videos: 1 }],
+    vi.mocked(fetchSessions).mockResolvedValue(
+      pageOf([
+        session(1, '2026-06-01T20:00:00', false, { photos: 1, videos: 0 }),
+        session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 }),
       ]),
-    });
-    void client.invalidateQueries({ queryKey: ['media'] });
+    );
+    void client.invalidateQueries({ queryKey: ['sessions', 'list'] });
     await waitFor(() => expect(screen.getAllByLabelText(/\d+ photos, \d+ videos/)).toHaveLength(2));
   });
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Image as ImageIcon, Pencil, Trash2, Video } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -10,7 +11,8 @@ import { formatDuration, totalDuration } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
-import type { MediaCounts } from '@/api';
+import { fetchSession } from '@/api';
+import { queryKeys } from '@/api/queryKeys';
 import type { Session, Toy } from '@/api/types';
 import { type Unit } from '@/features/preferences/units';
 import MiniToy from '@/features/sessions/list/MiniToy';
@@ -23,7 +25,6 @@ type Props = Readonly<{
   session: Session;
   toysById: Map<number, Toy>;
   unit: Unit;
-  mediaCounts: MediaCounts | null;
   selected: boolean;
   flash?: boolean;
   onToggleSelect: () => void;
@@ -32,17 +33,23 @@ type Props = Readonly<{
 }>;
 
 export default function SessionRow({
-  session,
+  session: listed,
   toysById,
   unit,
-  mediaCounts,
   selected,
   flash = false,
   onToggleSelect,
   onEdit,
   onDelete,
 }: Props) {
+  const { data: session } = useQuery({
+    queryKey: queryKeys.sessions.detail(listed.id),
+    queryFn: () => fetchSession(listed.id),
+    initialData: listed,
+  });
   const t = useTranslations('session');
+  const photoCount = session.photoCount ?? 0;
+  const videoCount = session.videoCount ?? 0;
   const common = useTranslations('common');
   const locale = useLocale();
   const { girth } = useGirth();
@@ -89,22 +96,22 @@ export default function SessionRow({
               {t('live.badge')}
             </span>
           )}
-          {mediaCounts && (
+          {photoCount + videoCount > 0 && (
             <span
-              aria-label={t('media.countsLabel', { photos: mediaCounts.photos, videos: mediaCounts.videos })}
-              title={t('media.countsLabel', { photos: mediaCounts.photos, videos: mediaCounts.videos })}
+              aria-label={t('media.countsLabel', { photos: photoCount, videos: videoCount })}
+              title={t('media.countsLabel', { photos: photoCount, videos: videoCount })}
               className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent-soft px-2.5 py-1 text-sm font-medium tabular-nums text-accent-soft-foreground"
             >
-              {mediaCounts.photos > 0 && (
+              {photoCount > 0 && (
                 <span className="inline-flex items-center gap-0.5">
                   <ImageIcon size={14} strokeWidth={2} />
-                  {mediaCounts.photos}
+                  {photoCount}
                 </span>
               )}
-              {mediaCounts.videos > 0 && (
+              {videoCount > 0 && (
                 <span className="inline-flex items-center gap-0.5">
                   <Video size={14} strokeWidth={2} />
-                  {mediaCounts.videos}
+                  {videoCount}
                 </span>
               )}
             </span>

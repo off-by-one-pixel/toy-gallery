@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 
 import { createSession, fetchToys, fetchSession, updateSession } from '@/api';
 import { formatError } from '@/api/errors';
-import { queryKeys } from '@/api/queryKeys';
+import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
 import { Involvement } from '@/api/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
@@ -22,7 +22,6 @@ import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import SearchInput from '@/components/SearchInput';
 import SectionHeading from '@/components/SectionHeading';
-import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
 
@@ -134,7 +133,10 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
       busy: setSaving,
       onSuccess: () => {
         Toast.toast.success(t('savedToast'));
-        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
+        if (sessionId !== null) {
+          void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
+        }
+        invalidateSessionData(queryClient);
         router.push('/sessions');
       },
     });
@@ -226,16 +228,6 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
             </div>
           </div>
         </section>
-
-        {sessionId !== null && (
-          <section className="mb-7">
-            <div className="mb-3 flex items-center gap-3">
-              <SectionHeading title={t('media.heading')} />
-              <div className="h-px flex-1 bg-border" />
-            </div>
-            <SessionMediaStrip sessionId={sessionId} showHeading={false} />
-          </section>
-        )}
 
         <section>
           <div className="mb-3 flex items-center gap-3">

@@ -122,13 +122,6 @@ def _apply_session_ordering(queryset, ordering):
     return queryset.order_by(F("is_live").desc(), ordered, "-id")
 
 
-def _media_count_rows(rows):
-    return [
-        {"id": row["id"], "photos": row["photo_count"], "videos": row["video_count"]}
-        for row in rows
-    ]
-
-
 def _store_media_counts(counts):
     changed = []
     for session in models.Session.objects.all():
@@ -216,19 +209,12 @@ class SessionViewSet(viewsets.ModelViewSet):
             }
         )
 
-    @extend_schema(responses=serializers.SessionMediaIndicatorsSerializer)
-    @action(detail=False, methods=["get"], url_path="media-indicators")
-    def media_indicators(self, request):
-        if not media.get_provider().is_configured():
-            return Response({"configured": False, "sessions": []})
-        flagged = (
-            models.Session.objects.filter(Q(photo_count__gt=0) | Q(video_count__gt=0))
-            .order_by("id")
-            .values("id", "photo_count", "video_count")
-        )
-        return Response({"configured": True, "sessions": _media_count_rows(flagged)})
+    @extend_schema(responses=serializers.MediaStatusSerializer)
+    @action(detail=False, methods=["get"], url_path="media-status")
+    def media_status(self, request):
+        return Response({"configured": media.get_provider().is_configured()})
 
-    @extend_schema(request=None, responses=serializers.SessionMediaIndicatorsSerializer)
+    @extend_schema(request=None, responses=serializers.RefreshMediaResponseSerializer)
     @action(detail=False, methods=["post"], url_path="refresh-media")
     def refresh_media(self, request):
         sessions = list(
@@ -238,13 +224,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         if result.authoritative:
             _store_media_counts(result.counts)
         return Response(
-            {
-                "configured": result.configured,
-                "sessions": [
-                    {"id": sid, "photos": c.photos, "videos": c.videos}
-                    for sid, c in sorted(result.counts.items())
-                ],
-            }
+            {"configured": result.configured, "sessions_with_media": len(result.counts)}
         )
 
     @extend_schema(

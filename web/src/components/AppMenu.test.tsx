@@ -10,7 +10,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/api', () => ({
-  fetchMediaIndicators: vi.fn(),
+  fetchMediaStatus: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
   login: vi.fn(),
 }));
@@ -19,7 +19,7 @@ globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS
 
 import en from '@/i18n/catalogs/en.json';
 import { AuthProvider } from '@/features/auth/AuthProvider';
-import { fetchMediaIndicators, refreshAllSessionMedia } from '@/api';
+import { fetchMediaStatus, refreshAllSessionMedia } from '@/api';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import AppMenu from '@/components/AppMenu';
 
@@ -40,26 +40,17 @@ describe('AppMenu', () => {
   });
 
   it('omits the refresh-media item when media is not configured', async () => {
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: false, counts: new Map() });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
     render(wrap());
-    await waitFor(() => expect(fetchMediaIndicators).toHaveBeenCalled());
+    await waitFor(() => expect(fetchMediaStatus).toHaveBeenCalled());
     fireEvent.click(screen.getByLabelText(en.collection.menu.openMenu));
     await screen.findByText(en.collection.menu.settingsLabel);
     expect(screen.queryByText(en.session.media.refreshButtonLabel)).toBeNull();
   });
 
   it('refreshes media and invalidates the media queries when configured', async () => {
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({
-      configured: true,
-      counts: new Map([[1, { photos: 1, videos: 0 }]]),
-    });
-    vi.mocked(refreshAllSessionMedia).mockResolvedValue({
-      configured: true,
-      counts: new Map([
-        [1, { photos: 1, videos: 0 }],
-        [2, { photos: 0, videos: 1 }],
-      ]),
-    });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true });
+    vi.mocked(refreshAllSessionMedia).mockResolvedValue({ configured: true, sessionsWithMedia: 2 });
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
 

@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { APP_COMMIT_SHA, APP_VERSION } from '@/config';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { fetchMediaIndicators, refreshAllSessionMedia } from '@/api';
+import { fetchMediaStatus, refreshAllSessionMedia } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from '@/components/ActionDropdownMenu';
 
@@ -20,14 +20,15 @@ export default function AppMenu() {
   const { username, logout } = useAuth();
   const runToast = useAsyncAction();
   const queryClient = useQueryClient();
-  const { data: indicators } = useQuery({ queryKey: queryKeys.media.indicators, queryFn: fetchMediaIndicators });
-  const mediaConfigured = indicators?.configured ?? false;
+  const { data: status } = useQuery({ queryKey: queryKeys.media.status, queryFn: fetchMediaStatus });
+  const mediaConfigured = status?.configured ?? false;
 
   const refreshMedia = () => {
     void runToast(refreshAllSessionMedia, {
       onSuccess: (refreshed) => {
-        Toast.toast.success(tMedia('refreshedToast', { count: refreshed.counts.size }));
+        Toast.toast.success(tMedia('refreshedToast', { count: refreshed.sessionsWithMedia }));
         void queryClient.invalidateQueries({ queryKey: queryKeys.media.all });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
       },
     });
   };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -12,9 +12,9 @@ import { queryKeys } from '@/api/queryKeys';
 import MediaLightbox from '@/features/sessions/media/MediaLightbox';
 import SensitiveContent from '@/features/preferences/SensitiveContent';
 
-type Props = Readonly<{ sessionId: number; showHeading?: boolean }>;
+type Props = Readonly<{ sessionId: number }>;
 
-export default function SessionMediaStrip({ sessionId, showHeading = true }: Props) {
+export default function SessionMediaStrip({ sessionId }: Props) {
   const t = useTranslations('session.media');
   const { hideSensitive } = usePrivacy();
   const { openIndex, open, close } = useMediaLightboxNav(sessionId);
@@ -32,30 +32,32 @@ export default function SessionMediaStrip({ sessionId, showHeading = true }: Pro
     if (hideSensitive && openIndex !== null) close({ replace: true });
   }, [hideSensitive, openIndex, close]);
 
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!media?.configured) return;
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
+  }, [media, queryClient, sessionId]);
+
   if (media && !media.configured) return null;
 
   const items = media?.items ?? [];
 
   return (
     <div>
-      {(showHeading || media?.shareUrl) && (
-        <div className="mb-2 flex items-baseline justify-between gap-3">
-          {showHeading && (
-            <h3 className="text-caption font-medium uppercase tracking-wider text-text-tertiary">{t('heading')}</h3>
-          )}
-          {media?.shareUrl && (
-            <a
-              href={media.shareUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="ml-auto inline-flex items-center gap-1 text-caption font-medium text-muted transition-colors hover:text-foreground"
-            >
-              {t('openExternal')}
-              <ExternalLink size={11} strokeWidth={2} />
-            </a>
-          )}
-        </div>
-      )}
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <h3 className="text-caption font-medium uppercase tracking-wider text-text-tertiary">{t('heading')}</h3>
+        {media?.shareUrl && (
+          <a
+            href={media.shareUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="ml-auto inline-flex items-center gap-1 text-caption font-medium text-muted transition-colors hover:text-foreground"
+          >
+            {t('openExternal')}
+            <ExternalLink size={11} strokeWidth={2} />
+          </a>
+        )}
+      </div>
       {isPending && (
         <div className="flex gap-2">
           {[0, 1, 2].map((i) => (
