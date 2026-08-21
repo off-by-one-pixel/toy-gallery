@@ -820,18 +820,31 @@ components:
       - max_circumference
       - max_insertable_length
       - started_at
+    SessionMediaCounts:
+      type: object
+      properties:
+        id:
+          type: integer
+        photos:
+          type: integer
+        videos:
+          type: integer
+      required:
+      - id
+      - photos
+      - videos
     SessionMediaIndicators:
       type: object
       properties:
         configured:
           type: boolean
-        session_ids:
+        sessions:
           type: array
           items:
-            type: integer
+            $ref: '#/components/schemas/SessionMediaCounts'
       required:
       - configured
-      - session_ids
+      - sessions
     SessionMediaItem:
       type: object
       properties:
@@ -869,9 +882,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SessionMediaItem'
+        share_url:
+          type: string
+          nullable: true
       required:
       - configured
       - items
+      - share_url
     SessionRequest:
       type: object
       properties:

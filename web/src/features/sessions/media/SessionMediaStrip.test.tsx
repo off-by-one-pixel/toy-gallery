@@ -42,7 +42,11 @@ const wrap = (ui: React.ReactNode) => (
   </NextIntlClientProvider>
 );
 
-const media = (items: SessionMedia['items'], configured = true): SessionMedia => ({ configured, items });
+const media = (items: SessionMedia['items'], configured = true, shareUrl: string | null = null): SessionMedia => ({
+  configured,
+  items,
+  shareUrl,
+});
 
 const image = {
   id: 'a1',
@@ -71,6 +75,20 @@ describe('SessionMediaStrip', () => {
     vi.mocked(fetchSessionMedia).mockResolvedValue(media([], false));
     const { container } = render(wrap(<SessionMediaStrip sessionId={1} />));
     await waitFor(() => expect(container.innerHTML).toBe(''));
+  });
+
+  it('links to the external photo library when a share url is present', async () => {
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image], true, 'https://photos.example/share/K'));
+    render(wrap(<SessionMediaStrip sessionId={1} />));
+    const link = await screen.findByRole('link', { name: en.session.media.openExternal });
+    expect(link.getAttribute('href')).toBe('https://photos.example/share/K');
+  });
+
+  it('hides the external link when there is no share url', async () => {
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    render(wrap(<SessionMediaStrip sessionId={1} />));
+    await screen.findAllByRole('button', { name: en.session.media.openLabel });
+    expect(screen.queryByRole('link')).toBeNull();
   });
 
   it('shows the empty message when the window has no media', async () => {

@@ -6,7 +6,7 @@ import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@
 
 import { useReportError } from '@/hooks/useAsyncAction';
 import { useSortOf } from '@/hooks/useSortOf';
-import { fetchMediaIndicators, fetchSessions, fetchToys, type SessionPage } from '@/api';
+import { fetchMediaIndicators, fetchSessions, fetchToys, type MediaCounts, type SessionPage } from '@/api';
 import { formatError } from '@/api/errors';
 import { queryKeys } from '@/api/queryKeys';
 import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '@/features/sessions/session';
@@ -17,7 +17,7 @@ export type SessionListData = Readonly<{
   sessionCount: number;
   sessions: Session[];
   toysById: Map<number, Toy>;
-  mediaSessionIds: ReadonlySet<number>;
+  mediaCounts: ReadonlyMap<number, MediaCounts>;
   hasMore: boolean;
   isLoadingMore: boolean;
   loadMore: () => void;
@@ -31,7 +31,7 @@ export type SessionListData = Readonly<{
   error: string | null;
 }>;
 
-const NO_MEDIA_IDS: ReadonlySet<number> = new Set<number>();
+const NO_MEDIA_COUNTS: ReadonlyMap<number, MediaCounts> = new Map();
 
 export function useSessionList(): SessionListData {
   const [filter, setFilter] = useState<FilterKey>('all');
@@ -91,7 +91,7 @@ export function useSessionList(): SessionListData {
     sessionCount: list.data?.pages.at(-1)?.count ?? 0,
     sessions,
     toysById,
-    mediaSessionIds: indicators?.sessionIds ?? NO_MEDIA_IDS,
+    mediaCounts: indicators?.counts ?? NO_MEDIA_COUNTS,
     hasMore: list.hasNextPage,
     isLoadingMore: list.isFetchingNextPage,
     loadMore,

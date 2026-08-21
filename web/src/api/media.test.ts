@@ -16,22 +16,30 @@ import { fetchMediaIndicators, fetchSessionMedia, refreshAllSessionMedia } from 
 describe('media API wrappers', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('fetchMediaIndicators converts ids into a Set', async () => {
+  it('fetchMediaIndicators maps per-session counts', async () => {
     vi.mocked(toysSessionsMediaIndicatorsRetrieve).mockResolvedValue({
-      data: { configured: true, session_ids: [3, 7] },
+      data: {
+        configured: true,
+        sessions: [
+          { id: 3, photos: 2, videos: 0 },
+          { id: 7, photos: 1, videos: 4 },
+        ],
+      },
     } as never);
     const result = await fetchMediaIndicators();
     expect(result.configured).toBe(true);
-    expect(result.sessionIds).toEqual(new Set([3, 7]));
+    expect(result.counts.get(3)).toEqual({ photos: 2, videos: 0 });
+    expect(result.counts.get(7)).toEqual({ photos: 1, videos: 4 });
+    expect(result.counts.size).toBe(2);
   });
 
-  it('refreshAllSessionMedia converts ids into a Set', async () => {
+  it('refreshAllSessionMedia maps per-session counts', async () => {
     vi.mocked(toysSessionsRefreshMediaCreate).mockResolvedValue({
-      data: { configured: false, session_ids: [] },
+      data: { configured: false, sessions: [] },
     } as never);
     const result = await refreshAllSessionMedia();
     expect(result.configured).toBe(false);
-    expect(result.sessionIds.size).toBe(0);
+    expect(result.counts.size).toBe(0);
   });
 
   it('fetchSessionMedia camelizes items', async () => {

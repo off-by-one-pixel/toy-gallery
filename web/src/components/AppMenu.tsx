@@ -26,7 +26,7 @@ export default function AppMenu() {
   const refreshMedia = () => {
     void runToast(refreshAllSessionMedia, {
       onSuccess: (refreshed) => {
-        Toast.toast.success(tMedia('refreshedToast', { count: refreshed.sessionIds.size }));
+        Toast.toast.success(tMedia('refreshedToast', { count: refreshed.counts.size }));
         void queryClient.invalidateQueries({ queryKey: queryKeys.media.all });
       },
     });

@@ -96,8 +96,11 @@ describe('SessionList', () => {
     );
     vi.mocked(fetchToys).mockResolvedValue([]);
     vi.mocked(fetchSessionStats).mockResolvedValue([]);
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: true, sessionIds: new Set([2]) });
-    vi.mocked(fetchSessionMedia).mockResolvedValue({ configured: false, items: [] });
+    vi.mocked(fetchMediaIndicators).mockResolvedValue({
+      configured: true,
+      counts: new Map([[2, { photos: 2, videos: 1 }]]),
+    });
+    vi.mocked(fetchSessionMedia).mockResolvedValue({ configured: false, items: [], shareUrl: null });
     vi.mocked(fetchLiveSession).mockResolvedValue(null);
   });
 
@@ -106,16 +109,22 @@ describe('SessionList', () => {
     await screen.findByText(`2 ${en.session.recorded}`);
     const rows = screen.getAllByRole('button', { name: en.session.detailsToggleLabel });
     expect(rows).toHaveLength(2);
-    expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(1);
+    expect(screen.getAllByLabelText('2 photos, 1 videos')).toHaveLength(1);
   });
 
   it('reloads indicators when the media queries are invalidated', async () => {
     const client = createTestQueryClient();
     render(wrap(<SessionList />, client));
     await screen.findByText(`2 ${en.session.recorded}`);
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: true, sessionIds: new Set([1, 2]) });
+    vi.mocked(fetchMediaIndicators).mockResolvedValue({
+      configured: true,
+      counts: new Map([
+        [1, { photos: 1, videos: 0 }],
+        [2, { photos: 2, videos: 1 }],
+      ]),
+    });
     void client.invalidateQueries({ queryKey: ['media'] });
-    await waitFor(() => expect(screen.getAllByLabelText(en.session.media.indicatorLabel)).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByLabelText(/\d+ photos, \d+ videos/)).toHaveLength(2));
   });
 
   it('starts a live session from the toolbar button and hides it afterwards', async () => {

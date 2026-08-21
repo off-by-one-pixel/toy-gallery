@@ -17,13 +17,20 @@ class SessionMediaResult:
     configured: bool
     authoritative: bool
     items: list[dict]
+    share_url: str | None = None
+
+
+@dataclass(frozen=True)
+class MediaCounts:
+    photos: int
+    videos: int
 
 
 @dataclass(frozen=True)
 class MediaRefreshResult:
     configured: bool
     authoritative: bool
-    session_ids: list[int]
+    counts: dict[int, MediaCounts]
 
 
 class SessionMediaProvider(ABC):
