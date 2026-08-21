@@ -1,23 +1,13 @@
 import type { Sort, SortConfig } from '@/lib/sort';
 import type { Toy } from '@/api/types';
+import { TOY_PROPERTIES, type ToyPropertyKey } from '@/features/toys/properties';
 
-type Accessor = (t: Toy) => number | string;
-
-const COLUMNS = {
-  name: (t: Toy) => `${t.brand} ${t.name}`.toLowerCase(),
-  insertable: (t: Toy) => t.insertableLength ?? -Infinity,
-  total: (t: Toy) => t.totalLength ?? -Infinity,
-  circumference: (t: Toy) => t.circumference ?? -Infinity,
-  popularity: (t: Toy) => t.usageCount ?? 0,
-  duration: (t: Toy) => t.totalDurationMinutes ?? 0,
-} as const satisfies Record<string, Accessor>;
-
-export type ToySortColumn = keyof typeof COLUMNS;
+export type ToySortColumn = ToyPropertyKey;
 export type ToySort = Sort<ToySortColumn>;
 
 export const TOY_SORT: SortConfig<ToySortColumn> = {
   storageKey: 'gallery.sort',
-  columns: Object.keys(COLUMNS) as ToySortColumn[],
+  columns: Object.keys(TOY_PROPERTIES) as ToySortColumn[],
 };
 
 export const SESSION_FORM_TOY_SORT: SortConfig<ToySortColumn> = {
@@ -25,11 +15,11 @@ export const SESSION_FORM_TOY_SORT: SortConfig<ToySortColumn> = {
   storageKey: 'session.toySort',
 };
 
-export const isToySortColumn = (v: unknown): v is ToySortColumn => typeof v === 'string' && v in COLUMNS;
+export const isToySortColumn = (v: unknown): v is ToySortColumn => typeof v === 'string' && v in TOY_PROPERTIES;
 
 export const sortToys = (toys: Toy[], sort: ToySort | null): Toy[] => {
   if (!sort) return toys;
-  const accessor = COLUMNS[sort.column];
+  const accessor = TOY_PROPERTIES[sort.column].sortValue;
   const mul = sort.direction === 'asc' ? 1 : -1;
   return toys.slice().sort((a, b) => {
     const av = accessor(a);

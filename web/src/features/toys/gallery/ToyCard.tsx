@@ -13,6 +13,7 @@ import { useSortOf } from '@/hooks/useSortOf';
 import { TOY_SORT } from '@/features/toys/toySort';
 import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
 import { cardSortValue } from '@/features/toys/gallery/cardSortValue';
+import type { ToyPropertyContext } from '@/features/toys/properties';
 import { formatDuration } from '@/lib/duration';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
@@ -36,7 +37,8 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   const detailsRef = useRef<HTMLDivElement>(null);
   const { sort } = useSortOf(TOY_SORT);
   const tAll = useTranslations();
-  const sortValue = cardSortValue(sort, toy, unit, locale);
+  const propertyCtx: ToyPropertyContext = { t: tAll as unknown as ToyPropertyContext['t'], girth, unit, locale };
+  const sortValue = cardSortValue(sort, toy, propertyCtx);
 
   const editorToy = toyShapeToEditor(toy.shape);
 
@@ -76,7 +78,7 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
             <Chip size="sm" className="bg-surface shadow-sm">
               <Chip.Label>
                 <span className="inline-flex items-baseline gap-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-muted">{tAll(sortValue.labelKey)}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted">{sortValue.label}</span>
                   <span className="font-semibold tabular-nums">{sortValue.value}</span>
                 </span>
               </Chip.Label>
