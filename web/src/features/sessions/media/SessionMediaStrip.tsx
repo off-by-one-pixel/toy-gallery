@@ -6,19 +6,20 @@ import { ExternalLink, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useMediaLightboxNav } from '@/features/sessions/media/useMediaLightboxNav';
-import { fetchSessionMedia } from '@/api';
+import { fetchMediaStatus, fetchSessionMedia } from '@/api';
 import { usePrivacy } from '@/features/preferences/PrivacyProvider';
 import { queryKeys } from '@/api/queryKeys';
 import MediaLightbox from '@/features/sessions/media/MediaLightbox';
 import SensitiveContent from '@/features/preferences/SensitiveContent';
 
-type Props = Readonly<{ sessionId: number }>;
+type Props = Readonly<{ sessionId: number; expectedCount: number }>;
 
-export default function SessionMediaStrip({ sessionId }: Props) {
+export default function SessionMediaStrip({ sessionId, expectedCount }: Props) {
   const t = useTranslations('session.media');
   const { hideSensitive } = usePrivacy();
   const { openIndex, open, close } = useMediaLightboxNav(sessionId);
 
+  const { data: status } = useQuery({ queryKey: queryKeys.media.status, queryFn: fetchMediaStatus });
   const {
     data: media,
     isPending,
@@ -26,6 +27,7 @@ export default function SessionMediaStrip({ sessionId }: Props) {
   } = useQuery({
     queryKey: queryKeys.media.session(sessionId),
     queryFn: () => fetchSessionMedia(sessionId),
+    enabled: status?.configured === true,
   });
 
   useEffect(() => {
@@ -38,9 +40,12 @@ export default function SessionMediaStrip({ sessionId }: Props) {
     void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
   }, [media, queryClient, sessionId]);
 
+  if (!status?.configured) return null;
   if (media && !media.configured) return null;
 
   const items = media?.items ?? [];
+  const showSkeleton = isPending && expectedCount > 0;
+  const showEmpty = isPending ? expectedCount === 0 : media != null && items.length === 0;
 
   return (
     <div>
@@ -58,15 +63,15 @@ export default function SessionMediaStrip({ sessionId }: Props) {
           </a>
         )}
       </div>
-      {isPending && (
+      {showSkeleton && (
         <div className="flex gap-2">
-          {[0, 1, 2].map((i) => (
+          {Array.from({ length: expectedCount }, (_, i) => (
             <div key={i} className="h-16 w-16 animate-pulse rounded-lg bg-surface-secondary" />
           ))}
         </div>
       )}
       {isError && <p className="text-caption text-text-tertiary">{t('loadError')}</p>}
-      {media && items.length === 0 && <p className="text-caption text-text-tertiary">{t('empty')}</p>}
+      {showEmpty && <p className="text-caption text-text-tertiary">{t('empty')}</p>}
       {media && items.length > 0 && (
         <SensitiveContent>
           <div className="flex flex-wrap gap-2">
