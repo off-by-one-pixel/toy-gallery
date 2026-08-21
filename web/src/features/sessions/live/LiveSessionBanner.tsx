@@ -39,7 +39,7 @@ export default function LiveSessionBanner() {
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
   return (
-    <div className="banner-in border-b border-emerald-600/30 bg-emerald-500/10">
+    <div className="banner-in border-y border-emerald-600/30 bg-emerald-500/10">
       <div
         className={`mx-auto flex max-w-300 items-center gap-3 px-4 transition-all sm:px-6 ${collapsed ? 'py-1' : 'py-2'}`}
       >
