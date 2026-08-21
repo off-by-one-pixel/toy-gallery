@@ -1,10 +1,14 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { fetchLiveSession, startLiveSession } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import type { Session } from '@/api/types';
+
+export const LIVE_SYNC_INTERVAL_MS = 2_000;
 
 export interface LiveSessionState {
   liveSession: Session | null;
@@ -14,15 +18,37 @@ export interface LiveSessionState {
 
 export function useLiveSession(): LiveSessionState {
   const queryClient = useQueryClient();
-  const { data, isFetched } = useQuery({ queryKey: queryKeys.sessions.live, queryFn: fetchLiveSession });
+  const { data, isFetched } = useQuery({
+    queryKey: queryKeys.sessions.live,
+    queryFn: fetchLiveSession,
+    refetchInterval: LIVE_SYNC_INTERVAL_MS,
+    refetchOnWindowFocus: 'always',
+  });
 
   const start = async () => {
     const session = await startLiveSession();
     queryClient.setQueryData(queryKeys.sessions.live, session);
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
     return session;
   };
 
   return { liveSession: data ?? null, isLoaded: isFetched, start };
+}
+
+export function useLiveSessionSync(): void {
+  const queryClient = useQueryClient();
+  const { liveSession, isLoaded } = useLiveSession();
+  const liveId = liveSession?.id ?? null;
+  const previousIdRef = useRef<number | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (previousIdRef.current === undefined) {
+      previousIdRef.current = liveId;
+      return;
+    }
+    if (previousIdRef.current === liveId) return;
+    previousIdRef.current = liveId;
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
+  }, [queryClient, isLoaded, liveId]);
 }
