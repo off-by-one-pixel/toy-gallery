@@ -3,7 +3,7 @@ import {
   toysSessionsStatsRetrieve,
   toysSessionsCreate,
   toysSessionsDestroy,
-  toysSessionsMediaIndicatorsRetrieve,
+  toysSessionsMediaStatusRetrieve,
   toysSessionsMediaRetrieve,
   toysSessionsRefreshMediaCreate,
   toysSessionsList,
@@ -177,26 +177,18 @@ export const fetchLiveSession = async (): Promise<Session | null> => {
   return data.session ? snakeToCamel<Session>(data.session) : null;
 };
 
-export type MediaCounts = Readonly<{ photos: number; videos: number }>;
+export type MediaStatus = Readonly<{ configured: boolean }>;
 
-export type MediaIndicators = Readonly<{ configured: boolean; counts: ReadonlyMap<number, MediaCounts> }>;
+export type MediaRefreshSummary = Readonly<{ configured: boolean; sessionsWithMedia: number }>;
 
-const toMediaIndicators = (data: {
-  configured: boolean;
-  sessions: readonly { id: number; photos: number; videos: number }[];
-}): MediaIndicators => ({
-  configured: data.configured,
-  counts: new Map(data.sessions.map((s) => [s.id, { photos: s.photos, videos: s.videos }])),
-});
-
-export const fetchMediaIndicators = async (): Promise<MediaIndicators> => {
-  const { data } = await toysSessionsMediaIndicatorsRetrieve();
-  return toMediaIndicators(data);
+export const fetchMediaStatus = async (): Promise<MediaStatus> => {
+  const { data } = await toysSessionsMediaStatusRetrieve();
+  return { configured: data.configured };
 };
 
-export const refreshAllSessionMedia = async (): Promise<MediaIndicators> => {
+export const refreshAllSessionMedia = async (): Promise<MediaRefreshSummary> => {
   const { data } = await toysSessionsRefreshMediaCreate();
-  return toMediaIndicators(data);
+  return { configured: data.configured, sessionsWithMedia: data.sessions_with_media };
 };
 
 export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia> => {

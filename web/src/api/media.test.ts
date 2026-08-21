@@ -1,45 +1,35 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api/generated/sdk', () => ({
-  toysSessionsMediaIndicatorsRetrieve: vi.fn(),
+  toysSessionsMediaStatusRetrieve: vi.fn(),
   toysSessionsRefreshMediaCreate: vi.fn(),
   toysSessionsMediaRetrieve: vi.fn(),
 }));
 
 import {
-  toysSessionsMediaIndicatorsRetrieve,
+  toysSessionsMediaStatusRetrieve,
   toysSessionsMediaRetrieve,
   toysSessionsRefreshMediaCreate,
 } from '@/api/generated/sdk';
-import { fetchMediaIndicators, fetchSessionMedia, refreshAllSessionMedia } from '@/api/index';
+import { fetchMediaStatus, fetchSessionMedia, refreshAllSessionMedia } from '@/api/index';
 
 describe('media API wrappers', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('fetchMediaIndicators maps per-session counts', async () => {
-    vi.mocked(toysSessionsMediaIndicatorsRetrieve).mockResolvedValue({
-      data: {
-        configured: true,
-        sessions: [
-          { id: 3, photos: 2, videos: 0 },
-          { id: 7, photos: 1, videos: 4 },
-        ],
-      },
+  it('fetchMediaStatus reports the configured flag', async () => {
+    vi.mocked(toysSessionsMediaStatusRetrieve).mockResolvedValue({
+      data: { configured: true },
     } as never);
-    const result = await fetchMediaIndicators();
-    expect(result.configured).toBe(true);
-    expect(result.counts.get(3)).toEqual({ photos: 2, videos: 0 });
-    expect(result.counts.get(7)).toEqual({ photos: 1, videos: 4 });
-    expect(result.counts.size).toBe(2);
+    const result = await fetchMediaStatus();
+    expect(result).toEqual({ configured: true });
   });
 
-  it('refreshAllSessionMedia maps per-session counts', async () => {
+  it('refreshAllSessionMedia maps the refresh summary', async () => {
     vi.mocked(toysSessionsRefreshMediaCreate).mockResolvedValue({
-      data: { configured: false, sessions: [] },
+      data: { configured: true, sessions_with_media: 4 },
     } as never);
     const result = await refreshAllSessionMedia();
-    expect(result.configured).toBe(false);
-    expect(result.counts.size).toBe(0);
+    expect(result).toEqual({ configured: true, sessionsWithMedia: 4 });
   });
 
   it('fetchSessionMedia camelizes items', async () => {

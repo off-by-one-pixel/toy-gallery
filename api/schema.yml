@@ -245,9 +245,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/LiveSessionResponse'
           description: ''
-  /toys/sessions/media-indicators/:
+  /toys/sessions/media-status/:
     get:
-      operationId: toys_sessions_media_indicators_retrieve
+      operationId: toys_sessions_media_status_retrieve
       tags:
       - toys
       security:
@@ -257,7 +257,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionMediaIndicators'
+                $ref: '#/components/schemas/MediaStatus'
           description: ''
   /toys/sessions/refresh-media/:
     post:
@@ -271,7 +271,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionMediaIndicators'
+                $ref: '#/components/schemas/RefreshMediaResponse'
           description: ''
   /toys/sessions/start/:
     post:
@@ -691,6 +691,13 @@ components:
           nullable: true
       required:
       - session
+    MediaStatus:
+      type: object
+      properties:
+        configured:
+          type: boolean
+      required:
+      - configured
     PaginatedSessionList:
       type: object
       required:
@@ -724,6 +731,16 @@ components:
           type: string
           format: date-time
           nullable: true
+        photo_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        video_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
         entries:
           type: array
           items:
@@ -771,6 +788,16 @@ components:
           type: object
           additionalProperties:
             type: string
+    RefreshMediaResponse:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        sessions_with_media:
+          type: integer
+      required:
+      - configured
+      - sessions_with_media
     SectionShapeEnum:
       enum:
       - FLAT
@@ -799,6 +826,16 @@ components:
         is_live:
           type: boolean
           readOnly: true
+        photo_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        video_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
         entries:
           type: array
           items:
@@ -820,31 +857,6 @@ components:
       - max_circumference
       - max_insertable_length
       - started_at
-    SessionMediaCounts:
-      type: object
-      properties:
-        id:
-          type: integer
-        photos:
-          type: integer
-        videos:
-          type: integer
-      required:
-      - id
-      - photos
-      - videos
-    SessionMediaIndicators:
-      type: object
-      properties:
-        configured:
-          type: boolean
-        sessions:
-          type: array
-          items:
-            $ref: '#/components/schemas/SessionMediaCounts'
-      required:
-      - configured
-      - sessions
     SessionMediaItem:
       type: object
       properties:
@@ -899,6 +911,16 @@ components:
           type: string
           format: date-time
           nullable: true
+        photo_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        video_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
         entries:
           type: array
           items:

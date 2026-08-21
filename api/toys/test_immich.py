@@ -137,22 +137,23 @@ class MediaIndicatorTests(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=user)
 
-    def test_lists_media_counts_from_stored_values(self):
+    def test_media_status_reports_configured(self):
+        response = self.client.get("/toys/sessions/media-status/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {"configured": True})
+
+    def test_media_status_reports_unconfigured(self):
+        with override_settings(IMMICH_URL="", IMMICH_API_KEY=""):
+            response = self.client.get("/toys/sessions/media-status/")
+        self.assertEqual(response.data, {"configured": False})
+
+    def test_session_serializer_exposes_counts(self):
         flagged = models.Session.objects.create(
             started_at="2026-06-01T20:00:00Z", photo_count=2, video_count=1
         )
-        models.Session.objects.create(started_at="2026-06-02T20:00:00Z")
-        response = self.client.get("/toys/sessions/media-indicators/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.data,
-            {"configured": True, "sessions": [{"id": flagged.id, "photos": 2, "videos": 1}]},
-        )
-
-    def test_unconfigured_indicators(self):
-        with override_settings(IMMICH_URL="", IMMICH_API_KEY=""):
-            response = self.client.get("/toys/sessions/media-indicators/")
-        self.assertEqual(response.data, {"configured": False, "sessions": []})
+        response = self.client.get(f"/toys/sessions/{flagged.id}/")
+        self.assertEqual(response.data["photo_count"], 2)
+        self.assertEqual(response.data["video_count"], 1)
 
     @mock.patch("toys.immich.requests.request")
     def test_empty_search_clears_stale_session_links(self, request_mock):
@@ -222,10 +223,7 @@ class RefreshAllMediaTests(TestCase):
         without_media.save(update_fields=["photo_count"])
         response = self.client.post("/toys/sessions/refresh-media/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.data,
-            {"configured": True, "sessions": [{"id": with_media.id, "photos": 1, "videos": 1}]},
-        )
+        self.assertEqual(response.data, {"configured": True, "sessions_with_media": 1})
         with_media.refresh_from_db()
         without_media.refresh_from_db()
         self.assertEqual((with_media.photo_count, with_media.video_count), (1, 1))
@@ -263,10 +261,7 @@ class RefreshAllMediaTests(TestCase):
             ),
         ]
         response = self.client.post("/toys/sessions/refresh-media/")
-        self.assertEqual(
-            response.data,
-            {"configured": True, "sessions": [{"id": session.id, "photos": 1, "videos": 0}]},
-        )
+        self.assertEqual(response.data, {"configured": True, "sessions_with_media": 1})
         self.assertEqual(request_mock.call_count, 2)
 
     @mock.patch("toys.immich.requests.request")
@@ -287,7 +282,7 @@ class RefreshAllMediaTests(TestCase):
         ]
         response = self.client.post("/toys/sessions/refresh-media/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {"configured": True, "sessions": []})
+        self.assertEqual(response.data, {"configured": True, "sessions_with_media": 0})
 
     @mock.patch("toys.immich.ImmichClient.search_assets", side_effect=immich.ImmichError("boom"))
     def test_upstream_failure_does_not_clear_stored_counts(self, _search_mock):
@@ -295,7 +290,7 @@ class RefreshAllMediaTests(TestCase):
             started_at="2026-06-01T20:00:00Z", photo_count=2, video_count=1
         )
         response = self.client.post("/toys/sessions/refresh-media/")
-        self.assertEqual(response.data, {"configured": True, "sessions": []})
+        self.assertEqual(response.data, {"configured": True, "sessions_with_media": 0})
         flagged.refresh_from_db()
         self.assertEqual((flagged.photo_count, flagged.video_count), (2, 1))
 

@@ -14,7 +14,7 @@ export const queryKeys = {
   },
   media: {
     all: ['media'] as const,
-    indicators: ['media', 'indicators'] as const,
+    status: ['media', 'status'] as const,
     session: (sessionId: number) => ['media', 'session', sessionId] as const,
   },
 };

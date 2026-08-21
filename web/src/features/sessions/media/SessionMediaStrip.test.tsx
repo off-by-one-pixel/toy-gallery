@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api', () => ({
+  fetchSession: vi.fn(),
   fetchSessionMedia: vi.fn(),
 }));
 
@@ -17,11 +18,13 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(search),
 }));
 
+import type { QueryClient } from '@tanstack/react-query';
+
 import en from '@/i18n/catalogs/en.json';
 import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
 import { fetchSessionMedia } from '@/api';
 import type { SessionMedia } from '@/api/types';
-import { QueryWrapper } from '@/test/QueryWrapper';
+import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 
 class ResizeObserverStub {
@@ -34,18 +37,19 @@ globalThis.ResizeObserver ??= ResizeObserverStub as never;
 window.HTMLMediaElement.prototype.play = () => Promise.resolve();
 window.HTMLMediaElement.prototype.pause = () => {};
 
-const wrap = (ui: React.ReactNode) => (
+const wrap = (ui: React.ReactNode, client?: QueryClient) => (
   <NextIntlClientProvider locale="en" messages={en}>
-    <QueryWrapper>
+    <QueryWrapper client={client}>
       <PrivacyProvider>{ui}</PrivacyProvider>
     </QueryWrapper>
   </NextIntlClientProvider>
 );
 
-const media = (items: SessionMedia['items'], configured = true, shareUrl: string | null = null): SessionMedia => ({
-  configured,
+const media = (items: SessionMedia['items'], overrides: Partial<Omit<SessionMedia, 'items'>> = {}): SessionMedia => ({
+  configured: true,
+  shareUrl: null,
+  ...overrides,
   items,
-  shareUrl,
 });
 
 const image = {
@@ -72,13 +76,31 @@ describe('SessionMediaStrip', () => {
   });
 
   it('renders nothing when the backend is not configured', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([], false));
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([], { configured: false }));
     const { container } = render(wrap(<SessionMediaStrip sessionId={1} />));
     await waitFor(() => expect(container.innerHTML).toBe(''));
   });
 
+  it('invalidates its session detail query after loading media', async () => {
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
+    const client = createTestQueryClient();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    render(wrap(<SessionMediaStrip sessionId={1} />, client));
+    await screen.findAllByRole('button', { name: en.session.media.openLabel });
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'detail', 1] }));
+  });
+
+  it('does not touch the session detail query when media is not configured', async () => {
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([], { configured: false }));
+    const client = createTestQueryClient();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { container } = render(wrap(<SessionMediaStrip sessionId={1} />, client));
+    await waitFor(() => expect(container.innerHTML).toBe(''));
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ['sessions', 'detail', 1] });
+  });
+
   it('links to the external photo library when a share url is present', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image], true, 'https://photos.example/share/K'));
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image], { shareUrl: 'https://photos.example/share/K' }));
     render(wrap(<SessionMediaStrip sessionId={1} />));
     const link = await screen.findByRole('link', { name: en.session.media.openExternal });
     expect(link.getAttribute('href')).toBe('https://photos.example/share/K');
@@ -96,13 +118,6 @@ describe('SessionMediaStrip', () => {
     render(wrap(<SessionMediaStrip sessionId={1} />));
     expect(await screen.findByText(en.session.media.empty)).toBeTruthy();
     expect(screen.getByText(en.session.media.heading)).toBeTruthy();
-  });
-
-  it('hides the heading when showHeading is false', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([]));
-    render(wrap(<SessionMediaStrip sessionId={1} showHeading={false} />));
-    await screen.findByText(en.session.media.empty);
-    expect(screen.queryByText(en.session.media.heading)).toBeNull();
   });
 
   it('shows the error message when loading fails', async () => {

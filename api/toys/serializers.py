@@ -133,6 +133,8 @@ class SessionSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "is_live",
+            "photo_count",
+            "video_count",
             "entries",
             "max_insertable_length",
             "max_circumference",
@@ -277,15 +279,13 @@ class SessionMediaResponseSerializer(serializers.Serializer):
     share_url = serializers.CharField(allow_null=True)
 
 
-class SessionMediaCountsSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    photos = serializers.IntegerField()
-    videos = serializers.IntegerField()
-
-
-class SessionMediaIndicatorsSerializer(serializers.Serializer):
+class MediaStatusSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
-    sessions = SessionMediaCountsSerializer(many=True)
+
+
+class RefreshMediaResponseSerializer(serializers.Serializer):
+    configured = serializers.BooleanField()
+    sessions_with_media = serializers.IntegerField()
 
 
 class ExportEnvelopeSerializer(serializers.Serializer):
