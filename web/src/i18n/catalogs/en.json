@@ -11,6 +11,8 @@
     "insertable": "Insertable",
     "circumference": "Circumference",
     "diameter": "Diameter",
+    "depth": "Depth",
+    "girth": "Girth",
     "length": "Length",
     "edit": "Edit",
     "copy": "Copy",
@@ -49,7 +51,7 @@
       "sections": "Sections"
     },
     "timesUsed": "Times used",
-    "timeUsed": "Time used",
+    "timeUsed": "Plugged time",
     "topCap": "{shape} cap"
   },
   "viewToggle": {
@@ -94,8 +96,8 @@
     "endedLabel": "Ended",
     "clearEndedLabel": "Clear end time",
     "duration": {
-      "label": "Duration",
-      "clearLabel": "Clear duration",
+      "label": "Plugged time",
+      "clearLabel": "Clear plugged time",
       "wholeSession": "Whole session"
     },
     "filter": {
@@ -111,6 +113,7 @@
     "peakCircumference": "max circ",
     "peakDiameter": "max dia",
     "perDayTitle": "Sessions",
+    "timePerDayTitle": "Plugged time",
     "toyDeleted": "deleted",
     "empty": "No sessions yet — record your first one.",
     "emptyFilteredPrefix": "No sessions in",
@@ -246,7 +249,7 @@
     "column": {
       "name": "Brand / Model",
       "popularity": "Popularity",
-      "duration": "Time used",
+      "duration": "Plugged time",
       "date": "Date",
       "peakLength": "Peak length",
       "peakCircumference": "Peak circumference",

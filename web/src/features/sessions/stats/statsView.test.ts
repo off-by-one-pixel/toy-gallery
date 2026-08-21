@@ -6,6 +6,7 @@ import {
   METRIC_COUNT,
   METRIC_MAX_CIRCUMFERENCE,
   METRIC_MAX_LENGTH,
+  METRIC_TOTAL_DURATION,
   SESSION_STATS,
 } from '@/features/sessions/stats/statsConfig';
 import {
@@ -88,6 +89,15 @@ describe('buildCalendarView', () => {
     expect(view.cells[2].fill.startsWith('hsl(')).toBe(true);
     expect(view.cells[1].fill).toBe(ACTIVITY_PALETTE.usedOnly);
     expect(view.cells[0].fill).toBe(ACTIVITY_PALETTE.empty);
+  });
+
+  it('formats the time-per-day legend as a localized duration', () => {
+    const def = SESSION_STATS.find((candidate): candidate is CalendarStatDef => candidate.key === 'time-per-day');
+    expect(def).toBeDefined();
+    if (!def) return;
+    const groups = [group(localDateKey(TODAY), { [METRIC_TOTAL_DURATION]: 95 })];
+    const view = buildCalendarView(def, groups, ctx(), { today: TODAY, windowDays: 2 });
+    expect(view.legendMaxLabel).toBe('1h 35m');
   });
 
   it('formats legend labels in the requested unit', () => {
@@ -185,7 +195,12 @@ describe('deriveQueries', () => {
   it('batches the default config into three queries with deduped metrics', () => {
     const queries = deriveQueries(SESSION_STATS);
     expect(queries.map((q) => q.key)).toEqual(['date:year', 'hour:filter', 'weekday:filter']);
-    expect(queries[0].metrics).toEqual([METRIC_MAX_LENGTH, METRIC_MAX_CIRCUMFERENCE, METRIC_COUNT]);
+    expect(queries[0].metrics).toEqual([
+      METRIC_MAX_LENGTH,
+      METRIC_MAX_CIRCUMFERENCE,
+      METRIC_COUNT,
+      METRIC_TOTAL_DURATION,
+    ]);
     expect(queries[1].metrics).toEqual([METRIC_COUNT]);
   });
 
