@@ -150,7 +150,8 @@
       "prevLabel": "Previous",
       "nextLabel": "Next",
       "closeLabel": "Close viewer",
-      "indicatorLabel": "Has media",
+      "countsLabel": "{photos} photos, {videos} videos",
+      "openExternal": "Open in photo library",
       "refreshButton": "Refresh media for all sessions",
       "refreshButtonLabel": "Refresh media",
       "refreshedToast": "Media found for {count, plural, one {# session} other {# sessions}}"

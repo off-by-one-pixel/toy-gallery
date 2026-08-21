@@ -122,6 +122,27 @@ def _apply_session_ordering(queryset, ordering):
     return queryset.order_by(F("is_live").desc(), ordered, "-id")
 
 
+def _media_count_rows(rows):
+    return [
+        {"id": row["id"], "photos": row["photo_count"], "videos": row["video_count"]}
+        for row in rows
+    ]
+
+
+def _store_media_counts(counts):
+    changed = []
+    for session in models.Session.objects.all():
+        new = counts.get(session.id)
+        photos = new.photos if new else 0
+        videos = new.videos if new else 0
+        if session.photo_count != photos or session.video_count != videos:
+            session.photo_count = photos
+            session.video_count = videos
+            changed.append(session)
+    if changed:
+        models.Session.objects.bulk_update(changed, ["photo_count", "video_count"])
+
+
 @extend_schema_view(
     list=extend_schema(parameters=[serializers.SessionListQuerySerializer]),
 )
@@ -181,20 +202,31 @@ class SessionViewSet(viewsets.ModelViewSet):
             session.id, session.started_at, session.ended_at
         )
         if result.authoritative:
-            has_media = bool(result.items)
-            if session.has_media != has_media:
-                session.has_media = has_media
-                session.save(update_fields=["has_media"])
-        return Response({"configured": result.configured, "items": result.items})
+            videos = sum(1 for item in result.items if item["kind"] == "video")
+            photos = len(result.items) - videos
+            if session.photo_count != photos or session.video_count != videos:
+                session.photo_count = photos
+                session.video_count = videos
+                session.save(update_fields=["photo_count", "video_count"])
+        return Response(
+            {
+                "configured": result.configured,
+                "items": result.items,
+                "share_url": result.share_url,
+            }
+        )
 
     @extend_schema(responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["get"], url_path="media-indicators")
     def media_indicators(self, request):
         if not media.get_provider().is_configured():
-            return Response({"configured": False, "session_ids": []})
-        flagged = models.Session.objects.filter(has_media=True).order_by("id")
-        session_ids = list(flagged.values_list("id", flat=True))
-        return Response({"configured": True, "session_ids": session_ids})
+            return Response({"configured": False, "sessions": []})
+        flagged = (
+            models.Session.objects.filter(Q(photo_count__gt=0) | Q(video_count__gt=0))
+            .order_by("id")
+            .values("id", "photo_count", "video_count")
+        )
+        return Response({"configured": True, "sessions": _media_count_rows(flagged)})
 
     @extend_schema(request=None, responses=serializers.SessionMediaIndicatorsSerializer)
     @action(detail=False, methods=["post"], url_path="refresh-media")
@@ -204,9 +236,16 @@ class SessionViewSet(viewsets.ModelViewSet):
         )
         result = media.get_provider().refresh_all_media(sessions)
         if result.authoritative:
-            models.Session.objects.filter(id__in=result.session_ids).update(has_media=True)
-            models.Session.objects.exclude(id__in=result.session_ids).update(has_media=False)
-        return Response({"configured": result.configured, "session_ids": result.session_ids})
+            _store_media_counts(result.counts)
+        return Response(
+            {
+                "configured": result.configured,
+                "sessions": [
+                    {"id": sid, "photos": c.photos, "videos": c.videos}
+                    for sid, c in sorted(result.counts.items())
+                ],
+            }
+        )
 
     @extend_schema(
         parameters=[serializers.SessionStatsQuerySerializer],

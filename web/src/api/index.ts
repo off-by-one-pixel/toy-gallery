@@ -177,22 +177,33 @@ export const fetchLiveSession = async (): Promise<Session | null> => {
   return data.session ? snakeToCamel<Session>(data.session) : null;
 };
 
-export type MediaIndicators = { configured: boolean; sessionIds: Set<number> };
+export type MediaCounts = Readonly<{ photos: number; videos: number }>;
+
+export type MediaIndicators = Readonly<{ configured: boolean; counts: ReadonlyMap<number, MediaCounts> }>;
+
+const toMediaIndicators = (data: {
+  configured: boolean;
+  sessions: readonly { id: number; photos: number; videos: number }[];
+}): MediaIndicators => ({
+  configured: data.configured,
+  counts: new Map(data.sessions.map((s) => [s.id, { photos: s.photos, videos: s.videos }])),
+});
 
 export const fetchMediaIndicators = async (): Promise<MediaIndicators> => {
   const { data } = await toysSessionsMediaIndicatorsRetrieve();
-  return { configured: data.configured, sessionIds: new Set(data.session_ids) };
+  return toMediaIndicators(data);
 };
 
 export const refreshAllSessionMedia = async (): Promise<MediaIndicators> => {
   const { data } = await toysSessionsRefreshMediaCreate();
-  return { configured: data.configured, sessionIds: new Set(data.session_ids) };
+  return toMediaIndicators(data);
 };
 
 export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia> => {
   const { data } = await toysSessionsMediaRetrieve(sessionId);
   return {
     configured: data.configured,
+    shareUrl: data.share_url,
     items: data.items.map((i) => snakeToCamel<SessionMediaItem>(i)),
   };
 };

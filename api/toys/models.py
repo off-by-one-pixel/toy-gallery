@@ -68,7 +68,8 @@ class Toy(models.Model):
 class Session(models.Model):
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField(null=True, blank=True)
-    has_media = models.BooleanField(default=False)
+    photo_count = models.PositiveIntegerField(default=0)
+    video_count = models.PositiveIntegerField(default=0)
     is_live = models.BooleanField(default=False)
 
     class Meta:

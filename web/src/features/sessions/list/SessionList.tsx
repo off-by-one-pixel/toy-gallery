@@ -177,7 +177,7 @@ function SessionListContent() {
             session={session}
             toysById={data.toysById}
             unit={unit}
-            hasMedia={data.mediaSessionIds.has(session.id)}
+            mediaCounts={data.mediaCounts.get(session.id) ?? null}
             selected={selectedId === session.id}
             flash={flashId === session.id}
             onToggleSelect={() => setSelectedId((cur) => (cur === session.id ? null : session.id))}

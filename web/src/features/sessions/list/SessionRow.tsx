@@ -1,6 +1,6 @@
 'use client';
 
-import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
+import { Image as ImageIcon, Pencil, Trash2, Video } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
@@ -10,6 +10,7 @@ import { formatDuration, totalDuration } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
+import type { MediaCounts } from '@/api';
 import type { Session, Toy } from '@/api/types';
 import { type Unit } from '@/features/preferences/units';
 import MiniToy from '@/features/sessions/list/MiniToy';
@@ -22,7 +23,7 @@ type Props = Readonly<{
   session: Session;
   toysById: Map<number, Toy>;
   unit: Unit;
-  hasMedia: boolean;
+  mediaCounts: MediaCounts | null;
   selected: boolean;
   flash?: boolean;
   onToggleSelect: () => void;
@@ -34,7 +35,7 @@ export default function SessionRow({
   session,
   toysById,
   unit,
-  hasMedia,
+  mediaCounts,
   selected,
   flash = false,
   onToggleSelect,
@@ -88,13 +89,24 @@ export default function SessionRow({
               {t('live.badge')}
             </span>
           )}
-          {hasMedia && (
+          {mediaCounts && (
             <span
-              aria-label={t('media.indicatorLabel')}
-              title={t('media.indicatorLabel')}
-              className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-soft-foreground"
+              aria-label={t('media.countsLabel', { photos: mediaCounts.photos, videos: mediaCounts.videos })}
+              title={t('media.countsLabel', { photos: mediaCounts.photos, videos: mediaCounts.videos })}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent-soft px-2.5 py-1 text-sm font-medium tabular-nums text-accent-soft-foreground"
             >
-              <ImageIcon size={13} strokeWidth={2} />
+              {mediaCounts.photos > 0 && (
+                <span className="inline-flex items-center gap-0.5">
+                  <ImageIcon size={14} strokeWidth={2} />
+                  {mediaCounts.photos}
+                </span>
+              )}
+              {mediaCounts.videos > 0 && (
+                <span className="inline-flex items-center gap-0.5">
+                  <Video size={14} strokeWidth={2} />
+                  {mediaCounts.videos}
+                </span>
+              )}
             </span>
           )}
         </div>
@@ -114,7 +126,7 @@ export default function SessionRow({
             </span>
           )}
         </div>
-        <div className="mt-3 flex items-baseline gap-5 border-t border-border pt-2.5 sm:order-3 sm:mt-0 sm:block sm:min-w-32 sm:shrink-0 sm:border-t-0 sm:pt-0 sm:text-right">
+        <div className="mt-3 flex items-baseline gap-5 border-t border-border pt-2.5 sm:order-3 sm:mt-0 sm:grid sm:min-w-32 sm:shrink-0 sm:grid-cols-[auto_auto] sm:items-baseline sm:justify-end sm:gap-x-2.5 sm:gap-y-1 sm:border-t-0 sm:pt-0">
           <PeakRow label={t('peakLength')} mm={session.maxInsertableLength} unit={unit} />
           <PeakRow
             label={girth === 'diameter' ? t('peakDiameter') : t('peakCircumference')}
@@ -122,9 +134,11 @@ export default function SessionRow({
             unit={unit}
           />
           {totalMinutes > 0 && (
-            <div className="flex items-baseline gap-2 py-0.5 sm:justify-end">
-              <span className="text-caption uppercase tracking-wider text-text-tertiary">{t('totalTime')}</span>
-              <span className="text-[15px] font-semibold tracking-tight tabular-nums text-foreground sm:text-[17px]">
+            <div className="flex items-baseline gap-2 py-0.5 sm:contents">
+              <span className="text-caption uppercase tracking-wider text-text-tertiary sm:justify-self-end">
+                {t('totalTime')}
+              </span>
+              <span className="text-[15px] font-semibold tracking-tight tabular-nums text-foreground sm:justify-self-start sm:text-[17px]">
                 {formatDuration(totalMinutes, locale)}
               </span>
             </div>

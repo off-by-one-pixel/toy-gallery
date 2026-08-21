@@ -274,11 +274,18 @@ class SessionMediaItemSerializer(serializers.Serializer):
 class SessionMediaResponseSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
     items = SessionMediaItemSerializer(many=True)
+    share_url = serializers.CharField(allow_null=True)
+
+
+class SessionMediaCountsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    photos = serializers.IntegerField()
+    videos = serializers.IntegerField()
 
 
 class SessionMediaIndicatorsSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
-    session_ids = serializers.ListField(child=serializers.IntegerField())
+    sessions = SessionMediaCountsSerializer(many=True)
 
 
 class ExportEnvelopeSerializer(serializers.Serializer):

@@ -40,7 +40,7 @@ describe('AppMenu', () => {
   });
 
   it('omits the refresh-media item when media is not configured', async () => {
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: false, sessionIds: new Set() });
+    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: false, counts: new Map() });
     render(wrap());
     await waitFor(() => expect(fetchMediaIndicators).toHaveBeenCalled());
     fireEvent.click(screen.getByLabelText(en.collection.menu.openMenu));
@@ -49,8 +49,17 @@ describe('AppMenu', () => {
   });
 
   it('refreshes media and invalidates the media queries when configured', async () => {
-    vi.mocked(fetchMediaIndicators).mockResolvedValue({ configured: true, sessionIds: new Set([1]) });
-    vi.mocked(refreshAllSessionMedia).mockResolvedValue({ configured: true, sessionIds: new Set([1, 2]) });
+    vi.mocked(fetchMediaIndicators).mockResolvedValue({
+      configured: true,
+      counts: new Map([[1, { photos: 1, videos: 0 }]]),
+    });
+    vi.mocked(refreshAllSessionMedia).mockResolvedValue({
+      configured: true,
+      counts: new Map([
+        [1, { photos: 1, videos: 0 }],
+        [2, { photos: 0, videos: 1 }],
+      ]),
+    });
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
 

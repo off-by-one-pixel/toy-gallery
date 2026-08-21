@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from .media import (
+    MediaCounts,
     MediaRefreshResult,
     SessionMediaProvider,
     SessionMediaResult,
@@ -198,6 +199,9 @@ class ImmichClient:
             if link.description.startswith(prefix):
                 self._delete_link(link.id)
 
+    def share_url(self, key: str) -> str:
+        return f"{self.public_url}/share/{key}"
+
     def asset_urls(self, asset: MediaAsset, key: str) -> tuple[str, str]:
         base = f"{self.public_url}/api/assets/{asset.id}"
         thumbnail = f"{base}/thumbnail?size=thumbnail&key={key}"
@@ -208,15 +212,20 @@ class ImmichClient:
 
 def _assets_by_session(
     assets: list[MediaAsset], windows: dict[int, tuple[datetime, datetime]]
-) -> dict[int, list[str]]:
-    per_session: dict[int, list[str]] = {sid: [] for sid in windows}
+) -> dict[int, list[MediaAsset]]:
+    per_session: dict[int, list[MediaAsset]] = {sid: [] for sid in windows}
     for asset in assets:
         if asset.instant is None:
             continue
         for sid, (window_start, window_end) in windows.items():
             if window_start <= asset.instant <= window_end:
-                per_session[sid].append(asset.id)
+                per_session[sid].append(asset)
     return per_session
+
+
+def _media_counts(session_assets: list[MediaAsset]) -> MediaCounts:
+    videos = sum(1 for asset in session_assets if asset.kind == "video")
+    return MediaCounts(photos=len(session_assets) - videos, videos=videos)
 
 
 def _links_by_session(links: list[SharedLink]) -> dict[int, list[SharedLink]]:
@@ -242,8 +251,8 @@ def _media_operation(unconfigured, degraded):
     return wrap
 
 
-UNCONFIGURED_REFRESH = MediaRefreshResult(configured=False, authoritative=False, session_ids=[])
-DEGRADED_REFRESH = MediaRefreshResult(configured=True, authoritative=False, session_ids=[])
+UNCONFIGURED_REFRESH = MediaRefreshResult(configured=False, authoritative=False, counts={})
+DEGRADED_REFRESH = MediaRefreshResult(configured=True, authoritative=False, counts={})
 UNCONFIGURED_MEDIA = SessionMediaResult(configured=False, authoritative=False, items=[])
 DEGRADED_MEDIA = SessionMediaResult(configured=True, authoritative=False, items=[])
 
@@ -261,21 +270,19 @@ class ImmichMediaProvider(SessionMediaProvider):
     ) -> MediaRefreshResult:
         windows = {sid: session_media_window(started, ended) for sid, started, ended in sessions}
         if not windows:
-            return MediaRefreshResult(configured=True, authoritative=True, session_ids=[])
+            return MediaRefreshResult(configured=True, authoritative=True, counts={})
 
         overall_start = min(w[0] for w in windows.values())
         overall_end = max(w[1] for w in windows.values())
         assets = self.client.search_assets(overall_start, overall_end)
         links_by_session = _links_by_session(self.client.shared_links())
 
-        session_ids = [
-            sid
-            for sid, asset_ids in _assets_by_session(assets, windows).items()
-            if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, []))
-        ]
-        return MediaRefreshResult(
-            configured=True, authoritative=True, session_ids=sorted(session_ids)
-        )
+        counts: dict[int, MediaCounts] = {}
+        for sid, session_assets in sorted(_assets_by_session(assets, windows).items()):
+            asset_ids = [asset.id for asset in session_assets]
+            if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, [])):
+                counts[sid] = _media_counts(session_assets)
+        return MediaRefreshResult(configured=True, authoritative=True, counts=counts)
 
     def _sync_session_links(
         self, session_id: int, asset_ids: list[str], existing: list[SharedLink]
@@ -307,7 +314,12 @@ class ImmichMediaProvider(SessionMediaProvider):
             return SessionMediaResult(configured=True, authoritative=True, items=[])
         key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
         items = [self._media_item(asset, key) for asset in assets]
-        return SessionMediaResult(configured=True, authoritative=True, items=items)
+        return SessionMediaResult(
+            configured=True,
+            authoritative=True,
+            items=items,
+            share_url=self.client.share_url(key),
+        )
 
     def _media_item(self, asset: MediaAsset, key: str) -> dict:
         thumbnail_url, full_url = self.client.asset_urls(asset, key)
