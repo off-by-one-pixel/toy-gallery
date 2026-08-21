@@ -3,8 +3,8 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { useThemeContext } from '../providers/ThemeProvider';
-import type { Theme } from '../themes/registry';
+import { useThemeContext } from '@/providers/ThemeProvider';
+import type { Theme } from '@/themes/registry';
 
 type Props = Readonly<{
   lightTheme: Theme;

@@ -2,11 +2,11 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import { toyShapeToEditor } from '../../services/converters/toyShape';
-import { formatDuration } from '../../services/duration';
-import { toyTooltip } from '../../services/session';
-import { Involvement, type SessionEntry, type Toy } from '../../services/types';
-import ToyThumbnail from '../ToyThumbnail';
+import { toyShapeToEditor } from '@/services/converters/toyShape';
+import { formatDuration } from '@/services/duration';
+import { toyTooltip } from '@/services/session';
+import { Involvement, type SessionEntry, type Toy } from '@/services/types';
+import ToyThumbnail from '@/components/ToyThumbnail';
 
 const STATE_FILTER: Record<Involvement, string | undefined> = {
   [Involvement.USED]: undefined,

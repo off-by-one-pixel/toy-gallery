@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '../providers/GirthProvider';
-import { TOY_SORT, type ToySortColumn } from '../services/toySort';
+import { useGirth } from '@/providers/GirthProvider';
+import { TOY_SORT, type ToySortColumn } from '@/services/toySort';
 import SortControl from './SortControl';
 
 export default function ToySortControl() {

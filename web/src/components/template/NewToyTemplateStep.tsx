@@ -2,10 +2,10 @@
 
 import type { Toy as EditorToy } from 'toy-editor';
 
-import type { WizardStep } from '../../hooks/nav/useToyEditorWizardNav';
-import { templateToEditor } from '../../services/converters/template';
-import { TOY_TEMPLATES } from '../../services/toyTemplates';
-import { useUnit } from '../../providers/UnitProvider';
+import type { WizardStep } from '@/hooks/nav/useToyEditorWizardNav';
+import { templateToEditor } from '@/services/converters/template';
+import { TOY_TEMPLATES } from '@/services/toyTemplates';
+import { useUnit } from '@/providers/UnitProvider';
 import SizeForm from './SizeForm';
 import StepHeader from './StepHeader';
 import TemplatePicker from './TemplatePicker';

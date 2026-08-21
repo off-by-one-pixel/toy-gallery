@@ -25,7 +25,7 @@ class IntersectionObserverStub {
 
 vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
 
-vi.mock('../../services/api', () => ({
+vi.mock('@/services/api', () => ({
   fetchSessions: vi.fn(),
   fetchToys: vi.fn(),
   fetchSessionStats: vi.fn(),
@@ -37,12 +37,12 @@ vi.mock('../../services/api', () => ({
   startLiveSession: vi.fn(),
 }));
 
-import en from '../../i18n/catalogs/en.json';
-import { AuthProvider } from '../../providers/AuthProvider';
-import { GirthProvider } from '../../providers/GirthProvider';
-import { PrivacyProvider } from '../../providers/PrivacyProvider';
-import { ThemeProvider } from '../../providers/ThemeProvider';
-import { UnitProvider } from '../../providers/UnitProvider';
+import en from '@/i18n/catalogs/en.json';
+import { AuthProvider } from '@/providers/AuthProvider';
+import { GirthProvider } from '@/providers/GirthProvider';
+import { PrivacyProvider } from '@/providers/PrivacyProvider';
+import { ThemeProvider } from '@/providers/ThemeProvider';
+import { UnitProvider } from '@/providers/UnitProvider';
 import {
   fetchLiveSession,
   fetchMediaIndicators,
@@ -51,9 +51,9 @@ import {
   fetchSessionStats,
   fetchToys,
   startLiveSession,
-} from '../../services/api';
-import type { Session } from '../../services/types';
-import { createTestQueryClient, QueryWrapper } from '../../test/QueryWrapper';
+} from '@/services/api';
+import type { Session } from '@/services/types';
+import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import SessionList from './SessionList';
 
 const session = (id: number, startedAt: string, isLive = false): Session => ({

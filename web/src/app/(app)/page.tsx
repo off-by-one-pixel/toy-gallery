@@ -1,4 +1,4 @@
-import ToyGallery from '../../components/ToyGallery';
+import ToyGallery from '@/components/ToyGallery';
 
 export default function Page() {
   return <ToyGallery />;

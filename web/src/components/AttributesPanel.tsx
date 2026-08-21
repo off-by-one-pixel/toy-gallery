@@ -3,8 +3,8 @@
 import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { useAttributesEditor } from '../hooks/useAttributesEditor';
-import type { Toy } from '../services/types';
+import { useAttributesEditor } from '@/hooks/useAttributesEditor';
+import type { Toy } from '@/services/types';
 
 export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
   const { rows, saveState, updateKey, updateValue, removeRow, addRow, commitChanges } = useAttributesEditor(toy);

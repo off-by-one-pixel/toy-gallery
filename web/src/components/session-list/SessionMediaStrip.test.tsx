@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../services/api', () => ({
+vi.mock('@/services/api', () => ({
   fetchSessionMedia: vi.fn(),
 }));
 
@@ -17,11 +17,11 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(search),
 }));
 
-import en from '../../i18n/catalogs/en.json';
-import { PrivacyProvider } from '../../providers/PrivacyProvider';
-import { fetchSessionMedia } from '../../services/api';
-import type { SessionMedia } from '../../services/types';
-import { QueryWrapper } from '../../test/QueryWrapper';
+import en from '@/i18n/catalogs/en.json';
+import { PrivacyProvider } from '@/providers/PrivacyProvider';
+import { fetchSessionMedia } from '@/services/api';
+import type { SessionMedia } from '@/services/types';
+import { QueryWrapper } from '@/test/QueryWrapper';
 import SessionMediaStrip from './SessionMediaStrip';
 
 class ResizeObserverStub {

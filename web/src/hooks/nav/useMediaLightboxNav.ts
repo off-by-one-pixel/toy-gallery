@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 
-import { parseIntParam, type Update, useUrlUpdate } from '../useUrlNav';
+import { parseIntParam, type Update, useUrlUpdate } from '@/hooks/useUrlNav';
 
 const KEY = 'media';
 

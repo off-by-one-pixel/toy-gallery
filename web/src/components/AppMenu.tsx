@@ -6,11 +6,11 @@ import { Image as ImageIcon, LogOut, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { APP_COMMIT_SHA, APP_VERSION } from '../config';
-import { useAsyncAction } from '../hooks/useAsyncAction';
-import { useAuth } from '../providers/AuthProvider';
-import { fetchMediaIndicators, refreshAllSessionMedia } from '../services/api';
-import { queryKeys } from '../services/queryKeys';
+import { APP_COMMIT_SHA, APP_VERSION } from '@/config';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useAuth } from '@/providers/AuthProvider';
+import { fetchMediaIndicators, refreshAllSessionMedia } from '@/services/api';
+import { queryKeys } from '@/services/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from './ActionDropdownMenu';
 
 export default function AppMenu() {

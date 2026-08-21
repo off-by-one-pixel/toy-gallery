@@ -2,9 +2,9 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { fetchLiveSession, startLiveSession } from '../services/api';
-import { queryKeys } from '../services/queryKeys';
-import type { Session } from '../services/types';
+import { fetchLiveSession, startLiveSession } from '@/services/api';
+import { queryKeys } from '@/services/queryKeys';
+import type { Session } from '@/services/types';
 
 export interface LiveSessionState {
   liveSession: Session | null;

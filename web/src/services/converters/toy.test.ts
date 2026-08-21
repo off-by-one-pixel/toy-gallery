@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SectionShape, type Toy } from '../types';
+import { SectionShape, type Toy } from '@/services/types';
 import { toyToEditor } from './toy';
 
 const baseToy: Toy = {

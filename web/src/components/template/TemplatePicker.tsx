@@ -1,6 +1,6 @@
 'use client';
 
-import { TOY_TEMPLATES } from '../../services/toyTemplates';
+import { TOY_TEMPLATES } from '@/services/toyTemplates';
 import BlankCard from './BlankCard';
 import TemplateCard from './TemplateCard';
 

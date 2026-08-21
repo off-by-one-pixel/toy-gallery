@@ -4,8 +4,8 @@ import { Alert } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { useAuth } from '../providers/AuthProvider';
-import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useAuth } from '@/providers/AuthProvider';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
 import TextInput from './TextInput';
 
 const LoginPage = () => {

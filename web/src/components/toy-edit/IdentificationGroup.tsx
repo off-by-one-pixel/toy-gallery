@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import TextInput from '../TextInput';
+import TextInput from '@/components/TextInput';
 import ColorPicker from './ColorPicker';
 import type { ToyEditForm } from './useToyEditForm';
 

@@ -10,7 +10,7 @@ import type {
   ToyShapeSection as ApiSection,
   ToySessionEntry as ApiSessionEntry,
 } from './generated/schemas';
-import type { SnakeToCamel } from '../utils/case';
+import type { SnakeToCamel } from '@/utils/case';
 
 // Domain types are derived mechanically from the generated API schemas by
 // converting snake_case keys to camelCase. `readonly`/`?` modifiers and field

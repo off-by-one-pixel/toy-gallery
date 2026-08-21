@@ -3,15 +3,15 @@
 import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { ActionButtons, type ActionDef } from '../ActionButtons';
-import { useGirth } from '../../providers/GirthProvider';
-import { displayGirth } from '../../services/girth';
-import { formatDuration, totalDuration } from '../../services/duration';
-import { heightScale } from '../../services/scaling';
-import { formatWhen } from '../../services/dates';
-import { sortEntriesByInvolvement } from '../../services/session';
-import type { Session, Toy } from '../../services/types';
-import { type Unit } from '../../services/units';
+import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
+import { useGirth } from '@/providers/GirthProvider';
+import { displayGirth } from '@/services/girth';
+import { formatDuration, totalDuration } from '@/services/duration';
+import { heightScale } from '@/services/scaling';
+import { formatWhen } from '@/services/dates';
+import { sortEntriesByInvolvement } from '@/services/session';
+import type { Session, Toy } from '@/services/types';
+import { type Unit } from '@/services/units';
 import MiniToy from './MiniToy';
 import PeakRow from './PeakRow';
 import SessionMediaStrip from './SessionMediaStrip';

@@ -4,8 +4,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import en from '../i18n/catalogs/en.json';
-import { PrivacyProvider } from '../providers/PrivacyProvider';
+import en from '@/i18n/catalogs/en.json';
+import { PrivacyProvider } from '@/providers/PrivacyProvider';
 import PrivacyToggle from './PrivacyToggle';
 import SensitiveContent from './SensitiveContent';
 

@@ -5,12 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { useMediaLightboxNav } from '../../hooks/nav/useMediaLightboxNav';
-import { fetchSessionMedia } from '../../services/api';
-import { usePrivacy } from '../../providers/PrivacyProvider';
-import { queryKeys } from '../../services/queryKeys';
-import MediaLightbox from '../MediaLightbox';
-import SensitiveContent from '../SensitiveContent';
+import { useMediaLightboxNav } from '@/hooks/nav/useMediaLightboxNav';
+import { fetchSessionMedia } from '@/services/api';
+import { usePrivacy } from '@/providers/PrivacyProvider';
+import { queryKeys } from '@/services/queryKeys';
+import MediaLightbox from '@/components/MediaLightbox';
+import SensitiveContent from '@/components/SensitiveContent';
 
 type Props = Readonly<{ sessionId: number; showHeading?: boolean }>;
 

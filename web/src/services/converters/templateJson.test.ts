@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SectionShape } from '../types';
+import { SectionShape } from '@/services/types';
 import { templateJsonToEditor } from './templateJson';
 
 const fullEntry = {

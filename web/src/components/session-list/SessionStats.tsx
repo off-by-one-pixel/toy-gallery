@@ -4,16 +4,16 @@ import { useEffect, useMemo } from 'react';
 import { keepPreviousData, useQueries } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { useReportError } from '../../hooks/useAsyncAction';
-import { useGirth } from '../../providers/GirthProvider';
-import { useUnit } from '../../providers/UnitProvider';
-import { fetchSessionStats } from '../../services/api';
-import { queryKeys } from '../../services/queryKeys';
-import type { FilterKey } from '../../services/session';
-import { SESSION_STATS } from '../../services/statsConfig';
-import { buildStatViews, deriveQueries, type StatContext, type StatDef, startFor } from '../../services/statsView';
-import type { StatsGroup } from '../../services/types';
-import ActivityTracker from '../ActivityTracker';
+import { useReportError } from '@/hooks/useAsyncAction';
+import { useGirth } from '@/providers/GirthProvider';
+import { useUnit } from '@/providers/UnitProvider';
+import { fetchSessionStats } from '@/services/api';
+import { queryKeys } from '@/services/queryKeys';
+import type { FilterKey } from '@/services/session';
+import { SESSION_STATS } from '@/services/statsConfig';
+import { buildStatViews, deriveQueries, type StatContext, type StatDef, startFor } from '@/services/statsView';
+import type { StatsGroup } from '@/services/types';
+import ActivityTracker from '@/components/ActivityTracker';
 
 type Props = Readonly<{ filter: FilterKey; defs?: readonly StatDef[] }>;
 

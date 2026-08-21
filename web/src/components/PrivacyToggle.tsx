@@ -3,7 +3,7 @@
 import { Eye, EyeOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { usePrivacy } from '../providers/PrivacyProvider';
+import { usePrivacy } from '@/providers/PrivacyProvider';
 
 export default function PrivacyToggle() {
   const { hideSensitive, toggleHideSensitive } = usePrivacy();

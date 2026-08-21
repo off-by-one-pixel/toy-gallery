@@ -3,7 +3,7 @@
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import type { WizardStep } from '../../hooks/nav/useToyEditorWizardNav';
+import type { WizardStep } from '@/hooks/nav/useToyEditorWizardNav';
 
 export default function StepHeader({ step }: Readonly<{ step: WizardStep }>) {
   const t = useTranslations('template');

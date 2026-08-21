@@ -4,9 +4,9 @@ import { Button, Dropdown } from '@heroui/react';
 import { ArrowDownToLine, ArrowLeft, ArrowUpFromLine, MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import type { ToyEditMode } from '../../services/toyEditForm';
-import type { WizardStage } from '../../hooks/nav/useToyEditorWizardNav';
-import ActionDropdownMenu, { type ActionMenuItem } from '../ActionDropdownMenu';
+import type { ToyEditMode } from '@/services/toyEditForm';
+import type { WizardStage } from '@/hooks/nav/useToyEditorWizardNav';
+import ActionDropdownMenu, { type ActionMenuItem } from '@/components/ActionDropdownMenu';
 
 type Props = Readonly<{
   mode: ToyEditMode;

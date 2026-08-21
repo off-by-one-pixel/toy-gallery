@@ -9,7 +9,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock('../services/api', () => ({
+vi.mock('@/services/api', () => ({
   fetchMediaIndicators: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
   login: vi.fn(),
@@ -17,10 +17,10 @@ vi.mock('../services/api', () => ({
 
 globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS;
 
-import en from '../i18n/catalogs/en.json';
-import { AuthProvider } from '../providers/AuthProvider';
-import { fetchMediaIndicators, refreshAllSessionMedia } from '../services/api';
-import { createTestQueryClient, QueryWrapper } from '../test/QueryWrapper';
+import en from '@/i18n/catalogs/en.json';
+import { AuthProvider } from '@/providers/AuthProvider';
+import { fetchMediaIndicators, refreshAllSessionMedia } from '@/services/api';
+import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import AppMenu from './AppMenu';
 
 const wrap = (client?: QueryClient) => (

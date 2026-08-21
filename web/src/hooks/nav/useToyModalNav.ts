@@ -1,6 +1,6 @@
 'use client';
 
-import { type Update, useEnumParam, useIntParam, useUrlUpdate } from '../useUrlNav';
+import { type Update, useEnumParam, useIntParam, useUrlUpdate } from '@/hooks/useUrlNav';
 
 const KINDS = ['new', 'edit', 'copy'] as const;
 export type ToyModalKind = (typeof KINDS)[number];

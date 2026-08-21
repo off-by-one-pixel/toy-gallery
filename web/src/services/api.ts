@@ -20,9 +20,9 @@ import {
   toysToysList,
   toysToysPartialUpdate,
 } from './generated/sdk';
-import { API_CONFIG } from '../config';
+import { API_CONFIG } from '@/config';
 import { localDateKey } from './dates';
-import { camelToSnake, snakeToCamel } from '../utils/case';
+import { camelToSnake, snakeToCamel } from '@/utils/case';
 import type {
   ExportEnvelopeRequest,
   ToysSessionsListParams,

@@ -2,9 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '../../providers/GirthProvider';
-import { SESSION_SORT, type SessionSortColumn } from '../../services/sessionSort';
-import SortControl from '../SortControl';
+import { useGirth } from '@/providers/GirthProvider';
+import { SESSION_SORT, type SessionSortColumn } from '@/services/sessionSort';
+import SortControl from '@/components/SortControl';
 
 export default function SessionSortControl() {
   const { girth } = useGirth();

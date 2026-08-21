@@ -5,11 +5,11 @@ import { useState } from 'react';
 import { Alert, Button, Toast } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 
-import { useAsyncAction } from '../../hooks/useAsyncAction';
-import { changePassword } from '../../services/api';
-import SectionCard from '../SectionCard';
-import SectionHeading from '../SectionHeading';
-import TextInput from '../TextInput';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { changePassword } from '@/services/api';
+import SectionCard from '@/components/SectionCard';
+import SectionHeading from '@/components/SectionHeading';
+import TextInput from '@/components/TextInput';
 
 export default function PasswordSection() {
   const t = useTranslations('settings.password');

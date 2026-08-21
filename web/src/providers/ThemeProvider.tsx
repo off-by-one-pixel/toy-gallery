@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useMemo } from 'react';
 
-import { DEFAULT_THEME, isTheme, type Theme, THEMES } from '../themes/registry';
+import { DEFAULT_THEME, isTheme, type Theme, THEMES } from '@/themes/registry';
 import { createPersistedProvider } from './createPersistedProvider';
 
 interface ThemeContextValue {

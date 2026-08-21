@@ -4,7 +4,7 @@ import { LayoutGrid, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import { ViewMode } from '../providers/ViewModeProvider';
+import { ViewMode } from '@/providers/ViewModeProvider';
 import Switcher, { type SwitcherItem } from './Switcher';
 
 const VIEW_MODE_ICON: Record<ViewMode, ReactNode> = {

@@ -6,7 +6,7 @@ vi.mock('./api', () => ({
   refreshTokens: vi.fn(),
 }));
 
-vi.mock('../config', () => ({
+vi.mock('@/config', () => ({
   API_CONFIG: { baseUrl: 'http://test.local' },
 }));
 

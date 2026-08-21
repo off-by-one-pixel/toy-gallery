@@ -3,8 +3,8 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { ReactNode, useEffect, useMemo } from 'react';
 
-import en from '../i18n/catalogs/en.json';
-import { DEFAULT_LOCALE, isLocale, Locale } from '../i18n/routing';
+import en from '@/i18n/catalogs/en.json';
+import { DEFAULT_LOCALE, isLocale, Locale } from '@/i18n/routing';
 import { createPersistedProvider } from './createPersistedProvider';
 
 const MESSAGES: Record<Locale, typeof en> = {

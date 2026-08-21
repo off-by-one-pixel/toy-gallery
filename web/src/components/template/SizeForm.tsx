@@ -7,11 +7,11 @@ import type { Toy as EditorToy } from 'toy-editor';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { templateToEditor } from '../../services/converters/template';
-import type { SizeMode } from '../../services/templateForm';
-import { useUnit } from '../../providers/UnitProvider';
-import { type Unit } from '../../services/units';
-import TextInput from '../TextInput';
+import { templateToEditor } from '@/services/converters/template';
+import type { SizeMode } from '@/services/templateForm';
+import { useUnit } from '@/providers/UnitProvider';
+import { type Unit } from '@/services/units';
+import TextInput from '@/components/TextInput';
 import { PREVIEW_STYLE } from './styles';
 import type { TemplateForm } from './useTemplateForm';
 

@@ -1,7 +1,7 @@
 'use client';
 
-import type { WizardDialog } from '../../hooks/nav/useToyEditorWizardNav';
-import TemplateJsonDialog from '../TemplateJsonDialog';
+import type { WizardDialog } from '@/hooks/nav/useToyEditorWizardNav';
+import TemplateJsonDialog from '@/components/TemplateJsonDialog';
 
 type Props = Readonly<{
   dialog: WizardDialog | null;

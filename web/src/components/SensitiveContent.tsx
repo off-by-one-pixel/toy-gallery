@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import { usePrivacy } from '../providers/PrivacyProvider';
+import { usePrivacy } from '@/providers/PrivacyProvider';
 
 type Props = Readonly<{ children: ReactNode; className?: string }>;
 

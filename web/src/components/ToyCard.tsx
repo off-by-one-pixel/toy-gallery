@@ -3,14 +3,14 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useGirth } from '../providers/GirthProvider';
-import { displayGirth } from '../services/girth';
-import { useUnit } from '../providers/UnitProvider';
-import { toyShapeToEditor } from '../services/converters/toyShape';
-import { formatValue, type Unit } from '../services/units';
-import { type Toy } from '../services/types';
+import { useGirth } from '@/providers/GirthProvider';
+import { displayGirth } from '@/services/girth';
+import { useUnit } from '@/providers/UnitProvider';
+import { toyShapeToEditor } from '@/services/converters/toyShape';
+import { formatValue, type Unit } from '@/services/units';
+import { type Toy } from '@/services/types';
 import AttributesPanel from './AttributesPanel';
-import { formatDuration } from '../services/duration';
+import { formatDuration } from '@/services/duration';
 import ToyActionButtons from './ToyActionButtons';
 import ToyThumbnail from './ToyThumbnail';
 

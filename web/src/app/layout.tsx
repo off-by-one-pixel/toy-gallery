@@ -2,18 +2,18 @@ import { Metadata, Viewport } from 'next';
 import 'toy-editor/styles.css';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/index.css';
-import { AuthProvider } from '../providers/AuthProvider';
-import { GirthProvider } from '../providers/GirthProvider';
-import { LocaleProvider } from '../providers/LocaleProvider';
-import { PrivacyProvider } from '../providers/PrivacyProvider';
-import { QueryProvider } from '../providers/QueryProvider';
-import { SortProvider } from '../providers/SortProvider';
-import { TOY_SORT } from '../services/toySort';
-import { ThemeProvider } from '../providers/ThemeProvider';
-import { ToastProvider } from '../providers/ToastProvider';
-import { UnitProvider } from '../providers/UnitProvider';
-import { ViewModeProvider } from '../providers/ViewModeProvider';
-import { DEFAULT_THEME, THEMES } from '../themes/registry';
+import { AuthProvider } from '@/providers/AuthProvider';
+import { GirthProvider } from '@/providers/GirthProvider';
+import { LocaleProvider } from '@/providers/LocaleProvider';
+import { PrivacyProvider } from '@/providers/PrivacyProvider';
+import { QueryProvider } from '@/providers/QueryProvider';
+import { SortProvider } from '@/providers/SortProvider';
+import { TOY_SORT } from '@/services/toySort';
+import { ThemeProvider } from '@/providers/ThemeProvider';
+import { ToastProvider } from '@/providers/ToastProvider';
+import { UnitProvider } from '@/providers/UnitProvider';
+import { ViewModeProvider } from '@/providers/ViewModeProvider';
+import { DEFAULT_THEME, THEMES } from '@/themes/registry';
 
 export const metadata: Metadata = {
   title: 'Toy Gallery',

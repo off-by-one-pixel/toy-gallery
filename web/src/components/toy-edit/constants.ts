@@ -1,6 +1,6 @@
 import type { Toy as EditorToy } from 'toy-editor';
 
-import { SectionShape } from '../../services/types';
+import { SectionShape } from '@/services/types';
 
 /** Default fill applied to a fresh toy when the user hasn't picked
  *  a color yet. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SectionShape, type Shape } from '../types';
+import { SectionShape, type Shape } from '@/services/types';
 import { toyShapeToEditor } from './toyShape';
 
 const sections: Shape['sections'] = [

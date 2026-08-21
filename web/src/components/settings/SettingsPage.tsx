@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import TopBar from '../TopBar';
+import TopBar from '@/components/TopBar';
 import DataSection from './DataSection';
 import LanguageSection from './LanguageSection';
 import PasswordSection from './PasswordSection';

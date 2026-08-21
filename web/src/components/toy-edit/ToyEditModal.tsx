@@ -4,11 +4,11 @@ import { Alert, Modal, useOverlayState } from '@heroui/react';
 import { ToyEditor } from 'toy-editor';
 import type { StyleOption } from 'toy-editor';
 
-import type { WizardDialog, WizardStage, WizardStep } from '../../hooks/nav/useToyEditorWizardNav';
-import { templateJsonToEditor } from '../../services/converters/templateJson';
-import type { ToyEditMode } from '../../services/toyEditForm';
-import { useUnit } from '../../providers/UnitProvider';
-import NewToyTemplateStep from '../template/NewToyTemplateStep';
+import type { WizardDialog, WizardStage, WizardStep } from '@/hooks/nav/useToyEditorWizardNav';
+import { templateJsonToEditor } from '@/services/converters/templateJson';
+import type { ToyEditMode } from '@/services/toyEditForm';
+import { useUnit } from '@/providers/UnitProvider';
+import NewToyTemplateStep from '@/components/template/NewToyTemplateStep';
 import Header from './Header';
 import IdentificationGroup from './IdentificationGroup';
 import JsonDialogs from './JsonDialogs';

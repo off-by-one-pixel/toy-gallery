@@ -1,6 +1,6 @@
 'use client';
 
-import { type Update, useEnumParam, useUrlUpdate } from '../useUrlNav';
+import { type Update, useEnumParam, useUrlUpdate } from '@/hooks/useUrlNav';
 
 const STAGES = ['template', 'editor'] as const;
 const STEPS = ['template', 'size'] as const;
