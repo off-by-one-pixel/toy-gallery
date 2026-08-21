@@ -21,6 +21,7 @@ import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 import TopBar from '@/components/TopBar';
 import GirthToggle from '@/features/preferences/GirthToggle';
+import PrivacyToggle from '@/features/preferences/PrivacyToggle';
 import UnitToggle from '@/features/preferences/UnitToggle';
 import EmptyState from '@/features/sessions/list/EmptyState';
 import SessionRow from '@/features/sessions/list/SessionRow';
@@ -128,6 +129,7 @@ function SessionListContent() {
             <SessionSortControl />
           </DisplayOptionsMenu>
           <ActionBar actions={newActions} />
+          <PrivacyToggle />
         </div>
       </header>
 

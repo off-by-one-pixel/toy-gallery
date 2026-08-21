@@ -27,6 +27,7 @@ import ToyCards from '@/features/toys/gallery/ToyCards';
 import ToyEditModal from '@/features/toys/editor/ToyEditModal';
 import ToyList from '@/features/toys/gallery/ToyList';
 import GirthToggle from '@/features/preferences/GirthToggle';
+import PrivacyToggle from '@/features/preferences/PrivacyToggle';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import UnitToggle from '@/features/preferences/UnitToggle';
@@ -159,6 +160,7 @@ const ToyGallery = () => {
           </div>
           <div className="hidden flex-1 sm:block" />
           <ActionBar actions={newActions} />
+          <PrivacyToggle />
         </div>
       </header>
 
