@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { isValidSort, type Sort, type SortConfig } from '../services/sort';
+import { isValidSort, type Sort, type SortConfig } from '@/lib/sort';
 
 interface SortContextValue {
   sort: Sort | null;

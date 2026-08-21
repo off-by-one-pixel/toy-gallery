@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { NextIntlClientProvider, useTranslations } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
-import en from './catalogs/en.json';
+import en from '@/i18n/catalogs/en.json';
 
 function Sample() {
   const t = useTranslations('attributes');

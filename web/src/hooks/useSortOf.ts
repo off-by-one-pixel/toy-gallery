@@ -1,7 +1,7 @@
 'use client';
 
-import { useSort } from '../providers/SortProvider';
-import { narrowSort, type Sort, type SortConfig } from '../services/sort';
+import { useSort } from '@/providers/SortProvider';
+import { narrowSort, type Sort, type SortConfig } from '@/lib/sort';
 
 export function useSortOf<C extends string>(
   config: SortConfig<C>,

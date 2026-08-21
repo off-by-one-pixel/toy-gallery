@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 
-import SessionForm from '../../../../components/SessionForm';
+import SessionForm from '@/features/sessions/form/SessionForm';
 
 export default function SessionEditClient() {
   const params = useSearchParams();

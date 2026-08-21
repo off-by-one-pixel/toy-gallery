@@ -39,4 +39,4 @@ yarn-error.log*
 next-env.d.ts
 
 # openapi SDK (regenerated via `npm run codegen`)
-src/services/generated/
+src/api/generated/

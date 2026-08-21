@@ -9,7 +9,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock('../services/api', () => ({
+vi.mock('@/api', () => ({
   fetchMediaIndicators: vi.fn(),
   refreshAllSessionMedia: vi.fn(),
   login: vi.fn(),
@@ -17,11 +17,11 @@ vi.mock('../services/api', () => ({
 
 globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS;
 
-import en from '../i18n/catalogs/en.json';
-import { AuthProvider } from '../providers/AuthProvider';
-import { fetchMediaIndicators, refreshAllSessionMedia } from '../services/api';
-import { createTestQueryClient, QueryWrapper } from '../test/QueryWrapper';
-import AppMenu from './AppMenu';
+import en from '@/i18n/catalogs/en.json';
+import { AuthProvider } from '@/features/auth/AuthProvider';
+import { fetchMediaIndicators, refreshAllSessionMedia } from '@/api';
+import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
+import AppMenu from '@/components/AppMenu';
 
 const wrap = (client?: QueryClient) => (
   <NextIntlClientProvider locale="en" messages={en}>

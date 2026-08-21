@@ -1,7 +1,7 @@
 import { getRequestConfig } from 'next-intl/server';
 
-import en from './catalogs/en.json';
-import { DEFAULT_LOCALE } from './routing';
+import en from '@/i18n/catalogs/en.json';
+import { DEFAULT_LOCALE } from '@/i18n/routing';
 
 export default getRequestConfig(() => ({
   locale: DEFAULT_LOCALE,

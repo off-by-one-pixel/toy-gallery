@@ -3,7 +3,7 @@
 import { Dropdown } from '@heroui/react';
 import type { LucideIcon } from 'lucide-react';
 
-import ActionDropdownMenuRow from './ActionDropdownMenuRow';
+import ActionDropdownMenuRow from '@/components/ActionDropdownMenuRow';
 
 const ICON_SIZE = 14;
 const ICON_STROKE_WIDTH = 1.8;
