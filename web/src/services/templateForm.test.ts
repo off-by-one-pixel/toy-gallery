@@ -12,7 +12,7 @@ import {
   templatePreviewToy,
   type TemplateFormState,
 } from './templateForm';
-import { SectionShape, type ToyTemplate } from './types';
+import { SectionShape, type ToyTemplate } from '@/api/types';
 import { Unit } from './units';
 
 const TEMPLATE: ToyTemplate = {

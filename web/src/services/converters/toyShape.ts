@@ -1,5 +1,5 @@
 import type { Toy as EditorToy } from 'toy-editor';
-import { SectionShape, type Shape } from '@/services/types';
+import { SectionShape, type Shape } from '@/api/types';
 
 /** Map a domain Shape to the read-only triple the thumbnail renderer
  *  needs. Used by card / list / chip thumbnails that don't care about

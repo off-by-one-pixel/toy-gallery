@@ -7,16 +7,16 @@ import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { createSession, fetchToys, fetchSession, updateSession } from '@/services/api';
-import { formatError } from '@/services/errors';
-import { queryKeys } from '@/services/queryKeys';
-import { Involvement } from '@/services/types';
+import { createSession, fetchToys, fetchSession, updateSession } from '@/api';
+import { formatError } from '@/api/errors';
+import { queryKeys } from '@/api/queryKeys';
+import { Involvement } from '@/api/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
 import { SortProvider } from '@/providers/SortProvider';
 import { useSortOf } from '@/hooks/useSortOf';
-import { datetimeLocalValue } from '@/services/dates';
-import { minutesBetween } from '@/services/duration';
+import { datetimeLocalValue } from '@/lib/dates';
+import { minutesBetween } from '@/lib/duration';
 import { filterToys } from '@/services/search';
 import { SESSION_FORM_TOY_SORT, sortToys } from '@/services/toySort';
 import { useAsyncAction } from '@/hooks/useAsyncAction';

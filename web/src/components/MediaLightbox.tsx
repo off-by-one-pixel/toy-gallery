@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 
-import type { SessionMediaItem } from '@/services/types';
+import type { SessionMediaItem } from '@/api/types';
 
 type Props = Readonly<{
   items: readonly SessionMediaItem[];

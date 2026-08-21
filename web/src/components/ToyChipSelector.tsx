@@ -5,8 +5,8 @@ import { Check, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '@/services/converters/toyShape';
-import { DURATION_INCREMENTS_MINUTES, formatDuration } from '@/services/duration';
-import { Involvement, type Toy } from '@/services/types';
+import { DURATION_INCREMENTS_MINUTES, formatDuration } from '@/lib/duration';
+import { Involvement, type Toy } from '@/api/types';
 import ToyThumbnail from './ToyThumbnail';
 
 type Props = Readonly<{

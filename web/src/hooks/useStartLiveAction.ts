@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import type { ActionDef } from '@/components/ActionButtons';
 import { useLiveSession } from './useLiveSession';
-import type { Session } from '@/services/types';
+import type { Session } from '@/api/types';
 import { useAsyncAction } from './useAsyncAction';
 
 export function useStartLiveAction(onStarted?: (session: Session) => void): ActionDef | null {

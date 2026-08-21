@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { patchToy } from '@/services/api';
+import { patchToy } from '@/api';
 import { newRow, reconcileRows, sameDict, toDict, toRows } from '@/services/attributesEditor';
-import type { AttributeRow, Toy } from '@/services/types';
+import type { AttributeRow, Toy } from '@/api/types';
 import { useReportError } from './useAsyncAction';
 
 export type AttributeSaveState = 'idle' | 'saving' | 'saved';

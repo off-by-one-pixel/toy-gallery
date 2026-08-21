@@ -6,7 +6,7 @@ import { Button, Toast } from '@heroui/react';
 import { Download, Trash2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { deleteCollection, downloadExport, importFromFile } from '@/services/api';
+import { deleteCollection, downloadExport, importFromFile } from '@/api';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import ConfirmModal from '@/components/ConfirmModal';
 import SectionCard from '@/components/SectionCard';

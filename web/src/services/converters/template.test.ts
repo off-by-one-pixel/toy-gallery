@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SectionShape, type ToyTemplate } from '@/services/types';
+import { SectionShape, type ToyTemplate } from '@/api/types';
 import { templateToEditor } from './template';
 
 const canonical: ToyTemplate = {

@@ -1,4 +1,4 @@
-import type { Sort, SortConfig } from './sort';
+import type { Sort, SortConfig } from '@/lib/sort';
 
 const SESSION_SORT_COLUMNS = ['started_at', 'duration', 'length', 'circumference'] as const;
 export type SessionSortColumn = (typeof SESSION_SORT_COLUMNS)[number];

@@ -1,5 +1,5 @@
-import type { Sort, SortConfig } from './sort';
-import type { Toy } from './types';
+import type { Sort, SortConfig } from '@/lib/sort';
+import type { Toy } from '@/api/types';
 
 type Accessor = (t: Toy) => number | string;
 

@@ -1,5 +1,5 @@
 import type { Toy as EditorToy } from 'toy-editor';
-import { SectionShape, type ToyTemplate } from '@/services/types';
+import { SectionShape, type ToyTemplate } from '@/api/types';
 import { circumferenceToDiameter } from '@/services/units';
 
 export function templateJsonToEditor(text: string): EditorToy {

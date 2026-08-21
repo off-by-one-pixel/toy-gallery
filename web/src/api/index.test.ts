@@ -30,7 +30,7 @@ import {
   toysToysExportRetrieve,
   toysToysImportCreate,
 } from './generated/sdk';
-import { createSession, createToy, downloadExport, importFromFile, login, refreshTokens } from './api';
+import { createSession, createToy, downloadExport, importFromFile, login, refreshTokens } from './index';
 import { APIError } from './types';
 
 const fetchMock = vi.fn<(...args: Parameters<typeof fetch>) => Promise<Response>>();

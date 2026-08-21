@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./api', () => ({
+vi.mock('./index', () => ({
   refreshTokens: vi.fn(),
 }));
 
@@ -10,7 +10,7 @@ vi.mock('@/config', () => ({
   API_CONFIG: { baseUrl: 'http://test.local' },
 }));
 
-import { refreshTokens } from './api';
+import { refreshTokens } from './index';
 import { customFetch, setSessionExpiredHandler, tokenStorage } from './http';
 import { APIError } from './types';
 

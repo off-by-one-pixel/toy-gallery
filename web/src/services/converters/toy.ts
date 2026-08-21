@@ -1,5 +1,5 @@
 import type { Toy as EditorToy } from 'toy-editor';
-import { SectionShape, type Toy } from '@/services/types';
+import { SectionShape, type Toy } from '@/api/types';
 import { circumferenceToDiameter } from '@/services/units';
 
 /** Map a saved Toy (API domain) to the EditorToy the toy-editor store

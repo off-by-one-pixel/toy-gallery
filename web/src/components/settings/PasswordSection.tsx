@@ -6,7 +6,7 @@ import { Alert, Button, Toast } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { changePassword } from '@/services/api';
+import { changePassword } from '@/api';
 import SectionCard from '@/components/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
 import TextInput from '@/components/TextInput';

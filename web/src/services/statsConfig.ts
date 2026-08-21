@@ -1,5 +1,5 @@
 import { ACTIVITY_PALETTE } from './activityPalette';
-import { localizedHourLabel, localizedWeekdayLabel } from './dates';
+import { localizedHourLabel, localizedWeekdayLabel } from '@/lib/dates';
 import { displayGirth } from './girth';
 import type { StatDef } from './statsView';
 

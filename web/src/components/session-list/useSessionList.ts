@@ -6,12 +6,12 @@ import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@
 
 import { useReportError } from '@/hooks/useAsyncAction';
 import { useSortOf } from '@/hooks/useSortOf';
-import { fetchMediaIndicators, fetchSessions, fetchToys, type SessionPage } from '@/services/api';
-import { formatError } from '@/services/errors';
-import { queryKeys } from '@/services/queryKeys';
+import { fetchMediaIndicators, fetchSessions, fetchToys, type SessionPage } from '@/api';
+import { formatError } from '@/api/errors';
+import { queryKeys } from '@/api/queryKeys';
 import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '@/services/session';
 import { SESSION_SORT, sessionOrderingParam } from '@/services/sessionSort';
-import type { Session, Toy } from '@/services/types';
+import type { Session, Toy } from '@/api/types';
 
 export type SessionListData = Readonly<{
   sessionCount: number;

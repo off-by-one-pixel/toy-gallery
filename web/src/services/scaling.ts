@@ -4,7 +4,7 @@
 // of its stage so smaller toys read as proportionally smaller.
 
 import { silhouetteHeight } from './dimensions';
-import type { Toy } from './types';
+import type { Toy } from '@/api/types';
 
 const MIN_RATIO = 0.15;
 

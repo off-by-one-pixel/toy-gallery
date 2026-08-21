@@ -11,7 +11,7 @@ import {
   localizedWeekdayLabel,
   startOfDay,
 } from './dates';
-import { filterStartDate } from './session';
+import { filterStartDate } from '@/services/session';
 
 describe('localDateKey', () => {
   it('formats a date as YYYY-MM-DD with zero-padded fields', () => {

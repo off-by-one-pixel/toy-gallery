@@ -4,12 +4,12 @@ export default defineConfig({
   toys: {
     input: '../api/schema.yml',
     output: {
-      target: 'src/services/generated/sdk.ts',
-      schemas: 'src/services/generated/schemas',
+      target: 'src/api/generated/sdk.ts',
+      schemas: 'src/api/generated/schemas',
       client: 'fetch',
       mode: 'split',
       override: {
-        mutator: { path: 'src/services/http.ts', name: 'customFetch' },
+        mutator: { path: 'src/api/http.ts', name: 'customFetch' },
       },
       clean: true,
     },

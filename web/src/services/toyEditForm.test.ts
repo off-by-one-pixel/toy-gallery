@@ -10,7 +10,7 @@ import {
   type ToyIdentity,
   validateAndBuildPayload,
 } from './toyEditForm';
-import { SectionShape, type Toy } from './types';
+import { SectionShape, type Toy } from '@/api/types';
 
 const SECTIONS: ToySection[] = [
   { id: 0, diameter: 40, height: 50 },

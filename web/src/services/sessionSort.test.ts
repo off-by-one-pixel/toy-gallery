@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { SESSION_SORT, sessionOrderingParam } from './sessionSort';
-import { isColumnOf } from './sort';
+import { isColumnOf } from '@/lib/sort';
 
 describe('sessionOrderingParam', () => {
   it('maps sort state to the ordering query value', () => {

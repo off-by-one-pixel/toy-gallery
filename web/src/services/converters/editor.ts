@@ -1,5 +1,5 @@
 import type { ToySection } from 'toy-editor';
-import { type SectionShape, type ToyPayload } from '@/services/types';
+import { type SectionShape, type ToyPayload } from '@/api/types';
 import { diameterToCircumference } from '@/services/units';
 
 /** Snapshot of the toy-editor store's user-visible state, captured at

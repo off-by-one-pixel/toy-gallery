@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { heightScale } from '@/services/scaling';
-import type { Toy } from '@/services/types';
+import type { Toy } from '@/api/types';
 import ToySortControl from './ToySortControl';
 import ToyCard from './ToyCard';
 

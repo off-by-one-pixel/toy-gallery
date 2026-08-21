@@ -8,9 +8,9 @@ import { displayGirth } from '@/services/girth';
 import { useUnit } from '@/providers/UnitProvider';
 import { toyShapeToEditor } from '@/services/converters/toyShape';
 import { formatValue, type Unit } from '@/services/units';
-import { type Toy } from '@/services/types';
+import { type Toy } from '@/api/types';
 import AttributesPanel from './AttributesPanel';
-import { formatDuration } from '@/services/duration';
+import { formatDuration } from '@/lib/duration';
 import ToyActionButtons from './ToyActionButtons';
 import ToyThumbnail from './ToyThumbnail';
 

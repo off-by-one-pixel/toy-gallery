@@ -1,5 +1,5 @@
 import { editorToPayload, type EditorState } from './converters/editor';
-import type { Toy, ToyPayload } from './types';
+import type { Toy, ToyPayload } from '@/api/types';
 
 /** The four identification fields the user types into the edit modal. */
 export type ToyIdentity = Readonly<{

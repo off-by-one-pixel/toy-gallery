@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { formatDuration } from '@/services/duration';
+import { formatDuration } from '@/lib/duration';
 import ToyThumbnail from './ToyThumbnail';
 
 import { useGirth } from '@/providers/GirthProvider';
@@ -12,10 +12,10 @@ import { useSortOf } from '@/hooks/useSortOf';
 import { useUnit } from '@/providers/UnitProvider';
 import { toyShapeToEditor } from '@/services/converters/toyShape';
 import { displayGirth } from '@/services/girth';
-import { cycleSort, type Sort } from '@/services/sort';
+import { cycleSort, type Sort } from '@/lib/sort';
 import { TOY_SORT, type ToySortColumn as SortColumn } from '@/services/toySort';
 import { formatValue, type Unit } from '@/services/units';
-import { SectionShape, type Toy } from '@/services/types';
+import { SectionShape, type Toy } from '@/api/types';
 import AttributesPanel from './AttributesPanel';
 import ToyActionButtons from './ToyActionButtons';
 

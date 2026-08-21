@@ -6,9 +6,9 @@ import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useMediaLightboxNav } from '@/hooks/nav/useMediaLightboxNav';
-import { fetchSessionMedia } from '@/services/api';
+import { fetchSessionMedia } from '@/api';
 import { usePrivacy } from '@/providers/PrivacyProvider';
-import { queryKeys } from '@/services/queryKeys';
+import { queryKeys } from '@/api/queryKeys';
 import MediaLightbox from '@/components/MediaLightbox';
 import SensitiveContent from '@/components/SensitiveContent';
 

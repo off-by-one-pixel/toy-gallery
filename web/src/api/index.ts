@@ -21,8 +21,8 @@ import {
   toysToysPartialUpdate,
 } from './generated/sdk';
 import { API_CONFIG } from '@/config';
-import { localDateKey } from './dates';
-import { camelToSnake, snakeToCamel } from '@/utils/case';
+import { localDateKey } from '@/lib/dates';
+import { camelToSnake, snakeToCamel } from '@/api/case';
 import type {
   ExportEnvelopeRequest,
   ToysSessionsListParams,

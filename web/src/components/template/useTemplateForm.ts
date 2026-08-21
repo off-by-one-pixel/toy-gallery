@@ -12,7 +12,7 @@ import {
   type TemplateFormState,
 } from '@/services/templateForm';
 import { TOY_TEMPLATES } from '@/services/toyTemplates';
-import type { ToyTemplate } from '@/services/types';
+import type { ToyTemplate } from '@/api/types';
 import { type Unit } from '@/services/units';
 
 /** Facade returned by `useTemplateForm`. Bundles the form state, the

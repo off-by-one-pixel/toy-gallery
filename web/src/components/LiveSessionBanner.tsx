@@ -6,8 +6,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useLiveSession } from '@/hooks/useLiveSession';
-import { formatDuration, minutesBetween } from '@/services/duration';
-import { formatWhen } from '@/services/dates';
+import { formatDuration, minutesBetween } from '@/lib/duration';
+import { formatWhen } from '@/lib/dates';
 
 const TICK_MS = 60_000;
 

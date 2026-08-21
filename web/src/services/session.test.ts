@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { INVOLVEMENT_RANK, mergeSessions, sortEntriesByInvolvement, toyTooltip, toysById } from './session';
-import { Involvement, type Session, type SessionEntry, type Toy } from './types';
+import { Involvement, type Session, type SessionEntry, type Toy } from '@/api/types';
 
 const session = (id: number, isoDay: string): Session => ({
   id,

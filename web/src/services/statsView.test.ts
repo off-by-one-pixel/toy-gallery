@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { localDateKey } from './dates';
+import { localDateKey } from '@/lib/dates';
 import { ACTIVITY_PALETTE } from './activityPalette';
 import { METRIC_COUNT, METRIC_MAX_CIRCUMFERENCE, METRIC_MAX_LENGTH, SESSION_STATS } from './statsConfig';
 import {
@@ -12,7 +12,7 @@ import {
   type StatContext,
   startFor,
 } from './statsView';
-import type { StatsGroup } from './types';
+import type { StatsGroup } from '@/api/types';
 
 const MM: StatContext['unit'] = { id: 'mm', factor: 1, decimals: 0 };
 const INCHES: StatContext['unit'] = { id: 'in', factor: 25.4, decimals: 2 };

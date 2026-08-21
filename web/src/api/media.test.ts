@@ -11,7 +11,7 @@ import {
   toysSessionsMediaRetrieve,
   toysSessionsRefreshMediaCreate,
 } from './generated/sdk';
-import { fetchMediaIndicators, fetchSessionMedia, refreshAllSessionMedia } from './api';
+import { fetchMediaIndicators, fetchSessionMedia, refreshAllSessionMedia } from './index';
 
 describe('media API wrappers', () => {
   beforeEach(() => vi.clearAllMocks());

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { sortToys, TOY_SORT } from './toySort';
-import { isColumnOf } from './sort';
-import type { Toy } from './types';
+import { isColumnOf } from '@/lib/sort';
+import type { Toy } from '@/api/types';
 
 const toy = (id: number, overrides: Partial<Toy> = {}): Toy =>
   ({

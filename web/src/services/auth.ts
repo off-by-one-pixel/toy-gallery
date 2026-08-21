@@ -1,8 +1,8 @@
-import { login as apiLogin } from './api';
-import { tokenStorage } from './http';
+import { login as apiLogin } from '@/api';
+import { tokenStorage } from '@/api/http';
 
-export { setSessionExpiredHandler, tokenStorage } from './http';
-export type { TokenPair } from './types';
+export { setSessionExpiredHandler, tokenStorage } from '@/api/http';
+export type { TokenPair } from '@/api/types';
 
 /** Log in and persist tokens. Resolves on success; throws on bad credentials. */
 export async function login(username: string, password: string): Promise<void> {

@@ -5,7 +5,7 @@ import { useToyStore } from 'toy-editor';
 import type { Toy as EditorToy } from 'toy-editor';
 
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { createToy, patchToy } from '@/services/api';
+import { createToy, patchToy } from '@/api';
 import type { EditorState } from '@/services/converters/editor';
 import { editorToTemplateJson } from '@/services/converters/editor';
 import { toyToEditor } from '@/services/converters/toy';

@@ -25,7 +25,7 @@ class IntersectionObserverStub {
 
 vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/api', () => ({
   fetchSessions: vi.fn(),
   fetchToys: vi.fn(),
   fetchSessionStats: vi.fn(),
@@ -51,8 +51,8 @@ import {
   fetchSessionStats,
   fetchToys,
   startLiveSession,
-} from '@/services/api';
-import type { Session } from '@/services/types';
+} from '@/api';
+import type { Session } from '@/api/types';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import SessionList from './SessionList';
 

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { Toast } from '@heroui/react';
-import { formatError } from '@/services/errors';
+import { formatError } from '@/api/errors';
 
 export function useReportError(inlineSink?: (message: string) => void): (err: unknown) => void {
   return useCallback(

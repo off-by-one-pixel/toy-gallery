@@ -3,10 +3,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Toy } from '@/services/types';
+import type { Toy } from '@/api/types';
 import { useAttributesEditor } from './useAttributesEditor';
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/api', () => ({
   patchToy: vi.fn(),
 }));
 
@@ -14,7 +14,7 @@ vi.mock('@heroui/react', () => ({
   Toast: { toast: { danger: vi.fn(), success: vi.fn() } },
 }));
 
-import { patchToy } from '@/services/api';
+import { patchToy } from '@/api';
 
 const mockPatchToy = vi.mocked(patchToy);
 

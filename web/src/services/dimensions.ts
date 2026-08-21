@@ -1,4 +1,4 @@
-import type { Toy } from './types';
+import type { Toy } from '@/api/types';
 
 export const silhouetteHeight = (toy: Toy): number => toy.shape.sections.reduce((acc, s) => acc + s.height, 0);
 

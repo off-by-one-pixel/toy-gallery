@@ -5,7 +5,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useSortOf } from '@/hooks/useSortOf';
-import { cycleSort, type SortConfig } from '@/services/sort';
+import { cycleSort, type SortConfig } from '@/lib/sort';
 
 type Props<C extends string> = Readonly<{
   config: SortConfig<C>;

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { ThumbnailRender } from 'toy-editor';
 
 import { templatePreviewToy } from '@/services/templateForm';
-import type { ToyTemplate } from '@/services/types';
+import type { ToyTemplate } from '@/api/types';
 import { PREVIEW_STYLE } from './styles';
 
 type Props = Readonly<{

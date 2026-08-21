@@ -1,4 +1,4 @@
-import type { Toy } from './types';
+import type { Toy } from '@/api/types';
 
 const haystack = (t: Toy): string => `${t.brand} ${t.name} ${t.size}`.toLowerCase();
 

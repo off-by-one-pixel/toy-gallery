@@ -11,15 +11,15 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
 }));
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/api', () => ({
   fetchLiveSession: vi.fn(),
   startLiveSession: vi.fn(),
 }));
 
 import en from '@/i18n/catalogs/en.json';
 import { useLiveSession } from '@/hooks/useLiveSession';
-import { fetchLiveSession, startLiveSession } from '@/services/api';
-import type { Session } from '@/services/types';
+import { fetchLiveSession, startLiveSession } from '@/api';
+import type { Session } from '@/api/types';
 import { QueryWrapper } from '@/test/QueryWrapper';
 import LiveSessionBanner from './LiveSessionBanner';
 

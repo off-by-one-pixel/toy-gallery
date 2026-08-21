@@ -5,7 +5,7 @@ import { Alert, Button, Modal, useOverlayState } from '@heroui/react';
 import { Check, Copy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { formatError } from '@/services/errors';
+import { formatError } from '@/api/errors';
 
 type Props = Readonly<{
   mode: 'export' | 'import';

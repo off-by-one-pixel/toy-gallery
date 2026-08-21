@@ -1,4 +1,4 @@
-import type { AttributeRow } from './types';
+import type { AttributeRow } from '@/api/types';
 
 /** Returns a fresh row id on each call. The hook supplies a
  *  per-instance counter (via `useRef`) so test setups are isolated. */

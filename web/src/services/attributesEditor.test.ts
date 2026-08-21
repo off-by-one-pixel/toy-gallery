@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { type IdFactory, isRowReady, newRow, reconcileRows, sameDict, toDict, toRows } from './attributesEditor';
-import type { AttributeRow } from './types';
+import type { AttributeRow } from '@/api/types';
 
 // Each test resets its own counter so row ids are deterministic.
 let next: number;
