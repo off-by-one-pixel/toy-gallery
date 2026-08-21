@@ -10,30 +10,31 @@ interface SortContextValue {
 
 const SortContext = createContext<SortContextValue | null>(null);
 
+const parseStoredSort = (raw: string): unknown => {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
 export function SortProvider({ children, config }: Readonly<{ children: ReactNode; config: SortConfig }>) {
-  const { storageKey } = config;
   const [sortState, setSortState] = useState<Sort | null>(null);
 
   useEffect(() => {
-    if (globalThis.window === undefined) return;
-    const stored = localStorage.getItem(storageKey);
+    const stored = localStorage.getItem(config.storageKey);
     if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored);
-      if (isValidSort(parsed, config)) setSortState(parsed);
-    } catch {
-      // ignore corrupt value
-    }
-  }, [storageKey, config]);
+    const parsed = parseStoredSort(stored);
+    if (isValidSort(parsed, config)) setSortState(parsed);
+  }, [config]);
 
   const setSort = useCallback(
     (next: Sort | null) => {
       setSortState(next);
-      if (globalThis.window === undefined) return;
-      if (next) localStorage.setItem(storageKey, JSON.stringify(next));
-      else localStorage.removeItem(storageKey);
+      if (next) localStorage.setItem(config.storageKey, JSON.stringify(next));
+      else localStorage.removeItem(config.storageKey);
     },
-    [storageKey],
+    [config],
   );
 
   const value = useMemo(() => ({ sort: sortState, setSort }), [sortState, setSort]);

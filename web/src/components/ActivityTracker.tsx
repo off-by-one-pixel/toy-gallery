@@ -10,6 +10,12 @@ import FrequencyStrip from './session-list/FrequencyStrip';
 
 type Props = Readonly<{ items: readonly StatViewItem[] }>;
 
+type HeatmapRect = ReactElement<React.SVGProps<SVGRectElement>>;
+
+const asHeatmapRect = (rect: unknown): HeatmapRect => rect as HeatmapRect;
+
+const asActivityCell = (value: unknown): ActivityCell | null => (value ?? null) as ActivityCell | null;
+
 export default function ActivityTracker({ items }: Props) {
   return (
     <div className="mx-auto grid max-w-300 grid-cols-1 gap-6 rounded-lg bg-surface/60 px-4 pt-3 pb-4 sm:grid-cols-2 sm:gap-8">
@@ -37,9 +43,9 @@ function DimensionHeatmap({ view }: Readonly<{ view: DimensionView }>) {
           showWeekdayLabels
           gutterSize={2}
           transformDayElement={(rect, value) => {
-            const cell = value as ActivityCell | null;
+            const cell = asActivityCell(value);
             const fill = cell?.fill ?? ACTIVITY_PALETTE.empty;
-            const el = rect as unknown as ReactElement<React.SVGProps<SVGRectElement>>;
+            const el = asHeatmapRect(rect);
             return cloneElement(
               el,
               { style: { ...el.props.style, fill } },

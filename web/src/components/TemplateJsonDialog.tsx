@@ -5,6 +5,8 @@ import { Alert, Button, Modal, useOverlayState } from '@heroui/react';
 import { Check, Copy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { formatError } from '../services/errors';
+
 type Props = Readonly<{
   mode: 'export' | 'import';
   initialText?: string;
@@ -44,7 +46,7 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
       onImport?.(text);
       overlayState.close();
     } catch (e) {
-      setError((e as Error).message);
+      setError(formatError(e));
     }
   };
 
