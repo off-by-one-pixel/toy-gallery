@@ -3,10 +3,10 @@
 import { cloneElement, type ReactElement } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 
-import { ACTIVITY_PALETTE } from '@/services/activityPalette';
-import type { ActivityCell, DimensionView } from '@/services/activity';
-import type { StatViewItem } from '@/services/statsView';
-import FrequencyStrip from '@/components/session-list/FrequencyStrip';
+import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
+import type { ActivityCell, DimensionView } from '@/features/sessions/stats/activity';
+import type { StatViewItem } from '@/features/sessions/stats/statsView';
+import FrequencyStrip from '@/features/sessions/stats/FrequencyStrip';
 
 type Props = Readonly<{ items: readonly StatViewItem[] }>;
 

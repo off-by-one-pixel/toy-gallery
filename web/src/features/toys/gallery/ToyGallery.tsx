@@ -27,8 +27,8 @@ import ToyCards from '@/features/toys/gallery/ToyCards';
 import ToyEditModal from '@/features/toys/editor/ToyEditModal';
 import ToyList from '@/features/toys/gallery/ToyList';
 import GirthToggle from '@/components/GirthToggle';
-import LiveSessionBanner from '@/components/LiveSessionBanner';
-import { useStartLiveAction } from '@/hooks/useStartLiveAction';
+import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
+import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import UnitToggle from '@/components/UnitToggle';
 import ViewToggle from '@/components/ViewToggle';
 

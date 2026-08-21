@@ -9,8 +9,8 @@ import { useSortOf } from '@/hooks/useSortOf';
 import { fetchMediaIndicators, fetchSessions, fetchToys, type SessionPage } from '@/api';
 import { formatError } from '@/api/errors';
 import { queryKeys } from '@/api/queryKeys';
-import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '@/services/session';
-import { SESSION_SORT, sessionOrderingParam } from '@/services/sessionSort';
+import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '@/features/sessions/session';
+import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
 import type { Session, Toy } from '@/api/types';
 
 export type SessionListData = Readonly<{

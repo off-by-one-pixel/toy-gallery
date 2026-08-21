@@ -9,11 +9,17 @@ import { useGirth } from '@/providers/GirthProvider';
 import { useUnit } from '@/providers/UnitProvider';
 import { fetchSessionStats } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
-import type { FilterKey } from '@/services/session';
-import { SESSION_STATS } from '@/services/statsConfig';
-import { buildStatViews, deriveQueries, type StatContext, type StatDef, startFor } from '@/services/statsView';
+import type { FilterKey } from '@/features/sessions/session';
+import { SESSION_STATS } from '@/features/sessions/stats/statsConfig';
+import {
+  buildStatViews,
+  deriveQueries,
+  type StatContext,
+  type StatDef,
+  startFor,
+} from '@/features/sessions/stats/statsView';
 import type { StatsGroup } from '@/api/types';
-import ActivityTracker from '@/components/ActivityTracker';
+import ActivityTracker from '@/features/sessions/stats/ActivityTracker';
 
 type Props = Readonly<{ filter: FilterKey; defs?: readonly StatDef[] }>;
 

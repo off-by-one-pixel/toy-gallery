@@ -8,25 +8,25 @@ import { useRouter } from 'next/navigation';
 
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { useStartLiveAction } from '@/hooks/useStartLiveAction';
+import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import { SortProvider } from '@/providers/SortProvider';
 import { useUnit } from '@/providers/UnitProvider';
 import { deleteSession } from '@/api';
-import { FILTERS, type FilterKey } from '@/services/session';
-import { SESSION_SORT } from '@/services/sessionSort';
+import { FILTERS, type FilterKey } from '@/features/sessions/session';
+import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session } from '@/api/types';
 import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
 import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
-import LiveSessionBanner from '@/components/LiveSessionBanner';
+import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 import TopBar from '@/components/TopBar';
 import GirthToggle from '@/components/GirthToggle';
 import UnitToggle from '@/components/UnitToggle';
-import EmptyState from '@/components/session-list/EmptyState';
-import SessionRow from '@/components/session-list/SessionRow';
-import SessionSortControl from '@/components/session-list/SessionSortControl';
-import SessionStats from '@/components/session-list/SessionStats';
-import { useSessionList } from '@/components/session-list/useSessionList';
+import EmptyState from '@/features/sessions/list/EmptyState';
+import SessionRow from '@/features/sessions/list/SessionRow';
+import SessionSortControl from '@/features/sessions/list/SessionSortControl';
+import SessionStats from '@/features/sessions/stats/SessionStats';
+import { useSessionList } from '@/features/sessions/list/useSessionList';
 
 export default function SessionList() {
   return (

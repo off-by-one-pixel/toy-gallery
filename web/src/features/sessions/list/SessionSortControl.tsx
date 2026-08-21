@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { useGirth } from '@/providers/GirthProvider';
-import { SESSION_SORT, type SessionSortColumn } from '@/services/sessionSort';
+import { SESSION_SORT, type SessionSortColumn } from '@/features/sessions/sessionSort';
 import SortControl from '@/components/SortControl';
 
 export default function SessionSortControl() {

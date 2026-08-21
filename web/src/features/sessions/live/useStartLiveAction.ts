@@ -4,7 +4,7 @@ import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import type { ActionDef } from '@/components/ActionButtons';
-import { useLiveSession } from '@/hooks/useLiveSession';
+import { useLiveSession } from '@/features/sessions/live/useLiveSession';
 import type { Session } from '@/api/types';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 

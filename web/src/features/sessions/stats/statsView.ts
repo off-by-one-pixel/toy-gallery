@@ -5,10 +5,10 @@ import {
   type DimensionView,
   extent,
   legendGradient,
-} from '@/services/activity';
+} from '@/features/sessions/stats/activity';
 import { daysAgoDateString, formatDateKey, localDateKey, MS_PER_DAY, startOfDay } from '@/lib/dates';
 import type { Girth } from '@/services/girth';
-import { type FilterKey, filterStartDate } from '@/services/session';
+import { type FilterKey, filterStartDate } from '@/features/sessions/session';
 import type { StatsGroup } from '@/api/types';
 import { formatValue, type Unit } from '@/services/units';
 

@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { formatDuration } from '@/lib/duration';
-import { toyTooltip } from '@/services/session';
+import { toyTooltip } from '@/features/sessions/session';
 import { Involvement, type SessionEntry, type Toy } from '@/api/types';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 

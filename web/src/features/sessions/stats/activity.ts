@@ -1,4 +1,4 @@
-import { ACTIVITY_PALETTE } from '@/services/activityPalette';
+import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 
 export const ACTIVITY_WINDOW_DAYS = 365;
 

@@ -17,11 +17,11 @@ vi.mock('@/api', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
-import { useLiveSession } from '@/hooks/useLiveSession';
+import { useLiveSession } from '@/features/sessions/live/useLiveSession';
 import { fetchLiveSession, startLiveSession } from '@/api';
 import type { Session } from '@/api/types';
 import { QueryWrapper } from '@/test/QueryWrapper';
-import LiveSessionBanner from '@/components/LiveSessionBanner';
+import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 
 const live = (startedAt: string): Session => ({
   id: 5,

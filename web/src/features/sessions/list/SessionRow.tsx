@@ -9,12 +9,12 @@ import { displayGirth } from '@/services/girth';
 import { formatDuration, totalDuration } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
-import { sortEntriesByInvolvement } from '@/services/session';
+import { sortEntriesByInvolvement } from '@/features/sessions/session';
 import type { Session, Toy } from '@/api/types';
 import { type Unit } from '@/services/units';
-import MiniToy from '@/components/session-list/MiniToy';
-import PeakRow from '@/components/session-list/PeakRow';
-import SessionMediaStrip from '@/components/session-list/SessionMediaStrip';
+import MiniToy from '@/features/sessions/list/MiniToy';
+import PeakRow from '@/features/sessions/list/PeakRow';
+import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 
 const STRIP_LIMIT = 5;
 

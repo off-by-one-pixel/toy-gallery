@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SESSION_SORT, sessionOrderingParam } from '@/services/sessionSort';
+import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
 import { isColumnOf } from '@/lib/sort';
 
 describe('sessionOrderingParam', () => {

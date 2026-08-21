@@ -22,7 +22,7 @@ import { PrivacyProvider } from '@/providers/PrivacyProvider';
 import { fetchSessionMedia } from '@/api';
 import type { SessionMedia } from '@/api/types';
 import { QueryWrapper } from '@/test/QueryWrapper';
-import SessionMediaStrip from '@/components/session-list/SessionMediaStrip';
+import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 
 class ResizeObserverStub {
   observe() {}

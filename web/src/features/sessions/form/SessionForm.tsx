@@ -22,9 +22,9 @@ import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import SearchInput from '@/components/SearchInput';
 import SectionHeading from '@/components/SectionHeading';
-import SessionMediaStrip from '@/components/session-list/SessionMediaStrip';
+import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
-import ToyChipSelector from '@/components/ToyChipSelector';
+import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
 
