@@ -249,7 +249,7 @@
     "label": "Sort",
     "column": {
       "name": "Brand / Model",
-      "popularity": "Popularity",
+      "popularity": "Times used",
       "duration": "Plugged time",
       "date": "Date",
       "peakLength": "Peak length",

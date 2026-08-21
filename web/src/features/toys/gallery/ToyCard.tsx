@@ -9,7 +9,10 @@ import { useUnit } from '@/features/preferences/UnitProvider';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
+import { useSortOf } from '@/hooks/useSortOf';
+import { TOY_SORT } from '@/features/toys/toySort';
 import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
+import { cardSortValue } from '@/features/toys/gallery/cardSortValue';
 import { formatDuration } from '@/lib/duration';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
@@ -31,6 +34,9 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   const tToy = useTranslations('toy');
   const locale = useLocale();
   const detailsRef = useRef<HTMLDivElement>(null);
+  const { sort } = useSortOf(TOY_SORT);
+  const tAll = useTranslations();
+  const sortValue = cardSortValue(sort, toy, unit, locale);
 
   const editorToy = toyShapeToEditor(toy.shape);
 
@@ -65,6 +71,18 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
         heightRatio={heightRatio}
         className="h-60 overflow-hidden rounded-t-2xl border-b border-border"
       >
+        {sortValue && (
+          <div className="absolute top-2.5 right-2.5 z-10 transition-opacity group-hover:opacity-0">
+            <Chip size="sm" className="bg-surface shadow-sm">
+              <Chip.Label>
+                <span className="inline-flex items-baseline gap-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-muted">{tAll(sortValue.labelKey)}</span>
+                  <span className="font-semibold tabular-nums">{sortValue.value}</span>
+                </span>
+              </Chip.Label>
+            </Chip>
+          </div>
+        )}
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
           <ToyActionButtons
             onEdit={() => onEdit(toy)}
