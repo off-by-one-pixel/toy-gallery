@@ -5,9 +5,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import en from '@/i18n/catalogs/en.json';
-import { PrivacyProvider } from '@/providers/PrivacyProvider';
-import PrivacyToggle from '@/components/PrivacyToggle';
-import SensitiveContent from '@/components/SensitiveContent';
+import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
+import PrivacyToggle from '@/features/preferences/PrivacyToggle';
+import SensitiveContent from '@/features/preferences/SensitiveContent';
 
 const wrap = (ui: React.ReactNode) => (
   <NextIntlClientProvider locale="en" messages={en}>

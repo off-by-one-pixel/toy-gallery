@@ -4,7 +4,7 @@ import { Alert } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { useAuth } from '@/providers/AuthProvider';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import TextInput from '@/components/TextInput';
 

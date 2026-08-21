@@ -38,11 +38,11 @@ vi.mock('@/api', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
-import { AuthProvider } from '@/providers/AuthProvider';
-import { GirthProvider } from '@/providers/GirthProvider';
-import { PrivacyProvider } from '@/providers/PrivacyProvider';
-import { ThemeProvider } from '@/providers/ThemeProvider';
-import { UnitProvider } from '@/providers/UnitProvider';
+import { AuthProvider } from '@/features/auth/AuthProvider';
+import { GirthProvider } from '@/features/preferences/GirthProvider';
+import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
+import { ThemeProvider } from '@/features/preferences/ThemeProvider';
+import { UnitProvider } from '@/features/preferences/UnitProvider';
 import {
   fetchLiveSession,
   fetchMediaIndicators,

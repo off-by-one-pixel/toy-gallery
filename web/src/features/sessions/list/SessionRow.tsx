@@ -4,14 +4,14 @@ import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
-import { useGirth } from '@/providers/GirthProvider';
-import { displayGirth } from '@/services/girth';
+import { useGirth } from '@/features/preferences/GirthProvider';
+import { displayGirth } from '@/features/preferences/girth';
 import { formatDuration, totalDuration } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
 import type { Session, Toy } from '@/api/types';
-import { type Unit } from '@/services/units';
+import { type Unit } from '@/features/preferences/units';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';

@@ -18,7 +18,7 @@ vi.mock('@/api', () => ({
 globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS;
 
 import en from '@/i18n/catalogs/en.json';
-import { AuthProvider } from '@/providers/AuthProvider';
+import { AuthProvider } from '@/features/auth/AuthProvider';
 import { fetchMediaIndicators, refreshAllSessionMedia } from '@/api';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import AppMenu from '@/components/AppMenu';

@@ -1,6 +1,6 @@
 import type { Toy as EditorToy, ToySection } from 'toy-editor';
 import { SectionShape, type ToyTemplate } from '@/api/types';
-import { circumferenceToDiameter } from '@/services/units';
+import { circumferenceToDiameter } from '@/features/preferences/units';
 
 type Input = Readonly<{
   template: ToyTemplate;

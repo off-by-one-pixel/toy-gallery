@@ -6,9 +6,9 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import AppMenu from '@/components/AppMenu';
-import PrivacyToggle from '@/components/PrivacyToggle';
+import PrivacyToggle from '@/features/preferences/PrivacyToggle';
 import SectionTabs from '@/components/SectionTabs';
-import ThemeToggle from '@/components/ThemeToggle';
+import ThemeToggle from '@/features/preferences/ThemeToggle';
 
 type Props = Readonly<{
   subtitle?: ReactNode;

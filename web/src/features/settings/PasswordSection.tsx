@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { changePassword } from '@/api';
-import SectionCard from '@/components/SectionCard';
+import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
 import TextInput from '@/components/TextInput';
 

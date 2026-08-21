@@ -7,10 +7,10 @@ import { useTranslations } from 'next-intl';
 
 import { useMediaLightboxNav } from '@/features/sessions/media/useMediaLightboxNav';
 import { fetchSessionMedia } from '@/api';
-import { usePrivacy } from '@/providers/PrivacyProvider';
+import { usePrivacy } from '@/features/preferences/PrivacyProvider';
 import { queryKeys } from '@/api/queryKeys';
 import MediaLightbox from '@/features/sessions/media/MediaLightbox';
-import SensitiveContent from '@/components/SensitiveContent';
+import SensitiveContent from '@/features/preferences/SensitiveContent';
 
 type Props = Readonly<{ sessionId: number; showHeading?: boolean }>;
 

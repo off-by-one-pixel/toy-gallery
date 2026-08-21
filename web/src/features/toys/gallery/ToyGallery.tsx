@@ -14,7 +14,7 @@ import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { useToyEditorWizardNav } from '@/features/toys/editor/useToyEditorWizardNav';
 import { useToyModalNav } from '@/features/toys/gallery/useToyModalNav';
 import { useSortOf } from '@/hooks/useSortOf';
-import { useViewMode, ViewMode } from '@/providers/ViewModeProvider';
+import { useViewMode, ViewMode } from '@/features/preferences/ViewModeProvider';
 import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
@@ -26,11 +26,11 @@ import TopBar from '@/components/TopBar';
 import ToyCards from '@/features/toys/gallery/ToyCards';
 import ToyEditModal from '@/features/toys/editor/ToyEditModal';
 import ToyList from '@/features/toys/gallery/ToyList';
-import GirthToggle from '@/components/GirthToggle';
+import GirthToggle from '@/features/preferences/GirthToggle';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
-import UnitToggle from '@/components/UnitToggle';
-import ViewToggle from '@/components/ViewToggle';
+import UnitToggle from '@/features/preferences/UnitToggle';
+import ViewToggle from '@/features/preferences/ViewToggle';
 
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 

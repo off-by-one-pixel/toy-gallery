@@ -1,6 +1,6 @@
 import type { ToySection } from 'toy-editor';
 import { type SectionShape, type ToyPayload } from '@/api/types';
-import { diameterToCircumference } from '@/services/units';
+import { diameterToCircumference } from '@/features/preferences/units';
 
 /** Snapshot of the toy-editor store's user-visible state, captured at
  *  the point a converter runs. Held read-only by callers so the

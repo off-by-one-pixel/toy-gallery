@@ -3,9 +3,9 @@
 import { useTranslations } from 'next-intl';
 
 import { isLocale, LOCALES, type Locale } from '@/i18n/routing';
-import { useLocaleContext } from '@/providers/LocaleProvider';
-import LocaleSwitcher, { type LocaleOption } from '@/components/LocaleSwitcher';
-import SectionCard from '@/components/SectionCard';
+import { useLocaleContext } from '@/features/preferences/LocaleProvider';
+import LocaleSwitcher, { type LocaleOption } from '@/features/settings/LocaleSwitcher';
+import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
 
 const OPTIONS: readonly LocaleOption[] = (Object.entries(LOCALES) as [Locale, { label: string }][]).map(

@@ -1,6 +1,6 @@
 'use client';
 
-import { formatValue, type Unit } from '@/services/units';
+import { formatValue, type Unit } from '@/features/preferences/units';
 
 type Props = Readonly<{
   label: string;

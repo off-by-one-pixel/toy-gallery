@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 
 import { APP_COMMIT_SHA, APP_VERSION } from '@/config';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { useAuth } from '@/providers/AuthProvider';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { fetchMediaIndicators, refreshAllSessionMedia } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from '@/components/ActionDropdownMenu';

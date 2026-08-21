@@ -13,7 +13,7 @@ import {
   type TemplateFormState,
 } from '@/features/toys/template/templateForm';
 import { SectionShape, type ToyTemplate } from '@/api/types';
-import { Unit } from '@/services/units';
+import { Unit } from '@/features/preferences/units';
 
 const TEMPLATE: ToyTemplate = {
   id: 'slim-cone',

@@ -8,8 +8,8 @@ import { useTranslations } from 'next-intl';
 
 import { deleteCollection, downloadExport, importFromFile } from '@/api';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import ConfirmModal from '@/components/ConfirmModal';
-import SectionCard from '@/components/SectionCard';
+import ConfirmModal from '@/features/settings/ConfirmModal';
+import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
 
 export default function DataSection() {

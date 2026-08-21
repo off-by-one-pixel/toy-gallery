@@ -9,8 +9,8 @@ import { useTranslations } from 'next-intl';
 
 import { templateToEditor } from '@/features/toys/converters/template';
 import type { SizeMode } from '@/features/toys/template/templateForm';
-import { useUnit } from '@/providers/UnitProvider';
-import { type Unit } from '@/services/units';
+import { useUnit } from '@/features/preferences/UnitProvider';
+import { type Unit } from '@/features/preferences/units';
 import TextInput from '@/components/TextInput';
 import { PREVIEW_STYLE } from '@/features/toys/template/styles';
 import type { TemplateForm } from '@/features/toys/template/useTemplateForm';

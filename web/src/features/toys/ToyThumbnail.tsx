@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Toy as EditorToy } from 'toy-editor';
 
-import SensitiveContent from '@/components/SensitiveContent';
+import SensitiveContent from '@/features/preferences/SensitiveContent';
 import Silhouette from '@/features/toys/Silhouette';
 
 type Background = 'gradient' | 'none';

@@ -18,7 +18,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
-import { PrivacyProvider } from '@/providers/PrivacyProvider';
+import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
 import { fetchSessionMedia } from '@/api';
 import type { SessionMedia } from '@/api/types';
 import { QueryWrapper } from '@/test/QueryWrapper';

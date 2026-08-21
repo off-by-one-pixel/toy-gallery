@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { DEFAULT_GIRTH, type Girth, isGirth } from '@/services/girth';
+import { DEFAULT_GIRTH, type Girth, isGirth } from '@/features/preferences/girth';
 import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 interface GirthContextValue {

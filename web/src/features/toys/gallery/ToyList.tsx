@@ -7,14 +7,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { formatDuration } from '@/lib/duration';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
-import { useGirth } from '@/providers/GirthProvider';
+import { useGirth } from '@/features/preferences/GirthProvider';
 import { useSortOf } from '@/hooks/useSortOf';
-import { useUnit } from '@/providers/UnitProvider';
+import { useUnit } from '@/features/preferences/UnitProvider';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
-import { displayGirth } from '@/services/girth';
+import { displayGirth } from '@/features/preferences/girth';
 import { cycleSort, type Sort } from '@/lib/sort';
 import { TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
-import { formatValue, type Unit } from '@/services/units';
+import { formatValue, type Unit } from '@/features/preferences/units';
 import { SectionShape, type Toy } from '@/api/types';
 import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';

@@ -13,7 +13,7 @@ import {
 } from '@/features/toys/template/templateForm';
 import { TOY_TEMPLATES } from '@/features/toys/template/toyTemplates';
 import type { ToyTemplate } from '@/api/types';
-import { type Unit } from '@/services/units';
+import { type Unit } from '@/features/preferences/units';
 
 /** Facade returned by `useTemplateForm`. Bundles the form state, the
  *  resolved selected template, the parsed mm targets, and named

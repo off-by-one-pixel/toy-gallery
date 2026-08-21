@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { defaultUnit, Unit, unitById } from '@/services/units';
+import { defaultUnit, Unit, unitById } from '@/features/preferences/units';
 import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 interface UnitContextValue {

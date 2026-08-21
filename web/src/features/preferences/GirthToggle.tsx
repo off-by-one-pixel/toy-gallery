@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '@/providers/GirthProvider';
-import { GIRTHS, type Girth } from '@/services/girth';
+import { useGirth } from '@/features/preferences/GirthProvider';
+import { GIRTHS, type Girth } from '@/features/preferences/girth';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 
 export default function GirthToggle() {

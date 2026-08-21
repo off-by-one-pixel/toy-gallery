@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useUnit } from '@/providers/UnitProvider';
-import { Unit, unitById } from '@/services/units';
+import { useUnit } from '@/features/preferences/UnitProvider';
+import { Unit, unitById } from '@/features/preferences/units';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 
 type UnitId = (typeof Unit)[keyof typeof Unit]['id'];

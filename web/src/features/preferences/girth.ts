@@ -1,4 +1,4 @@
-import { circumferenceToDiameter } from '@/services/units';
+import { circumferenceToDiameter } from '@/features/preferences/units';
 
 export const GIRTHS = ['circumference', 'diameter'] as const;
 export type Girth = (typeof GIRTHS)[number];

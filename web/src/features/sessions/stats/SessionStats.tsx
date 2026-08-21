@@ -5,8 +5,8 @@ import { keepPreviousData, useQueries } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useReportError } from '@/hooks/useAsyncAction';
-import { useGirth } from '@/providers/GirthProvider';
-import { useUnit } from '@/providers/UnitProvider';
+import { useGirth } from '@/features/preferences/GirthProvider';
+import { useUnit } from '@/features/preferences/UnitProvider';
 import { fetchSessionStats } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import type { FilterKey } from '@/features/sessions/session';

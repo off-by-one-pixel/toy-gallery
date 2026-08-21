@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '@/providers/GirthProvider';
+import { useGirth } from '@/features/preferences/GirthProvider';
 import { SESSION_SORT, type SessionSortColumn } from '@/features/sessions/sessionSort';
 import SortControl from '@/components/SortControl';
 

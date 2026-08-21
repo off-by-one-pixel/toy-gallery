@@ -3,7 +3,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { GirthProvider, useGirth } from '@/providers/GirthProvider';
+import { GirthProvider, useGirth } from '@/features/preferences/GirthProvider';
 
 function Probe() {
   const { girth, setGirth } = useGirth();

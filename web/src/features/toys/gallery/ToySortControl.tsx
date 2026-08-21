@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '@/providers/GirthProvider';
+import { useGirth } from '@/features/preferences/GirthProvider';
 import { TOY_SORT, type ToySortColumn } from '@/features/toys/toySort';
 import SortControl from '@/components/SortControl';
 

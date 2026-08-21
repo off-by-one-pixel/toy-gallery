@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { login as authLogin, setSessionExpiredHandler, tokenStorage } from '@/services/auth';
+import { login as authLogin, setSessionExpiredHandler, tokenStorage } from '@/features/auth/tokens';
 
 interface AuthState {
   username: string | null;

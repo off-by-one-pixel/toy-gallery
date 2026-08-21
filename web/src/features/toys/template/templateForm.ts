@@ -2,7 +2,13 @@ import type { Toy as EditorToy } from 'toy-editor';
 
 import { templateToEditor } from '@/features/toys/converters/template';
 import type { ToyTemplate } from '@/api/types';
-import { circumferenceToDiameter, diameterToCircumference, fromMm, toMm, type Unit } from '@/services/units';
+import {
+  circumferenceToDiameter,
+  diameterToCircumference,
+  fromMm,
+  toMm,
+  type Unit,
+} from '@/features/preferences/units';
 
 export type SizeMode = 'diameter' | 'circumference';
 

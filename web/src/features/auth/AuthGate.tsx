@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
-import { useAuth } from '@/providers/AuthProvider';
+import { useAuth } from '@/features/auth/AuthProvider';
 
 export default function AuthGate({ children }: Readonly<{ children: ReactNode }>) {
   const { isAuthenticated, isHydrated } = useAuth();

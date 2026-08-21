@@ -3,11 +3,11 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useGirth } from '@/providers/GirthProvider';
-import { displayGirth } from '@/services/girth';
-import { useUnit } from '@/providers/UnitProvider';
+import { useGirth } from '@/features/preferences/GirthProvider';
+import { displayGirth } from '@/features/preferences/girth';
+import { useUnit } from '@/features/preferences/UnitProvider';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
-import { formatValue, type Unit } from '@/services/units';
+import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
 import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
 import { formatDuration } from '@/lib/duration';

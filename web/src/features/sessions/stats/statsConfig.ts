@@ -1,6 +1,6 @@
 import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 import { localizedHourLabel, localizedWeekdayLabel } from '@/lib/dates';
-import { displayGirth } from '@/services/girth';
+import { displayGirth } from '@/features/preferences/girth';
 import type { StatDef } from '@/features/sessions/stats/statsView';
 
 export const METRIC_COUNT = 'count';

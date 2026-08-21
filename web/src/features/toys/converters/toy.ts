@@ -1,6 +1,6 @@
 import type { Toy as EditorToy } from 'toy-editor';
 import { SectionShape, type Toy } from '@/api/types';
-import { circumferenceToDiameter } from '@/services/units';
+import { circumferenceToDiameter } from '@/features/preferences/units';
 
 /** Map a saved Toy (API domain) to the EditorToy the toy-editor store
  *  consumes when opening edit / copy flows. Sections are shallow-copied

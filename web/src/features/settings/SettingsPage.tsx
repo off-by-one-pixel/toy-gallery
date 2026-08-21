@@ -3,9 +3,9 @@
 import { useTranslations } from 'next-intl';
 
 import TopBar from '@/components/TopBar';
-import DataSection from '@/components/settings/DataSection';
-import LanguageSection from '@/components/settings/LanguageSection';
-import PasswordSection from '@/components/settings/PasswordSection';
+import DataSection from '@/features/settings/DataSection';
+import LanguageSection from '@/features/settings/LanguageSection';
+import PasswordSection from '@/features/settings/PasswordSection';
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
