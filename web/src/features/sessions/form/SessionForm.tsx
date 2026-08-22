@@ -7,7 +7,7 @@ import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { createSession, fetchToys, fetchSession, updateSession } from '@/api';
+import { createSession, fetchToys, fetchSession, patchSessionStart, updateSession } from '@/api';
 import { formatError } from '@/api/errors';
 import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
 import { Involvement } from '@/api/types';
@@ -21,11 +21,25 @@ import { filterToys } from '@/features/toys/search';
 import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import SearchInput from '@/components/SearchInput';
+import LiveBadge from '@/features/sessions/live/LiveBadge';
 import SectionHeading from '@/components/SectionHeading';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
+
+type SavePayload = Parameters<typeof createSession>[0];
+
+const persistSession = (sessionId: number | null, liveStartOnly: boolean, payload: SavePayload) => {
+  if (sessionId === null) return createSession(payload);
+  if (liveStartOnly) return patchSessionStart(sessionId, payload.startedAt);
+  return updateSession(sessionId, payload);
+};
+
+const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: (key: string) => string): string => {
+  if (!isLive) return t('save');
+  return liveUpdateMode ? t('live.updateButton') : t('live.endAndSaveButton');
+};
 
 const datetimeLocalNow = () => datetimeLocalValue(new Date());
 
@@ -117,9 +131,14 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
     });
   };
 
-  const handleSave = () => {
-    if (selectedCount === 0) return;
-    const payload = {
+  const isLive = loadedSession?.isLive === true;
+  const liveUpdateMode = isLive && endedAt === '';
+  const liveStartOnly = liveUpdateMode && selectedCount === 0;
+  const startDirty = loadedSession == null || startedAt !== datetimeLocalValue(new Date(loadedSession.startedAt));
+  const canSave = selectedCount > 0 || (liveStartOnly && startDirty);
+
+  const saveSession = () =>
+    persistSession(sessionId, liveStartOnly, {
       startedAt: new Date(startedAt).toISOString(),
       endedAt: endedAt ? new Date(endedAt).toISOString() : null,
       entries: [...selections.entries()].map(([toy, sel]) => ({
@@ -127,9 +146,11 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         involvement: sel.involvement,
         durationMinutes: sel.durationMinutes,
       })),
-    };
-    const save = sessionId !== null ? updateSession(sessionId, payload) : createSession(payload);
-    runToast(() => save, {
+    });
+
+  const handleSave = () => {
+    if (!canSave) return;
+    runToast(saveSession, {
       busy: setSaving,
       onSuccess: () => {
         Toast.toast.success(t('savedToast'));
@@ -143,6 +164,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
+  const saveLabel = saveLabelFor(isLive, liveUpdateMode, t as unknown as (key: string) => string);
 
   return (
     <>
@@ -157,6 +179,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
             {t('backToList')}
           </button>
           <h1 className="m-0 text-lg font-semibold tracking-tight text-foreground">{title}</h1>
+          {loadedSession?.isLive === true && <LiveBadge />}
         </div>
       </header>
 
@@ -276,9 +299,15 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
           <Button variant="outline" size="sm" onPress={() => router.push('/sessions')}>
             {common('cancel')}
           </Button>
-          <Button variant="primary" size="sm" isDisabled={selectedCount === 0 || saving} onPress={handleSave}>
+          <Button
+            variant="primary"
+            size="sm"
+            isDisabled={!canSave || saving}
+            className={liveUpdateMode ? 'bg-emerald-600 text-white hover:bg-emerald-500' : ''}
+            onPress={handleSave}
+          >
             <Check size={14} strokeWidth={2.2} />
-            {t('save')}
+            {saveLabel}
           </Button>
         </div>
       </div>
