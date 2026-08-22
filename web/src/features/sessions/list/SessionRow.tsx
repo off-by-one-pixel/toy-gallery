@@ -15,6 +15,7 @@ import { fetchSession } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import type { Session, Toy } from '@/api/types';
 import { type Unit } from '@/features/preferences/units';
+import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
@@ -87,15 +88,7 @@ export default function SessionRow({
       <div className="flex items-center justify-between gap-3 sm:contents">
         <div className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground sm:order-1">
           {formatWhen(session.startedAt, new Date(), locale, whenT)}
-          {session.isLive && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-600">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              </span>
-              {t('live.badge')}
-            </span>
-          )}
+          {session.isLive && <LiveBadge />}
           {photoCount + videoCount > 0 && (
             <span
               aria-label={t('media.countsLabel', { photos: photoCount, videos: videoCount })}

@@ -9,6 +9,7 @@ import {
   toysSessionsList,
   toysSessionsLiveRetrieve,
   toysSessionsStartCreate,
+  toysSessionsPartialUpdate,
   toysSessionsRetrieve,
   toysSessionsUpdate,
   toysTokenCreate,
@@ -166,6 +167,11 @@ export const updateSession = async (id: number, payload: SessionPayload): Promis
 };
 
 export const deleteSession = (id: number) => toysSessionsDestroy(id);
+
+export const patchSessionStart = async (id: number, startedAt: string): Promise<Session> => {
+  const { data } = await toysSessionsPartialUpdate(id, { started_at: startedAt });
+  return snakeToCamel<Session>(data);
+};
 
 export const startLiveSession = async (): Promise<Session> => {
   const { data } = await toysSessionsStartCreate();

@@ -90,7 +90,9 @@
     "live": {
       "startButton": "Start session",
       "badge": "Live",
-      "openButton": "Open"
+      "openButton": "Open",
+      "updateButton": "Update session",
+      "endAndSaveButton": "End and save session"
     },
     "startedLabel": "Started",
     "endedLabel": "Ended",
