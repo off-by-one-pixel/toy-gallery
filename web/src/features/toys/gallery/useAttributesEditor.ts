@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { patchToy } from '@/api';
 import { newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
@@ -14,23 +14,13 @@ export interface AttributesEditor {
   updateValue: (rowId: number, value: string) => void;
   removeRow: (rowId: number) => void;
   addRow: () => void;
-  /** Commit any unsaved edits. Call from input onBlur. */
   commitChanges: () => void;
 }
 
-/**
- * Stateful editor for a toy's `customAttributes`. Owns the local draft and
- * persists it to the server only on explicit commit (typically input blur),
- * not while the user is still typing. Single-flight save with one queued
- * retry; re-hydrates from the server's response so the BE remains the
- * source of truth.
- */
-export function useAttributesEditor(toy: Toy): AttributesEditor {
-  // Per-instance row id counter — used as React keys, must be stable
-  // across renders for the same logical row.
-  const nextRowId = useRef(0);
-  const freshRowId = useCallback(() => ++nextRowId.current, []);
+let rowIdCounter = 0;
+const freshRowId = () => ++rowIdCounter;
 
+export function useAttributesEditor(toy: Toy): AttributesEditor {
   const initial = toy.customAttributes ?? {};
   const [rows, setRows] = useState<AttributeRow[]>(() => toRows(initial, freshRowId));
 
@@ -43,16 +33,11 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   const inFlight = useRef(false);
   const pending = useRef(false);
 
-  // Mutators write to both state and ref so the next commit reads the
-  // latest value even if React hasn't flushed the render yet (typical case
-  // when blur fires immediately after onChange).
   const setRowsSync = (update: AttributeRow[] | ((prev: AttributeRow[]) => AttributeRow[])): void => {
     const next = typeof update === 'function' ? update(rowsRef.current) : update;
     rowsRef.current = next;
     setRows(next);
   };
-
-  // ---------- Save pipeline ----------
 
   const hasUnsavedChanges = (): boolean => !sameDict(toDict(rowsRef.current), savedRef.current);
 
@@ -94,34 +79,27 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
     }
   };
 
-  // ---------- Lifecycle ----------
-
-  const hydrateFromToy = (): void => {
+  const hydrateFromToy = useEffectEvent(() => {
     const fresh = toy.customAttributes ?? {};
     savedRef.current = fresh;
     setRowsSync(toRows(fresh, freshRowId));
-  };
+  });
 
-  // Re-hydrate when the parent swaps in a different toy. Same-id re-renders
-  // don't touch in-progress edits.
   const lastId = useRef(toy.id);
   useEffect(() => {
     if (lastId.current === toy.id) return;
     lastId.current = toy.id;
     hydrateFromToy();
-  }, [toy.id, toy.customAttributes]);
+  }, [toy.id]);
 
-  // Flush any unsaved edits on unmount, in case the input never blurred
-  // (e.g., the panel was removed while an input was still focused).
+  const flushOnUnmount = useEffectEvent(() => {
+    clearTimeout(savedTimer.current);
+    void commitSave();
+  });
+
   useEffect(() => {
-    return () => {
-      clearTimeout(savedTimer.current);
-      void commitSave();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => flushOnUnmount();
   }, []);
-
-  // ---------- User actions ----------
 
   const mutateRow = (rowId: number, change: (r: AttributeRow) => AttributeRow): void => {
     setRowsSync((rs) => rs.map((r) => (r.rowId === rowId ? change(r) : r)));
