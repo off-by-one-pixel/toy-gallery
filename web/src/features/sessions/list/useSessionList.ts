@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useSearchParams } from 'next/navigation';
+
 import { useReportError } from '@/hooks/useAsyncAction';
+import { useUrlUpdate } from '@/hooks/useUrlNav';
 import { useSortOf } from '@/hooks/useSortOf';
 import { fetchSessions, fetchToys, type SessionPage } from '@/api';
 import { formatError } from '@/api/errors';
@@ -13,7 +16,7 @@ import {
   type FilterKey,
   filterStartDate,
   mergeSessions,
-  NO_SESSION_FILTERS,
+  parseToyIdsParam,
   sessionFiltersKey,
   type SessionFilters,
   toysById as buildToysById,
@@ -43,8 +46,22 @@ export type SessionListData = Readonly<{
 }>;
 
 export function useSessionList(): SessionListData {
+  const searchParams = useSearchParams();
+  const updateUrl = useUrlUpdate();
   const [filter, setFilter] = useState<FilterKey>('all');
-  const [sessionFilters, setSessionFilters] = useState<SessionFilters>(NO_SESSION_FILTERS);
+  const sessionFilters = useMemo<SessionFilters>(
+    () => ({
+      toyIds: parseToyIdsParam(searchParams.get('toys')),
+      hasMedia: searchParams.get('media') === '1',
+    }),
+    [searchParams],
+  );
+  const setSessionFilters = (next: SessionFilters) => {
+    updateUrl({
+      toys: next.toyIds.length > 0 ? next.toyIds.join(',') : null,
+      media: next.hasMedia ? '1' : null,
+    });
+  };
   const { sort } = useSortOf(SESSION_SORT);
   const queryClient = useQueryClient();
   const reportError = useReportError();

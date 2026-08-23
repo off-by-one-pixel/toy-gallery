@@ -9,6 +9,7 @@ import {
   type SessionFilters,
   NO_SESSION_FILTERS,
   toggleToyFilter,
+  toyTooltip,
 } from '@/features/sessions/session';
 
 type Props = Readonly<{
@@ -24,7 +25,7 @@ export default function SessionFilterChips({ toysById, filters, onChange }: Prop
     <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 pt-1 pb-3 sm:px-6">
       {filters.toyIds.map((toyId) => {
         const toy = toysById.get(toyId);
-        const label = toy ? `${toy.brand} ${toy.name}`.trim() : `#${toyId}`;
+        const label = toy ? toyTooltip(toy) : `#${toyId}`;
         return <Chip key={toyId} label={label} onRemove={() => onChange(toggleToyFilter(filters, toyId))} />;
       })}
       {filters.hasMedia && <Chip label={t('hasMedia')} onRemove={() => onChange({ ...filters, hasMedia: false })} />}

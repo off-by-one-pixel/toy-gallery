@@ -79,3 +79,11 @@ export const toggleToyFilter = (filters: SessionFilters, toyId: number): Session
   ...filters,
   toyIds: filters.toyIds.includes(toyId) ? filters.toyIds.filter((id) => id !== toyId) : [...filters.toyIds, toyId],
 });
+
+export const parseToyIdsParam = (value: string | null): number[] =>
+  value
+    ? value
+        .split(',')
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0)
+    : [];

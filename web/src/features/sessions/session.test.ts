@@ -5,6 +5,7 @@ import {
   INVOLVEMENT_RANK,
   mergeSessions,
   NO_SESSION_FILTERS,
+  parseToyIdsParam,
   sortEntriesByInvolvement,
   toggleToyFilter,
   toyTooltip,
@@ -145,5 +146,14 @@ describe('session filters', () => {
     const withToy = toggleToyFilter(NO_SESSION_FILTERS, 5);
     expect(withToy.toyIds).toEqual([5]);
     expect(toggleToyFilter(withToy, 5).toyIds).toEqual([]);
+  });
+});
+
+describe('parseToyIdsParam', () => {
+  it('parses comma-separated ids and drops junk', () => {
+    expect(parseToyIdsParam('3,7')).toEqual([3, 7]);
+    expect(parseToyIdsParam('3,junk,-1,0')).toEqual([3]);
+    expect(parseToyIdsParam(null)).toEqual([]);
+    expect(parseToyIdsParam('')).toEqual([]);
   });
 });
