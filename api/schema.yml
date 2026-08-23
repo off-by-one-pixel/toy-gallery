@@ -35,6 +35,10 @@ paths:
           type: string
           format: date
       - in: query
+        name: has_media
+        schema:
+          type: boolean
+      - in: query
         name: ordering
         schema:
           enum:
@@ -68,6 +72,12 @@ paths:
         schema:
           type: string
           format: date
+      - in: query
+        name: toys
+        schema:
+          type: array
+          items:
+            type: integer
       - in: query
         name: tz
         schema:
@@ -303,13 +313,19 @@ paths:
           - date
           - hour
           - weekday
+          - toy
           type: string
           minLength: 1
         description: |-
           * `date` - date
           * `hour` - hour
           * `weekday` - weekday
+          * `toy` - toy
         required: true
+      - in: query
+        name: has_media
+        schema:
+          type: boolean
       - in: query
         name: metrics
         schema:
@@ -323,6 +339,12 @@ paths:
         schema:
           type: string
           format: date
+      - in: query
+        name: toys
+        schema:
+          type: array
+          items:
+            type: integer
       - in: query
         name: tz
         schema:

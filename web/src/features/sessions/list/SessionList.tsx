@@ -12,7 +12,7 @@ import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction'
 import { SortProvider } from '@/providers/SortProvider';
 import { useUnit } from '@/features/preferences/UnitProvider';
 import { deleteSession } from '@/api';
-import { FILTERS, type FilterKey } from '@/features/sessions/session';
+import { activeFilterCount, FILTERS, type FilterKey } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session } from '@/api/types';
 import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
@@ -24,6 +24,8 @@ import GirthToggle from '@/features/preferences/GirthToggle';
 import PrivacyToggle from '@/features/preferences/PrivacyToggle';
 import UnitToggle from '@/features/preferences/UnitToggle';
 import EmptyState from '@/features/sessions/list/EmptyState';
+import SessionFilterChips from '@/features/sessions/list/SessionFilterChips';
+import SessionFilterControl from '@/features/sessions/list/SessionFilterControl';
 import SessionRow from '@/features/sessions/list/SessionRow';
 import SessionSortControl from '@/features/sessions/list/SessionSortControl';
 import SessionStats from '@/features/sessions/stats/SessionStats';
@@ -118,6 +120,12 @@ function SessionListContent() {
             onChange={data.setFilter}
             ariaLabel={t('filter.ariaLabel')}
           />
+          <SessionFilterControl
+            toys={data.toys}
+            filter={data.filter}
+            filters={data.sessionFilters}
+            onChange={data.setSessionFilters}
+          />
           <div className="hidden sm:contents">
             <UnitToggle />
             <GirthToggle />
@@ -131,6 +139,7 @@ function SessionListContent() {
           <ActionBar actions={newActions} />
           <PrivacyToggle />
         </div>
+        <SessionFilterChips toysById={data.toysById} filters={data.sessionFilters} onChange={data.setSessionFilters} />
       </header>
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
@@ -144,7 +153,7 @@ function SessionListContent() {
             <Alert.Description>{data.error}</Alert.Description>
           </Alert>
         )}
-        <SessionStats filter={data.filter} />
+        <SessionStats filter={data.filter} sessionFilters={data.sessionFilters} />
         <div className="mt-4 mb-3 hidden justify-end sm:flex">
           <SessionSortControl />
         </div>
@@ -164,7 +173,7 @@ function SessionListContent() {
     if (data.sessions.length === 0) {
       return (
         <EmptyState
-          anyExist={data.sessionCount > 0 || data.filter !== 'all'}
+          anyExist={data.sessionCount > 0 || data.filter !== 'all' || activeFilterCount(data.sessionFilters) > 0}
           filterLabel={filterLongLabel(data.filter)}
         />
       );

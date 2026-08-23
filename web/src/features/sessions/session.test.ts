@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  activeFilterCount,
   INVOLVEMENT_RANK,
   mergeSessions,
+  NO_SESSION_FILTERS,
   sortEntriesByInvolvement,
+  toggleToyFilter,
   toyTooltip,
   toysById,
 } from '@/features/sessions/session';
@@ -129,5 +132,18 @@ describe('toyTooltip', () => {
 
   it('returns an empty string when every part is empty', () => {
     expect(toyTooltip({ brand: '', name: '', size: '' } as Toy)).toBe('');
+  });
+});
+
+describe('session filters', () => {
+  it('counts active filters across toys and media', () => {
+    expect(activeFilterCount(NO_SESSION_FILTERS)).toBe(0);
+    expect(activeFilterCount({ toyIds: [1, 2], hasMedia: true })).toBe(3);
+  });
+
+  it('toggles toy ids in and out', () => {
+    const withToy = toggleToyFilter(NO_SESSION_FILTERS, 5);
+    expect(withToy.toyIds).toEqual([5]);
+    expect(toggleToyFilter(withToy, 5).toyIds).toEqual([]);
   });
 });

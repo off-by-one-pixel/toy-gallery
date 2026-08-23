@@ -53,7 +53,7 @@ import {
   fetchToys,
   startLiveSession,
 } from '@/api';
-import type { Session } from '@/api/types';
+import type { Session, Toy } from '@/api/types';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import SessionList from '@/features/sessions/list/SessionList';
 
@@ -72,6 +72,17 @@ const session = (
   maxInsertableLength: 120,
   maxCircumference: 110,
 });
+
+const toyFixture = (id: number, name: string, usageCount: number): Toy =>
+  ({
+    id,
+    brand: 'B',
+    name,
+    size: '',
+    usageCount,
+    totalDurationMinutes: 0,
+    shape: { sections: [] },
+  }) as Toy;
 
 const pageOf = (sessions: Session[], overrides: Partial<{ count: number; hasMore: boolean }> = {}) => ({
   sessions,
@@ -104,7 +115,14 @@ describe('SessionList', () => {
     );
     vi.mocked(fetchToys).mockResolvedValue([]);
     vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
-    vi.mocked(fetchSessionStats).mockResolvedValue([]);
+    vi.mocked(fetchSessionStats).mockImplementation(async (groupBy) =>
+      groupBy === 'toy'
+        ? [
+            { key: '1', values: { count: 9 } },
+            { key: '2', values: { count: 3 } },
+          ]
+        : [],
+    );
     vi.mocked(fetchSessionMedia).mockResolvedValue({ configured: false, items: [], shareUrl: null });
     vi.mocked(fetchLiveSession).mockResolvedValue(null);
   });
@@ -158,7 +176,11 @@ describe('SessionList', () => {
     await screen.findByText(`2 ${en.session.recorded}`);
     const hourCalls = vi.mocked(fetchSessionStats).mock.calls.filter(([g]) => g === 'hour');
     expect(hourCalls.length).toBeGreaterThan(0);
-    expect(hourCalls[hourCalls.length - 1][2]).toEqual({ start: undefined });
+    expect(hourCalls[hourCalls.length - 1][2]).toEqual({
+      start: undefined,
+      toys: [],
+      hasMedia: false,
+    });
 
     fireEvent.click(screen.getByText(en.session.filter.week));
     await waitFor(() => {
@@ -210,6 +232,43 @@ describe('SessionList', () => {
       expect(last?.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(last?.page).toBe(1);
     });
+  });
+
+  it('filters by toy and media through the filter popover', async () => {
+    vi.mocked(fetchToys).mockResolvedValue([toyFixture(1, 'Steel', 9), toyFixture(2, 'Ember', 3)]);
+    render(wrap(<SessionList />));
+    await screen.findByText(`2 ${en.session.recorded}`);
+
+    fireEvent.click(screen.getAllByRole('button', { name: en.session.filters.buttonLabel })[0]);
+    fireEvent.click(await screen.findByRole('checkbox', { name: /B Steel/ }));
+    await waitFor(() => {
+      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
+      expect(last?.toys).toEqual([1]);
+      expect(last?.page).toBe(1);
+    });
+
+    fireEvent.click(screen.getByRole('checkbox', { name: en.session.filters.hasMedia }));
+    await waitFor(() => {
+      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
+      expect(last?.hasMedia).toBe(true);
+    });
+  });
+
+  it('shows active filters as dismissible chips and clears them', async () => {
+    vi.mocked(fetchToys).mockResolvedValue([toyFixture(1, 'Steel', 9)]);
+    render(wrap(<SessionList />));
+    await screen.findByText(`2 ${en.session.recorded}`);
+
+    fireEvent.click(screen.getAllByRole('button', { name: en.session.filters.buttonLabel })[0]);
+    fireEvent.click(await screen.findByRole('checkbox', { name: /B Steel/ }));
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(screen.getByRole('button', { name: 'B Steel ×' }));
+    await waitFor(() => {
+      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
+      expect(last?.toys).toEqual([]);
+    });
+    expect(screen.queryByRole('button', { name: 'B Steel ×' })).toBeNull();
   });
 
   it('toggles row selection through the overlay button', async () => {

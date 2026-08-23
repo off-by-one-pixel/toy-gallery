@@ -94,11 +94,18 @@ def _bucket_values(sessions: list[models.Session], metrics: list[Metric]) -> dic
     return values
 
 
+def _session_bucket_keys(session: models.Session, group_by: str, zone: TzInfo) -> list:
+    if group_by == "toy":
+        return sorted({entry.toy_id for entry in session.entries.all()})
+    return [bucket_key(session.started_at.astimezone(zone), group_by)]
+
+
 def compute_stats(sessions, group_by: str, metrics: list[Metric], zone: TzInfo) -> list[dict]:
     ordered = sorted(sessions, key=lambda s: (s.started_at, s.pk))
     buckets: dict = defaultdict(list)
     for session in ordered:
-        buckets[bucket_key(session.started_at.astimezone(zone), group_by)].append(session)
+        for key in _session_bucket_keys(session, group_by, zone):
+            buckets[key].append(session)
     return [
         {"key": str(key), "values": _bucket_values(buckets[key], metrics)}
         for key in sorted(buckets)
