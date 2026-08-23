@@ -1,13 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Dropdown } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { Check, Funnel, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { fetchSessionStats } from '@/api';
-import BottomSheet from '@/components/BottomSheet';
+import { BottomSheetContext } from '@/components/BottomSheet';
+import ResponsiveOverlay from '@/components/ResponsiveOverlay';
 import { queryKeys } from '@/api/queryKeys';
 import type { Toy } from '@/api/types';
 import { filterToys } from '@/features/toys/search';
@@ -30,7 +31,6 @@ type Props = Readonly<{
 
 export default function SessionFilterControl({ toys, filter, filters, onChange }: Props) {
   const t = useTranslations('session.filters');
-  const [sheetOpen, setSheetOpen] = useState(false);
   const count = activeFilterCount(filters);
 
   const start = filterStartDate(filter);
@@ -50,34 +50,25 @@ export default function SessionFilterControl({ toys, filter, filters, onChange }
   }`;
 
   return (
-    <>
-      <div className="hidden sm:block">
-        <Dropdown>
-          <Dropdown.Trigger aria-label={t('buttonLabel')} className={triggerClass}>
-            <TriggerContent label={t('buttonLabel')} count={count} />
-          </Dropdown.Trigger>
-          <Dropdown.Popover placement="bottom start" className="flex flex-col overflow-hidden">
-            <FilterPanel toys={toys} filters={filters} onChange={onChange} usageByToy={usageByToy} />
-          </Dropdown.Popover>
-        </Dropdown>
-      </div>
-      <button
-        type="button"
-        aria-label={t('buttonLabel')}
-        className={`${triggerClass} sm:hidden`}
-        onClick={() => setSheetOpen(true)}
-      >
-        <TriggerContent label={t('buttonLabel')} count={count} />
-      </button>
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} label={t('buttonLabel')}>
-        <FilterPanel toys={toys} filters={filters} onChange={onChange} usageByToy={usageByToy} wide />
-        <div className="shrink-0 px-2.5 pt-2">
-          <Button variant="primary" size="sm" className="w-full" onPress={() => setSheetOpen(false)}>
-            {t('doneButton')}
-          </Button>
-        </div>
-      </BottomSheet>
-    </>
+    <ResponsiveOverlay
+      label={t('buttonLabel')}
+      trigger={<TriggerContent label={t('buttonLabel')} count={count} />}
+      triggerClassName={triggerClass}
+      popoverClassName="flex flex-col overflow-hidden"
+    >
+      {({ close, mode }) => (
+        <>
+          <FilterPanel toys={toys} filters={filters} onChange={onChange} usageByToy={usageByToy} />
+          {mode === 'sheet' && (
+            <div className="shrink-0 px-2.5 pt-2">
+              <Button variant="primary" size="sm" className="w-full" onPress={close}>
+                {t('doneButton')}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+    </ResponsiveOverlay>
   );
 }
 
@@ -100,15 +91,14 @@ function FilterPanel({
   filters,
   onChange,
   usageByToy,
-  wide = false,
 }: Readonly<{
   toys: readonly Toy[];
   filters: SessionFilters;
   onChange: (next: SessionFilters) => void;
   usageByToy: ReadonlyMap<number, number>;
-  wide?: boolean;
 }>) {
   const t = useTranslations('session.filters');
+  const wide = useContext(BottomSheetContext);
   const [query, setQuery] = useState('');
   const count = activeFilterCount(filters);
   const byWindowUsage = (a: Toy, b: Toy) => (usageByToy.get(b.id) ?? 0) - (usageByToy.get(a.id) ?? 0);

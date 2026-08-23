@@ -43,7 +43,7 @@ describe('AppMenu', () => {
     vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
     render(wrap());
     await waitFor(() => expect(fetchMediaStatus).toHaveBeenCalled());
-    fireEvent.click(screen.getAllByLabelText(en.collection.menu.openMenu)[0]);
+    fireEvent.click(screen.getByLabelText(en.collection.menu.openMenu));
     await screen.findByText(en.collection.menu.settingsLabel);
     expect(screen.queryByText(en.session.media.refreshButtonLabel)).toBeNull();
   });
@@ -55,7 +55,7 @@ describe('AppMenu', () => {
     const invalidate = vi.spyOn(client, 'invalidateQueries');
 
     render(wrap(client));
-    fireEvent.click(screen.getAllByLabelText(en.collection.menu.openMenu)[0]);
+    fireEvent.click(screen.getByLabelText(en.collection.menu.openMenu));
     const item = await screen.findByText(en.session.media.refreshButtonLabel);
     fireEvent.click(item);
 

@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Dropdown, Toast } from '@heroui/react';
+import { Toast } from '@heroui/react';
 import { Image as ImageIcon, LogOut, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -14,7 +13,7 @@ import { fetchMediaStatus, refreshAllSessionMedia } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from '@/components/ActionDropdownMenu';
 import ActionDropdownMenuRow from '@/components/ActionDropdownMenuRow';
-import BottomSheet from '@/components/BottomSheet';
+import ResponsiveOverlay from '@/components/ResponsiveOverlay';
 
 export default function AppMenu() {
   const t = useTranslations('collection');
@@ -23,7 +22,6 @@ export default function AppMenu() {
   const { username, logout } = useAuth();
   const runToast = useAsyncAction();
   const queryClient = useQueryClient();
-  const [sheetOpen, setSheetOpen] = useState(false);
   const { data: status } = useQuery({ queryKey: queryKeys.media.status, queryFn: fetchMediaStatus });
   const mediaConfigured = status?.configured ?? false;
 
@@ -68,57 +66,43 @@ export default function AppMenu() {
   ];
 
   return (
-    <>
-      <div className="hidden sm:block">
-        <Dropdown>
-          <Dropdown.Trigger
-            aria-label={t('menu.openMenu')}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-tertiary/60 hover:text-foreground"
-          >
-            <Settings size={16} strokeWidth={1.8} />
-          </Dropdown.Trigger>
-          <Dropdown.Popover placement="bottom end">
+    <ResponsiveOverlay
+      label={t('menu.openMenu')}
+      trigger={<Settings size={16} strokeWidth={1.8} />}
+      triggerClassName="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-tertiary/60 hover:text-foreground"
+      placement="bottom end"
+    >
+      {({ close, mode }) => (
+        <>
+          {mode === 'popover' ? (
             <ActionDropdownMenu items={items} />
-            <div className="px-3 py-1.5 text-center font-mono text-caption text-text-tertiary">
-              {APP_VERSION}
-              {APP_COMMIT_SHA && ` · ${APP_COMMIT_SHA}`}
+          ) : (
+            <div className="flex flex-col p-1.5">
+              {items.map(({ id, icon: Icon, label, description, onAction }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    close();
+                    onAction();
+                  }}
+                  className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-surface-tertiary/60"
+                >
+                  <ActionDropdownMenuRow
+                    icon={<Icon size={16} strokeWidth={1.8} />}
+                    label={label}
+                    description={description}
+                  />
+                </button>
+              ))}
             </div>
-          </Dropdown.Popover>
-        </Dropdown>
-      </div>
-      <button
-        type="button"
-        aria-label={t('menu.openMenu')}
-        onClick={() => setSheetOpen(true)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-tertiary/60 hover:text-foreground sm:hidden"
-      >
-        <Settings size={16} strokeWidth={1.8} />
-      </button>
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} label={t('menu.openMenu')}>
-        <div className="flex flex-col p-1.5">
-          {items.map(({ id, icon: Icon, label, description, onAction }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => {
-                setSheetOpen(false);
-                onAction();
-              }}
-              className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-surface-tertiary/60"
-            >
-              <ActionDropdownMenuRow
-                icon={<Icon size={16} strokeWidth={1.8} />}
-                label={label}
-                description={description}
-              />
-            </button>
-          ))}
-          <div className="px-3 pt-2 text-center font-mono text-caption text-text-tertiary">
+          )}
+          <div className="px-3 py-1.5 text-center font-mono text-caption text-text-tertiary">
             {APP_VERSION}
             {APP_COMMIT_SHA && ` · ${APP_COMMIT_SHA}`}
           </div>
-        </div>
-      </BottomSheet>
-    </>
+        </>
+      )}
+    </ResponsiveOverlay>
   );
 }

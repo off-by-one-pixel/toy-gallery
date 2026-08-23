@@ -239,7 +239,7 @@ describe('SessionList', () => {
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
 
-    fireEvent.click(screen.getAllByRole('button', { name: en.session.filters.buttonLabel })[0]);
+    fireEvent.click(screen.getByRole('button', { name: en.session.filters.buttonLabel }));
     fireEvent.click(await screen.findByRole('checkbox', { name: /B Steel/ }));
     await waitFor(() => {
       const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
@@ -259,7 +259,7 @@ describe('SessionList', () => {
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
 
-    fireEvent.click(screen.getAllByRole('button', { name: en.session.filters.buttonLabel })[0]);
+    fireEvent.click(screen.getByRole('button', { name: en.session.filters.buttonLabel }));
     fireEvent.click(await screen.findByRole('checkbox', { name: /B Steel/ }));
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
