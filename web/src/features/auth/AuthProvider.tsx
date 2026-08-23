@@ -24,6 +24,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({
       username: tokenStorage.getUsername(),
       isAuthenticated: !!tokenStorage.getAccess(),

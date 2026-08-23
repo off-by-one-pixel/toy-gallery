@@ -25,6 +25,7 @@ export function SortProvider({ children, config }: Readonly<{ children: ReactNod
     const stored = localStorage.getItem(config.storageKey);
     if (!stored) return;
     const parsed = parseStoredSort(stored);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isValidSort(parsed, config)) setSortState(parsed);
   }, [config]);
 
