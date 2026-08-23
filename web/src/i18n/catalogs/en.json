@@ -157,6 +157,17 @@
       "refreshButton": "Refresh media for all sessions",
       "refreshButtonLabel": "Refresh media",
       "refreshedToast": "Media found for {count, plural, one {# session} other {# sessions}}"
+    },
+    "filters": {
+      "buttonLabel": "Filter",
+      "searchPlaceholder": "Search toys",
+      "selectedHeading": "Selected · {count}",
+      "toysHeading": "Toys · by use",
+      "noToys": "No toys match",
+      "mediaHeading": "Media",
+      "hasPhotos": "Has photos",
+      "hasVideos": "Has videos",
+      "clearAll": "Clear all"
     }
   },
   "template": {

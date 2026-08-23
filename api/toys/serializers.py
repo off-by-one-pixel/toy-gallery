@@ -218,6 +218,15 @@ SESSION_ORDERING_CHOICES = [
 
 class SessionListQuerySerializer(DateWindowQuerySerializer):
     ordering = serializers.ChoiceField(choices=SESSION_ORDERING_CHOICES, required=False)
+    toys = serializers.CharField(required=False, help_text="Comma-separated toy ids")
+    has_photos = serializers.BooleanField(required=False)
+    has_videos = serializers.BooleanField(required=False)
+
+    def validate_toys(self, value):
+        try:
+            return [int(part) for part in value.split(",") if part.strip()]
+        except ValueError as err:
+            raise serializers.ValidationError("toys must be comma-separated integers") from err
 
 
 class SessionStatsQuerySerializer(DateWindowQuerySerializer):

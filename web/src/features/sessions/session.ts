@@ -61,3 +61,19 @@ export function toysById(toys: readonly Toy[]): Map<number, Toy> {
 export function toyTooltip(toy: Toy): string {
   return [toy.brand, toy.name, toy.size].filter(Boolean).join(' ');
 }
+
+export type SessionFilters = Readonly<{
+  toyIds: readonly number[];
+  hasPhotos: boolean;
+  hasVideos: boolean;
+}>;
+
+export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], hasPhotos: false, hasVideos: false };
+
+export const activeFilterCount = (filters: SessionFilters): number =>
+  filters.toyIds.length + (filters.hasPhotos ? 1 : 0) + (filters.hasVideos ? 1 : 0);
+
+export const toggleToyFilter = (filters: SessionFilters, toyId: number): SessionFilters => ({
+  ...filters,
+  toyIds: filters.toyIds.includes(toyId) ? filters.toyIds.filter((id) => id !== toyId) : [...filters.toyIds, toyId],
+});

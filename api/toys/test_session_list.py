@@ -14,7 +14,7 @@ def _utc(iso: str) -> datetime:
     return datetime.fromisoformat(iso).replace(tzinfo=UTC)
 
 
-class SessionListTests(TestCase):
+class SessionListTestBase(TestCase):
     def setUp(self):
         user = User.objects.create_user(username="u", password="p")
         self.client = APIClient()
@@ -47,6 +47,8 @@ class SessionListTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         return response.data
 
+
+class SessionListTests(SessionListTestBase):
     def test_list_returns_paginated_envelope(self):
         for hour in (8, 9, 10):
             self._make_session(_utc(f"2026-06-01T{hour:02d}:00:00"))
@@ -157,3 +159,67 @@ class SessionListTests(TestCase):
         self._create_toy("Plain")
         response = self.client.get("/toys/toys/")
         self.assertIsInstance(response.data, list)
+
+class SessionFilterTests(SessionListTestBase):
+    def test_filters_by_any_of_the_selected_toys(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        toy_c = self._create_toy("C")
+        with_a = self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}])
+        with_b = self._make_session(_utc("2026-06-02T08:00:00"), [{"toy": toy_b}])
+        self._make_session(_utc("2026-06-03T08:00:00"), [{"toy": toy_c}])
+        data = self._get(toys=f"{toy_a},{toy_b}")
+        self.assertEqual([s["id"] for s in data["results"]], [with_b.id, with_a.id])
+
+    def test_session_with_several_selected_toys_appears_once(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        both = self._make_session(
+            _utc("2026-06-01T08:00:00"), [{"toy": toy_a}, {"toy": toy_b}]
+        )
+        data = self._get(toys=f"{toy_a},{toy_b}")
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(data["results"][0]["id"], both.id)
+
+    def test_toy_filter_keeps_duration_ordering_sums_intact(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        session = self._make_session(
+            _utc("2026-06-01T08:00:00"),
+            [
+                {"toy": toy_a, "duration_minutes": 30},
+                {"toy": toy_b, "duration_minutes": 40},
+            ],
+        )
+        self._make_session(
+            _utc("2026-06-02T08:00:00"), [{"toy": toy_a, "duration_minutes": 50}]
+        )
+        data = self._get(toys=f"{toy_a},{toy_b}", ordering="-duration")
+        self.assertEqual(data["results"][0]["id"], session.id)
+
+    def test_filters_by_media_counts(self):
+        with_photos = self._make_session(_utc("2026-06-01T08:00:00"))
+        with_photos.photo_count = 2
+        with_photos.save(update_fields=["photo_count"])
+        with_both = self._make_session(_utc("2026-06-02T08:00:00"))
+        with_both.photo_count = 1
+        with_both.video_count = 1
+        with_both.save(update_fields=["photo_count", "video_count"])
+        self._make_session(_utc("2026-06-03T08:00:00"))
+        photos = self._get(has_photos="true")
+        self.assertEqual([s["id"] for s in photos["results"]], [with_both.id, with_photos.id])
+        both = self._get(has_photos="true", has_videos="true")
+        self.assertEqual([s["id"] for s in both["results"]], [with_both.id])
+
+    def test_live_session_bypasses_filters(self):
+        toy_a = self._create_toy("A")
+        live = models.Session.objects.create(
+            started_at=_utc("2026-06-05T08:00:00"), is_live=True
+        )
+        self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}])
+        data = self._get(toys=str(toy_a), has_videos="true")
+        self.assertEqual(data["results"][0]["id"], live.id)
+
+    def test_invalid_toys_param_rejected(self):
+        response = self.client.get(URL, {"toys": "1,junk"})
+        self.assertEqual(response.status_code, 400)

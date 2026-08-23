@@ -1,8 +1,11 @@
 'use client';
 
+import { useContext } from 'react';
 import { Dropdown } from '@heroui/react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
+import { BottomSheetContext } from '@/components/BottomSheet';
 
 import { useSortOf } from '@/hooks/useSortOf';
 import { cycleSort, type SortConfig } from '@/lib/sort';
@@ -15,6 +18,7 @@ type Props<C extends string> = Readonly<{
 export default function SortControl<C extends string>({ config, columnLabel }: Props<C>) {
   const { sort, setSort } = useSortOf(config);
   const t = useTranslations('sort');
+  const inSheet = useContext(BottomSheetContext);
   const activeLabel = sort ? columnLabel(sort.column) : t('label');
   const DirArrow = sort?.direction === 'desc' ? ArrowDown : ArrowUp;
 
@@ -24,9 +28,13 @@ export default function SortControl<C extends string>({ config, columnLabel }: P
   };
 
   return (
-    <div className="inline-flex items-stretch rounded-md border border-border bg-surface text-xs font-medium text-foreground shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+    <div
+      className={`${inSheet ? 'flex w-full [&>:first-child]:flex-1' : 'inline-flex'} items-stretch rounded-md border border-border bg-surface text-xs font-medium text-foreground shadow-[0_1px_0_rgba(0,0,0,0.03)]`}
+    >
       <Dropdown>
-        <Dropdown.Trigger className="inline-flex items-center gap-1.5 rounded-l-md px-2.5 py-1 transition-colors hover:bg-surface-secondary">
+        <Dropdown.Trigger
+          className={`inline-flex items-center gap-1.5 rounded-l-md px-2.5 transition-colors hover:bg-surface-secondary ${inSheet ? 'w-full py-2 text-sm' : 'py-1'}`}
+        >
           <ArrowUpDown size={13} strokeWidth={2} className="text-muted" />
           <span>{activeLabel}</span>
         </Dropdown.Trigger>

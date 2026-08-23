@@ -35,6 +35,14 @@ paths:
           type: string
           format: date
       - in: query
+        name: has_photos
+        schema:
+          type: boolean
+      - in: query
+        name: has_videos
+        schema:
+          type: boolean
+      - in: query
         name: ordering
         schema:
           enum:
@@ -68,6 +76,12 @@ paths:
         schema:
           type: string
           format: date
+      - in: query
+        name: toys
+        schema:
+          type: string
+          minLength: 1
+        description: Comma-separated toy ids
       - in: query
         name: tz
         schema:

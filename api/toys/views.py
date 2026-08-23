@@ -1,6 +1,6 @@
 
 from django.db import IntegrityError, transaction
-from django.db.models import Case, Count, F, Max, Q, Sum, When
+from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Sum, When
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -159,6 +159,19 @@ class SessionViewSet(viewsets.ModelViewSet):
             window &= Q(started_at__gte=lower)
         if upper is not None:
             window &= Q(started_at__lt=upper)
+        toy_ids = params.get("toys")
+        if toy_ids:
+            window &= Q(
+                Exists(
+                    models.ToySessionEntry.objects.filter(
+                        session=OuterRef("pk"), toy__in=toy_ids
+                    )
+                )
+            )
+        if params.get("has_photos"):
+            window &= Q(photo_count__gt=0)
+        if params.get("has_videos"):
+            window &= Q(video_count__gt=0)
         if window:
             queryset = queryset.filter(window | Q(is_live=True))
         ordering = params.get("ordering")

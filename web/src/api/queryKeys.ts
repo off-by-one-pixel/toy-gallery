@@ -7,7 +7,8 @@ export const queryKeys = {
   sessions: {
     all: ['sessions'] as const,
     lists: ['sessions', 'list'] as const,
-    list: (filter: string, ordering: string | undefined) => ['sessions', 'list', filter, ordering ?? null] as const,
+    list: (filter: string, ordering: string | undefined, filters: string) =>
+      ['sessions', 'list', filter, ordering ?? null, filters] as const,
     detail: (id: number) => ['sessions', 'detail', id] as const,
     live: ['sessions', 'live'] as const,
     stats: ['sessions', 'stats'] as const,

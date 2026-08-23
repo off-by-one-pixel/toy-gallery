@@ -9,7 +9,14 @@ import { useSortOf } from '@/hooks/useSortOf';
 import { fetchSessions, fetchToys, type SessionPage } from '@/api';
 import { formatError } from '@/api/errors';
 import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
-import { type FilterKey, filterStartDate, mergeSessions, toysById as buildToysById } from '@/features/sessions/session';
+import {
+  type FilterKey,
+  filterStartDate,
+  mergeSessions,
+  NO_SESSION_FILTERS,
+  type SessionFilters,
+  toysById as buildToysById,
+} from '@/features/sessions/session';
 import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
 import type { Session, Toy } from '@/api/types';
 
@@ -26,22 +33,40 @@ export type SessionListData = Readonly<{
   filter: FilterKey;
   setFilter: (next: FilterKey) => void;
 
+  toys: Toy[];
+  sessionFilters: SessionFilters;
+  setSessionFilters: (next: SessionFilters) => void;
+
   isLoading: boolean;
   error: string | null;
 }>;
 
 export function useSessionList(): SessionListData {
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [sessionFilters, setSessionFilters] = useState<SessionFilters>(NO_SESSION_FILTERS);
   const { sort } = useSortOf(SESSION_SORT);
   const queryClient = useQueryClient();
   const reportError = useReportError();
 
   const ordering = sessionOrderingParam(sort);
-  const listKey = queryKeys.sessions.list(filter, ordering);
+  const filtersKey = [
+    sessionFilters.toyIds.join(','),
+    sessionFilters.hasPhotos ? 'p' : '',
+    sessionFilters.hasVideos ? 'v' : '',
+  ].join('|');
+  const listKey = queryKeys.sessions.list(filter, ordering, filtersKey);
 
   const list = useInfiniteQuery({
     queryKey: listKey,
-    queryFn: ({ pageParam }) => fetchSessions({ page: pageParam, start: filterStartDate(filter), ordering }),
+    queryFn: ({ pageParam }) =>
+      fetchSessions({
+        page: pageParam,
+        start: filterStartDate(filter),
+        ordering,
+        toys: sessionFilters.toyIds,
+        hasPhotos: sessionFilters.hasPhotos,
+        hasVideos: sessionFilters.hasVideos,
+      }),
     initialPageParam: 1,
     getNextPageParam: (lastPage: SessionPage, pages: SessionPage[]) =>
       lastPage.hasMore ? pages.length + 1 : undefined,
@@ -100,6 +125,9 @@ export function useSessionList(): SessionListData {
     reload,
     filter,
     setFilter,
+    toys: loadedToys ?? [],
+    sessionFilters,
+    setSessionFilters,
     isLoading: list.isPending,
     error: (listError && formatError(listError)) ?? (toysError ? formatError(toysError) : null),
   };

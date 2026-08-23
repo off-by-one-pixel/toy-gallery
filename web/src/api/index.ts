@@ -136,12 +136,22 @@ export const deleteCollection = async (): Promise<{
 export type SessionPage = Readonly<{ sessions: Session[]; count: number; hasMore: boolean }>;
 
 export const fetchSessions = async (
-  opts: Readonly<{ page?: number; start?: string; ordering?: string }> = {},
+  opts: Readonly<{
+    page?: number;
+    start?: string;
+    ordering?: string;
+    toys?: readonly number[];
+    hasPhotos?: boolean;
+    hasVideos?: boolean;
+  }> = {},
 ): Promise<SessionPage> => {
   const { data } = await toysSessionsList({
     page: opts.page,
     start: opts.start,
     ordering: opts.ordering as ToysSessionsListParams['ordering'],
+    toys: opts.toys?.length ? opts.toys.join(',') : undefined,
+    has_photos: opts.hasPhotos || undefined,
+    has_videos: opts.hasVideos || undefined,
     tz: browserTimeZone(),
   });
   return {
