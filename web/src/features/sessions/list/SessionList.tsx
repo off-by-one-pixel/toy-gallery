@@ -120,7 +120,12 @@ function SessionListContent() {
             onChange={data.setFilter}
             ariaLabel={t('filter.ariaLabel')}
           />
-          <SessionFilterControl toys={data.toys} filters={data.sessionFilters} onChange={data.setSessionFilters} />
+          <SessionFilterControl
+            toys={data.toys}
+            filter={data.filter}
+            filters={data.sessionFilters}
+            onChange={data.setSessionFilters}
+          />
           <div className="hidden sm:contents">
             <UnitToggle />
             <GirthToggle />
@@ -148,7 +153,7 @@ function SessionListContent() {
             <Alert.Description>{data.error}</Alert.Description>
           </Alert>
         )}
-        <SessionStats filter={data.filter} />
+        <SessionStats filter={data.filter} sessionFilters={data.sessionFilters} />
         <div className="mt-4 mb-3 hidden justify-end sm:flex">
           <SessionSortControl />
         </div>

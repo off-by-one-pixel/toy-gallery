@@ -64,14 +64,16 @@ export function toyTooltip(toy: Toy): string {
 
 export type SessionFilters = Readonly<{
   toyIds: readonly number[];
-  hasPhotos: boolean;
-  hasVideos: boolean;
+  hasMedia: boolean;
 }>;
 
-export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], hasPhotos: false, hasVideos: false };
+export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], hasMedia: false };
+
+export const sessionFiltersKey = (filters: SessionFilters): string =>
+  [filters.toyIds.join(','), filters.hasMedia ? 'm' : ''].join('|');
 
 export const activeFilterCount = (filters: SessionFilters): number =>
-  filters.toyIds.length + (filters.hasPhotos ? 1 : 0) + (filters.hasVideos ? 1 : 0);
+  filters.toyIds.length + (filters.hasMedia ? 1 : 0);
 
 export const toggleToyFilter = (filters: SessionFilters, toyId: number): SessionFilters => ({
   ...filters,

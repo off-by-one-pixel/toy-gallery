@@ -14,6 +14,7 @@ import {
   filterStartDate,
   mergeSessions,
   NO_SESSION_FILTERS,
+  sessionFiltersKey,
   type SessionFilters,
   toysById as buildToysById,
 } from '@/features/sessions/session';
@@ -49,12 +50,7 @@ export function useSessionList(): SessionListData {
   const reportError = useReportError();
 
   const ordering = sessionOrderingParam(sort);
-  const filtersKey = [
-    sessionFilters.toyIds.join(','),
-    sessionFilters.hasPhotos ? 'p' : '',
-    sessionFilters.hasVideos ? 'v' : '',
-  ].join('|');
-  const listKey = queryKeys.sessions.list(filter, ordering, filtersKey);
+  const listKey = queryKeys.sessions.list(filter, ordering, sessionFiltersKey(sessionFilters));
 
   const list = useInfiniteQuery({
     queryKey: listKey,
@@ -64,8 +60,7 @@ export function useSessionList(): SessionListData {
         start: filterStartDate(filter),
         ordering,
         toys: sessionFilters.toyIds,
-        hasPhotos: sessionFilters.hasPhotos,
-        hasVideos: sessionFilters.hasVideos,
+        hasMedia: sessionFilters.hasMedia,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage: SessionPage, pages: SessionPage[]) =>

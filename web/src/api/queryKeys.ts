@@ -12,8 +12,8 @@ export const queryKeys = {
     detail: (id: number) => ['sessions', 'detail', id] as const,
     live: ['sessions', 'live'] as const,
     stats: ['sessions', 'stats'] as const,
-    stat: (groupBy: string, metrics: readonly string[], start: string | undefined) =>
-      ['sessions', 'stats', groupBy, [...metrics], start ?? null] as const,
+    stat: (groupBy: string, metrics: readonly string[], start: string | undefined, filters: string) =>
+      ['sessions', 'stats', groupBy, [...metrics], start ?? null, filters] as const,
   },
   media: {
     all: ['media'] as const,

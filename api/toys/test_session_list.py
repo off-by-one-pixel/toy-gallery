@@ -168,7 +168,7 @@ class SessionFilterTests(SessionListTestBase):
         with_a = self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}])
         with_b = self._make_session(_utc("2026-06-02T08:00:00"), [{"toy": toy_b}])
         self._make_session(_utc("2026-06-03T08:00:00"), [{"toy": toy_c}])
-        data = self._get(toys=f"{toy_a},{toy_b}")
+        data = self._get(toys=[toy_a, toy_b])
         self.assertEqual([s["id"] for s in data["results"]], [with_b.id, with_a.id])
 
     def test_session_with_several_selected_toys_appears_once(self):
@@ -177,7 +177,7 @@ class SessionFilterTests(SessionListTestBase):
         both = self._make_session(
             _utc("2026-06-01T08:00:00"), [{"toy": toy_a}, {"toy": toy_b}]
         )
-        data = self._get(toys=f"{toy_a},{toy_b}")
+        data = self._get(toys=[toy_a, toy_b])
         self.assertEqual(data["count"], 1)
         self.assertEqual(data["results"][0]["id"], both.id)
 
@@ -194,22 +194,19 @@ class SessionFilterTests(SessionListTestBase):
         self._make_session(
             _utc("2026-06-02T08:00:00"), [{"toy": toy_a, "duration_minutes": 50}]
         )
-        data = self._get(toys=f"{toy_a},{toy_b}", ordering="-duration")
+        data = self._get(toys=[toy_a, toy_b], ordering="-duration")
         self.assertEqual(data["results"][0]["id"], session.id)
 
-    def test_filters_by_media_counts(self):
+    def test_filters_by_media_presence(self):
         with_photos = self._make_session(_utc("2026-06-01T08:00:00"))
         with_photos.photo_count = 2
         with_photos.save(update_fields=["photo_count"])
-        with_both = self._make_session(_utc("2026-06-02T08:00:00"))
-        with_both.photo_count = 1
-        with_both.video_count = 1
-        with_both.save(update_fields=["photo_count", "video_count"])
+        with_video = self._make_session(_utc("2026-06-02T08:00:00"))
+        with_video.video_count = 1
+        with_video.save(update_fields=["video_count"])
         self._make_session(_utc("2026-06-03T08:00:00"))
-        photos = self._get(has_photos="true")
-        self.assertEqual([s["id"] for s in photos["results"]], [with_both.id, with_photos.id])
-        both = self._get(has_photos="true", has_videos="true")
-        self.assertEqual([s["id"] for s in both["results"]], [with_both.id])
+        data = self._get(has_media="true")
+        self.assertEqual([s["id"] for s in data["results"]], [with_video.id, with_photos.id])
 
     def test_live_session_bypasses_filters(self):
         toy_a = self._create_toy("A")
@@ -217,9 +214,21 @@ class SessionFilterTests(SessionListTestBase):
             started_at=_utc("2026-06-05T08:00:00"), is_live=True
         )
         self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}])
-        data = self._get(toys=str(toy_a), has_videos="true")
+        data = self._get(toys=[toy_a], has_media="true")
         self.assertEqual(data["results"][0]["id"], live.id)
 
+    def test_accepts_comma_separated_toys_wire_format(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        target = self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}])
+        self._make_session(_utc("2026-06-02T08:00:00"), [{"toy": toy_b}])
+        response = self.client.get(URL, {"toys": f"{toy_a}"})
+        self.assertEqual(response.status_code, 200)
+        both = self.client.get(URL, {"toys": f"{toy_a},{toy_b}"})
+        self.assertEqual(both.status_code, 200)
+        self.assertEqual(both.data["count"], 2)
+        self.assertEqual(response.data["results"][0]["id"], target.id)
+
     def test_invalid_toys_param_rejected(self):
-        response = self.client.get(URL, {"toys": "1,junk"})
+        response = self.client.get(URL, {"toys": ["1", "junk"]})
         self.assertEqual(response.status_code, 400)

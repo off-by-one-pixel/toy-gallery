@@ -21,14 +21,13 @@ export default function SessionFilterChips({ toysById, filters, onChange }: Prop
   const t = useTranslations('session.filters');
   if (activeFilterCount(filters) === 0) return null;
   return (
-    <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 pt-3 sm:px-6">
+    <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 pt-1 pb-3 sm:px-6">
       {filters.toyIds.map((toyId) => {
         const toy = toysById.get(toyId);
         const label = toy ? `${toy.brand} ${toy.name}`.trim() : `#${toyId}`;
         return <Chip key={toyId} label={label} onRemove={() => onChange(toggleToyFilter(filters, toyId))} />;
       })}
-      {filters.hasPhotos && <Chip label={t('hasPhotos')} onRemove={() => onChange({ ...filters, hasPhotos: false })} />}
-      {filters.hasVideos && <Chip label={t('hasVideos')} onRemove={() => onChange({ ...filters, hasVideos: false })} />}
+      {filters.hasMedia && <Chip label={t('hasMedia')} onRemove={() => onChange({ ...filters, hasMedia: false })} />}
       <button
         type="button"
         onClick={() => onChange(NO_SESSION_FILTERS)}

@@ -138,7 +138,7 @@ describe('toyTooltip', () => {
 describe('session filters', () => {
   it('counts active filters across toys and media', () => {
     expect(activeFilterCount(NO_SESSION_FILTERS)).toBe(0);
-    expect(activeFilterCount({ toyIds: [1, 2], hasPhotos: true, hasVideos: false })).toBe(3);
+    expect(activeFilterCount({ toyIds: [1, 2], hasMedia: true })).toBe(3);
   });
 
   it('toggles toy ids in and out', () => {

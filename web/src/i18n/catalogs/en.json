@@ -165,9 +165,9 @@
       "toysHeading": "Toys · by use",
       "noToys": "No toys match",
       "mediaHeading": "Media",
-      "hasPhotos": "Has photos",
-      "hasVideos": "Has videos",
-      "clearAll": "Clear all"
+      "clearAll": "Clear all",
+      "hasMedia": "Has media",
+      "doneButton": "Done"
     }
   },
   "template": {

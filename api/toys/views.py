@@ -122,6 +122,20 @@ def _apply_session_ordering(queryset, ordering):
     return queryset.order_by(F("is_live").desc(), ordered, "-id")
 
 
+def _session_filter_q(params):
+    filters = Q()
+    toy_ids = params.get("toys")
+    if toy_ids:
+        filters &= Q(
+            Exists(
+                models.ToySessionEntry.objects.filter(session=OuterRef("pk"), toy__in=toy_ids)
+            )
+        )
+    if params.get("has_media"):
+        filters &= Q(photo_count__gt=0) | Q(video_count__gt=0)
+    return filters
+
+
 def _store_media_counts(counts):
     changed = []
     for session in models.Session.objects.all():
@@ -159,19 +173,7 @@ class SessionViewSet(viewsets.ModelViewSet):
             window &= Q(started_at__gte=lower)
         if upper is not None:
             window &= Q(started_at__lt=upper)
-        toy_ids = params.get("toys")
-        if toy_ids:
-            window &= Q(
-                Exists(
-                    models.ToySessionEntry.objects.filter(
-                        session=OuterRef("pk"), toy__in=toy_ids
-                    )
-                )
-            )
-        if params.get("has_photos"):
-            window &= Q(photo_count__gt=0)
-        if params.get("has_videos"):
-            window &= Q(video_count__gt=0)
+        window &= _session_filter_q(params)
         if window:
             queryset = queryset.filter(window | Q(is_live=True))
         ordering = params.get("ordering")
@@ -255,6 +257,9 @@ class SessionViewSet(viewsets.ModelViewSet):
             sessions = sessions.filter(started_at__gte=lower)
         if upper is not None:
             sessions = sessions.filter(started_at__lt=upper)
+        filters = _session_filter_q(params)
+        if filters:
+            sessions = sessions.filter(filters)
         groups = stats.compute_stats(sessions, params["group_by"], params["metrics"], params["tz"])
         return Response({"groups": groups})
 

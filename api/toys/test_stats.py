@@ -14,7 +14,7 @@ def _utc(iso: str) -> datetime:
     return datetime.fromisoformat(iso).replace(tzinfo=UTC)
 
 
-class SessionStatsTests(TestCase):
+class SessionStatsTestBase(TestCase):
     def setUp(self):
         user = User.objects.create_user(username="u", password="p")
         self.client = APIClient()
@@ -45,6 +45,8 @@ class SessionStatsTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         return response.data["groups"]
 
+
+class SessionStatsTests(SessionStatsTestBase):
     def test_empty_database_returns_no_groups(self):
         self.assertEqual(self._get(group_by="date", metrics="count"), [])
 
@@ -185,3 +187,35 @@ class SessionStatsTests(TestCase):
         for params in cases:
             response = self.client.get(URL, params)
             self.assertEqual(response.status_code, 400, params)
+
+class SessionStatsFilterTests(SessionStatsTestBase):
+    def test_stats_respect_toy_filter(self):
+        self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": self.toy_a}])
+        self._make_session(_utc("2026-06-01T09:00:00"), [{"toy": self.toy_b}])
+        groups = self._get(group_by="date", metrics="count", toys=[self.toy_a])
+        self.assertEqual(sum(g["values"]["count"] for g in groups), 1)
+
+
+    def test_groups_by_toy_within_window(self):
+        self._make_session(
+            _utc("2026-06-01T08:00:00"), [{"toy": self.toy_a}, {"toy": self.toy_b}]
+        )
+        self._make_session(_utc("2026-06-02T08:00:00"), [{"toy": self.toy_a}])
+        self._make_session(_utc("2026-05-01T08:00:00"), [{"toy": self.toy_b}])
+        groups = self._get(group_by="toy", metrics="count", start="2026-06-01")
+        by_key = {g["key"]: g["values"]["count"] for g in groups}
+        self.assertEqual(by_key, {str(self.toy_a): 2, str(self.toy_b): 1})
+
+    def test_toyless_sessions_do_not_appear_in_toy_groups(self):
+        self._make_session(_utc("2026-06-01T08:00:00"))
+        groups = self._get(group_by="toy", metrics="count")
+        self.assertEqual(groups, [])
+
+    def test_stats_respect_media_filter(self):
+        flagged = self._make_session(_utc("2026-06-01T08:00:00"))
+        flagged.video_count = 1
+        flagged.save(update_fields=["video_count"])
+        self._make_session(_utc("2026-06-02T08:00:00"))
+        groups = self._get(group_by="date", metrics="count", has_media="true")
+        self.assertEqual(sum(g["values"]["count"] for g in groups), 1)
+

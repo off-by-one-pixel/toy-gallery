@@ -9,7 +9,7 @@ import { useGirth } from '@/features/preferences/GirthProvider';
 import { useUnit } from '@/features/preferences/UnitProvider';
 import { fetchSessionStats } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
-import type { FilterKey } from '@/features/sessions/session';
+import { type FilterKey, type SessionFilters, sessionFiltersKey } from '@/features/sessions/session';
 import { SESSION_STATS } from '@/features/sessions/stats/statsConfig';
 import {
   buildStatViews,
@@ -21,9 +21,9 @@ import {
 import type { StatsGroup } from '@/api/types';
 import ActivityTracker from '@/features/sessions/stats/ActivityTracker';
 
-type Props = Readonly<{ filter: FilterKey; defs?: readonly StatDef[] }>;
+type Props = Readonly<{ filter: FilterKey; sessionFilters: SessionFilters; defs?: readonly StatDef[] }>;
 
-export default function SessionStats({ filter, defs = SESSION_STATS }: Props) {
+export default function SessionStats({ filter, sessionFilters, defs = SESSION_STATS }: Props) {
   const { unit } = useUnit();
   const { girth } = useGirth();
   const locale = useLocale();
@@ -36,8 +36,13 @@ export default function SessionStats({ filter, defs = SESSION_STATS }: Props) {
     queries: queries.map((query) => {
       const start = startFor(query.window, filter);
       return {
-        queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, start),
-        queryFn: () => fetchSessionStats(query.groupBy, query.metrics, { start }),
+        queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, start, sessionFiltersKey(sessionFilters)),
+        queryFn: () =>
+          fetchSessionStats(query.groupBy, query.metrics, {
+            start,
+            toys: sessionFilters.toyIds,
+            hasMedia: sessionFilters.hasMedia,
+          }),
         placeholderData: keepPreviousData,
       };
     }),

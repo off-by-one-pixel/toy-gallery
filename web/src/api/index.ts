@@ -141,17 +141,15 @@ export const fetchSessions = async (
     start?: string;
     ordering?: string;
     toys?: readonly number[];
-    hasPhotos?: boolean;
-    hasVideos?: boolean;
+    hasMedia?: boolean;
   }> = {},
 ): Promise<SessionPage> => {
   const { data } = await toysSessionsList({
     page: opts.page,
     start: opts.start,
     ordering: opts.ordering as ToysSessionsListParams['ordering'],
-    toys: opts.toys?.length ? opts.toys.join(',') : undefined,
-    has_photos: opts.hasPhotos || undefined,
-    has_videos: opts.hasVideos || undefined,
+    toys: opts.toys?.length ? [...opts.toys] : undefined,
+    has_media: opts.hasMedia || undefined,
     tz: browserTimeZone(),
   });
   return {
@@ -225,15 +223,22 @@ export const browserTimeZone = (): string => {
 };
 
 export const fetchSessionStats = async (
-  groupBy: 'date' | 'hour' | 'weekday',
+  groupBy: 'date' | 'hour' | 'weekday' | 'toy',
   metrics: readonly string[],
-  opts: { start?: string; end?: string } = {},
+  opts: {
+    start?: string;
+    end?: string;
+    toys?: readonly number[];
+    hasMedia?: boolean;
+  } = {},
 ): Promise<StatsGroup[]> => {
   const { data } = await toysSessionsStatsRetrieve({
     group_by: groupBy,
     metrics: metrics.join(','),
     start: opts.start,
     end: opts.end,
+    toys: opts.toys?.length ? [...opts.toys] : undefined,
+    has_media: opts.hasMedia || undefined,
     tz: browserTimeZone(),
   });
   return data.groups;

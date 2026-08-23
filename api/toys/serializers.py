@@ -216,21 +216,29 @@ SESSION_ORDERING_CHOICES = [
 ]
 
 
-class SessionListQuerySerializer(DateWindowQuerySerializer):
+class ToyIdListField(serializers.ListField):
+    child = serializers.IntegerField()
+
+    def to_internal_value(self, data):
+        is_single_csv = (
+            isinstance(data, list) and len(data) == 1 and isinstance(data[0], str)
+        )
+        if is_single_csv and "," in data[0]:
+            data = [part for part in data[0].split(",") if part.strip()]
+        return super().to_internal_value(data)
+
+
+class SessionFilterQuerySerializer(DateWindowQuerySerializer):
+    toys = ToyIdListField(required=False)
+    has_media = serializers.BooleanField(required=False)
+
+
+class SessionListQuerySerializer(SessionFilterQuerySerializer):
     ordering = serializers.ChoiceField(choices=SESSION_ORDERING_CHOICES, required=False)
-    toys = serializers.CharField(required=False, help_text="Comma-separated toy ids")
-    has_photos = serializers.BooleanField(required=False)
-    has_videos = serializers.BooleanField(required=False)
-
-    def validate_toys(self, value):
-        try:
-            return [int(part) for part in value.split(",") if part.strip()]
-        except ValueError as err:
-            raise serializers.ValidationError("toys must be comma-separated integers") from err
 
 
-class SessionStatsQuerySerializer(DateWindowQuerySerializer):
-    group_by = serializers.ChoiceField(choices=["date", "hour", "weekday"])
+class SessionStatsQuerySerializer(SessionFilterQuerySerializer):
+    group_by = serializers.ChoiceField(choices=["date", "hour", "weekday", "toy"])
     metrics = serializers.CharField(
         help_text=(
             "Comma-separated metrics: 'count' or '<func>:<field>' with func in "
