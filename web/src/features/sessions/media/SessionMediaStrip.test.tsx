@@ -4,12 +4,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/api', () => ({
-  fetchMediaStatus: vi.fn(),
-  fetchSession: vi.fn(),
-  fetchSessionMedia: vi.fn(),
-}));
-
 const push = vi.fn();
 let search = '';
 
@@ -23,8 +17,8 @@ import type { QueryClient } from '@tanstack/react-query';
 
 import en from '@/i18n/catalogs/en.json';
 import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
-import { fetchMediaStatus, fetchSessionMedia } from '@/api';
 import type { SessionMedia } from '@/api/types';
+import { api, capture, http, HttpResponse, server, wire } from '@/test/msw';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 
@@ -69,24 +63,38 @@ const video = {
   fullUrl: 'https://immich/full2',
 } as const;
 
+const mediaStatus = (configured: boolean) =>
+  capture('get', api('/toys/sessions/media-status/'), () => ({ configured }));
+
+const sessionMedia = (value: SessionMedia) => capture('get', api('/toys/sessions/:id/media/'), () => wire(value));
+
+const hangingSessionMedia = () =>
+  server.use(
+    http.get(api('/toys/sessions/:id/media/'), async () => {
+      await new Promise(() => undefined);
+      return HttpResponse.json({});
+    }),
+  );
+
 describe('SessionMediaStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     search = '';
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true });
+    mediaStatus(true);
   });
 
   it('renders nothing when the media provider is not configured', async () => {
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
+    const status = mediaStatus(false);
+    const mediaCalls = sessionMedia(media([]));
     const { container } = render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
-    await waitFor(() => expect(fetchMediaStatus).toHaveBeenCalled());
+    await waitFor(() => expect(status.urls.length).toBeGreaterThan(0));
     expect(container.innerHTML).toBe('');
-    expect(fetchSessionMedia).not.toHaveBeenCalled();
+    expect(mediaCalls.urls).toHaveLength(0);
   });
 
   it('shows placeholders matching the expected count while loading', async () => {
-    vi.mocked(fetchSessionMedia).mockReturnValue(new Promise(() => undefined));
+    hangingSessionMedia();
     const { container } = render(wrap(<SessionMediaStrip sessionId={1} expectedCount={2} />));
     await screen.findByText(en.session.media.heading);
     expect(container.querySelectorAll('.animate-pulse')).toHaveLength(2);
@@ -94,14 +102,14 @@ describe('SessionMediaStrip', () => {
   });
 
   it('shows the empty message without placeholders when no media is expected', async () => {
-    vi.mocked(fetchSessionMedia).mockReturnValue(new Promise(() => undefined));
+    hangingSessionMedia();
     const { container } = render(wrap(<SessionMediaStrip sessionId={1} expectedCount={0} />));
     expect(await screen.findByText(en.session.media.empty)).toBeTruthy();
     expect(container.querySelectorAll('.animate-pulse')).toHaveLength(0);
   });
 
   it('invalidates its session detail query after loading media', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
+    sessionMedia(media([image, video]));
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />, client));
@@ -110,7 +118,7 @@ describe('SessionMediaStrip', () => {
   });
 
   it('does not touch the session detail query when media is not configured', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([], { configured: false }));
+    sessionMedia(media([], { configured: false }));
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const { container } = render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />, client));
@@ -119,34 +127,34 @@ describe('SessionMediaStrip', () => {
   });
 
   it('links to the external photo library when a share url is present', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image], { shareUrl: 'https://photos.example/share/K' }));
+    sessionMedia(media([image], { shareUrl: 'https://photos.example/share/K' }));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     const link = await screen.findByRole('link', { name: en.session.media.openExternal });
     expect(link.getAttribute('href')).toBe('https://photos.example/share/K');
   });
 
   it('hides the external link when there is no share url', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    sessionMedia(media([image]));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     await screen.findAllByRole('button', { name: en.session.media.openLabel });
     expect(screen.queryByRole('link')).toBeNull();
   });
 
   it('shows the empty message when the window has no media', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([]));
+    sessionMedia(media([]));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     expect(await screen.findByText(en.session.media.empty)).toBeTruthy();
     expect(screen.getByText(en.session.media.heading)).toBeTruthy();
   });
 
   it('shows the error message when loading fails', async () => {
-    vi.mocked(fetchSessionMedia).mockRejectedValue(new Error('boom'));
+    capture('get', api('/toys/sessions/:id/media/'), () => HttpResponse.json({ detail: 'boom' }, { status: 500 }));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     expect(await screen.findByText(en.session.media.loadError)).toBeTruthy();
   });
 
   it('opens the lightbox by pushing the media URL param', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
+    sessionMedia(media([image, video]));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     const thumbs = await screen.findAllByRole('button', { name: en.session.media.openLabel });
     expect(thumbs).toHaveLength(2);
@@ -158,13 +166,13 @@ describe('SessionMediaStrip', () => {
 
   it('shows the lightbox when the media param addresses this session', async () => {
     search = 'media=1:1';
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image, video]));
+    sessionMedia(media([image, video]));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     expect(await screen.findByRole('button', { name: en.session.media.closeLabel })).toBeTruthy();
   });
 
   it('ignores media params for other sessions or out-of-range indexes', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    sessionMedia(media([image]));
     for (const value of ['media=2:0', 'media=1:5', 'media=junk']) {
       search = value;
       const view = render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
@@ -176,7 +184,7 @@ describe('SessionMediaStrip', () => {
 
   it('closes by clearing the media param', async () => {
     search = 'media=1:0';
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media([image]));
+    sessionMedia(media([image]));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     fireEvent.click(await screen.findByRole('button', { name: en.session.media.closeLabel }));
     await waitFor(() => expect(push).toHaveBeenCalledWith('/sessions', { scroll: false }));

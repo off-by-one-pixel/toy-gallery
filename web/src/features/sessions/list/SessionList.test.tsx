@@ -44,35 +44,14 @@ class IntersectionObserverStub {
 
 vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
 
-vi.mock('@/api', () => ({
-  fetchMediaStatus: vi.fn(),
-  fetchSession: vi.fn(),
-  fetchSessions: vi.fn(),
-  fetchToys: vi.fn(),
-  fetchSessionStats: vi.fn(),
-  refreshAllSessionMedia: vi.fn(),
-  fetchSessionMedia: vi.fn(),
-  deleteSession: vi.fn(),
-  fetchLiveSession: vi.fn(),
-  startLiveSession: vi.fn(),
-}));
-
 import en from '@/i18n/catalogs/en.json';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { GirthProvider } from '@/features/preferences/GirthProvider';
 import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
 import { ThemeProvider } from '@/features/preferences/ThemeProvider';
 import { UnitProvider } from '@/features/preferences/UnitProvider';
-import {
-  fetchLiveSession,
-  fetchMediaStatus,
-  fetchSessionMedia,
-  fetchSessions,
-  fetchSessionStats,
-  fetchToys,
-  startLiveSession,
-} from '@/api';
 import type { Session, Toy } from '@/api/types';
+import { api, capture, http, HttpResponse, liveWire, server, sessionPageWire, wire } from '@/test/msw';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import SessionList from '@/features/sessions/list/SessionList';
 
@@ -103,11 +82,37 @@ const toyFixture = (id: number, name: string, usageCount: number): Toy =>
     shape: { sections: [] },
   }) as Toy;
 
-const pageOf = (sessions: Session[], overrides: Partial<{ count: number; hasMore: boolean }> = {}) => ({
-  sessions,
-  count: overrides.count ?? sessions.length,
-  hasMore: overrides.hasMore ?? false,
-});
+let respondSessions: (url: URL) => object;
+const sessionRequests: URL[] = [];
+const statsRequests: URL[] = [];
+let toys: Toy[] = [];
+let liveNow: Session | null = null;
+
+const hourStatsRequests = () => statsRequests.filter((u) => u.searchParams.get('group_by') === 'hour');
+
+const installListHandlers = () => {
+  server.use(
+    http.get(api('/toys/sessions/'), ({ request }) => {
+      const url = new URL(request.url);
+      sessionRequests.push(url);
+      return HttpResponse.json(respondSessions(url) as never);
+    }),
+    http.get(api('/toys/sessions/stats/'), ({ request }) => {
+      const url = new URL(request.url);
+      statsRequests.push(url);
+      const groups =
+        url.searchParams.get('group_by') === 'toy'
+          ? [
+              { key: '1', values: { count: 9 } },
+              { key: '2', values: { count: 3 } },
+            ]
+          : [];
+      return HttpResponse.json({ groups });
+    }),
+    http.get(api('/toys/toys/'), () => HttpResponse.json(toys.map((t) => wire(t)))),
+    http.get(api('/toys/sessions/live/'), () => HttpResponse.json(liveWire(liveNow))),
+  );
+};
 
 const wrap = (ui: React.ReactNode, client?: QueryClient) => (
   <NextIntlClientProvider locale="en" messages={en}>
@@ -130,21 +135,16 @@ describe('SessionList', () => {
     vi.clearAllMocks();
     localStorage.clear();
     search = '';
-    vi.mocked(fetchSessions).mockResolvedValue(
-      pageOf([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 })]),
-    );
-    vi.mocked(fetchToys).mockResolvedValue([]);
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
-    vi.mocked(fetchSessionStats).mockImplementation(async (groupBy) =>
-      groupBy === 'toy'
-        ? [
-            { key: '1', values: { count: 9 } },
-            { key: '2', values: { count: 3 } },
-          ]
-        : [],
-    );
-    vi.mocked(fetchSessionMedia).mockResolvedValue({ configured: false, items: [], shareUrl: null });
-    vi.mocked(fetchLiveSession).mockResolvedValue(null);
+    sessionRequests.length = 0;
+    statsRequests.length = 0;
+    toys = [];
+    liveNow = null;
+    respondSessions = () =>
+      sessionPageWire([
+        session(1, '2026-06-01T20:00:00'),
+        session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 }),
+      ]);
+    installListHandlers();
   });
 
   it('renders a row per session and a media badge for flagged sessions', async () => {
@@ -159,31 +159,29 @@ describe('SessionList', () => {
     const client = createTestQueryClient();
     render(wrap(<SessionList />, client));
     await screen.findByText(`2 ${en.session.recorded}`);
-    vi.mocked(fetchSessions).mockResolvedValue(
-      pageOf([
+    respondSessions = () =>
+      sessionPageWire([
         session(1, '2026-06-01T20:00:00', false, { photos: 1, videos: 0 }),
         session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 }),
-      ]),
-    );
+      ]);
     void client.invalidateQueries({ queryKey: ['sessions', 'list'] });
     await waitFor(() => expect(screen.getAllByLabelText(/\d+ photos, \d+ videos/)).toHaveLength(2));
   });
 
   it('starts a live session from the toolbar button and hides it afterwards', async () => {
-    vi.mocked(startLiveSession).mockResolvedValue(session(9, '2026-06-06T08:00:00', true));
+    const started = capture('post', api('/toys/sessions/start/'), () => wire(session(9, '2026-06-06T08:00:00', true)));
     render(wrap(<SessionList />));
     const buttons = await screen.findAllByRole('button', { name: en.session.live.startButton });
     fireEvent.click(buttons[0]);
-    await waitFor(() => expect(startLiveSession).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(started.urls).toHaveLength(1));
     await waitFor(() => expect(screen.queryAllByRole('button', { name: en.session.live.startButton })).toHaveLength(0));
     expect(screen.getByRole('button', { name: en.session.live.openButton })).toBeTruthy();
   });
 
   it('hides the start button and shows banner plus badge when a session is live', async () => {
-    vi.mocked(fetchLiveSession).mockResolvedValue(session(1, '2026-06-01T20:00:00', true));
-    vi.mocked(fetchSessions).mockResolvedValue(
-      pageOf([session(1, '2026-06-01T20:00:00', true), session(2, '2026-06-05T09:00:00')]),
-    );
+    liveNow = session(1, '2026-06-01T20:00:00', true);
+    respondSessions = () =>
+      sessionPageWire([session(1, '2026-06-01T20:00:00', true), session(2, '2026-06-05T09:00:00')]);
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
     expect(screen.queryAllByRole('button', { name: en.session.live.startButton })).toHaveLength(0);
@@ -194,44 +192,37 @@ describe('SessionList', () => {
   it('requests strip stats with the filter window', async () => {
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    const hourCalls = vi.mocked(fetchSessionStats).mock.calls.filter(([g]) => g === 'hour');
+    const hourCalls = hourStatsRequests();
     expect(hourCalls.length).toBeGreaterThan(0);
-    expect(hourCalls[hourCalls.length - 1][2]).toEqual({
-      start: undefined,
-      toys: [],
-      hasMedia: false,
-    });
+    const last = hourCalls[hourCalls.length - 1];
+    expect(last.searchParams.has('start')).toBe(false);
+    expect(last.searchParams.has('toys')).toBe(false);
+    expect(last.searchParams.has('has_media')).toBe(false);
 
     fireEvent.click(screen.getByText(en.session.filter.week));
     await waitFor(() => {
-      const calls = vi.mocked(fetchSessionStats).mock.calls.filter(([g]) => g === 'hour');
-      const last = calls[calls.length - 1][2] as { start?: string };
-      expect(last.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      const calls = hourStatsRequests();
+      expect(calls[calls.length - 1].searchParams.get('start')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
   });
 
   it('shows the server count in the subtitle, not the loaded page size', async () => {
-    vi.mocked(fetchSessions).mockResolvedValue(
-      pageOf([session(1, '2026-06-01T20:00:00')], { count: 41, hasMore: true }),
-    );
+    respondSessions = () => sessionPageWire([session(1, '2026-06-01T20:00:00')], { count: 41, hasMore: true });
     render(wrap(<SessionList />));
     expect(await screen.findByText(`41 ${en.session.recorded}`)).toBeTruthy();
   });
 
   it('appends the next page without duplicating overlapping sessions', async () => {
-    vi.mocked(fetchSessions)
-      .mockResolvedValueOnce(
-        pageOf([session(1, '2026-06-05T09:00:00'), session(2, '2026-06-04T09:00:00')], {
-          count: 3,
-          hasMore: true,
-        }),
-      )
-      .mockResolvedValueOnce(
-        pageOf([session(2, '2026-06-04T09:00:00'), session(3, '2026-06-03T09:00:00')], {
-          count: 3,
-          hasMore: false,
-        }),
-      );
+    respondSessions = (url) =>
+      url.searchParams.get('page') === '2'
+        ? sessionPageWire([session(2, '2026-06-04T09:00:00'), session(3, '2026-06-03T09:00:00')], {
+            count: 3,
+            hasMore: false,
+          })
+        : sessionPageWire([session(1, '2026-06-05T09:00:00'), session(2, '2026-06-04T09:00:00')], {
+            count: 3,
+            hasMore: true,
+          });
     render(wrap(<SessionList />));
     await screen.findByText(`3 ${en.session.recorded}`);
 
@@ -239,8 +230,7 @@ describe('SessionList', () => {
     ioCallbacks[ioCallbacks.length - 1]([{ isIntersecting: true }]);
 
     await waitFor(() => expect(screen.getAllByRole('button', { name: en.session.detailsToggleLabel })).toHaveLength(3));
-    const pageArgs = vi.mocked(fetchSessions).mock.calls.map(([opts]) => opts?.page);
-    expect(pageArgs).toContain(2);
+    expect(sessionRequests.map((u) => u.searchParams.get('page'))).toContain('2');
   });
 
   it('refetches with the filter window start and the selected ordering', async () => {
@@ -248,34 +238,34 @@ describe('SessionList', () => {
     await screen.findByText(`2 ${en.session.recorded}`);
     fireEvent.click(screen.getByText(en.session.filter.week));
     await waitFor(() => {
-      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
-      expect(last?.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(last?.page).toBe(1);
+      const last = sessionRequests[sessionRequests.length - 1];
+      expect(last.searchParams.get('start')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(last.searchParams.get('page')).toBe('1');
     });
   });
 
   it('filters by toy and media through the filter popover', async () => {
-    vi.mocked(fetchToys).mockResolvedValue([toyFixture(1, 'Steel', 9), toyFixture(2, 'Ember', 3)]);
+    toys = [toyFixture(1, 'Steel', 9), toyFixture(2, 'Ember', 3)];
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
 
     fireEvent.click(screen.getByRole('button', { name: en.session.filters.buttonLabel }));
     fireEvent.click(await screen.findByRole('checkbox', { name: /B Steel/ }));
     await waitFor(() => {
-      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
-      expect(last?.toys).toEqual([1]);
-      expect(last?.page).toBe(1);
+      const last = sessionRequests[sessionRequests.length - 1];
+      expect(last.searchParams.get('toys')).toBe('1');
+      expect(last.searchParams.get('page')).toBe('1');
     });
 
     fireEvent.click(screen.getByRole('checkbox', { name: en.session.filters.hasMedia }));
     await waitFor(() => {
-      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
-      expect(last?.hasMedia).toBe(true);
+      const last = sessionRequests[sessionRequests.length - 1];
+      expect(last.searchParams.get('has_media')).toBe('true');
     });
   });
 
   it('shows active filters as dismissible chips and clears them', async () => {
-    vi.mocked(fetchToys).mockResolvedValue([toyFixture(1, 'Steel', 9)]);
+    toys = [toyFixture(1, 'Steel', 9)];
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
 
@@ -284,20 +274,16 @@ describe('SessionList', () => {
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     fireEvent.click(screen.getByRole('button', { name: 'B Steel ×' }));
-    await waitFor(() => {
-      const last = vi.mocked(fetchSessions).mock.calls.at(-1)?.[0];
-      expect(last?.toys).toEqual([]);
-    });
-    expect(screen.queryByRole('button', { name: 'B Steel ×' })).toBeNull();
+    await waitFor(() => expect(new URLSearchParams(search).has('toys')).toBe(false));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'B Steel ×' })).toBeNull());
   });
 
   it('seeds the toy filter from the toys url param', async () => {
     search = 'toys=1';
-    vi.mocked(fetchToys).mockResolvedValue([toyFixture(1, 'Steel', 9)]);
+    toys = [toyFixture(1, 'Steel', 9)];
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    const first = vi.mocked(fetchSessions).mock.calls[0][0];
-    expect(first?.toys).toEqual([1]);
+    expect(sessionRequests[0].searchParams.get('toys')).toBe('1');
     expect(await screen.findByRole('button', { name: 'B Steel ×' })).toBeTruthy();
   });
 

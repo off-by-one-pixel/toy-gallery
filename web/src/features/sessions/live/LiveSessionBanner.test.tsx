@@ -11,15 +11,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
 }));
 
-vi.mock('@/api', () => ({
-  fetchLiveSession: vi.fn(),
-  startLiveSession: vi.fn(),
-}));
-
 import en from '@/i18n/catalogs/en.json';
 import { useLiveSession } from '@/features/sessions/live/useLiveSession';
-import { fetchLiveSession, startLiveSession } from '@/api';
 import type { Session } from '@/api/types';
+import { api, capture, http, HttpResponse, liveWire, server, wire } from '@/test/msw';
 import { QueryWrapper } from '@/test/QueryWrapper';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 
@@ -31,6 +26,11 @@ const live = (startedAt: string): Session => ({
   maxInsertableLength: null,
   maxCircumference: null,
 });
+
+let liveNow: Session | null = null;
+
+const useLiveState = () =>
+  server.use(http.get(api('/toys/sessions/live/'), () => HttpResponse.json(liveWire(liveNow))));
 
 function StartProbe() {
   const { liveSession, isLoaded, start } = useLiveSession();
@@ -51,18 +51,18 @@ describe('LiveSessionBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useRealTimers();
+    liveNow = null;
+    useLiveState();
   });
 
   it('renders nothing when no session is live', async () => {
-    vi.mocked(fetchLiveSession).mockResolvedValue(null);
     render(wrap(<LiveSessionBanner />));
     await screen.findByText('idle', { ignore: 'html' }).catch(() => undefined);
     expect(screen.queryByText(en.session.live.badge)).toBeNull();
   });
 
   it('shows the badge and elapsed time and navigates on open', async () => {
-    const startedAt = new Date(Date.now() - 95 * 60_000).toISOString();
-    vi.mocked(fetchLiveSession).mockResolvedValue(live(startedAt));
+    liveNow = live(new Date(Date.now() - 95 * 60_000).toISOString());
     render(wrap(<LiveSessionBanner />));
 
     expect(await screen.findByText(en.session.live.badge)).toBeTruthy();
@@ -74,8 +74,7 @@ describe('LiveSessionBanner', () => {
 
   it('ticks the elapsed time forward', async () => {
     vi.useFakeTimers();
-    const startedAt = new Date(Date.now() - 10 * 60_000).toISOString();
-    vi.mocked(fetchLiveSession).mockResolvedValue(live(startedAt));
+    liveNow = live(new Date(Date.now() - 10 * 60_000).toISOString());
     render(wrap(<LiveSessionBanner />));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
@@ -90,12 +89,11 @@ describe('LiveSessionBanner', () => {
   });
 
   it('start() stores the created session in the query cache', async () => {
-    vi.mocked(fetchLiveSession).mockResolvedValue(null);
-    vi.mocked(startLiveSession).mockResolvedValue(live(new Date().toISOString()));
+    const started = capture('post', api('/toys/sessions/start/'), () => wire(live(new Date().toISOString())));
     render(wrap(<StartProbe />));
     const probe = await screen.findByText('idle');
     fireEvent.click(probe);
     expect(await screen.findByText('live:5')).toBeTruthy();
-    expect(startLiveSession).toHaveBeenCalledTimes(1);
+    expect(started.urls).toHaveLength(1);
   });
 });
