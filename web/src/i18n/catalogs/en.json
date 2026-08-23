@@ -52,7 +52,8 @@
     },
     "timesUsed": "Times used",
     "timeUsed": "Plugged time",
-    "topCap": "{shape} cap"
+    "topCap": "{shape} cap",
+    "viewSessions": "View sessions"
   },
   "viewToggle": {
     "ariaLabel": "Gallery view",

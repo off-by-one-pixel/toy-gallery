@@ -5,11 +5,30 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  usePathname: () => '/sessions',
-  useSearchParams: () => new URLSearchParams(),
-}));
+let search = '';
+const searchListeners = new Set<() => void>();
+const navigate = (href: string) => {
+  search = href.split('?')[1] ?? '';
+  for (const listener of searchListeners) listener();
+};
+
+vi.mock('next/navigation', async () => {
+  const { useSyncExternalStore } = await import('react');
+  return {
+    useRouter: () => ({ push: navigate, replace: navigate }),
+    usePathname: () => '/sessions',
+    useSearchParams: () => {
+      const current = useSyncExternalStore(
+        (onChange) => {
+          searchListeners.add(onChange);
+          return () => searchListeners.delete(onChange);
+        },
+        () => search,
+      );
+      return new URLSearchParams(current);
+    },
+  };
+});
 
 type IOCallback = (entries: Array<{ isIntersecting: boolean }>) => void;
 const ioCallbacks: IOCallback[] = [];
@@ -110,6 +129,7 @@ describe('SessionList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    search = '';
     vi.mocked(fetchSessions).mockResolvedValue(
       pageOf([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 })]),
     );
@@ -269,6 +289,16 @@ describe('SessionList', () => {
       expect(last?.toys).toEqual([]);
     });
     expect(screen.queryByRole('button', { name: 'B Steel ×' })).toBeNull();
+  });
+
+  it('seeds the toy filter from the toys url param', async () => {
+    search = 'toys=1';
+    vi.mocked(fetchToys).mockResolvedValue([toyFixture(1, 'Steel', 9)]);
+    render(wrap(<SessionList />));
+    await screen.findByText(`2 ${en.session.recorded}`);
+    const first = vi.mocked(fetchSessions).mock.calls[0][0];
+    expect(first?.toys).toEqual([1]);
+    expect(await screen.findByRole('button', { name: 'B Steel ×' })).toBeTruthy();
   });
 
   it('toggles row selection through the overlay button', async () => {
