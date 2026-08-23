@@ -4,14 +4,9 @@ import type { QueryClient } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 
-vi.mock('@/api', () => ({
-  fetchLiveSession: vi.fn(),
-  startLiveSession: vi.fn(),
-}));
-
-import { fetchLiveSession, startLiveSession } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import type { Session } from '@/api/types';
+import { api, capture, http, HttpResponse, liveWire, server, wire } from '@/test/msw';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import LiveSessionSyncSubscriber from './LiveSessionSyncSubscriber';
 import { LIVE_SYNC_INTERVAL_MS, useLiveSession } from './useLiveSession';
@@ -24,6 +19,11 @@ const live = (id: number): Session => ({
   maxInsertableLength: null,
   maxCircumference: null,
 });
+
+let liveNow: Session | null = null;
+
+const useLiveState = () =>
+  server.use(http.get(api('/toys/sessions/live/'), () => HttpResponse.json(liveWire(liveNow))));
 
 function StartProbe() {
   const { start, isLoaded } = useLiveSession();
@@ -62,18 +62,19 @@ describe('useLiveSessionSync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useRealTimers();
+    liveNow = null;
+    useLiveState();
   });
 
   it('polls and invalidates lists and stats only on live-id transitions', async () => {
     vi.useFakeTimers();
-    vi.mocked(fetchLiveSession).mockResolvedValue(null);
     const client = createTestQueryClient();
     const spy = spyOnInvalidations(client);
     renderSync(client);
     await tick(0);
     expect(invalidations(spy, queryKeys.sessions.lists)).toBe(0);
 
-    vi.mocked(fetchLiveSession).mockResolvedValue(live(5));
+    liveNow = live(5);
     await tick(LIVE_SYNC_INTERVAL_MS);
     expect(invalidations(spy, queryKeys.sessions.lists)).toBe(1);
     expect(invalidations(spy, queryKeys.sessions.stats)).toBe(1);
@@ -81,7 +82,7 @@ describe('useLiveSessionSync', () => {
     await tick(LIVE_SYNC_INTERVAL_MS);
     expect(invalidations(spy, queryKeys.sessions.lists)).toBe(1);
 
-    vi.mocked(fetchLiveSession).mockResolvedValue(null);
+    liveNow = null;
     await tick(LIVE_SYNC_INTERVAL_MS);
     expect(invalidations(spy, queryKeys.sessions.lists)).toBe(2);
     expect(invalidations(spy, queryKeys.sessions.stats)).toBe(2);
@@ -90,7 +91,7 @@ describe('useLiveSessionSync', () => {
 
   it('does not invalidate when a live session already exists on first load', async () => {
     vi.useFakeTimers();
-    vi.mocked(fetchLiveSession).mockResolvedValue(live(7));
+    liveNow = live(7);
     const client = createTestQueryClient();
     const spy = spyOnInvalidations(client);
     renderSync(client);
@@ -101,14 +102,13 @@ describe('useLiveSessionSync', () => {
   });
 
   it('runs one invalidation cycle when this device starts a session', async () => {
-    vi.mocked(fetchLiveSession).mockResolvedValue(null);
-    vi.mocked(startLiveSession).mockResolvedValue(live(9));
+    const started = capture('post', api('/toys/sessions/start/'), () => wire(live(9)));
     const client = createTestQueryClient();
     const spy = spyOnInvalidations(client);
     renderSync(client, <StartProbe />);
     fireEvent.click(await screen.findByText('start'));
     await waitFor(() => expect(invalidations(spy, queryKeys.sessions.lists)).toBe(1));
     expect(invalidations(spy, queryKeys.sessions.stats)).toBe(1);
-    expect(startLiveSession).toHaveBeenCalledTimes(1);
+    expect(started.urls).toHaveLength(1);
   });
 });

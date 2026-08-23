@@ -1,22 +1,15 @@
 // @vitest-environment jsdom
 
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Toy } from '@/api/types';
+import { api, capture, http, HttpResponse, server, wire, type Captured } from '@/test/msw';
 import { useAttributesEditor } from '@/features/toys/gallery/useAttributesEditor';
-
-vi.mock('@/api', () => ({
-  patchToy: vi.fn(),
-}));
 
 vi.mock('@heroui/react', () => ({
   Toast: { toast: { danger: vi.fn(), success: vi.fn() } },
 }));
-
-import { patchToy } from '@/api';
-
-const mockPatchToy = vi.mocked(patchToy);
 
 const makeToy = (overrides: Partial<Toy> = {}): Toy =>
   ({
@@ -33,15 +26,14 @@ const makeToy = (overrides: Partial<Toy> = {}): Toy =>
     ...overrides,
   }) as Toy;
 
-/** Resolve all microtasks plus settle React's effect scheduler. */
-const flush = () => new Promise<void>((r) => setTimeout(r, 0));
+const patchReturning = (toy: Toy): Captured => capture('patch', api('/toys/toys/1/'), () => wire(toy));
+
+const flush = async () => {
+  for (let i = 0; i < 5; i++) await new Promise<void>((r) => setTimeout(r, 0));
+};
 
 beforeEach(() => {
-  mockPatchToy.mockReset();
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('useAttributesEditor — initial state', () => {
@@ -100,16 +92,17 @@ describe('useAttributesEditor — row mutations', () => {
 
 describe('useAttributesEditor — commit save', () => {
   it('does not call patchToy when there are no unsaved changes', async () => {
+    const patch = patchReturning(makeToy());
     const { result } = renderHook(() => useAttributesEditor(makeToy({ customAttributes: { size: 'M' } })));
     act(() => {
       result.current.commitChanges();
     });
     await flush();
-    expect(mockPatchToy).not.toHaveBeenCalled();
+    expect(patch.urls).toHaveLength(0);
   });
 
   it('calls patchToy with the projected dict on commit', async () => {
-    mockPatchToy.mockResolvedValue(makeToy({ customAttributes: { size: 'L' } }));
+    const patch = patchReturning(makeToy({ customAttributes: { size: 'L' } }));
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -122,12 +115,12 @@ describe('useAttributesEditor — commit save', () => {
       await flush();
     });
 
-    expect(mockPatchToy).toHaveBeenCalledTimes(1);
-    expect(mockPatchToy).toHaveBeenCalledWith(1, { customAttributes: { size: 'L' } });
+    expect(patch.urls).toHaveLength(1);
+    expect(patch.bodies[0]).toEqual({ custom_attributes: { size: 'L' } });
   });
 
   it('applies the server response, replacing local rows with the canonical set', async () => {
-    mockPatchToy.mockResolvedValue(makeToy({ customAttributes: { size: 'L', new: 'value' } }));
+    patchReturning(makeToy({ customAttributes: { size: 'L', new: 'value' } }));
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -148,7 +141,7 @@ describe('useAttributesEditor — commit save', () => {
   });
 
   it('reverts to the last saved state when patchToy throws', async () => {
-    mockPatchToy.mockRejectedValueOnce(new Error('boom'));
+    capture('patch', api('/toys/toys/1/'), () => HttpResponse.json({ detail: 'boom' }, { status: 500 }));
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -165,22 +158,25 @@ describe('useAttributesEditor — commit save', () => {
   });
 
   it('single-flights concurrent commits with one queued retry', async () => {
-    // First save resolves slowly; a fresh draft row added during the
-    // in-flight period queues exactly one retry that picks up the new key.
-    let resolveFirst!: (toy: Toy) => void;
-    mockPatchToy.mockImplementationOnce(
-      () =>
-        new Promise<Toy>((resolve) => {
-          resolveFirst = resolve;
-        }),
+    let resolveFirst!: (t: Toy) => void;
+    const bodies: unknown[] = [];
+    server.use(
+      http.patch(api('/toys/toys/1/'), async ({ request }) => {
+        bodies.push(await request.json());
+        if (bodies.length === 1) {
+          const first = await new Promise<Toy>((resolve) => {
+            resolveFirst = resolve;
+          });
+          return HttpResponse.json(wire(first) as never);
+        }
+        return HttpResponse.json(wire(makeToy({ customAttributes: { size: 'L', gauge: '14' } })) as never);
+      }),
     );
-    mockPatchToy.mockResolvedValueOnce(makeToy({ customAttributes: { size: 'L', gauge: '14' } }));
 
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
 
-    // First commit (becomes the in-flight save)
     act(() => {
       result.current.updateValue(target, 'L');
     });
@@ -188,12 +184,9 @@ describe('useAttributesEditor — commit save', () => {
       result.current.commitChanges();
     });
 
-    // Add a brand-new key while the first save is in flight. Each
-    // commit while in-flight should coalesce to one queued retry.
     act(() => {
       result.current.addRow();
     });
-    // Initial rows has length 1 ({ size: 'M' }); addRow appended at index 1.
     const newId = result.current.rows[1].rowId;
     act(() => {
       result.current.updateKey(newId, 'gauge');
@@ -208,23 +201,24 @@ describe('useAttributesEditor — commit save', () => {
       result.current.commitChanges();
     });
 
-    expect(mockPatchToy).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      await flush();
+    });
+    expect(bodies).toHaveLength(1);
 
-    // Resolve the first save; the queued retry should fire next with
-    // the combined dict.
     await act(async () => {
       resolveFirst(makeToy({ customAttributes: { size: 'L' } }));
       await flush();
     });
 
-    expect(mockPatchToy).toHaveBeenCalledTimes(2);
-    expect(mockPatchToy).toHaveBeenLastCalledWith(1, { customAttributes: { size: 'L', gauge: '14' } });
+    await waitFor(() => expect(bodies).toHaveLength(2));
+    expect(bodies[1]).toEqual({ custom_attributes: { size: 'L', gauge: '14' } });
   });
 });
 
 describe('useAttributesEditor — removeRow', () => {
   it('drops the targeted row and commits the resulting dict', async () => {
-    mockPatchToy.mockResolvedValue(makeToy({ customAttributes: { shade: 'blue' } }));
+    const patch = patchReturning(makeToy({ customAttributes: { shade: 'blue' } }));
     const toy = makeToy({ customAttributes: { size: 'M', shade: 'blue' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -234,7 +228,7 @@ describe('useAttributesEditor — removeRow', () => {
       await flush();
     });
 
-    expect(mockPatchToy).toHaveBeenCalledWith(1, { customAttributes: { shade: 'blue' } });
+    expect(patch.bodies[0]).toEqual({ custom_attributes: { shade: 'blue' } });
     expect(result.current.rows.map((r) => r.key)).toEqual(['shade']);
   });
 });
@@ -260,16 +254,16 @@ describe('useAttributesEditor — re-hydration on toy.id change', () => {
     });
     const target = result.current.rows[0].rowId;
     act(() => {
-      result.current.updateValue(target, 'L'); // edit, don't commit
+      result.current.updateValue(target, 'L');
     });
     rerender({ t: { ...toy, customAttributes: { size: 'M' } } as Toy });
-    expect(result.current.rows[0].value).toBe('L'); // edit survived
+    expect(result.current.rows[0].value).toBe('L');
   });
 });
 
 describe('useAttributesEditor — unmount', () => {
   it('flushes pending edits on unmount', async () => {
-    mockPatchToy.mockResolvedValue(makeToy({ customAttributes: { size: 'L' } }));
+    const patch = patchReturning(makeToy({ customAttributes: { size: 'L' } }));
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result, unmount } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -280,6 +274,6 @@ describe('useAttributesEditor — unmount', () => {
     unmount();
     await flush();
 
-    expect(mockPatchToy).toHaveBeenCalledWith(1, { customAttributes: { size: 'L' } });
+    expect(patch.bodies[0]).toEqual({ custom_attributes: { size: 'L' } });
   });
 });
