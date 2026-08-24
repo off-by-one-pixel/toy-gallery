@@ -188,6 +188,7 @@ class SessionStatsTests(SessionStatsTestBase):
             response = self.client.get(URL, params)
             self.assertEqual(response.status_code, 400, params)
 
+
 class SessionStatsFilterTests(SessionStatsTestBase):
     def test_stats_respect_toy_filter(self):
         self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": self.toy_a}])
@@ -195,11 +196,8 @@ class SessionStatsFilterTests(SessionStatsTestBase):
         groups = self._get(group_by="date", metrics="count", toys=[self.toy_a])
         self.assertEqual(sum(g["values"]["count"] for g in groups), 1)
 
-
     def test_groups_by_toy_within_window(self):
-        self._make_session(
-            _utc("2026-06-01T08:00:00"), [{"toy": self.toy_a}, {"toy": self.toy_b}]
-        )
+        self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": self.toy_a}, {"toy": self.toy_b}])
         self._make_session(_utc("2026-06-02T08:00:00"), [{"toy": self.toy_a}])
         self._make_session(_utc("2026-05-01T08:00:00"), [{"toy": self.toy_b}])
         groups = self._get(group_by="toy", metrics="count", start="2026-06-01")
@@ -218,4 +216,3 @@ class SessionStatsFilterTests(SessionStatsTestBase):
         self._make_session(_utc("2026-06-02T08:00:00"))
         groups = self._get(group_by="date", metrics="count", has_media="true")
         self.assertEqual(sum(g["values"]["count"] for g in groups), 1)
-

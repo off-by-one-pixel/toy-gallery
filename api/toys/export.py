@@ -104,9 +104,7 @@ class ExportV2(ExportVersion):
             pk_to_local[toy.pk] = local_id
 
         sessions = []
-        session_qs = models.Session.objects.prefetch_related("entries__toy").order_by(
-            "started_at"
-        )
+        session_qs = models.Session.objects.prefetch_related("entries__toy").order_by("started_at")
         for session in session_qs:
             entries = []
             skip_session = False
@@ -117,9 +115,7 @@ class ExportV2(ExportVersion):
                     # whole session rather than emit a dangling reference.
                     skip_session = True
                     break
-                entries.append(
-                    {"toy_id": local, "involvement": entry.involvement}
-                )
+                entries.append({"toy_id": local, "involvement": entry.involvement})
             if skip_session or not entries:
                 continue
             sessions.append(

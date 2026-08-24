@@ -374,17 +374,13 @@ class ExportImportTests(TestCase):
 
         exported = self.client.get("/toys/toys/export/").data
         attrs_by_name = {t["name"]: t.get("custom_attributes") for t in exported["toys"]}
-        self.assertEqual(
-            attrs_by_name["Demo"], {"firmness": "medium", "material": "silicone"}
-        )
+        self.assertEqual(attrs_by_name["Demo"], {"firmness": "medium", "material": "silicone"})
 
         # Import the export and verify the round-tripped toy keeps its attributes.
         models.Toy.objects.all().delete()
         response = self.client.post("/toys/toys/import/", exported, format="json")
         self.assertEqual(response.status_code, 201, response.content)
-        roundtripped = list(
-            models.Toy.objects.filter(custom_attributes__has_key="firmness")
-        )
+        roundtripped = list(models.Toy.objects.filter(custom_attributes__has_key="firmness"))
         self.assertEqual(len(roundtripped), 1)
         self.assertEqual(
             roundtripped[0].custom_attributes,
@@ -402,9 +398,7 @@ class ExportImportTests(TestCase):
         # Export what's there, import it back, count should double.
         exported = self.client.get("/toys/toys/export/").data
         before = models.Toy.objects.count()
-        response = self.client.post(
-            "/toys/toys/import/", exported, format="json"
-        )
+        response = self.client.post("/toys/toys/import/", exported, format="json")
         self.assertEqual(response.status_code, 201, response.content)
         self.assertEqual(response.data, {"toys_created": before, "sessions_created": 0})
         self.assertEqual(models.Toy.objects.count(), before * 2)
@@ -478,9 +472,7 @@ class ExportV2SessionsTests(TestCase):
 
         response = self.client.post("/toys/toys/import/", exported, format="json")
         self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(
-            response.data, {"toys_created": 2, "sessions_created": 1}
-        )
+        self.assertEqual(response.data, {"toys_created": 2, "sessions_created": 1})
         self.assertEqual(models.Toy.objects.count(), 2)
         self.assertEqual(models.Session.objects.count(), 1)
         session = models.Session.objects.get()
@@ -518,9 +510,7 @@ class ExportV2SessionsTests(TestCase):
         }
         response = self.client.post("/toys/toys/import/", envelope, format="json")
         self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(
-            response.data, {"toys_created": 1, "sessions_created": 0}
-        )
+        self.assertEqual(response.data, {"toys_created": 1, "sessions_created": 0})
 
 
 class DeleteCollectionTests(TestCase):
@@ -614,9 +604,7 @@ class LiveSessionTests(TestCase):
             "ended_at": "2999-01-01T00:00:00Z",
             "entries": [{"toy": toy, "involvement": "USED"}],
         }
-        update = self.client.put(
-            f"/toys/sessions/{started.data['id']}/", payload, format="json"
-        )
+        update = self.client.put(f"/toys/sessions/{started.data['id']}/", payload, format="json")
         self.assertEqual(update.status_code, 200, update.content)
         self.assertFalse(update.data["is_live"])
         self.assertIsNone(self.client.get("/toys/sessions/live/").data["session"])
@@ -629,9 +617,7 @@ class LiveSessionTests(TestCase):
             "ended_at": None,
             "entries": [{"toy": toy, "involvement": "USED"}],
         }
-        update = self.client.put(
-            f"/toys/sessions/{started.data['id']}/", payload, format="json"
-        )
+        update = self.client.put(f"/toys/sessions/{started.data['id']}/", payload, format="json")
         self.assertEqual(update.status_code, 200, update.content)
         self.assertTrue(update.data["is_live"])
 
@@ -707,9 +693,7 @@ class SessionTests(TestCase):
     def test_fully_inserted_contributes_both(self):
         response = self.client.post(
             "/toys/sessions/",
-            self._session_payload(
-                [{"toy": self.toy_a, "involvement": "FULLY_INSERTED"}]
-            ),
+            self._session_payload([{"toy": self.toy_a, "involvement": "FULLY_INSERTED"}]),
             format="json",
         )
         self.assertEqual(response.status_code, 201, response.content)
@@ -799,9 +783,7 @@ class SessionTests(TestCase):
         self.assertIsNone(response.data["ended_at"])
 
         payload["ended_at"] = "2026-05-03T07:30:00Z"
-        update = self.client.put(
-            f"/toys/sessions/{response.data['id']}/", payload, format="json"
-        )
+        update = self.client.put(f"/toys/sessions/{response.data['id']}/", payload, format="json")
         self.assertEqual(update.status_code, 200, update.content)
         self.assertEqual(update.data["ended_at"], "2026-05-03T07:30:00Z")
 
@@ -845,9 +827,7 @@ class SessionTests(TestCase):
         for ts in ("2026-04-01T10:00:00Z", "2026-05-01T10:00:00Z", "2026-04-15T10:00:00Z"):
             self.client.post(
                 "/toys/sessions/",
-                self._session_payload(
-                    [{"toy": self.toy_a, "involvement": "USED"}], started_at=ts
-                ),
+                self._session_payload([{"toy": self.toy_a, "involvement": "USED"}], started_at=ts),
                 format="json",
             )
         response = self.client.get("/toys/sessions/")
@@ -857,9 +837,7 @@ class SessionTests(TestCase):
         self.assertEqual(timestamps, sorted(timestamps, reverse=True))
 
     def test_empty_entries_rejected(self):
-        response = self.client.post(
-            "/toys/sessions/", self._session_payload([]), format="json"
-        )
+        response = self.client.post("/toys/sessions/", self._session_payload([]), format="json")
         self.assertEqual(response.status_code, 400)
         self.assertIn("entries", response.data)
 
@@ -1065,4 +1043,3 @@ class SpaIndexResolutionTests(TestCase):
     def test_returns_none_when_frontend_is_empty(self):
         with tempfile.TemporaryDirectory() as empty:
             self.assertIsNone(_resolve_spa_html("/", Path(empty)))
-

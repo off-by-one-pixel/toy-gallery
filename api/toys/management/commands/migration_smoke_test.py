@@ -47,9 +47,7 @@ class Command(BaseCommand):
             call_command("check", "--database", "default", verbosity=0)
         except SystemExit as exit_err:
             if int(getattr(exit_err, "code", 0) or 0) != 0:
-                raise SmokeTestFailure(
-                    "layer 1: `check --database default` failed"
-                ) from exit_err
+                raise SmokeTestFailure("layer 1: `check --database default` failed") from exit_err
         self.stdout.write(f"{LOG_PREFIX} layer 1 (structural) ok")
 
     # ---------- Layer 2: referential ----------
@@ -84,17 +82,13 @@ class Command(BaseCommand):
     def _layer_4_api_paths(self) -> None:
         paths = getattr(settings, "MIGRATION_SMOKE_TEST_PATHS", [])
         if not paths:
-            self.stdout.write(
-                f"{LOG_PREFIX} layer 4 (api) skipped: no paths configured"
-            )
+            self.stdout.write(f"{LOG_PREFIX} layer 4 (api) skipped: no paths configured")
             return
 
         superuser = get_user_model().objects.filter(is_superuser=True).first()
         if superuser is None:
             # First deploy hasn't bootstrapped the admin account yet.
-            self.stdout.write(
-                f"{LOG_PREFIX} layer 4 (api) skipped: no superuser yet"
-            )
+            self.stdout.write(f"{LOG_PREFIX} layer 4 (api) skipped: no superuser yet")
             return
 
         # force_login bypasses the credential exchange — no need to know
@@ -112,9 +106,7 @@ class Command(BaseCommand):
                     f"layer 4: GET {path} raised {type(err).__name__}: {err}"
                 ) from err
             if response.status_code >= 500:
-                raise SmokeTestFailure(
-                    f"layer 4: GET {path} returned {response.status_code}"
-                )
+                raise SmokeTestFailure(f"layer 4: GET {path} returned {response.status_code}")
             self.stdout.write(f"{LOG_PREFIX} layer 4: GET {path} → {response.status_code}")
 
 

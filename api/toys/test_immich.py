@@ -122,8 +122,12 @@ class ImmichClientTests(TestCase):
         image = immich.MediaAsset(id="a1", kind="image", taken_at=None, instant=None)
         video = immich.MediaAsset(id="a2", kind="video", taken_at=None, instant=None)
         thumb, full = client.asset_urls(image, "KEY")
-        self.assertEqual(thumb, "https://photos.example/api/assets/a1/thumbnail?size=thumbnail&key=KEY")
-        self.assertEqual(full, "https://photos.example/api/assets/a1/thumbnail?size=preview&key=KEY")
+        self.assertEqual(
+            thumb, "https://photos.example/api/assets/a1/thumbnail?size=thumbnail&key=KEY"
+        )
+        self.assertEqual(
+            full, "https://photos.example/api/assets/a1/thumbnail?size=preview&key=KEY"
+        )
         _, video_url = client.asset_urls(video, "KEY")
         self.assertEqual(video_url, "https://photos.example/api/assets/a2/video/playback?key=KEY")
 

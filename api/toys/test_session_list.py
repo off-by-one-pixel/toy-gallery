@@ -110,9 +110,7 @@ class SessionListTests(SessionListTestBase):
             _utc("2026-06-01T10:00:00"), [{"toy": big, "involvement": "USED"}]
         )
         length = self._get(ordering="-length")
-        self.assertEqual(
-            [s["id"] for s in length["results"]], [s_big.id, s_small.id, s_used.id]
-        )
+        self.assertEqual([s["id"] for s in length["results"]], [s_big.id, s_small.id, s_used.id])
         circumference = self._get(ordering="circumference")
         self.assertEqual(
             [s["id"] for s in circumference["results"]], [s_small.id, s_big.id, s_used.id]
@@ -160,6 +158,7 @@ class SessionListTests(SessionListTestBase):
         response = self.client.get("/toys/toys/")
         self.assertIsInstance(response.data, list)
 
+
 class SessionFilterTests(SessionListTestBase):
     def test_filters_by_any_of_the_selected_toys(self):
         toy_a = self._create_toy("A")
@@ -174,9 +173,7 @@ class SessionFilterTests(SessionListTestBase):
     def test_session_with_several_selected_toys_appears_once(self):
         toy_a = self._create_toy("A")
         toy_b = self._create_toy("B")
-        both = self._make_session(
-            _utc("2026-06-01T08:00:00"), [{"toy": toy_a}, {"toy": toy_b}]
-        )
+        both = self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}, {"toy": toy_b}])
         data = self._get(toys=[toy_a, toy_b])
         self.assertEqual(data["count"], 1)
         self.assertEqual(data["results"][0]["id"], both.id)
@@ -191,9 +188,7 @@ class SessionFilterTests(SessionListTestBase):
                 {"toy": toy_b, "duration_minutes": 40},
             ],
         )
-        self._make_session(
-            _utc("2026-06-02T08:00:00"), [{"toy": toy_a, "duration_minutes": 50}]
-        )
+        self._make_session(_utc("2026-06-02T08:00:00"), [{"toy": toy_a, "duration_minutes": 50}])
         data = self._get(toys=[toy_a, toy_b], ordering="-duration")
         self.assertEqual(data["results"][0]["id"], session.id)
 
@@ -210,9 +205,7 @@ class SessionFilterTests(SessionListTestBase):
 
     def test_live_session_bypasses_filters(self):
         toy_a = self._create_toy("A")
-        live = models.Session.objects.create(
-            started_at=_utc("2026-06-05T08:00:00"), is_live=True
-        )
+        live = models.Session.objects.create(started_at=_utc("2026-06-05T08:00:00"), is_live=True)
         self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}])
         data = self._get(toys=[toy_a], has_media="true")
         self.assertEqual(data["results"][0]["id"], live.id)

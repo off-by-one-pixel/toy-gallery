@@ -151,9 +151,7 @@ class SessionSerializer(serializers.ModelSerializer):
         started_at = attrs.get("started_at", getattr(self.instance, "started_at", None))
         ended_at = attrs.get("ended_at", getattr(self.instance, "ended_at", None))
         if started_at and ended_at and ended_at <= started_at:
-            raise serializers.ValidationError(
-                {"ended_at": "Session end must be after its start."}
-            )
+            raise serializers.ValidationError({"ended_at": "Session end must be after its start."})
         return attrs
 
     def validate_entries(self, entries):
@@ -161,9 +159,7 @@ class SessionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A session must include at least one toy.")
         toy_ids = [e["toy"].pk for e in entries]
         if len(set(toy_ids)) != len(toy_ids):
-            raise serializers.ValidationError(
-                "Each toy can appear only once per session."
-            )
+            raise serializers.ValidationError("Each toy can appear only once per session.")
         return entries
 
     def create(self, validated_data):
@@ -220,9 +216,7 @@ class ToyIdListField(serializers.ListField):
     child = serializers.IntegerField()
 
     def to_internal_value(self, data):
-        is_single_csv = (
-            isinstance(data, list) and len(data) == 1 and isinstance(data[0], str)
-        )
+        is_single_csv = isinstance(data, list) and len(data) == 1 and isinstance(data[0], str)
         if is_single_csv and "," in data[0]:
             data = [part for part in data[0].split(",") if part.strip()]
         return super().to_internal_value(data)

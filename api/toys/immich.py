@@ -247,7 +247,9 @@ def _media_operation(unconfigured, degraded):
             except (ImmichError, requests.RequestException) as err:
                 logger.warning("immich: %s failed: %s", fn.__name__, err)
                 return degraded
+
         return guarded
+
     return wrap
 
 
