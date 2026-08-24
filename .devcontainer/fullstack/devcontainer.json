@@ -16,7 +16,6 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.black-formatter",
         "batisteo.vscode-django",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
@@ -27,6 +26,18 @@
       ],
       "settings": {
         "python.defaultInterpreterPath": "api/.venv/bin/python",
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.indexing": true,
+        "ruff.importStrategy": "fromEnvironment",
+        "ruff.interpreter": ["/workspace/api/.venv/bin/python"],
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+          }
+        },
         "editor.formatOnSave": true,
         "files.trimTrailingWhitespace": true,
         "terminal.integrated.defaultProfile.linux": "bash"
