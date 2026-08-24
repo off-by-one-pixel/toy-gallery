@@ -241,14 +241,13 @@ class Command(BaseCommand):
             # Don't trust the fsync alone — re-read to catch a dropped write.
             actual = marker_path().read_text()
             if actual != payload:
-                raise _GateAbort(
-                    f"marker read-back mismatch: wrote {payload!r}, read {actual!r}"
-                )
+                raise _GateAbort(f"marker read-back mismatch: wrote {payload!r}, read {actual!r}")
         except (OSError, _GateAbort):
             # The file is ours (O_EXCL succeeded); roll back so the caller
             # sees the same "no marker" state it had before this call.
             marker_path().unlink(missing_ok=True)
             raise
+
 
 class _GateAbort(Exception):
     """Caught by handle() to translate any abort into exit 1 with a log line."""

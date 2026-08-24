@@ -37,9 +37,7 @@ class SqliteCandidatePipeline(SubprocessCandidatePipeline):
         if candidate.exists():
             # The gate's stale-cleanup step runs ahead of this; reaching here
             # means cleanup was bypassed or failed.
-            raise FileExistsError(
-                f"Candidate already exists at {candidate}; stale-cleanup failed"
-            )
+            raise FileExistsError(f"Candidate already exists at {candidate}; stale-cleanup failed")
 
         # Online .backup is safe against concurrent writers on `live`; routing
         # through .tmp keeps a half-written file from being mistaken for a
@@ -68,18 +66,14 @@ class SqliteCandidatePipeline(SubprocessCandidatePipeline):
         finally:
             conn.close()
         if not result or result[0] != "ok":
-            raise RuntimeError(
-                f"SQLite integrity_check failed on candidate: {result!r}"
-            )
+            raise RuntimeError(f"SQLite integrity_check failed on candidate: {result!r}")
 
     def promote(self, candidate: CandidateHandle, migration_head: str) -> Path:
         archives = ArchiveStore.dir()
         archives.mkdir(parents=True, exist_ok=True)
         ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         counter = ArchiveStore.next_counter(ts, migration_head, ENGINE_EXT)
-        archive_path = archives / ArchiveStore.filename(
-            ts, migration_head, counter, ENGINE_EXT
-        )
+        archive_path = archives / ArchiveStore.filename(ts, migration_head, counter, ENGINE_EXT)
 
         live_db_path().rename(archive_path)
         candidate.path.rename(live_db_path())

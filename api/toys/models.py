@@ -104,7 +104,5 @@ class ToySessionEntry(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["session", "toy"], name="unique_toy_per_session"
-            )
+            models.UniqueConstraint(fields=["session", "toy"], name="unique_toy_per_session")
         ]

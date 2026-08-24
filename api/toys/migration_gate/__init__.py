@@ -95,9 +95,7 @@ class SubprocessCandidatePipeline(CandidatePipeline):
     def smoke_test(self, candidate: CandidateHandle) -> None:
         self._run_manage_subprocess(["migration_smoke_test"], candidate)
 
-    def _run_manage_subprocess(
-        self, manage_args: list[str], candidate: CandidateHandle
-    ) -> None:
+    def _run_manage_subprocess(self, manage_args: list[str], candidate: CandidateHandle) -> None:
         import subprocess
         import sys
 
@@ -153,5 +151,3 @@ def compute_plan_hash(plan: Iterable[tuple]) -> str:
     parts = [f"{migration.app_label}.{migration.name}" for migration, _backwards in plan]
     blob = "|".join(parts).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()[:8]
-
-

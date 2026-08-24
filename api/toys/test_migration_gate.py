@@ -175,17 +175,14 @@ class GateMarkerExclusiveTests(TestCase):
         marker_path().write_text("simulated concurrent run")
         pipeline = _MockPipeline()
 
-        cmd_module = __import__(
-            "toys.management.commands.safe_migrate", fromlist=["Command"]
-        )
-        with mock.patch(
-            "toys.management.commands.safe_migrate.get_pipeline", return_value=pipeline
-        ), mock.patch.object(
-            cmd_module.Command, "_cleanup_stale_candidate"
-        ), mock.patch.object(
-            cmd_module.Command, "_has_pending_migrations", return_value=True
-        ), mock.patch.object(
-            cmd_module.Command, "_compute_pending_plan_hash", return_value="testhash"
+        cmd_module = __import__("toys.management.commands.safe_migrate", fromlist=["Command"])
+        with (
+            mock.patch("toys.management.commands.safe_migrate.get_pipeline", return_value=pipeline),
+            mock.patch.object(cmd_module.Command, "_cleanup_stale_candidate"),
+            mock.patch.object(cmd_module.Command, "_has_pending_migrations", return_value=True),
+            mock.patch.object(
+                cmd_module.Command, "_compute_pending_plan_hash", return_value="testhash"
+            ),
         ):
             err = StringIO()
             with self.assertRaises(SystemExit) as ctx:
@@ -285,9 +282,7 @@ class SmokeTestLayersTests(TestCase):
 
     @override_settings(MIGRATION_SMOKE_TEST_PATHS=["/toys/toys/"])
     def test_layer_4_runs_when_superuser_exists(self):
-        get_user_model().objects.create_superuser(
-            "admin", "admin@example.com", "pw1234567890"
-        )
+        get_user_model().objects.create_superuser("admin", "admin@example.com", "pw1234567890")
         out = StringIO()
         call_command("migration_smoke_test", stdout=out)
         self.assertIn("GET /toys/toys/", out.getvalue())

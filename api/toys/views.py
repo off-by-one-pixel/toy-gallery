@@ -1,4 +1,3 @@
-
 from django.db import IntegrityError, transaction
 from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Sum, When
 from django.db.models.deletion import ProtectedError
@@ -76,9 +75,7 @@ class ToyViewSet(viewsets.ModelViewSet):
             models.Session.objects.all().delete()
             models.Toy.objects.all().delete()
             models.Shape.objects.all().delete()
-        return Response(
-            {"toys_deleted": toys_deleted, "sessions_deleted": sessions_deleted}
-        )
+        return Response({"toys_deleted": toys_deleted, "sessions_deleted": sessions_deleted})
 
 
 class SessionPagination(PageNumberPagination):
@@ -127,9 +124,7 @@ def _session_filter_q(params):
     toy_ids = params.get("toys")
     if toy_ids:
         filters &= Q(
-            Exists(
-                models.ToySessionEntry.objects.filter(session=OuterRef("pk"), toy__in=toy_ids)
-            )
+            Exists(models.ToySessionEntry.objects.filter(session=OuterRef("pk"), toy__in=toy_ids))
         )
     if params.get("has_media"):
         filters &= Q(photo_count__gt=0) | Q(video_count__gt=0)
@@ -188,9 +183,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         if live is None:
             try:
                 with transaction.atomic():
-                    live = models.Session.objects.create(
-                        started_at=timezone.now(), is_live=True
-                    )
+                    live = models.Session.objects.create(started_at=timezone.now(), is_live=True)
             except IntegrityError:
                 live = models.Session.objects.filter(is_live=True).first()
         return Response(serializers.SessionSerializer(live).data)
@@ -270,9 +263,7 @@ class ChangePasswordView(APIView):
         responses={204: None},
     )
     def post(self, request):
-        s = serializers.ChangePasswordSerializer(
-            data=request.data, context={"request": request}
-        )
+        s = serializers.ChangePasswordSerializer(data=request.data, context={"request": request})
         s.is_valid(raise_exception=True)
         s.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
