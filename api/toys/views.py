@@ -1,4 +1,3 @@
-
 from django.db import IntegrityError, transaction
 from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Sum, When
 from django.db.models.deletion import ProtectedError
@@ -10,6 +9,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from toys import records
 
 from . import export as export_mod
 from . import media, models, serializers, stats
@@ -76,9 +77,7 @@ class ToyViewSet(viewsets.ModelViewSet):
             models.Session.objects.all().delete()
             models.Toy.objects.all().delete()
             models.Shape.objects.all().delete()
-        return Response(
-            {"toys_deleted": toys_deleted, "sessions_deleted": sessions_deleted}
-        )
+        return Response({"toys_deleted": toys_deleted, "sessions_deleted": sessions_deleted})
 
 
 class SessionPagination(PageNumberPagination):
@@ -127,9 +126,7 @@ def _session_filter_q(params):
     toy_ids = params.get("toys")
     if toy_ids:
         filters &= Q(
-            Exists(
-                models.ToySessionEntry.objects.filter(session=OuterRef("pk"), toy__in=toy_ids)
-            )
+            Exists(models.ToySessionEntry.objects.filter(session=OuterRef("pk"), toy__in=toy_ids))
         )
     if params.get("has_media"):
         filters &= Q(photo_count__gt=0) | Q(video_count__gt=0)
@@ -188,9 +185,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         if live is None:
             try:
                 with transaction.atomic():
-                    live = models.Session.objects.create(
-                        started_at=timezone.now(), is_live=True
-                    )
+                    live = models.Session.objects.create(started_at=timezone.now(), is_live=True)
             except IntegrityError:
                 live = models.Session.objects.filter(is_live=True).first()
         return Response(serializers.SessionSerializer(live).data)
@@ -263,6 +258,15 @@ class SessionViewSet(viewsets.ModelViewSet):
         groups = stats.compute_stats(sessions, params["group_by"], params["metrics"], params["tz"])
         return Response({"groups": groups})
 
+    @extend_schema(
+        request=None,
+        responses=serializers.SessionRecordsRebuildResponseSerializer,
+    )
+    @action(detail=False, methods=["post"], url_path="rebuild-records")
+    def rebuild_records(self, _):
+        records.resync_records()
+        return Response({"records": models.PersonalRecord.objects.count()})
+
 
 class ChangePasswordView(APIView):
     @extend_schema(
@@ -270,9 +274,7 @@ class ChangePasswordView(APIView):
         responses={204: None},
     )
     def post(self, request):
-        s = serializers.ChangePasswordSerializer(
-            data=request.data, context={"request": request}
-        )
+        s = serializers.ChangePasswordSerializer(data=request.data, context={"request": request})
         s.is_valid(raise_exception=True)
         s.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

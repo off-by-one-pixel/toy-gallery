@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
+from toys.records import record_session
+
 from . import models, stats
 from .dimensions import SessionDimensions
 
@@ -121,8 +123,17 @@ class ToySessionEntrySerializer(serializers.ModelSerializer):
         fields = ["toy", "involvement", "duration_minutes"]
 
 
+class PersonalRecordSerializer(serializers.ModelSerializer):
+    toy = serializers.IntegerField(source="toy_entry.toy_id", read_only=True)
+
+    class Meta:
+        model = models.PersonalRecord
+        fields = ["value", "key", "toy", "achieved_at"]
+
+
 class SessionSerializer(serializers.ModelSerializer):
     entries = ToySessionEntrySerializer(many=True)
+    records = PersonalRecordSerializer(many=True, read_only=True)
     max_insertable_length = serializers.SerializerMethodField()
     max_circumference = serializers.SerializerMethodField()
 
@@ -136,6 +147,7 @@ class SessionSerializer(serializers.ModelSerializer):
             "photo_count",
             "video_count",
             "entries",
+            "records",
             "max_insertable_length",
             "max_circumference",
         ]
@@ -151,9 +163,7 @@ class SessionSerializer(serializers.ModelSerializer):
         started_at = attrs.get("started_at", getattr(self.instance, "started_at", None))
         ended_at = attrs.get("ended_at", getattr(self.instance, "ended_at", None))
         if started_at and ended_at and ended_at <= started_at:
-            raise serializers.ValidationError(
-                {"ended_at": "Session end must be after its start."}
-            )
+            raise serializers.ValidationError({"ended_at": "Session end must be after its start."})
         return attrs
 
     def validate_entries(self, entries):
@@ -161,9 +171,7 @@ class SessionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A session must include at least one toy.")
         toy_ids = [e["toy"].pk for e in entries]
         if len(set(toy_ids)) != len(toy_ids):
-            raise serializers.ValidationError(
-                "Each toy can appear only once per session."
-            )
+            raise serializers.ValidationError("Each toy can appear only once per session.")
         return entries
 
     def create(self, validated_data):
@@ -172,6 +180,7 @@ class SessionSerializer(serializers.ModelSerializer):
         models.ToySessionEntry.objects.bulk_create(
             [models.ToySessionEntry(session=session, **e) for e in entries_data]
         )
+        record_session(session)
         return session
 
     def update(self, instance, validated_data):
@@ -186,11 +195,16 @@ class SessionSerializer(serializers.ModelSerializer):
             models.ToySessionEntry.objects.bulk_create(
                 [models.ToySessionEntry(session=instance, **e) for e in entries_data]
             )
+        record_session(instance)
         return instance
 
 
 class LiveSessionResponseSerializer(serializers.Serializer):
     session = SessionSerializer(allow_null=True)
+
+
+class SessionRecordsRebuildResponseSerializer(serializers.Serializer):
+    records = serializers.IntegerField()
 
 
 class DateWindowQuerySerializer(serializers.Serializer):
@@ -220,9 +234,7 @@ class ToyIdListField(serializers.ListField):
     child = serializers.IntegerField()
 
     def to_internal_value(self, data):
-        is_single_csv = (
-            isinstance(data, list) and len(data) == 1 and isinstance(data[0], str)
-        )
+        is_single_csv = isinstance(data, list) and len(data) == 1 and isinstance(data[0], str)
         if is_single_csv and "," in data[0]:
             data = [part for part in data[0].split(",") if part.strip()]
         return super().to_internal_value(data)
