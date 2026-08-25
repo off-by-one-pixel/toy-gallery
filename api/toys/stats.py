@@ -5,20 +5,10 @@ from datetime import tzinfo as TzInfo
 from . import models
 from .dimensions import SessionDimensions
 
-
-def session_duration(session: models.Session) -> float | None:
-    minutes = [
-        entry.duration_minutes
-        for entry in session.entries.all()
-        if entry.duration_minutes is not None
-    ]
-    return float(sum(minutes)) if minutes else None
-
-
 FIELD_EXTRACTORS = {
     "insertable_length": SessionDimensions.peak_length,
     "circumference": SessionDimensions.peak_circumference,
-    "duration": session_duration,
+    "duration": SessionDimensions.total_toy_duration,
 }
 
 

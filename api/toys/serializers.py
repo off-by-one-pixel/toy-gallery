@@ -136,6 +136,7 @@ class SessionSerializer(serializers.ModelSerializer):
     records = PersonalRecordSerializer(many=True, read_only=True)
     max_insertable_length = serializers.SerializerMethodField()
     max_circumference = serializers.SerializerMethodField()
+    total_toy_duration_minutes = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Session
@@ -150,8 +151,12 @@ class SessionSerializer(serializers.ModelSerializer):
             "records",
             "max_insertable_length",
             "max_circumference",
+            "total_toy_duration_minutes",
         ]
         read_only_fields = ["is_live"]
+
+    def get_total_toy_duration_minutes(self, obj) -> int | None:
+        return SessionDimensions.total_toy_duration(obj)
 
     def get_max_insertable_length(self, obj) -> float | None:
         return SessionDimensions.peak_length(obj)

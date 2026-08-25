@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 def value_or_none(t: tuple[object, float] | None) -> float | None:
     return t[1] if t else None
 
+
 def max_entry_or_none(
     values: Iterable[models.ToySessionEntry | None], accessor: Callable
 ) -> tuple[models.ToySessionEntry, float] | None:
@@ -64,3 +65,8 @@ class SessionDimensions:
         cls, session: models.Session
     ) -> tuple[models.ToySessionEntry, float] | None:
         return max_entry_or_none(cls._circumference_entries(session), lambda e: e.toy.circumference)
+
+    @classmethod
+    def total_toy_duration(cls, session: models.Session) -> int | None:
+        durations = [e.duration_minutes for e in session.entries.all() if e.duration_minutes]
+        return sum(durations) if durations else None
