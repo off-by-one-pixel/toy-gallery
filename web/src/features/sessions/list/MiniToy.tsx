@@ -6,6 +6,7 @@ import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { formatDuration } from '@/lib/duration';
 import { toyTooltip } from '@/features/sessions/session';
 import { Involvement, type SessionEntry, type Toy } from '@/api/types';
+import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 const STATE_FILTER: Record<Involvement, string | undefined> = {
@@ -18,9 +19,10 @@ type Props = Readonly<{
   entry: SessionEntry;
   toy: Toy | undefined;
   heightRatio: number;
+  recordLabels?: readonly string[];
 }>;
 
-export default function MiniToy({ entry, toy, heightRatio }: Props) {
+export default function MiniToy({ entry, toy, heightRatio, recordLabels = [] }: Props) {
   const t = useTranslations('session');
   const locale = useLocale();
   if (!toy) {
@@ -34,7 +36,10 @@ export default function MiniToy({ entry, toy, heightRatio }: Props) {
   const editorToy = toyShapeToEditor(toy.shape);
   const isUsed = entry.involvement === Involvement.USED;
   return (
-    <div className="flex w-20 flex-col items-center gap-1.5 text-center" title={toyTooltip(toy)}>
+    <div className="relative flex w-20 flex-col items-center gap-1.5 text-center" title={toyTooltip(toy)}>
+      {recordLabels.length > 0 && (
+        <RecordTrophy label={recordLabels.join(', ')} className="absolute -top-1 right-1 z-10" />
+      )}
       <ToyThumbnail
         toy={editorToy}
         fillColor={isUsed ? 'transparent' : toy.color}

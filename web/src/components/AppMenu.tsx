@@ -2,15 +2,15 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Toast } from '@heroui/react';
-import { Image as ImageIcon, LogOut, Settings } from 'lucide-react';
+import { Image as ImageIcon, LogOut, Settings, Trophy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { APP_COMMIT_SHA, APP_VERSION } from '@/config';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { fetchMediaStatus, refreshAllSessionMedia } from '@/api';
-import { queryKeys } from '@/api/queryKeys';
+import { fetchMediaStatus, rebuildRecords, refreshAllSessionMedia } from '@/api';
+import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from '@/components/ActionDropdownMenu';
 import ActionDropdownMenuRow from '@/components/ActionDropdownMenuRow';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay';
@@ -18,6 +18,7 @@ import ResponsiveOverlay from '@/components/ResponsiveOverlay';
 export default function AppMenu() {
   const t = useTranslations('collection');
   const tMedia = useTranslations('session.media');
+  const tData = useTranslations('settings.data');
   const router = useRouter();
   const { username, logout } = useAuth();
   const runToast = useAsyncAction();
@@ -31,6 +32,15 @@ export default function AppMenu() {
         Toast.toast.success(tMedia('refreshedToast', { count: refreshed.sessionsWithMedia }));
         void queryClient.invalidateQueries({ queryKey: queryKeys.media.all });
         void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
+      },
+    });
+  };
+
+  const rebuild = () => {
+    void runToast(rebuildRecords, {
+      onSuccess: (count) => {
+        Toast.toast.success(tData('rebuiltToast', { count }));
+        invalidateSessionData(queryClient);
       },
     });
   };
@@ -54,6 +64,13 @@ export default function AppMenu() {
           } satisfies ActionMenuItem,
         ]
       : []),
+    {
+      id: 'rebuild-records',
+      icon: Trophy,
+      label: tData('rebuildLabel'),
+      description: tData('rebuildDescription'),
+      onAction: rebuild,
+    },
     {
       id: 'logout',
       icon: LogOut,

@@ -16,6 +16,7 @@ const live = (id: number): Session => ({
   startedAt: '2026-08-21T10:00:00Z',
   isLive: true,
   entries: [],
+  records: [],
   maxInsertableLength: null,
   maxCircumference: null,
 });

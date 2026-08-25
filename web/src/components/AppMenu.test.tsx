@@ -58,4 +58,18 @@ describe('AppMenu', () => {
     await waitFor(() => expect(refresh.urls).toHaveLength(1));
     await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['media'] }));
   });
+
+  it('rebuilds personal records from the menu and refreshes session data', async () => {
+    const rebuild = capture('post', api('/toys/sessions/rebuild-records/'), () => ({ records: 4 }));
+    const client = createTestQueryClient();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+
+    render(wrap(client));
+    fireEvent.click(screen.getByLabelText(en.collection.menu.openMenu));
+    const item = await screen.findByText(en.settings.data.rebuildLabel);
+    fireEvent.click(item);
+
+    await waitFor(() => expect(rebuild.urls).toHaveLength(1));
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'list'] }));
+  });
 });

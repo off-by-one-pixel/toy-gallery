@@ -5,6 +5,7 @@ import {
   toysSessionsDestroy,
   toysSessionsMediaStatusRetrieve,
   toysSessionsMediaRetrieve,
+  toysSessionsRebuildRecordsCreate,
   toysSessionsRefreshMediaCreate,
   toysSessionsList,
   toysSessionsLiveRetrieve,
@@ -203,6 +204,11 @@ export const fetchMediaStatus = async (): Promise<MediaStatus> => {
 export const refreshAllSessionMedia = async (): Promise<MediaRefreshSummary> => {
   const { data } = await toysSessionsRefreshMediaCreate();
   return { configured: data.configured, sessionsWithMedia: data.sessions_with_media };
+};
+
+export const rebuildRecords = async (): Promise<number> => {
+  const { data } = await toysSessionsRebuildRecordsCreate();
+  return data.records;
 };
 
 export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia> => {

@@ -23,6 +23,7 @@ const live = (startedAt: string): Session => ({
   startedAt,
   isLive: true,
   entries: [],
+  records: [],
   maxInsertableLength: null,
   maxCircumference: null,
 });
