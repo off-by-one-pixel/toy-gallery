@@ -169,6 +169,11 @@
       "clearAll": "Clear all",
       "hasMedia": "Has media",
       "doneButton": "Done"
+    },
+    "records": {
+      "widthCircumference": "Circumference PR",
+      "widthDiameter": "Diameter PR",
+      "depth": "Depth PR"
     }
   },
   "template": {
@@ -237,6 +242,9 @@
       "importLabel": "Import collection",
       "importDescription": "Add toys from a JSON file.",
       "importButton": "Import",
+      "rebuildLabel": "Rebuild records",
+      "rebuildDescription": "Recalculate all personal records from session history",
+      "rebuildButton": "Rebuild",
       "deleteLabel": "Delete collection",
       "deleteDescription": "Permanently remove all toys and sessions.",
       "deleteButton": "Delete",
@@ -247,7 +255,8 @@
         "title": "Delete collection?",
         "body": "All toys and sessions will be permanently removed. This cannot be undone.",
         "action": "Delete everything"
-      }
+      },
+      "rebuiltToast": "Personal records rebuilt: {count}"
     }
   },
   "changePassword": {

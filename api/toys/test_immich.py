@@ -306,6 +306,7 @@ class SessionMediaEndpointTests(TestCase):
         self.client.force_authenticate(user=user)
         self.session = models.Session.objects.create(started_at="2026-06-01T20:00:00Z")
 
+    @override_settings(IMMICH_URL="", IMMICH_API_KEY="")
     def test_unconfigured_returns_flag_and_no_items(self):
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
         self.assertEqual(response.status_code, 200)

@@ -67,6 +67,7 @@ const session = (
   photoCount: media.photos,
   videoCount: media.videos,
   entries: [],
+  records: [],
   maxInsertableLength: 120,
   maxCircumference: 110,
 });
@@ -153,6 +154,30 @@ describe('SessionList', () => {
     const rows = screen.getAllByRole('button', { name: en.session.detailsToggleLabel });
     expect(rows).toHaveLength(2);
     expect(screen.getAllByLabelText('2 photos, 1 videos')).toHaveLength(1);
+  });
+
+  it('marks the record-setting toy and the peak value with trophies, skipping unknown keys', async () => {
+    toys = [toyFixture(1, 'Steel', 9)];
+    respondSessions = () =>
+      sessionPageWire([
+        {
+          ...session(1, '2026-06-01T20:00:00'),
+          entries: [{ toy: 1, involvement: 'FULLY_INSERTED' }],
+          records: [
+            { key: 'pr-width', toy: 1, value: 240, achievedAt: '2026-06-01T21:00:00' },
+            { key: 'pr-future', toy: 1, value: 5, achievedAt: '2026-06-01T21:00:00' },
+          ],
+        },
+        session(2, '2026-06-05T09:00:00'),
+      ]);
+    render(wrap(<SessionList />));
+    await screen.findByText(`2 ${en.session.recorded}`);
+    expect(screen.getAllByLabelText(en.session.records.widthCircumference)).toHaveLength(2);
+    expect(screen.queryByLabelText(/pr-future/)).toBeNull();
+
+    const rows = screen.getAllByRole('button', { name: en.session.detailsToggleLabel }).map((b) => b.parentElement);
+    expect(rows[0]?.className).toContain('border-amber-500');
+    expect(rows[1]?.className).not.toContain('border-amber-500');
   });
 
   it('shows refreshed counts when the session list is invalidated', async () => {

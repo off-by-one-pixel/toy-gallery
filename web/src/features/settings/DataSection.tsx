@@ -3,10 +3,12 @@
 import { useRef, useState } from 'react';
 
 import { Button, Toast } from '@heroui/react';
-import { Download, Trash2, Upload } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Download, Trash2, Trophy, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { deleteCollection, downloadExport, importFromFile } from '@/api';
+import { deleteCollection, downloadExport, importFromFile, rebuildRecords } from '@/api';
+import { invalidateSessionData } from '@/api/queryKeys';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
 import ConfirmModal from '@/features/settings/ConfirmModal';
 import SectionCard from '@/features/settings/SectionCard';
@@ -18,6 +20,7 @@ export default function DataSection() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const runAction = useAsyncAction();
+  const queryClient = useQueryClient();
 
   const handleExport = () =>
     runAction(downloadExport, {
@@ -30,6 +33,15 @@ export default function DataSection() {
       busy: setBusy,
       onSuccess: ({ toys_created, sessions_created }) => {
         Toast.toast.success(t('importedToast', { toys: toys_created, sessions: sessions_created }));
+      },
+    });
+
+  const handleRebuild = () =>
+    runAction(rebuildRecords, {
+      busy: setBusy,
+      onSuccess: (count) => {
+        Toast.toast.success(t('rebuiltToast', { count }));
+        invalidateSessionData(queryClient);
       },
     });
 
@@ -63,6 +75,16 @@ export default function DataSection() {
           action={
             <Button variant="outline" size="sm" isDisabled={busy} onPress={() => fileRef.current?.click()}>
               {t('importButton')}
+            </Button>
+          }
+        />
+        <DataRow
+          icon={<Trophy size={16} strokeWidth={1.8} className="text-muted" />}
+          label={t('rebuildLabel')}
+          description={t('rebuildDescription')}
+          action={
+            <Button variant="outline" size="sm" isDisabled={busy} onPress={handleRebuild}>
+              {t('rebuildButton')}
             </Button>
           }
         />

@@ -18,6 +18,7 @@ const session = (id: number, isoDay: string): Session => ({
   startedAt: `${isoDay}T10:00:00`,
   isLive: false,
   entries: [],
+  records: [],
   maxInsertableLength: null,
   maxCircumference: null,
 });

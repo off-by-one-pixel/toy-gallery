@@ -10,6 +10,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from toys import records
+
 from . import export as export_mod
 from . import media, models, serializers, stats
 
@@ -255,6 +257,15 @@ class SessionViewSet(viewsets.ModelViewSet):
             sessions = sessions.filter(filters)
         groups = stats.compute_stats(sessions, params["group_by"], params["metrics"], params["tz"])
         return Response({"groups": groups})
+
+    @extend_schema(
+        request=None,
+        responses=serializers.SessionRecordsRebuildResponseSerializer,
+    )
+    @action(detail=False, methods=["post"], url_path="rebuild-records")
+    def rebuild_records(self, _):
+        records.resync_records()
+        return Response({"records": models.PersonalRecord.objects.count()})
 
 
 class ChangePasswordView(APIView):

@@ -19,8 +19,21 @@ import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
+import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 
 const STRIP_LIMIT = 5;
+
+const ROW_TONES = {
+  live: { border: 'border-emerald-500', ring: 'ring-2 ring-emerald-500' },
+  record: { border: 'border-amber-500', ring: 'ring-2 ring-amber-500' },
+  default: { border: 'border-border', ring: 'ring-2 ring-accent' },
+} as const;
+
+const rowTone = (session: Session): (typeof ROW_TONES)[keyof typeof ROW_TONES] => {
+  if (session.isLive) return ROW_TONES.live;
+  if (session.records.length > 0) return ROW_TONES.record;
+  return ROW_TONES.default;
+};
 
 type Props = Readonly<{
   session: Session;
@@ -56,13 +69,22 @@ export default function SessionRow({
   const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
-  const selectionRing = session.isLive ? 'ring-2 ring-emerald-500 ' : 'ring-2 ring-accent ';
+  const tone = rowTone(session);
   const orderedEntries = sortEntriesByInvolvement(session.entries, toysById);
   const visibleEntries = selected ? orderedEntries : orderedEntries.slice(0, STRIP_LIMIT);
   const overflow = orderedEntries.length - visibleEntries.length;
 
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
   const totalMinutes = totalDuration(orderedEntries);
+
+  const recordCtx = { t: t as unknown as (key: string) => string, girth };
+  const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);
+  const peakRecordLabel = (peak: RecordPeak) => {
+    const record = session.records.find((r) => recordDisplay(r.key)?.peak === peak);
+    return record ? recordLabel(record.key) : undefined;
+  };
+  const entryRecordLabels = (toyId: number) =>
+    session.records.filter((r) => r.toy === toyId).flatMap((r) => recordLabel(r.key) ?? []);
 
   const actions: ActionDef[] = [
     { key: 'edit', label: common('edit'), icon: Pencil, variant: 'outline', onPress: onEdit },
@@ -73,9 +95,7 @@ export default function SessionRow({
     <div
       className={
         'group relative rounded-xl border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
-        (session.isLive ? 'border-emerald-500 ' : 'border-border ') +
-        (selected ? selectionRing : '') +
-        (flash ? 'row-flash' : '')
+        [tone.border, selected && tone.ring, flash && 'row-flash'].filter(Boolean).join(' ')
       }
     >
       <button
@@ -118,7 +138,15 @@ export default function SessionRow({
         <div className="flex flex-wrap items-center gap-3 sm:order-2">
           {visibleEntries.map((entry) => {
             const toy = toysById.get(entry.toy);
-            return <MiniToy key={entry.toy} entry={entry} toy={toy} heightRatio={scale(toy)} />;
+            return (
+              <MiniToy
+                key={entry.toy}
+                entry={entry}
+                toy={toy}
+                heightRatio={scale(toy)}
+                recordLabels={entryRecordLabels(entry.toy)}
+              />
+            );
           })}
           {overflow > 0 && (
             <span className="rounded-full bg-surface-secondary px-2.5 py-1 text-xs font-medium text-muted">
@@ -127,11 +155,17 @@ export default function SessionRow({
           )}
         </div>
         <div className="mt-3 flex items-baseline gap-5 border-t border-border pt-2.5 sm:order-3 sm:mt-0 sm:grid sm:min-w-32 sm:shrink-0 sm:grid-cols-[auto_auto] sm:items-baseline sm:justify-end sm:gap-x-2.5 sm:gap-y-1 sm:border-t-0 sm:pt-0">
-          <PeakRow label={t('peakLength')} mm={session.maxInsertableLength} unit={unit} />
+          <PeakRow
+            label={t('peakLength')}
+            mm={session.maxInsertableLength}
+            unit={unit}
+            recordLabel={peakRecordLabel('length')}
+          />
           <PeakRow
             label={girth === 'diameter' ? t('peakDiameter') : t('peakCircumference')}
             mm={displayGirth(session.maxCircumference, girth)}
             unit={unit}
+            recordLabel={peakRecordLabel('circumference')}
           />
           {totalMinutes > 0 && (
             <div className="flex items-baseline gap-2 py-0.5 sm:contents">

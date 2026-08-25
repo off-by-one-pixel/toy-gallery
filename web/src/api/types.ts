@@ -1,5 +1,6 @@
 import { InvolvementEnum, SectionShapeEnum } from '@/api/generated/schemas';
 import type {
+  PersonalRecord as ApiPersonalRecord,
   Session as ApiSession,
   SessionMediaItem as ApiSessionMediaItem,
   SessionMediaResponse as ApiSessionMediaResponse,
@@ -38,6 +39,7 @@ export type Involvement = InvolvementEnum;
 export const Involvement = InvolvementEnum;
 
 export type SessionEntry = SnakeToCamel<ApiSessionEntry>;
+export type SessionRecord = SnakeToCamel<ApiPersonalRecord>;
 export type Session = SnakeToCamel<ApiSession>;
 export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
 

@@ -106,3 +106,12 @@ class ToySessionEntry(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["session", "toy"], name="unique_toy_per_session")
         ]
+
+
+class PersonalRecord(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    key = models.CharField(max_length=16)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="records")
+    toy_entry = models.ForeignKey(ToySessionEntry, on_delete=models.CASCADE)
+    value = models.FloatField()
+    achieved_at = models.DateTimeField(auto_now_add=True)
