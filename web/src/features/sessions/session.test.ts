@@ -19,6 +19,7 @@ const session = (id: number, isoDay: string): Session => ({
   isLive: false,
   entries: [],
   records: [],
+  totalToyDurationMinutes: null,
   maxInsertableLength: null,
   maxCircumference: null,
 });

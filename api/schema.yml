@@ -925,6 +925,10 @@ components:
           format: double
           nullable: true
           readOnly: true
+        total_toy_duration_minutes:
+          type: integer
+          nullable: true
+          readOnly: true
       required:
       - entries
       - id
@@ -933,6 +937,7 @@ components:
       - max_insertable_length
       - records
       - started_at
+      - total_toy_duration_minutes
     SessionMediaItem:
       type: object
       properties:

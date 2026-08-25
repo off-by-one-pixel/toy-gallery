@@ -68,6 +68,7 @@ const session = (
   videoCount: media.videos,
   entries: [],
   records: [],
+  totalToyDurationMinutes: null,
   maxInsertableLength: 120,
   maxCircumference: 110,
 });

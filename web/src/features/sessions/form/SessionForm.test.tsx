@@ -26,6 +26,7 @@ const liveSession = (startedAt: string): Session => ({
   isLive: true,
   entries: [],
   records: [],
+  totalToyDurationMinutes: null,
   maxInsertableLength: null,
   maxCircumference: null,
 });

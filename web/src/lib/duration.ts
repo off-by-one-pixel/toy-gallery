@@ -11,8 +11,5 @@ export const formatDuration = (minutes: number, locale: string): string => {
   return unitFormat(locale, 'minute', m);
 };
 
-export const totalDuration = (entries: ReadonlyArray<{ durationMinutes?: number | null }>): number =>
-  entries.reduce((sum, e) => sum + (e.durationMinutes ?? 0), 0);
-
 export const minutesBetween = (start: string, end: string): number =>
   Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000);

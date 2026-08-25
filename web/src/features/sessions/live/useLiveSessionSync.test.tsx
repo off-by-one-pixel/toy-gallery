@@ -17,6 +17,7 @@ const live = (id: number): Session => ({
   isLive: true,
   entries: [],
   records: [],
+  totalToyDurationMinutes: null,
   maxInsertableLength: null,
   maxCircumference: null,
 });
