@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
 import { useGirth } from '@/features/preferences/GirthProvider';
 import { displayGirth } from '@/features/preferences/girth';
-import { formatDuration, totalDuration } from '@/lib/duration';
+import { formatDuration } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
@@ -75,7 +75,7 @@ export default function SessionRow({
   const overflow = orderedEntries.length - visibleEntries.length;
 
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
-  const totalMinutes = totalDuration(orderedEntries);
+  const totalMinutes = session.totalToyDurationMinutes ?? 0;
 
   const recordCtx = { t: t as unknown as (key: string) => string, girth };
   const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);

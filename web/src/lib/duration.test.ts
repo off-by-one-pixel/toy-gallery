@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDuration, minutesBetween, totalDuration } from '@/lib/duration';
+import { formatDuration, minutesBetween } from '@/lib/duration';
 
 describe('formatDuration', () => {
   it('formats minutes only', () => {
@@ -19,16 +19,6 @@ describe('formatDuration', () => {
 
   it('localizes unit labels', () => {
     expect(formatDuration(95, 'ru')).toBe('1 ч 35 мин');
-  });
-});
-
-describe('totalDuration', () => {
-  it('sums entries treating missing and null as zero', () => {
-    expect(totalDuration([{ durationMinutes: 30 }, { durationMinutes: null }, {}, { durationMinutes: 15 }])).toBe(45);
-  });
-
-  it('returns zero for no entries', () => {
-    expect(totalDuration([])).toBe(0);
   });
 });
 
