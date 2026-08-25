@@ -23,6 +23,18 @@ import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 
 const STRIP_LIMIT = 5;
 
+const ROW_TONES = {
+  live: { border: 'border-emerald-500', ring: 'ring-2 ring-emerald-500' },
+  record: { border: 'border-amber-500', ring: 'ring-2 ring-amber-500' },
+  default: { border: 'border-border', ring: 'ring-2 ring-accent' },
+} as const;
+
+const rowTone = (session: Session): (typeof ROW_TONES)[keyof typeof ROW_TONES] => {
+  if (session.isLive) return ROW_TONES.live;
+  if (session.records.length > 0) return ROW_TONES.record;
+  return ROW_TONES.default;
+};
+
 type Props = Readonly<{
   session: Session;
   toysById: Map<number, Toy>;
@@ -57,13 +69,7 @@ export default function SessionRow({
   const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
-  const hasRecords = session.records.length > 0;
-  let selectionRing = 'ring-2 ring-accent ';
-  if (hasRecords) selectionRing = 'ring-2 ring-amber-500 ';
-  if (session.isLive) selectionRing = 'ring-2 ring-emerald-500 ';
-  let borderClass = 'border-border ';
-  if (hasRecords) borderClass = 'border-amber-500 ';
-  if (session.isLive) borderClass = 'border-emerald-500 ';
+  const tone = rowTone(session);
   const orderedEntries = sortEntriesByInvolvement(session.entries, toysById);
   const visibleEntries = selected ? orderedEntries : orderedEntries.slice(0, STRIP_LIMIT);
   const overflow = orderedEntries.length - visibleEntries.length;
@@ -89,9 +95,7 @@ export default function SessionRow({
     <div
       className={
         'group relative rounded-xl border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
-        borderClass +
-        (selected ? selectionRing : '') +
-        (flash ? 'row-flash' : '')
+        [tone.border, selected && tone.ring, flash && 'row-flash'].filter(Boolean).join(' ')
       }
     >
       <button
