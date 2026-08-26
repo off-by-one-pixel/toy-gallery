@@ -130,6 +130,9 @@ def _session_filter_q(params):
         )
     if params.get("has_media"):
         filters &= Q(photo_count__gt=0) | Q(video_count__gt=0)
+
+    if params.get("has_pr"):
+        filters &= Q(Exists(models.PersonalRecord.objects.filter(session=OuterRef("pk"))))
     return filters
 
 

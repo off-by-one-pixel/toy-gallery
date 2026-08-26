@@ -248,6 +248,7 @@ class ToyIdListField(serializers.ListField):
 class SessionFilterQuerySerializer(DateWindowQuerySerializer):
     toys = ToyIdListField(required=False)
     has_media = serializers.BooleanField(required=False)
+    has_pr = serializers.BooleanField(required=False)
 
 
 class SessionListQuerySerializer(SessionFilterQuerySerializer):
