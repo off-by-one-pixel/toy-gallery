@@ -225,3 +225,64 @@ class SessionFilterTests(SessionListTestBase):
     def test_invalid_toys_param_rejected(self):
         response = self.client.get(URL, {"toys": ["1", "junk"]})
         self.assertEqual(response.status_code, 400)
+
+
+class SessionHasPrFilterTests(SessionListTestBase):
+    def _give_record(self, session, key="pr-width", value=220.0):
+        models.PersonalRecord.objects.create(
+            key=key, session=session, toy_entry=session.entries.first(), value=value
+        )
+
+    def test_has_pr_returns_only_sessions_with_records(self):
+        toy = self._create_toy("A")
+        holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        self._give_record(holder)
+        self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": toy}])
+
+        data = self._get(has_pr="true")
+
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(data["results"][0]["id"], holder.id)
+
+    def test_absent_or_false_has_pr_returns_all_sessions(self):
+        toy = self._create_toy("A")
+        holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        self._give_record(holder)
+        self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": toy}])
+
+        self.assertEqual(self._get()["count"], 2)
+        self.assertEqual(self._get(has_pr="false")["count"], 2)
+
+    def test_session_with_multiple_records_is_not_duplicated(self):
+        toy = self._create_toy("A")
+        holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        self._give_record(holder, key="pr-width")
+        self._give_record(holder, key="pr-depth", value=170.0)
+
+        data = self._get(has_pr="true")
+
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(len(data["results"]), 1)
+
+    def test_has_pr_combines_with_toy_filter(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        holder_a = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy_a}])
+        self._give_record(holder_a)
+        holder_b = self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": toy_b}])
+        self._give_record(holder_b)
+
+        data = self._get(has_pr="true", toys=[toy_a])
+
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(data["results"][0]["id"], holder_a.id)
+
+    def test_live_session_is_listed_despite_the_filter(self):
+        toy = self._create_toy("A")
+        holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        self._give_record(holder)
+        live = models.Session.objects.create(started_at=_utc("2026-06-03T10:00:00"), is_live=True)
+
+        data = self._get(has_pr="true")
+
+        self.assertEqual({r["id"] for r in data["results"]}, {holder.id, live.id})

@@ -165,9 +165,10 @@
       "selectedHeading": "Selected · {count}",
       "toysHeading": "Toys · by use",
       "noToys": "No toys match",
-      "mediaHeading": "Media",
+      "moreHeading": "More",
       "clearAll": "Clear all",
       "hasMedia": "Has media",
+      "hasPr": "Has PR",
       "doneButton": "Done"
     },
     "records": {

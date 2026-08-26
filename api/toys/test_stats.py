@@ -216,3 +216,16 @@ class SessionStatsFilterTests(SessionStatsTestBase):
         self._make_session(_utc("2026-06-02T08:00:00"))
         groups = self._get(group_by="date", metrics="count", has_media="true")
         self.assertEqual(sum(g["values"]["count"] for g in groups), 1)
+
+
+class StatsHasPrFilterTests(SessionStatsTestBase):
+    def test_has_pr_limits_stats_to_record_sessions(self):
+        holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": self.toy_a}])
+        models.PersonalRecord.objects.create(
+            key="pr-width", session=holder, toy_entry=holder.entries.first(), value=220.0
+        )
+        self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": self.toy_a}])
+
+        groups = self._get(group_by="date", metrics="count", has_pr="true")
+
+        self.assertEqual(groups, [{"key": "2026-06-01", "values": {"count": 1}}])

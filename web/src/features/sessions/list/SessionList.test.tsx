@@ -288,6 +288,13 @@ describe('SessionList', () => {
       const last = sessionRequests[sessionRequests.length - 1];
       expect(last.searchParams.get('has_media')).toBe('true');
     });
+
+    fireEvent.click(screen.getByRole('checkbox', { name: en.session.filters.hasPr }));
+    await waitFor(() => {
+      const last = sessionRequests[sessionRequests.length - 1];
+      expect(last.searchParams.get('has_pr')).toBe('true');
+      expect(last.searchParams.get('has_media')).toBe('true');
+    });
   });
 
   it('shows active filters as dismissible chips and clears them', async () => {

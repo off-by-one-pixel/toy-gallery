@@ -17,8 +17,11 @@ import {
   activeFilterCount,
   type FilterKey,
   filterStartDate,
+  SESSION_FLAG_FILTERS,
+  SESSION_FLAG_KEYS,
   type SessionFilters,
   NO_SESSION_FILTERS,
+  toggleFlagFilter,
   toggleToyFilter,
 } from '@/features/sessions/session';
 
@@ -98,6 +101,7 @@ function FilterPanel({
   usageByToy: ReadonlyMap<number, number>;
 }>) {
   const t = useTranslations('session.filters');
+  const translate = t as unknown as (key: string) => string;
   const wide = useContext(BottomSheetContext);
   const [query, setQuery] = useState('');
   const count = activeFilterCount(filters);
@@ -153,13 +157,16 @@ function FilterPanel({
         {unselected.length === 0 && <p className="px-2.5 py-1.5 text-xs text-text-tertiary">{t('noToys')}</p>}
       </div>
       <div className="my-1.5 h-px shrink-0 bg-border" />
-      <SectionLabel text={t('mediaHeading')} />
+      <SectionLabel text={t('moreHeading')} />
       <div className="shrink-0">
-        <CheckRow
-          label={t('hasMedia')}
-          checked={filters.hasMedia}
-          onToggle={() => onChange({ ...filters, hasMedia: !filters.hasMedia })}
-        />
+        {SESSION_FLAG_KEYS.map((key) => (
+          <CheckRow
+            key={key}
+            label={translate(SESSION_FLAG_FILTERS[key].labelKey)}
+            checked={filters[key]}
+            onToggle={() => onChange(toggleFlagFilter(filters, key))}
+          />
+        ))}
       </div>
       {count > 0 && (
         <button
