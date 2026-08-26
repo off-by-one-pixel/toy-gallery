@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
-import { formatDuration } from '@/lib/duration';
+import { formatElapsed } from '@/lib/duration';
 import { toyTooltip } from '@/features/sessions/session';
 import { Involvement, type SessionEntry, type Toy } from '@/api/types';
 import RecordTrophy from '@/features/sessions/list/RecordTrophy';
@@ -57,7 +57,7 @@ export default function MiniToy({ entry, toy, heightRatio, recordLabels = [] }: 
         {toy.size && <span className="text-muted"> {toy.size}</span>}
       </div>
       {entry.durationMinutes != null && (
-        <div className="text-xs tabular-nums text-muted">{formatDuration(entry.durationMinutes, locale)}</div>
+        <div className="text-xs tabular-nums text-muted">{formatElapsed(entry.durationMinutes, locale)}</div>
       )}
     </div>
   );

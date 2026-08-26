@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { useLiveSession } from '@/features/sessions/live/useLiveSession';
-import { formatDuration, minutesBetween } from '@/lib/duration';
+import { formatElapsed, minutesBetween } from '@/lib/duration';
 import { formatWhen } from '@/lib/dates';
 
 const TICK_MS = 60_000;
@@ -54,7 +54,7 @@ export default function LiveSessionBanner() {
             {formatWhen(liveSession.startedAt, now, locale, whenT)}
             {' · '}
           </span>
-          <span className="font-medium tabular-nums">{formatDuration(elapsed, locale)}</span>
+          <span className="font-medium tabular-nums">{formatElapsed(elapsed, locale)}</span>
         </span>
         {!collapsed && (
           <Button

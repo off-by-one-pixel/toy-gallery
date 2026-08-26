@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
 import { useGirth } from '@/features/preferences/GirthProvider';
 import { displayGirth } from '@/features/preferences/girth';
-import { formatDuration } from '@/lib/duration';
+import { formatElapsed } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
@@ -173,7 +173,7 @@ export default function SessionRow({
                 {t('totalTime')}
               </span>
               <span className="text-[15px] font-semibold tracking-tight tabular-nums text-foreground sm:justify-self-start sm:text-[17px]">
-                {formatDuration(totalMinutes, locale)}
+                {formatElapsed(totalMinutes, locale)}
               </span>
             </div>
           )}
