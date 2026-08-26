@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   activeFilterCount,
+  parseSessionFilters,
+  sessionFiltersKey,
+  sessionFiltersUrlParams,
+  sessionFilterWireParams,
   INVOLVEMENT_RANK,
   mergeSessions,
   NO_SESSION_FILTERS,
@@ -141,7 +145,8 @@ describe('toyTooltip', () => {
 describe('session filters', () => {
   it('counts active filters across toys and media', () => {
     expect(activeFilterCount(NO_SESSION_FILTERS)).toBe(0);
-    expect(activeFilterCount({ toyIds: [1, 2], hasMedia: true })).toBe(3);
+    expect(activeFilterCount({ ...NO_SESSION_FILTERS, toyIds: [1, 2], hasMedia: true })).toBe(3);
+    expect(activeFilterCount({ ...NO_SESSION_FILTERS, hasMedia: true, hasPr: true })).toBe(2);
   });
 
   it('toggles toy ids in and out', () => {
@@ -157,5 +162,31 @@ describe('parseToyIdsParam', () => {
     expect(parseToyIdsParam('3,junk,-1,0')).toEqual([3]);
     expect(parseToyIdsParam(null)).toEqual([]);
     expect(parseToyIdsParam('')).toEqual([]);
+  });
+});
+
+describe('session flag filter registry', () => {
+  it('parses url params through the registry', () => {
+    const params = new Map([
+      ['toys', '1,2'],
+      ['pr', '1'],
+    ]);
+    const filters = parseSessionFilters((name) => params.get(name) ?? null);
+    expect(filters).toEqual({ ...NO_SESSION_FILTERS, toyIds: [1, 2], hasPr: true });
+  });
+
+  it('round-trips filters through url params', () => {
+    const filters = { ...NO_SESSION_FILTERS, toyIds: [3], hasMedia: true };
+    const params = sessionFiltersUrlParams(filters);
+    expect(params).toEqual({ toys: '3', media: '1', pr: null });
+    const map = new Map(Object.entries(params).filter(([, v]) => v !== null) as [string, string][]);
+    expect(parseSessionFilters((name) => map.get(name) ?? null)).toEqual(filters);
+  });
+
+  it('builds cache keys and wire params from active flags', () => {
+    const filters = { ...NO_SESSION_FILTERS, toyIds: [1], hasMedia: true, hasPr: true };
+    expect(sessionFiltersKey(filters)).toBe('1|mr');
+    expect(sessionFilterWireParams(filters)).toEqual({ has_media: true, has_pr: true });
+    expect(sessionFilterWireParams(NO_SESSION_FILTERS)).toEqual({});
   });
 });

@@ -62,23 +62,70 @@ export function toyTooltip(toy: Toy): string {
   return [toy.brand, toy.name, toy.size].filter(Boolean).join(' ');
 }
 
-export type SessionFilters = Readonly<{
-  toyIds: readonly number[];
-  hasMedia: boolean;
+type SessionFlagFilterDef = Readonly<{
+  urlParam: string;
+  keyToken: string;
+  wireParam: 'has_media' | 'has_pr';
+  labelKey: string;
 }>;
 
-export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], hasMedia: false };
+export const SESSION_FLAG_FILTERS = {
+  hasMedia: { urlParam: 'media', keyToken: 'm', wireParam: 'has_media', labelKey: 'hasMedia' },
+  hasPr: { urlParam: 'pr', keyToken: 'r', wireParam: 'has_pr', labelKey: 'hasPr' },
+} as const satisfies Record<string, SessionFlagFilterDef>;
+
+export type SessionFlagKey = keyof typeof SESSION_FLAG_FILTERS;
+
+export const SESSION_FLAG_KEYS = Object.keys(SESSION_FLAG_FILTERS) as readonly SessionFlagKey[];
+
+export type SessionFilters = Readonly<{ toyIds: readonly number[] } & Record<SessionFlagKey, boolean>>;
+
+const NO_FLAGS = Object.fromEntries(SESSION_FLAG_KEYS.map((key) => [key, false])) as Record<SessionFlagKey, boolean>;
+
+export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], ...NO_FLAGS };
+
+export const activeFlagKeys = (filters: SessionFilters): SessionFlagKey[] =>
+  SESSION_FLAG_KEYS.filter((key) => filters[key]);
 
 export const sessionFiltersKey = (filters: SessionFilters): string =>
-  [filters.toyIds.join(','), filters.hasMedia ? 'm' : ''].join('|');
+  [
+    filters.toyIds.join(','),
+    activeFlagKeys(filters)
+      .map((key) => SESSION_FLAG_FILTERS[key].keyToken)
+      .join(''),
+  ].join('|');
 
 export const activeFilterCount = (filters: SessionFilters): number =>
-  filters.toyIds.length + (filters.hasMedia ? 1 : 0);
+  filters.toyIds.length + activeFlagKeys(filters).length;
 
 export const toggleToyFilter = (filters: SessionFilters, toyId: number): SessionFilters => ({
   ...filters,
   toyIds: filters.toyIds.includes(toyId) ? filters.toyIds.filter((id) => id !== toyId) : [...filters.toyIds, toyId],
 });
+
+export const toggleFlagFilter = (filters: SessionFilters, key: SessionFlagKey): SessionFilters => ({
+  ...filters,
+  [key]: !filters[key],
+});
+
+export const parseSessionFilters = (get: (name: string) => string | null): SessionFilters => ({
+  toyIds: parseToyIdsParam(get('toys')),
+  ...(Object.fromEntries(
+    SESSION_FLAG_KEYS.map((key) => [key, get(SESSION_FLAG_FILTERS[key].urlParam) === '1']),
+  ) as Record<SessionFlagKey, boolean>),
+});
+
+export const sessionFiltersUrlParams = (filters: SessionFilters): Record<string, string | null> => ({
+  toys: filters.toyIds.length > 0 ? filters.toyIds.join(',') : null,
+  ...Object.fromEntries(
+    SESSION_FLAG_KEYS.map((key) => [SESSION_FLAG_FILTERS[key].urlParam, filters[key] ? '1' : null]),
+  ),
+});
+
+export const sessionFilterWireParams = (
+  filters: SessionFilters,
+): Partial<Record<SessionFlagFilterDef['wireParam'], boolean>> =>
+  Object.fromEntries(activeFlagKeys(filters).map((key) => [SESSION_FLAG_FILTERS[key].wireParam, true]));
 
 export const parseToyIdsParam = (value: string | null): number[] =>
   value

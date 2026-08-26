@@ -16,9 +16,10 @@ import {
   type FilterKey,
   filterStartDate,
   mergeSessions,
-  parseToyIdsParam,
+  parseSessionFilters,
   sessionFiltersKey,
   type SessionFilters,
+  sessionFiltersUrlParams,
   toysById as buildToysById,
 } from '@/features/sessions/session';
 import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
@@ -50,17 +51,11 @@ export function useSessionList(): SessionListData {
   const updateUrl = useUrlUpdate();
   const [filter, setFilter] = useState<FilterKey>('all');
   const sessionFilters = useMemo<SessionFilters>(
-    () => ({
-      toyIds: parseToyIdsParam(searchParams.get('toys')),
-      hasMedia: searchParams.get('media') === '1',
-    }),
+    () => parseSessionFilters((name) => searchParams.get(name)),
     [searchParams],
   );
   const setSessionFilters = (next: SessionFilters) => {
-    updateUrl({
-      toys: next.toyIds.length > 0 ? next.toyIds.join(',') : null,
-      media: next.hasMedia ? '1' : null,
-    });
+    updateUrl(sessionFiltersUrlParams(next));
   };
   const { sort } = useSortOf(SESSION_SORT);
   const queryClient = useQueryClient();
@@ -76,8 +71,7 @@ export function useSessionList(): SessionListData {
         page: pageParam,
         start: filterStartDate(filter),
         ordering,
-        toys: sessionFilters.toyIds,
-        hasMedia: sessionFilters.hasMedia,
+        filters: sessionFilters,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage: SessionPage, pages: SessionPage[]) =>

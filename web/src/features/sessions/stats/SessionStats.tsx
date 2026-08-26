@@ -37,12 +37,7 @@ export default function SessionStats({ filter, sessionFilters, defs = SESSION_ST
       const start = startFor(query.window, filter);
       return {
         queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, start, sessionFiltersKey(sessionFilters)),
-        queryFn: () =>
-          fetchSessionStats(query.groupBy, query.metrics, {
-            start,
-            toys: sessionFilters.toyIds,
-            hasMedia: sessionFilters.hasMedia,
-          }),
+        queryFn: () => fetchSessionStats(query.groupBy, query.metrics, { start, filters: sessionFilters }),
         placeholderData: keepPreviousData,
       };
     }),

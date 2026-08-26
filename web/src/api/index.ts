@@ -24,6 +24,7 @@ import {
 } from '@/api/generated/sdk';
 import { API_CONFIG } from '@/config';
 import { localDateKey } from '@/lib/dates';
+import { NO_SESSION_FILTERS, type SessionFilters, sessionFilterWireParams } from '@/features/sessions/session';
 import { camelToSnake, snakeToCamel } from '@/api/case';
 import type {
   ExportEnvelopeRequest,
@@ -141,16 +142,16 @@ export const fetchSessions = async (
     page?: number;
     start?: string;
     ordering?: string;
-    toys?: readonly number[];
-    hasMedia?: boolean;
+    filters?: SessionFilters;
   }> = {},
 ): Promise<SessionPage> => {
+  const filters = opts.filters ?? NO_SESSION_FILTERS;
   const { data } = await toysSessionsList({
     page: opts.page,
     start: opts.start,
     ordering: opts.ordering as ToysSessionsListParams['ordering'],
-    toys: opts.toys?.length ? [...opts.toys] : undefined,
-    has_media: opts.hasMedia || undefined,
+    toys: filters.toyIds.length ? [...filters.toyIds] : undefined,
+    ...sessionFilterWireParams(filters),
     tz: browserTimeZone(),
   });
   return {
@@ -234,17 +235,17 @@ export const fetchSessionStats = async (
   opts: {
     start?: string;
     end?: string;
-    toys?: readonly number[];
-    hasMedia?: boolean;
+    filters?: SessionFilters;
   } = {},
 ): Promise<StatsGroup[]> => {
+  const filters = opts.filters ?? NO_SESSION_FILTERS;
   const { data } = await toysSessionsStatsRetrieve({
     group_by: groupBy,
     metrics: metrics.join(','),
     start: opts.start,
     end: opts.end,
-    toys: opts.toys?.length ? [...opts.toys] : undefined,
-    has_media: opts.hasMedia || undefined,
+    toys: filters.toyIds.length ? [...filters.toyIds] : undefined,
+    ...sessionFilterWireParams(filters),
     tz: browserTimeZone(),
   });
   return data.groups;

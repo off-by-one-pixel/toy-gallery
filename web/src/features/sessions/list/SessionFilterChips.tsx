@@ -6,8 +6,11 @@ import { useTranslations } from 'next-intl';
 import type { Toy } from '@/api/types';
 import {
   activeFilterCount,
+  activeFlagKeys,
+  SESSION_FLAG_FILTERS,
   type SessionFilters,
   NO_SESSION_FILTERS,
+  toggleFlagFilter,
   toggleToyFilter,
   toyTooltip,
 } from '@/features/sessions/session';
@@ -20,6 +23,7 @@ type Props = Readonly<{
 
 export default function SessionFilterChips({ toysById, filters, onChange }: Props) {
   const t = useTranslations('session.filters');
+  const translate = t as unknown as (key: string) => string;
   if (activeFilterCount(filters) === 0) return null;
   return (
     <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 pt-1 pb-3 sm:px-6">
@@ -28,7 +32,13 @@ export default function SessionFilterChips({ toysById, filters, onChange }: Prop
         const label = toy ? toyTooltip(toy) : `#${toyId}`;
         return <Chip key={toyId} label={label} onRemove={() => onChange(toggleToyFilter(filters, toyId))} />;
       })}
-      {filters.hasMedia && <Chip label={t('hasMedia')} onRemove={() => onChange({ ...filters, hasMedia: false })} />}
+      {activeFlagKeys(filters).map((key) => (
+        <Chip
+          key={key}
+          label={translate(SESSION_FLAG_FILTERS[key].labelKey)}
+          onRemove={() => onChange(toggleFlagFilter(filters, key))}
+        />
+      ))}
       <button
         type="button"
         onClick={() => onChange(NO_SESSION_FILTERS)}
