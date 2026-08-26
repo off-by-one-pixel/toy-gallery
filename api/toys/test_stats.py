@@ -1,44 +1,15 @@
-from datetime import UTC, datetime
-
-from django.contrib.auth.models import User
-from django.test import TestCase
-from rest_framework.test import APIClient
-
-from . import models
-from .tests import _payload
+from .testutils import SessionApiTestBase
+from .testutils import utc as _utc
 
 URL = "/toys/sessions/stats/"
 
 
-def _utc(iso: str) -> datetime:
-    return datetime.fromisoformat(iso).replace(tzinfo=UTC)
-
-
-class SessionStatsTestBase(TestCase):
+class SessionStatsTestBase(SessionApiTestBase):
     def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
+        super().setUp()
         self.toy_a = self._create_toy("A")
         self.toy_b = self._create_toy("B")
-
-    def _create_toy(self, name):
-        payload = _payload(section_circumferences=(None, 220.0, None))
-        payload["name"] = name
-        response = self.client.post("/toys/toys/", payload, format="json")
-        self.assertEqual(response.status_code, 201, response.content)
-        return response.data["id"]
-
-    def _make_session(self, started_at, entries=()):
-        session = models.Session.objects.create(started_at=started_at)
-        for entry in entries:
-            models.ToySessionEntry.objects.create(
-                session=session,
-                toy_id=entry.get("toy", self.toy_a),
-                involvement=entry.get("involvement", "USED"),
-                duration_minutes=entry.get("duration_minutes"),
-            )
-        return session
+        self.session_default_toy_id = self.toy_a
 
     def _get(self, **params):
         response = self.client.get(URL, params)
@@ -221,9 +192,7 @@ class SessionStatsFilterTests(SessionStatsTestBase):
 class StatsHasPrFilterTests(SessionStatsTestBase):
     def test_has_pr_limits_stats_to_record_sessions(self):
         holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": self.toy_a}])
-        models.PersonalRecord.objects.create(
-            key="pr-width", session=holder, toy_entry=holder.entries.first(), value=220.0
-        )
+        self._give_record(holder)
         self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": self.toy_a}])
 
         groups = self._get(group_by="date", metrics="count", has_pr="true")

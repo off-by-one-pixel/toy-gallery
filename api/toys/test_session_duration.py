@@ -1,24 +1,11 @@
-from django.contrib.auth.models import User
-from django.test import TestCase
-from rest_framework.test import APIClient
-
-from .tests import _payload
+from .testutils import SessionApiTestBase
 
 
-class SessionTotalDurationTests(TestCase):
+class SessionTotalDurationTests(SessionApiTestBase):
     def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
+        super().setUp()
         self.toy_a = self._create_toy("A")
         self.toy_b = self._create_toy("B")
-
-    def _create_toy(self, name):
-        payload = _payload()
-        payload["name"] = name
-        response = self.client.post("/toys/toys/", payload, format="json")
-        self.assertEqual(response.status_code, 201, response.content)
-        return response.data["id"]
 
     def _post_session(self, entries):
         response = self.client.post(
