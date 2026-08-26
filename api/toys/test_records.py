@@ -1,40 +1,10 @@
-from datetime import UTC, datetime
-
-from django.contrib.auth.models import User
-from django.test import TestCase
-from rest_framework.test import APIClient
-
 from . import models, records
-from .tests import _payload
+from .testutils import SessionApiTestBase
+from .testutils import utc as _utc
 
 
-def _utc(iso: str) -> datetime:
-    return datetime.fromisoformat(iso).replace(tzinfo=UTC)
-
-
-class RecordsTestBase(TestCase):
-    def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
-
-    def _create_toy(self, name, *, circumference=220.0, insertable_length=170):
-        payload = _payload(circumference=circumference, insertable_length=insertable_length)
-        payload["name"] = name
-        response = self.client.post("/toys/toys/", payload, format="json")
-        self.assertEqual(response.status_code, 201, response.content)
-        return response.data["id"]
-
-    def _make_session(self, started_at, entries=()):
-        session = models.Session.objects.create(started_at=started_at)
-        for entry in entries:
-            models.ToySessionEntry.objects.create(
-                session=session,
-                toy_id=entry["toy"],
-                involvement=entry.get("involvement", "FULLY_INSERTED"),
-                duration_minutes=entry.get("duration_minutes"),
-            )
-        return session
+class RecordsTestBase(SessionApiTestBase):
+    default_involvement = "FULLY_INSERTED"
 
     def _rows(self, key):
         return list(models.PersonalRecord.objects.filter(key=key).order_by("id"))

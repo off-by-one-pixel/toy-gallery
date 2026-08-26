@@ -1,47 +1,11 @@
-from datetime import UTC, datetime
-
-from django.contrib.auth.models import User
-from django.test import TestCase
-from rest_framework.test import APIClient
-
 from . import models
-from .tests import _payload
+from .testutils import SessionApiTestBase
+from .testutils import utc as _utc
 
 URL = "/toys/sessions/"
 
 
-def _utc(iso: str) -> datetime:
-    return datetime.fromisoformat(iso).replace(tzinfo=UTC)
-
-
-class SessionListTestBase(TestCase):
-    def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
-
-    def _create_toy(self, name, insertable_length=None, circumference=None):
-        payload = _payload(section_circumferences=(None, 220.0, None))
-        payload["name"] = name
-        if insertable_length is not None:
-            payload["insertable_length"] = insertable_length
-        if circumference is not None:
-            payload["circumference"] = circumference
-        response = self.client.post("/toys/toys/", payload, format="json")
-        self.assertEqual(response.status_code, 201, response.content)
-        return response.data["id"]
-
-    def _make_session(self, started_at, entries=()):
-        session = models.Session.objects.create(started_at=started_at)
-        for entry in entries:
-            models.ToySessionEntry.objects.create(
-                session=session,
-                toy_id=entry["toy"],
-                involvement=entry.get("involvement", "USED"),
-                duration_minutes=entry.get("duration_minutes"),
-            )
-        return session
-
+class SessionListTestBase(SessionApiTestBase):
     def _get(self, **params):
         response = self.client.get(URL, params)
         self.assertEqual(response.status_code, 200, response.content)
@@ -228,11 +192,6 @@ class SessionFilterTests(SessionListTestBase):
 
 
 class SessionHasPrFilterTests(SessionListTestBase):
-    def _give_record(self, session, key="pr-width", value=220.0):
-        models.PersonalRecord.objects.create(
-            key=key, session=session, toy_entry=session.entries.first(), value=value
-        )
-
     def test_has_pr_returns_only_sessions_with_records(self):
         toy = self._create_toy("A")
         holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
