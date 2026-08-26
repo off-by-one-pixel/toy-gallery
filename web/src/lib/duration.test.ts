@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDuration, minutesBetween } from '@/lib/duration';
+import { formatDuration, formatElapsed, minutesBetween } from '@/lib/duration';
 
 describe('formatDuration', () => {
   it('formats minutes only', () => {
@@ -19,6 +19,30 @@ describe('formatDuration', () => {
 
   it('localizes unit labels', () => {
     expect(formatDuration(95, 'ru')).toBe('1 ч 35 мин');
+  });
+});
+
+describe('formatElapsed', () => {
+  it('always shows the minutes component', () => {
+    expect(formatElapsed(0, 'en')).toBe('0m');
+    expect(formatElapsed(45, 'en')).toBe('45m');
+    expect(formatElapsed(95, 'en')).toBe('1h 35m');
+    expect(formatElapsed(120, 'en')).toBe('2h 0m');
+  });
+
+  it('rolls into days, skipping zero units above minutes', () => {
+    expect(formatElapsed(2 * 1440 + 5 * 60, 'en')).toBe('2d 5h 0m');
+    expect(formatElapsed(1440 + 30, 'en')).toBe('1d 30m');
+    expect(formatElapsed(1440 + 60 + 5, 'en')).toBe('1d 1h 5m');
+  });
+
+  it('rolls into months and years', () => {
+    expect(formatElapsed(40 * 1440, 'en')).toBe('1 mth 10d 0m');
+    expect(formatElapsed(400 * 1440 + 90, 'en')).toBe('1y 1 mth 5d 1h 30m');
+  });
+
+  it('localizes unit labels', () => {
+    expect(formatElapsed(2 * 1440 + 5 * 60, 'ru')).toBe('2 д. 5 ч 0 мин');
   });
 });
 
