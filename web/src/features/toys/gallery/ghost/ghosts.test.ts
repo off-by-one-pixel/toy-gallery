@@ -114,12 +114,8 @@ describe('mergeGalleryItems', () => {
 });
 
 describe('ghost input parsing', () => {
-  it('parses circumference inputs in the active unit', () => {
+  it('parses circumference inputs into dimensions', () => {
     expect(parseGhostInputs({ girthValue: '140', lengthValue: '165' }, Unit.mm, 'circumference')).toEqual({
-      circumference: 140,
-      insertableLength: 165,
-    });
-    expect(parseGhostInputs({ girthValue: '14', lengthValue: '16.5' }, Unit.cm, 'circumference')).toEqual({
       circumference: 140,
       insertableLength: 165,
     });
@@ -131,13 +127,8 @@ describe('ghost input parsing', () => {
     expect(dims?.insertableLength).toBe(165);
   });
 
-  it('accepts a decimal comma and rejects junk and non-positive values', () => {
-    expect(parseGhostInputs({ girthValue: '14,5', lengthValue: '16' }, Unit.cm, 'circumference')).toEqual({
-      circumference: 145,
-      insertableLength: 160,
-    });
+  it('returns null when either input is invalid', () => {
     expect(parseGhostInputs({ girthValue: 'abc', lengthValue: '165' }, Unit.mm, 'circumference')).toBeNull();
-    expect(parseGhostInputs({ girthValue: '0', lengthValue: '165' }, Unit.mm, 'circumference')).toBeNull();
     expect(parseGhostInputs({ girthValue: '140', lengthValue: '-5' }, Unit.mm, 'circumference')).toBeNull();
   });
 

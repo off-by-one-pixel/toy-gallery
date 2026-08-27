@@ -1,8 +1,15 @@
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
-
-import { ensureGhostIdsAbove, isGhostToy, MAX_GHOSTS, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import {
+  createGhost,
+  ensureGhostIdsAbove,
+  isGhostToy,
+  MAX_GHOSTS,
+  updateGhostDimensions,
+  type GhostDimensions,
+  type GhostTarget,
+  type GhostToy,
+} from '@/features/toys/gallery/ghost/ghosts';
 import { usePersistedState } from '@/hooks/usePersistedState';
 
 const isGhostToyList = (value: unknown): value is GhostToy[] =>
@@ -11,6 +18,27 @@ const isGhostToyList = (value: unknown): value is GhostToy[] =>
 const restoreGhostIds = (ghosts: GhostToy[] | undefined): void =>
   ensureGhostIdsAbove((ghosts ?? []).map((ghost) => ghost.id));
 
-export function useGhosts(): [GhostToy[], Dispatch<SetStateAction<GhostToy[]>>] {
-  return usePersistedState<GhostToy[]>('gallery.ghosts', [], isGhostToyList, restoreGhostIds);
+export interface Ghosts {
+  ghosts: GhostToy[];
+  canAddGhost: boolean;
+  saveGhost: (target: GhostTarget, dims: GhostDimensions) => void;
+  removeGhost: (id: number) => void;
+  clearGhosts: () => void;
+}
+
+export function useGhosts(): Ghosts {
+  const [ghosts, setGhosts] = usePersistedState<GhostToy[]>('gallery.ghosts', [], isGhostToyList, restoreGhostIds);
+  return {
+    ghosts,
+    canAddGhost: ghosts.length < MAX_GHOSTS,
+    saveGhost: (target, dims) =>
+      setGhosts((current) => {
+        if (target.kind === 'edit') {
+          return current.map((g) => (g.id === target.ghost.id ? updateGhostDimensions(g, dims) : g));
+        }
+        return current.length < MAX_GHOSTS ? [...current, createGhost(target.source, dims)] : current;
+      }),
+    removeGhost: (id) => setGhosts((current) => current.filter((g) => g.id !== id)),
+    clearGhosts: () => setGhosts([]),
+  };
 }

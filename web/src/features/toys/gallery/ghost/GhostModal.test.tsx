@@ -5,25 +5,35 @@ import { NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it, vi } from 'vitest';
 
 import en from '@/i18n/catalogs/en.json';
+import type { Toy } from '@/api/types';
 import { GirthProvider } from '@/features/preferences/GirthProvider';
 import { UnitProvider } from '@/features/preferences/UnitProvider';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
+import type { GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 
-const renderModal = (overrides: Partial<React.ComponentProps<typeof GhostModal>> = {}) => {
+const source = {
+  brand: 'Acme',
+  name: 'Ember',
+  size: 'M',
+  circumference: 136,
+  insertableLength: 158,
+} as unknown as Toy;
+
+const ghost = {
+  id: 1,
+  sourceName: 'Acme Ember M',
+  circumference: 136,
+  insertableLength: 158,
+} as GhostToy;
+
+const renderModal = (target: GhostTarget = { kind: 'new', source }) => {
   const onSave = vi.fn();
   const onClose = vi.fn();
   render(
     <NextIntlClientProvider locale="en" messages={en}>
       <UnitProvider>
         <GirthProvider>
-          <GhostModal
-            initial={{ circumference: 136, insertableLength: 158 }}
-            sourceName="Acme Ember M"
-            isEdit={false}
-            onSave={onSave}
-            onClose={onClose}
-            {...overrides}
-          />
+          <GhostModal target={target} onSave={onSave} onClose={onClose} />
         </GirthProvider>
       </UnitProvider>
     </NextIntlClientProvider>,
@@ -56,9 +66,10 @@ describe('GhostModal', () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
-  it('uses the edit labels when editing an existing ghost', () => {
-    renderModal({ isEdit: true });
+  it('uses the edit labels and the stored source name when editing an existing ghost', () => {
+    renderModal({ kind: 'edit', ghost });
     expect(screen.getByText(en.toy.ghost.modalTitleEdit)).toBeTruthy();
+    expect(screen.getByText('Cloned from Acme Ember M — adjust to the listing specs')).toBeTruthy();
     expect(screen.getByRole('button', { name: en.common.save })).toBeTruthy();
   });
 });

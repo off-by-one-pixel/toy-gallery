@@ -19,13 +19,7 @@ import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
 import { toyActionDefs } from '@/features/toys/gallery/ToyActionButtons';
-import {
-  createGhost,
-  MAX_GHOSTS,
-  updateGhostDimensions,
-  type GhostDimensions,
-  type GhostToy,
-} from '@/features/toys/gallery/ghost/ghosts';
+import type { GhostDimensions, GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
 import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
@@ -43,8 +37,6 @@ import UnitToggle from '@/features/preferences/UnitToggle';
 import ViewToggle from '@/features/preferences/ViewToggle';
 
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
-
-type GhostModalState = { kind: 'new'; source: Toy } | { kind: 'edit'; ghost: GhostToy } | null;
 
 const ToyGallery = () => {
   const router = useRouter();
@@ -94,21 +86,12 @@ const ToyGallery = () => {
   const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
   const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
 
-  const [ghosts, setGhosts] = useGhosts();
-  const [ghostModal, setGhostModal] = useState<GhostModalState>(null);
-  const canAddGhost = ghosts.length < MAX_GHOSTS;
+  const { ghosts, canAddGhost, saveGhost, removeGhost, clearGhosts } = useGhosts();
+  const [ghostModal, setGhostModal] = useState<GhostTarget | null>(null);
   const handleGhost = (toy: Toy) => setGhostModal({ kind: 'new', source: toy });
   const handleEditGhost = (ghost: GhostToy) => setGhostModal({ kind: 'edit', ghost });
-  const handleRemoveGhost = (id: number) => setGhosts((current) => current.filter((g) => g.id !== id));
-  const handleClearGhosts = () => setGhosts([]);
   const handleGhostSave = (dims: GhostDimensions) => {
-    if (ghostModal?.kind === 'new') {
-      setGhosts((current) =>
-        current.length < MAX_GHOSTS ? [...current, createGhost(ghostModal.source, dims)] : current,
-      );
-    } else if (ghostModal?.kind === 'edit') {
-      setGhosts((current) => current.map((g) => (g.id === ghostModal.ghost.id ? updateGhostDimensions(g, dims) : g)));
-    }
+    if (ghostModal) saveGhost(ghostModal, dims);
     setGhostModal(null);
   };
 
@@ -166,8 +149,8 @@ const ToyGallery = () => {
         onDelete={handleDelete}
         onGhost={canAddGhost ? handleGhost : undefined}
         onEditGhost={handleEditGhost}
-        onRemoveGhost={handleRemoveGhost}
-        onClearGhosts={handleClearGhosts}
+        onRemoveGhost={removeGhost}
+        onClearGhosts={clearGhosts}
         onNew={toyModal.openNew}
       />
     );
@@ -213,26 +196,7 @@ const ToyGallery = () => {
         {renderBody()}
       </main>
 
-      {ghostModal && (
-        <GhostModal
-          initial={
-            ghostModal.kind === 'new'
-              ? {
-                  circumference: ghostModal.source.circumference ?? 0,
-                  insertableLength: ghostModal.source.insertableLength ?? 0,
-                }
-              : { circumference: ghostModal.ghost.circumference, insertableLength: ghostModal.ghost.insertableLength }
-          }
-          sourceName={
-            ghostModal.kind === 'new'
-              ? [ghostModal.source.brand, ghostModal.source.name, ghostModal.source.size].filter(Boolean).join(' ')
-              : ghostModal.ghost.sourceName
-          }
-          isEdit={ghostModal.kind === 'edit'}
-          onSave={handleGhostSave}
-          onClose={() => setGhostModal(null)}
-        />
-      )}
+      {ghostModal && <GhostModal target={ghostModal} onSave={handleGhostSave} onClose={() => setGhostModal(null)} />}
 
       {editorMode.kind !== 'closed' && (
         <ToyEditModal

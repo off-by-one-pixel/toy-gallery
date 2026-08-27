@@ -10,25 +10,32 @@ import { useGirth } from '@/features/preferences/GirthProvider';
 import { useUnit } from '@/features/preferences/UnitProvider';
 import {
   ghostDimsToInputs,
+  ghostSourceName,
   parseGhostInputs,
   type GhostDimensions,
   type GhostInputs,
+  type GhostTarget,
 } from '@/features/toys/gallery/ghost/ghosts';
 
 type Props = Readonly<{
-  initial: GhostDimensions;
-  sourceName: string;
-  isEdit: boolean;
+  target: GhostTarget;
   onSave: (dims: GhostDimensions) => void;
   onClose: () => void;
 }>;
 
-export default function GhostModal({ initial, sourceName, isEdit, onSave, onClose }: Props) {
+const targetDimensions = (target: GhostTarget): GhostDimensions =>
+  target.kind === 'edit'
+    ? { circumference: target.ghost.circumference, insertableLength: target.ghost.insertableLength }
+    : { circumference: target.source.circumference ?? 0, insertableLength: target.source.insertableLength ?? 0 };
+
+export default function GhostModal({ target, onSave, onClose }: Props) {
   const t = useTranslations('toy.ghost');
   const common = useTranslations('common');
   const { unit } = useUnit();
   const { girth } = useGirth();
-  const [inputs, setInputs] = useState<GhostInputs>(() => ghostDimsToInputs(initial, unit, girth));
+  const isEdit = target.kind === 'edit';
+  const sourceName = isEdit ? target.ghost.sourceName : ghostSourceName(target.source);
+  const [inputs, setInputs] = useState<GhostInputs>(() => ghostDimsToInputs(targetDimensions(target), unit, girth));
   const dims = parseGhostInputs(inputs, unit, girth);
 
   const overlayState = useOverlayState({

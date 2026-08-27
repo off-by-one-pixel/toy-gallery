@@ -16,6 +16,11 @@ export type GalleryItem = Readonly<{ kind: 'toy'; toy: Toy }> | Readonly<{ kind:
 
 export type GhostDimensions = Readonly<{ circumference: number; insertableLength: number }>;
 
+export type GhostTarget = Readonly<{ kind: 'new'; source: Toy }> | Readonly<{ kind: 'edit'; ghost: GhostToy }>;
+
+export const ghostSourceName = (source: Toy): string =>
+  [source.brand, source.name, source.size].filter(Boolean).join(' ');
+
 const shapeHeight = (shape: Shape): number => shape.sections.reduce((acc, s) => acc + s.height, 0);
 
 const shapeDiameter = (shape: Shape): number => Math.max(0, ...shape.sections.map((s) => s.diameter));
@@ -40,7 +45,7 @@ export const createGhost = (source: Toy, dims: GhostDimensions): GhostToy => {
   const sourceInsertableLength = source.insertableLength ?? shapeHeight(source.shape);
   return {
     id: nextGhostId++,
-    sourceName: [source.brand, source.name, source.size].filter(Boolean).join(' '),
+    sourceName: ghostSourceName(source),
     circumference: dims.circumference,
     insertableLength: dims.insertableLength,
     shape: scaleShape(
