@@ -11,17 +11,16 @@ import { useUrlUpdate } from '@/hooks/useUrlNav';
 import { useSortOf } from '@/hooks/useSortOf';
 import { fetchSessions, fetchToys, type SessionPage } from '@/api';
 import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
+import { sessionListKey, sessionListQuery } from '@/features/sessions/list/sessionQuery';
 import {
   type FilterKey,
-  filterStartDate,
   mergeSessions,
   parseSessionFilters,
-  sessionFiltersKey,
   type SessionFilters,
   sessionFiltersUrlParams,
   toysById as buildToysById,
 } from '@/features/sessions/session';
-import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
+import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session, Toy } from '@/api/types';
 
 export type SessionListData = Readonly<{
@@ -60,18 +59,12 @@ export function useSessionList(): SessionListData {
   const queryClient = useQueryClient();
   const reportError = useReportError();
 
-  const ordering = sessionOrderingParam(sort);
-  const listKey = queryKeys.sessions.list(filter, ordering, sessionFiltersKey(sessionFilters));
+  const queryState = { filter, sort, filters: sessionFilters };
+  const listKey = sessionListKey(queryState);
 
   const list = useApiInfiniteQuery({
     key: listKey,
-    fn: (page) =>
-      fetchSessions({
-        page,
-        start: filterStartDate(filter),
-        ordering,
-        filters: sessionFilters,
-      }),
+    fn: (page) => fetchSessions(sessionListQuery(queryState, page)),
     getNextPage: (lastPage: SessionPage, pages: SessionPage[]) => (lastPage.hasMore ? pages.length + 1 : undefined),
   });
 

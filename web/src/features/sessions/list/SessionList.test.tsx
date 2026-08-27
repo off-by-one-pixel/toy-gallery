@@ -53,6 +53,7 @@ vi.mock('@/api', async (importOriginal) => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
+import { filterStartDate } from '@/features/sessions/session';
 import { fetchSessions, fetchSessionStats, fetchToys, startLiveSession, type SessionPage } from '@/api';
 import type { Session, Toy } from '@/api/types';
 import { makeSession, makeToy } from '@/test/fixtures';
@@ -242,7 +243,7 @@ describe('SessionList', () => {
     fireEvent.click(screen.getByText(en.session.filter.week));
     await waitFor(() => {
       const last = sessionQueries[sessionQueries.length - 1];
-      expect(last.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(last.start).toBe(filterStartDate('week'));
       expect(last.page).toBe(1);
     });
   });
