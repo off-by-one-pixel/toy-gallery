@@ -1,9 +1,7 @@
 import type { Shape, Toy } from '@/api/types';
-import type { Toy as EditorToy } from 'toy-editor';
 import { TOY_PROPERTIES } from '@/features/toys/properties';
-import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import type { ToySort, ToySortColumn } from '@/features/toys/toySort';
-import { diameterToCircumference, toMm, fromMm, type Unit } from '@/features/preferences/units';
+import { diameterToCircumference, formatForInput, parseToMm, type Unit } from '@/features/preferences/units';
 import { displayGirth, type Girth } from '@/features/preferences/girth';
 
 export type GhostToy = Readonly<{
@@ -12,8 +10,6 @@ export type GhostToy = Readonly<{
   circumference: number;
   insertableLength: number;
   shape: Shape;
-  sourceCircumference: number;
-  sourceInsertableLength: number;
 }>;
 
 export type GalleryItem = Readonly<{ kind: 'toy'; toy: Toy }> | Readonly<{ kind: 'ghost'; ghost: GhostToy }>;
@@ -26,42 +22,44 @@ const shapeDiameter = (shape: Shape): number => Math.max(0, ...shape.sections.ma
 
 let nextGhostId = 1;
 
-export const createGhost = (source: Toy, dims: GhostDimensions): GhostToy => ({
-  id: nextGhostId++,
-  sourceName: [source.brand, source.name, source.size].filter(Boolean).join(' '),
-  circumference: dims.circumference,
-  insertableLength: dims.insertableLength,
-  shape: source.shape,
-  sourceCircumference:
-    source.circumference ?? diameterToCircumference(shapeDiameter(source.shape)) ?? dims.circumference,
-  sourceInsertableLength: source.insertableLength ?? shapeHeight(source.shape),
-});
-
 const safeRatio = (target: number, reference: number): number => (reference > 0 ? target / reference : 1);
 
-export const ghostScaleFactors = (ghost: GhostToy): Readonly<{ width: number; height: number }> => ({
-  width: safeRatio(ghost.circumference, ghost.sourceCircumference),
-  height: safeRatio(ghost.insertableLength, ghost.sourceInsertableLength),
+const scaleShape = (shape: Shape, width: number, height: number): Shape => ({
+  ...shape,
+  sections: shape.sections.map((s) => ({
+    ...s,
+    diameter: s.diameter * width,
+    height: s.height * height,
+    circumference: s.circumference == null ? s.circumference : s.circumference * width,
+  })),
 });
 
-export const ghostEditorToy = (ghost: GhostToy): EditorToy => {
-  const { width, height } = ghostScaleFactors(ghost);
-  return toyShapeToEditor({
-    ...ghost.shape,
-    sections: ghost.shape.sections.map((s) => ({
-      ...s,
-      diameter: s.diameter * width,
-      height: s.height * height,
-      circumference: s.circumference == null ? s.circumference : s.circumference * width,
-    })),
-  });
+export const createGhost = (source: Toy, dims: GhostDimensions): GhostToy => {
+  const sourceCircumference =
+    source.circumference ?? diameterToCircumference(shapeDiameter(source.shape)) ?? dims.circumference;
+  const sourceInsertableLength = source.insertableLength ?? shapeHeight(source.shape);
+  return {
+    id: nextGhostId++,
+    sourceName: [source.brand, source.name, source.size].filter(Boolean).join(' '),
+    circumference: dims.circumference,
+    insertableLength: dims.insertableLength,
+    shape: scaleShape(
+      source.shape,
+      safeRatio(dims.circumference, sourceCircumference),
+      safeRatio(dims.insertableLength, sourceInsertableLength),
+    ),
+  };
 };
 
-export const ghostSilhouetteHeight = (ghost: GhostToy): number =>
-  shapeHeight(ghost.shape) * ghostScaleFactors(ghost).height;
-
-export const ghostSilhouetteDiameter = (ghost: GhostToy): number =>
-  shapeDiameter(ghost.shape) * ghostScaleFactors(ghost).width;
+export const updateGhostDimensions = (ghost: GhostToy, dims: GhostDimensions): GhostToy => ({
+  ...ghost,
+  ...dims,
+  shape: scaleShape(
+    ghost.shape,
+    safeRatio(dims.circumference, ghost.circumference),
+    safeRatio(dims.insertableLength, ghost.insertableLength),
+  ),
+});
 
 const GHOST_SORT_VALUES: Partial<Record<ToySortColumn, (ghost: GhostToy) => number>> = {
   insertable: (ghost) => ghost.insertableLength,
@@ -95,23 +93,17 @@ export const mergeGalleryItems = (
 export type GhostInputs = Readonly<{ girthValue: string; lengthValue: string }>;
 
 export const ghostDimsToInputs = (dims: GhostDimensions, unit: Unit, girth: Girth): GhostInputs => ({
-  girthValue: fromMm(displayGirth(dims.circumference, girth) ?? 0, unit).toFixed(unit.decimals),
-  lengthValue: fromMm(dims.insertableLength, unit).toFixed(unit.decimals),
+  girthValue: formatForInput(displayGirth(dims.circumference, girth) ?? 0, unit),
+  lengthValue: formatForInput(dims.insertableLength, unit),
 });
 
-const parsePositive = (value: string): number | null => {
-  const parsed = Number(value.replace(',', '.'));
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-};
-
 export const parseGhostInputs = (inputs: GhostInputs, unit: Unit, girth: Girth): GhostDimensions | null => {
-  const girthValue = parsePositive(inputs.girthValue);
-  const lengthValue = parsePositive(inputs.lengthValue);
-  if (girthValue == null || lengthValue == null) return null;
-  const girthMm = toMm(girthValue, unit);
+  const girthMm = parseToMm(inputs.girthValue, unit);
+  const lengthMm = parseToMm(inputs.lengthValue, unit);
+  if (girthMm == null || lengthMm == null) return null;
   return {
     circumference: girth === 'diameter' ? (diameterToCircumference(girthMm) ?? girthMm) : girthMm,
-    insertableLength: toMm(lengthValue, unit),
+    insertableLength: lengthMm,
   };
 };
 
@@ -120,7 +112,7 @@ export const ghostDelta = (toyValueMm: number | null | undefined, ghostValueMm: 
 
 export const formatSignedMm = (mm: number | null, unit: Unit): string => {
   if (mm == null) return '—';
-  const value = fromMm(mm, unit).toFixed(unit.decimals);
+  const value = formatForInput(mm, unit);
   return mm >= 0 ? `+${value}` : value;
 };
 
@@ -146,8 +138,6 @@ export const isGhostToy = (value: unknown): value is GhostToy => {
     typeof ghost.sourceName === 'string' &&
     isPositiveNumber(ghost.circumference) &&
     isPositiveNumber(ghost.insertableLength) &&
-    isPositiveNumber(ghost.sourceCircumference) &&
-    isPositiveNumber(ghost.sourceInsertableLength) &&
     isShape(ghost.shape)
   );
 };

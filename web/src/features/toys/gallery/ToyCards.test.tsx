@@ -44,8 +44,6 @@ const ghost = (id: number, circumference: number, insertableLength: number): Gho
     bottomSectionShape: 'FLAT',
     sections: [{ order: 0, diameter: 45, height: 150 }],
   } as GhostToy['shape'],
-  sourceCircumference: 130,
-  sourceInsertableLength: 150,
 });
 
 const noop = () => undefined;

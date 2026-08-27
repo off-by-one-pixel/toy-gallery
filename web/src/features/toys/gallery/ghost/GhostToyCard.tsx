@@ -7,7 +7,8 @@ import { useGirth } from '@/features/preferences/GirthProvider';
 import { displayGirth } from '@/features/preferences/girth';
 import { useUnit } from '@/features/preferences/UnitProvider';
 import { formatValue } from '@/features/preferences/units';
-import { ghostColor, ghostEditorToy, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
+import { ghostColor, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 type Props = Readonly<{
@@ -54,7 +55,7 @@ export default function GhostToyCard({ ghost, heightRatio, onEdit, onRemove }: P
       </button>
       <div className="pointer-events-none border-b border-dashed" style={{ borderColor: `${color}66` }}>
         <ToyThumbnail
-          toy={ghostEditorToy(ghost)}
+          toy={toyShapeToEditor(ghost.shape)}
           fillColor={`${color}2e`}
           strokeColor={color}
           borderWidth={2}

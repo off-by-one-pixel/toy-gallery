@@ -16,8 +16,6 @@ const storedGhost = (id: number): GhostToy =>
     circumference: 140,
     insertableLength: 165,
     shape,
-    sourceCircumference: 130,
-    sourceInsertableLength: 150,
   }) as GhostToy;
 
 const source = {

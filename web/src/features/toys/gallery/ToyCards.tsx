@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { silhouetteHeight } from '@/features/toys/dimensions';
 import { heightRatioFor, maxSilhouetteHeight } from '@/features/toys/scaling';
-import { ghostSilhouetteHeight, mergeGalleryItems, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import { mergeGalleryItems, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { TOY_SORT } from '@/features/toys/toySort';
 import { useSortOf } from '@/hooks/useSortOf';
 import type { Toy } from '@/api/types';
@@ -45,10 +45,7 @@ export default function ToyCards({
 }: Props) {
   const t = useTranslations();
   const { sort } = useSortOf(TOY_SORT);
-  const maxHeightMm = useMemo(
-    () => Math.max(maxSilhouetteHeight(toys), ...ghosts.map(ghostSilhouetteHeight)),
-    [toys, ghosts],
-  );
+  const maxHeightMm = useMemo(() => maxSilhouetteHeight([...toys, ...ghosts]), [toys, ghosts]);
   const items = useMemo(() => mergeGalleryItems(toys, ghosts, sort), [toys, ghosts, sort]);
 
   return (
@@ -89,7 +86,7 @@ export default function ToyCards({
             <GhostToyCard
               key={`ghost-${item.ghost.id}`}
               ghost={item.ghost}
-              heightRatio={heightRatioFor(ghostSilhouetteHeight(item.ghost), maxHeightMm)}
+              heightRatio={heightRatioFor(silhouetteHeight(item.ghost), maxHeightMm)}
               onEdit={() => onEditGhost(item.ghost)}
               onRemove={() => onRemoveGhost(item.ghost.id)}
             />

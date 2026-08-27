@@ -19,7 +19,13 @@ import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
 import { toyActionDefs } from '@/features/toys/gallery/ToyActionButtons';
-import { createGhost, MAX_GHOSTS, type GhostDimensions, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import {
+  createGhost,
+  MAX_GHOSTS,
+  updateGhostDimensions,
+  type GhostDimensions,
+  type GhostToy,
+} from '@/features/toys/gallery/ghost/ghosts';
 import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
 import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
@@ -101,7 +107,7 @@ const ToyGallery = () => {
         current.length < MAX_GHOSTS ? [...current, createGhost(ghostModal.source, dims)] : current,
       );
     } else if (ghostModal?.kind === 'edit') {
-      setGhosts((current) => current.map((g) => (g.id === ghostModal.ghost.id ? { ...g, ...dims } : g)));
+      setGhosts((current) => current.map((g) => (g.id === ghostModal.ghost.id ? updateGhostDimensions(g, dims) : g)));
     }
     setGhostModal(null);
   };

@@ -5,8 +5,8 @@ import type { ToyTemplate } from '@/api/types';
 import {
   circumferenceToDiameter,
   diameterToCircumference,
-  fromMm,
-  toMm,
+  formatForInput,
+  parseToMm,
   type Unit,
 } from '@/features/preferences/units';
 
@@ -31,34 +31,6 @@ export const initialTemplateFormState: TemplateFormState = {
   sizeInput: '',
 };
 
-// -------- Pure parse / format helpers --------
-
-/** Format an mm value for display in the chosen unit, rounded to that
- *  unit's display precision. */
-export function formatForInput(mm: number, unit: Unit): string {
-  return fromMm(mm, unit).toFixed(unit.decimals);
-}
-
-/** Parse a raw input string as a positive finite number. Tolerates a
- *  comma as a decimal separator. Returns `null` for empty / invalid /
- *  non-positive values. */
-export function parseInput(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-  const v = Number(trimmed.replace(',', '.'));
-  return Number.isFinite(v) && v > 0 ? v : null;
-}
-
-/** Parse a raw input string in the given unit, returning the value in
- *  mm. Returns `null` when `parseInput` would. */
-export function parseToMm(raw: string, unit: Unit): number | null {
-  const v = parseInput(raw);
-  return v == null ? null : toMm(v, unit);
-}
-
-// -------- Selectors: form state → target dimensions in mm --------
-
-/** Total length in mm derived from the input. */
 export function selectTotalMm(state: TemplateFormState, unit: Unit): number | null {
   return parseToMm(state.totalInput, unit);
 }

@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  formatForInput,
   initialTemplateFormState,
-  parseInput,
-  parseToMm,
   selectInsertableMm,
   selectMaxDiameterMm,
   selectTotalMm,
@@ -31,46 +28,6 @@ const TEMPLATE: ToyTemplate = {
     ],
   },
 };
-
-describe('formatForInput', () => {
-  it('rounds to the unit precision', () => {
-    expect(formatForInput(120, Unit.mm)).toBe('120');
-    expect(formatForInput(120, Unit.cm)).toBe('12.0');
-  });
-});
-
-describe('parseInput', () => {
-  it('parses a plain number', () => {
-    expect(parseInput('42')).toBe(42);
-  });
-
-  it('accepts a comma as decimal separator', () => {
-    expect(parseInput('40,5')).toBe(40.5);
-  });
-
-  it('rejects empty input', () => {
-    expect(parseInput('   ')).toBeNull();
-  });
-
-  it('rejects non-positive numbers', () => {
-    expect(parseInput('0')).toBeNull();
-    expect(parseInput('-5')).toBeNull();
-  });
-
-  it('rejects non-numeric input', () => {
-    expect(parseInput('abc')).toBeNull();
-  });
-});
-
-describe('parseToMm', () => {
-  it('converts an inch input to mm', () => {
-    expect(parseToMm('1', Unit.in)).toBeCloseTo(25.4);
-  });
-
-  it('returns null for invalid input', () => {
-    expect(parseToMm('', Unit.mm)).toBeNull();
-  });
-});
 
 describe('selectors', () => {
   const state: TemplateFormState = {

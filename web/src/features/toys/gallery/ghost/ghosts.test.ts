@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Toy } from '@/api/types';
 import { Unit } from '@/features/preferences/units';
+import { silhouetteDiameter, silhouetteHeight } from '@/features/toys/dimensions';
 import {
   createGhost,
   ghostDelta,
@@ -9,12 +10,9 @@ import {
   ghostColor,
   GHOST_COLORS,
   ghostDimsToInputs,
-  ghostEditorToy,
-  ghostScaleFactors,
-  ghostSilhouetteDiameter,
-  ghostSilhouetteHeight,
   mergeGalleryItems,
   parseGhostInputs,
+  updateGhostDimensions,
   type GhostToy,
 } from '@/features/toys/gallery/ghost/ghosts';
 
@@ -37,50 +35,51 @@ const ghost = (id: number, circumference: number, insertableLength: number): Gho
   circumference,
   insertableLength,
   shape,
-  sourceCircumference: 100,
-  sourceInsertableLength: 150,
 });
 
 const itemLabel = (item: ReturnType<typeof mergeGalleryItems>[number]) =>
   item.kind === 'toy' ? item.toy.name : `ghost-${item.ghost.id}`;
 
 describe('createGhost', () => {
-  it('captures the source display name, shape, reference dims and unique ids', () => {
+  it('captures the source display name, entered dims and unique ids', () => {
     const source = toy(7, 'Slim', 120, 150);
     const first = createGhost(source, { circumference: 140, insertableLength: 165 });
     const second = createGhost(source, { circumference: 140, insertableLength: 165 });
     expect(first.sourceName).toBe('Acme Slim M');
     expect(first.circumference).toBe(140);
     expect(first.insertableLength).toBe(165);
-    expect(first.shape).toBe(source.shape);
-    expect(first.sourceCircumference).toBe(120);
-    expect(first.sourceInsertableLength).toBe(150);
     expect(first.id).not.toBe(second.id);
   });
 
+  it('stores the source shape scaled proportionally to the entered dims', () => {
+    const created = createGhost(toy(7, 'Slim', 120, 150), { circumference: 140, insertableLength: 165 });
+    expect(created.shape.sections).toEqual([
+      { order: 0, diameter: 45 * (140 / 120), height: 165, circumference: 130 * (140 / 120) },
+    ]);
+    expect(silhouetteHeight(created)).toBeCloseTo(165, 6);
+    expect(silhouetteDiameter(created)).toBeCloseTo(52.5, 6);
+  });
+
   it('falls back to the shape dimensions when the source has no reference dims', () => {
-    const source = toy(8, 'Bare', null, null);
-    const created = createGhost(source, { circumference: 140, insertableLength: 165 });
-    expect(created.sourceCircumference).toBeCloseTo(45 * Math.PI, 6);
-    expect(created.sourceInsertableLength).toBe(150);
+    const created = createGhost(toy(8, 'Bare', null, null), { circumference: 140, insertableLength: 165 });
+    expect(silhouetteHeight(created)).toBeCloseTo(165, 6);
+    expect(silhouetteDiameter(created)).toBeCloseTo(140 / Math.PI, 6);
+  });
+
+  it('keeps the shape unscaled when a reference dimension is zero', () => {
+    const created = createGhost(toy(9, 'Flat', 0, 0), { circumference: 140, insertableLength: 165 });
+    expect(silhouetteDiameter(created)).toBe(45);
   });
 });
 
-describe('ghost silhouette scaling', () => {
-  it('derives width and height factors from the reference dims', () => {
-    expect(ghostScaleFactors(ghost(1, 140, 165))).toEqual({ width: 1.4, height: 1.1 });
-  });
-
-  it('scales the cloned shape proportionally to the entered dims', () => {
-    const editorToy = ghostEditorToy(ghost(1, 140, 165));
-    expect(editorToy.sections).toEqual([{ order: 0, diameter: 45 * 1.4, height: 150 * 1.1, circumference: 130 * 1.4 }]);
-    expect(ghostSilhouetteHeight(ghost(1, 140, 165))).toBeCloseTo(165, 6);
-    expect(ghostSilhouetteDiameter(ghost(1, 140, 165))).toBeCloseTo(63, 6);
-  });
-
-  it('keeps the shape unscaled when a reference dimension is missing', () => {
-    const broken: GhostToy = { ...ghost(1, 140, 165), sourceCircumference: 0, sourceInsertableLength: 0 };
-    expect(ghostScaleFactors(broken)).toEqual({ width: 1, height: 1 });
+describe('updateGhostDimensions', () => {
+  it('rescales the stored shape to the new dims', () => {
+    const created = createGhost(toy(7, 'Slim', 120, 150), { circumference: 140, insertableLength: 165 });
+    const updated = updateGhostDimensions(created, { circumference: 120, insertableLength: 180 });
+    expect(updated.circumference).toBe(120);
+    expect(updated.insertableLength).toBe(180);
+    expect(silhouetteHeight(updated)).toBeCloseTo(180, 6);
+    expect(silhouetteDiameter(updated)).toBeCloseTo(45, 6);
   });
 });
 

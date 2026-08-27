@@ -33,6 +33,20 @@ export const convertSections = (sections: ToySection[], from: Unit, to: Unit): T
   }));
 };
 
+export const formatForInput = (mm: number, unit: Unit): string => fromMm(mm, unit).toFixed(unit.decimals);
+
+export const parseInput = (raw: string): number | null => {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const v = Number(trimmed.replace(',', '.'));
+  return Number.isFinite(v) && v > 0 ? v : null;
+};
+
+export const parseToMm = (raw: string, unit: Unit): number | null => {
+  const v = parseInput(raw);
+  return v == null ? null : toMm(v, unit);
+};
+
 export const formatValue = (mm: number | null | undefined, unit: Unit): string => {
   if (mm == null) return '—';
   return fromMm(mm, unit).toFixed(unit.decimals);
