@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 
+import { oneOf } from '@/hooks/usePersistedState';
 import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 export const ViewMode = {
@@ -15,13 +16,10 @@ interface ViewModeContextValue {
   setView: (view: ViewMode) => void;
 }
 
-const isViewMode = (value: string): value is ViewMode => value === ViewMode.cards || value === ViewMode.list;
-
 const { Provider, useValue } = createPersistedProvider<ViewMode>({
   storageKey: 'gallery.view',
   defaultValue: ViewMode.cards,
-  decode: (stored) => (isViewMode(stored) ? stored : undefined),
-  encode: (view) => view,
+  isValid: oneOf(Object.values(ViewMode)),
   errorMessage: 'useViewMode must be used within ViewModeProvider',
 });
 

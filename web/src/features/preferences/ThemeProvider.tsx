@@ -2,7 +2,8 @@
 
 import { ReactNode, useEffect, useMemo } from 'react';
 
-import { DEFAULT_THEME, isTheme, type Theme, THEMES } from '@/features/preferences/themeRegistry';
+import { DEFAULT_THEME, THEME_NAMES, type Theme, THEMES } from '@/features/preferences/themeRegistry';
+import { oneOf } from '@/hooks/usePersistedState';
 import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 interface ThemeContextValue {
@@ -13,8 +14,7 @@ interface ThemeContextValue {
 const { Provider, useValue } = createPersistedProvider<Theme>({
   storageKey: 'theme',
   defaultValue: DEFAULT_THEME,
-  decode: (stored) => (isTheme(stored) ? stored : undefined),
-  encode: (theme) => theme,
+  isValid: oneOf(THEME_NAMES),
   errorMessage: 'useThemeContext must be used within ThemeProvider',
 });
 

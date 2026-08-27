@@ -2,7 +2,8 @@
 
 import { useMemo } from 'react';
 
-import { DEFAULT_GIRTH, type Girth, isGirth } from '@/features/preferences/girth';
+import { DEFAULT_GIRTH, type Girth, GIRTHS } from '@/features/preferences/girth';
+import { oneOf } from '@/hooks/usePersistedState';
 import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 interface GirthContextValue {
@@ -13,8 +14,7 @@ interface GirthContextValue {
 const { Provider, useValue } = createPersistedProvider<Girth>({
   storageKey: 'girth',
   defaultValue: DEFAULT_GIRTH,
-  decode: (stored) => (isGirth(stored) ? stored : undefined),
-  encode: (girth) => girth,
+  isValid: oneOf(GIRTHS),
   errorMessage: 'useGirth must be used within GirthProvider',
 });
 

@@ -13,4 +13,4 @@ export type Theme = keyof typeof THEMES;
 
 export const DEFAULT_THEME: Theme = 'light';
 
-export const isTheme = (value: string): value is Theme => Object.prototype.hasOwnProperty.call(THEMES, value);
+export const THEME_NAMES = Object.keys(THEMES) as readonly Theme[];

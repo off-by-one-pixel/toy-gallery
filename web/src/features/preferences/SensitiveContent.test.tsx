@@ -41,7 +41,7 @@ describe('SensitiveContent', () => {
   it('persists the choice and restores it on next mount', () => {
     const { unmount } = render(wrap(<span>secret</span>));
     fireEvent.click(screen.getByRole('switch', { name: 'Hide sensitive content' }));
-    expect(localStorage.getItem('hideSensitive')).toBe('1');
+    expect(localStorage.getItem('hideSensitive')).toBe('true');
     unmount();
 
     render(wrap(<span>secret</span>));

@@ -37,7 +37,7 @@ export const viewport: Viewport = {
 
 const BROWSER_CHROME = Object.fromEntries(Object.entries(THEMES).map(([name, def]) => [name, def.browserChrome]));
 
-const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');var colors=${JSON.stringify(BROWSER_CHROME)};if(!colors[t])return;document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',colors[t]);}catch(e){}})()`;
+const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');try{t=JSON.parse(t)}catch(e){}var colors=${JSON.stringify(BROWSER_CHROME)};if(!colors[t])return;document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',colors[t]);}catch(e){}})()`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
