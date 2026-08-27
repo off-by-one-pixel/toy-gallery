@@ -1,14 +1,12 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it, vi } from 'vitest';
 
 import en from '@/i18n/catalogs/en.json';
 import type { Toy } from '@/api/types';
-import { GirthProvider } from '@/features/preferences/GirthProvider';
-import { UnitProvider } from '@/features/preferences/UnitProvider';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
+import { withAppProviders } from '@/test/render';
 import type { GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 
 const source = {
@@ -29,15 +27,7 @@ const ghost = {
 const renderModal = (target: GhostTarget = { kind: 'new', source }) => {
   const onSave = vi.fn();
   const onClose = vi.fn();
-  render(
-    <NextIntlClientProvider locale="en" messages={en}>
-      <UnitProvider>
-        <GirthProvider>
-          <GhostModal target={target} onSave={onSave} onClose={onClose} />
-        </GirthProvider>
-      </UnitProvider>
-    </NextIntlClientProvider>,
-  );
+  render(withAppProviders(<GhostModal target={target} onSave={onSave} onClose={onClose} />));
   return { onSave, onClose };
 };
 

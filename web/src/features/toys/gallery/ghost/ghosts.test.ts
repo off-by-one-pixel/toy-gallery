@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Toy } from '@/api/types';
+import { makeToy } from '@/test/fixtures';
 import { Unit } from '@/features/preferences/units';
 import { silhouetteDiameter, silhouetteHeight } from '@/features/toys/dimensions';
 import {
@@ -19,15 +20,7 @@ import {
 const shape = { sections: [{ order: 0, diameter: 45, height: 150, circumference: 130 }] } as Toy['shape'];
 
 const toy = (id: number, name: string, circumference: number | null, insertableLength: number | null): Toy =>
-  ({
-    id,
-    brand: 'Acme',
-    name,
-    size: 'M',
-    circumference,
-    insertableLength,
-    shape,
-  }) as unknown as Toy;
+  makeToy({ id, brand: 'Acme', name, size: 'M', circumference, insertableLength, shape } as Partial<Toy>);
 
 const ghost = (id: number, circumference: number, insertableLength: number): GhostToy => ({
   id,

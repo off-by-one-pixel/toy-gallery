@@ -2,7 +2,6 @@
 
 import type { QueryClient } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 let search = '';
@@ -44,15 +43,22 @@ class IntersectionObserverStub {
 
 vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
 
+vi.mock('@/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api')>()),
+  fetchSessions: vi.fn(),
+  fetchToys: vi.fn(),
+  fetchSessionStats: vi.fn(),
+  fetchLiveSession: vi.fn(),
+  startLiveSession: vi.fn(),
+}));
+
 import en from '@/i18n/catalogs/en.json';
-import { AuthProvider } from '@/features/auth/AuthProvider';
-import { GirthProvider } from '@/features/preferences/GirthProvider';
-import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
-import { ThemeProvider } from '@/features/preferences/ThemeProvider';
-import { UnitProvider } from '@/features/preferences/UnitProvider';
+import { fetchSessions, fetchSessionStats, fetchToys, startLiveSession, type SessionPage } from '@/api';
 import type { Session, Toy } from '@/api/types';
-import { api, capture, http, HttpResponse, liveWire, server, sessionPageWire, wire } from '@/test/msw';
-import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
+import { makeSession, makeToy } from '@/test/fixtures';
+import { liveSessionState, stubLiveSession } from '@/test/liveSession';
+import { createTestQueryClient } from '@/test/QueryWrapper';
+import { withAppProviders } from '@/test/render';
 import SessionList from '@/features/sessions/list/SessionList';
 
 const session = (
@@ -60,93 +66,71 @@ const session = (
   startedAt: string,
   isLive = false,
   media: { photos: number; videos: number } = { photos: 0, videos: 0 },
-): Session => ({
-  id,
-  startedAt,
-  isLive,
-  photoCount: media.photos,
-  videoCount: media.videos,
-  entries: [],
-  records: [],
-  totalToyDurationMinutes: null,
-  maxInsertableLength: 120,
-  maxCircumference: 110,
+): Session =>
+  makeSession({
+    id,
+    startedAt,
+    isLive,
+    photoCount: media.photos,
+    videoCount: media.videos,
+    maxInsertableLength: 120,
+    maxCircumference: 110,
+  });
+
+const toyFixture = (id: number, name: string, usageCount: number): Toy => makeToy({ id, name, usageCount });
+
+type SessionQuery = Parameters<typeof fetchSessions>[0];
+type StatsQuery = Readonly<{
+  groupBy: Parameters<typeof fetchSessionStats>[0];
+  opts: Parameters<typeof fetchSessionStats>[2];
+}>;
+
+const page = (sessions: Session[], overrides: Partial<{ count: number; hasMore: boolean }> = {}): SessionPage => ({
+  sessions,
+  count: overrides.count ?? sessions.length,
+  hasMore: overrides.hasMore ?? false,
 });
 
-const toyFixture = (id: number, name: string, usageCount: number): Toy =>
-  ({
-    id,
-    brand: 'B',
-    name,
-    size: '',
-    usageCount,
-    totalDurationMinutes: 0,
-    shape: { sections: [] },
-  }) as Toy;
-
-let respondSessions: (url: URL) => object;
-const sessionRequests: URL[] = [];
-const statsRequests: URL[] = [];
+let respondSessions: (query: SessionQuery) => SessionPage;
+const sessionQueries: NonNullable<SessionQuery>[] = [];
+const statsQueries: StatsQuery[] = [];
 let toys: Toy[] = [];
-let liveNow: Session | null = null;
 
-const hourStatsRequests = () => statsRequests.filter((u) => u.searchParams.get('group_by') === 'hour');
+const hourStatsQueries = () => statsQueries.filter((q) => q.groupBy === 'hour');
 
-const installListHandlers = () => {
-  server.use(
-    http.get(api('/toys/sessions/'), ({ request }) => {
-      const url = new URL(request.url);
-      sessionRequests.push(url);
-      return HttpResponse.json(respondSessions(url) as never);
-    }),
-    http.get(api('/toys/sessions/stats/'), ({ request }) => {
-      const url = new URL(request.url);
-      statsRequests.push(url);
-      const groups =
-        url.searchParams.get('group_by') === 'toy'
-          ? [
-              { key: '1', values: { count: 9 } },
-              { key: '2', values: { count: 3 } },
-            ]
-          : [];
-      return HttpResponse.json({ groups });
-    }),
-    http.get(api('/toys/toys/'), () => HttpResponse.json(toys.map((t) => wire(t)))),
-    http.get(api('/toys/sessions/live/'), () => HttpResponse.json(liveWire(liveNow))),
-  );
+const installApiStubs = () => {
+  vi.mocked(fetchSessions).mockImplementation(async (query = {}) => {
+    sessionQueries.push(query);
+    return respondSessions(query);
+  });
+  vi.mocked(fetchSessionStats).mockImplementation(async (groupBy, _metrics, opts = {}) => {
+    statsQueries.push({ groupBy, opts });
+    if (groupBy === 'toy') {
+      return [
+        { key: '1', values: { count: 9 } },
+        { key: '2', values: { count: 3 } },
+      ];
+    }
+    return [];
+  });
+  vi.mocked(fetchToys).mockImplementation(async () => toys);
+  stubLiveSession();
 };
 
-const wrap = (ui: React.ReactNode, client?: QueryClient) => (
-  <NextIntlClientProvider locale="en" messages={en}>
-    <QueryWrapper client={client}>
-      <ThemeProvider>
-        <UnitProvider>
-          <GirthProvider>
-            <PrivacyProvider>
-              <AuthProvider>{ui}</AuthProvider>
-            </PrivacyProvider>
-          </GirthProvider>
-        </UnitProvider>
-      </ThemeProvider>
-    </QueryWrapper>
-  </NextIntlClientProvider>
-);
+const wrap = (ui: React.ReactNode, client?: QueryClient) => withAppProviders(ui, { client });
 
 describe('SessionList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     search = '';
-    sessionRequests.length = 0;
-    statsRequests.length = 0;
+    sessionQueries.length = 0;
+    statsQueries.length = 0;
     toys = [];
-    liveNow = null;
+    liveSessionState.current = null;
     respondSessions = () =>
-      sessionPageWire([
-        session(1, '2026-06-01T20:00:00'),
-        session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 }),
-      ]);
-    installListHandlers();
+      page([session(1, '2026-06-01T20:00:00'), session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 })]);
+    installApiStubs();
   });
 
   it('renders a row per session and a media badge for flagged sessions', async () => {
@@ -160,7 +144,7 @@ describe('SessionList', () => {
   it('marks the record-setting toy and the peak value with trophies, skipping unknown keys', async () => {
     toys = [toyFixture(1, 'Steel', 9)];
     respondSessions = () =>
-      sessionPageWire([
+      page([
         {
           ...session(1, '2026-06-01T20:00:00'),
           entries: [{ toy: 1, involvement: 'FULLY_INSERTED' }],
@@ -168,7 +152,7 @@ describe('SessionList', () => {
             { key: 'pr-width', toy: 1, value: 240, achievedAt: '2026-06-01T21:00:00' },
             { key: 'pr-future', toy: 1, value: 5, achievedAt: '2026-06-01T21:00:00' },
           ],
-        },
+        } as unknown as Session,
         session(2, '2026-06-05T09:00:00'),
       ]);
     render(wrap(<SessionList />));
@@ -186,7 +170,7 @@ describe('SessionList', () => {
     render(wrap(<SessionList />, client));
     await screen.findByText(`2 ${en.session.recorded}`);
     respondSessions = () =>
-      sessionPageWire([
+      page([
         session(1, '2026-06-01T20:00:00', false, { photos: 1, videos: 0 }),
         session(2, '2026-06-05T09:00:00', false, { photos: 2, videos: 1 }),
       ]);
@@ -195,19 +179,18 @@ describe('SessionList', () => {
   });
 
   it('starts a live session from the toolbar button and hides it afterwards', async () => {
-    const started = capture('post', api('/toys/sessions/start/'), () => wire(session(9, '2026-06-06T08:00:00', true)));
+    vi.mocked(startLiveSession).mockResolvedValue(session(9, '2026-06-06T08:00:00', true));
     render(wrap(<SessionList />));
     const buttons = await screen.findAllByRole('button', { name: en.session.live.startButton });
     fireEvent.click(buttons[0]);
-    await waitFor(() => expect(started.urls).toHaveLength(1));
+    await waitFor(() => expect(startLiveSession).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.queryAllByRole('button', { name: en.session.live.startButton })).toHaveLength(0));
     expect(screen.getByRole('button', { name: en.session.live.openButton })).toBeTruthy();
   });
 
   it('hides the start button and shows banner plus badge when a session is live', async () => {
-    liveNow = session(1, '2026-06-01T20:00:00', true);
-    respondSessions = () =>
-      sessionPageWire([session(1, '2026-06-01T20:00:00', true), session(2, '2026-06-05T09:00:00')]);
+    liveSessionState.current = session(1, '2026-06-01T20:00:00', true);
+    respondSessions = () => page([session(1, '2026-06-01T20:00:00', true), session(2, '2026-06-05T09:00:00')]);
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
     expect(screen.queryAllByRole('button', { name: en.session.live.startButton })).toHaveLength(0);
@@ -218,37 +201,31 @@ describe('SessionList', () => {
   it('requests strip stats with the filter window', async () => {
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    const hourCalls = hourStatsRequests();
+    const hourCalls = hourStatsQueries();
     expect(hourCalls.length).toBeGreaterThan(0);
     const last = hourCalls[hourCalls.length - 1];
-    expect(last.searchParams.has('start')).toBe(false);
-    expect(last.searchParams.has('toys')).toBe(false);
-    expect(last.searchParams.has('has_media')).toBe(false);
+    expect(last.opts?.start).toBeUndefined();
+    expect(last.opts?.filters?.toyIds ?? []).toHaveLength(0);
+    expect(last.opts?.filters?.hasMedia).toBeFalsy();
 
     fireEvent.click(screen.getByText(en.session.filter.week));
     await waitFor(() => {
-      const calls = hourStatsRequests();
-      expect(calls[calls.length - 1].searchParams.get('start')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      const calls = hourStatsQueries();
+      expect(calls[calls.length - 1].opts?.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
   });
 
   it('shows the server count in the subtitle, not the loaded page size', async () => {
-    respondSessions = () => sessionPageWire([session(1, '2026-06-01T20:00:00')], { count: 41, hasMore: true });
+    respondSessions = () => page([session(1, '2026-06-01T20:00:00')], { count: 41, hasMore: true });
     render(wrap(<SessionList />));
     expect(await screen.findByText(`41 ${en.session.recorded}`)).toBeTruthy();
   });
 
   it('appends the next page without duplicating overlapping sessions', async () => {
-    respondSessions = (url) =>
-      url.searchParams.get('page') === '2'
-        ? sessionPageWire([session(2, '2026-06-04T09:00:00'), session(3, '2026-06-03T09:00:00')], {
-            count: 3,
-            hasMore: false,
-          })
-        : sessionPageWire([session(1, '2026-06-05T09:00:00'), session(2, '2026-06-04T09:00:00')], {
-            count: 3,
-            hasMore: true,
-          });
+    respondSessions = (query) =>
+      query?.page === 2
+        ? page([session(2, '2026-06-04T09:00:00'), session(3, '2026-06-03T09:00:00')], { count: 3 })
+        : page([session(1, '2026-06-05T09:00:00'), session(2, '2026-06-04T09:00:00')], { count: 3, hasMore: true });
     render(wrap(<SessionList />));
     await screen.findByText(`3 ${en.session.recorded}`);
 
@@ -256,7 +233,7 @@ describe('SessionList', () => {
     ioCallbacks[ioCallbacks.length - 1]([{ isIntersecting: true }]);
 
     await waitFor(() => expect(screen.getAllByRole('button', { name: en.session.detailsToggleLabel })).toHaveLength(3));
-    expect(sessionRequests.map((u) => u.searchParams.get('page'))).toContain('2');
+    expect(sessionQueries.map((q) => q.page)).toContain(2);
   });
 
   it('refetches with the filter window start and the selected ordering', async () => {
@@ -264,9 +241,9 @@ describe('SessionList', () => {
     await screen.findByText(`2 ${en.session.recorded}`);
     fireEvent.click(screen.getByText(en.session.filter.week));
     await waitFor(() => {
-      const last = sessionRequests[sessionRequests.length - 1];
-      expect(last.searchParams.get('start')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(last.searchParams.get('page')).toBe('1');
+      const last = sessionQueries[sessionQueries.length - 1];
+      expect(last.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(last.page).toBe(1);
     });
   });
 
@@ -278,22 +255,21 @@ describe('SessionList', () => {
     fireEvent.click(screen.getByRole('button', { name: en.session.filters.buttonLabel }));
     fireEvent.click(await screen.findByRole('checkbox', { name: /B Steel/ }));
     await waitFor(() => {
-      const last = sessionRequests[sessionRequests.length - 1];
-      expect(last.searchParams.get('toys')).toBe('1');
-      expect(last.searchParams.get('page')).toBe('1');
+      const last = sessionQueries[sessionQueries.length - 1];
+      expect(last.filters?.toyIds).toEqual([1]);
+      expect(last.page).toBe(1);
     });
 
     fireEvent.click(screen.getByRole('checkbox', { name: en.session.filters.hasMedia }));
     await waitFor(() => {
-      const last = sessionRequests[sessionRequests.length - 1];
-      expect(last.searchParams.get('has_media')).toBe('true');
+      expect(sessionQueries[sessionQueries.length - 1].filters?.hasMedia).toBe(true);
     });
 
     fireEvent.click(screen.getByRole('checkbox', { name: en.session.filters.hasPr }));
     await waitFor(() => {
-      const last = sessionRequests[sessionRequests.length - 1];
-      expect(last.searchParams.get('has_pr')).toBe('true');
-      expect(last.searchParams.get('has_media')).toBe('true');
+      const last = sessionQueries[sessionQueries.length - 1];
+      expect(last.filters?.hasPr).toBe(true);
+      expect(last.filters?.hasMedia).toBe(true);
     });
   });
 
@@ -316,7 +292,7 @@ describe('SessionList', () => {
     toys = [toyFixture(1, 'Steel', 9)];
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    expect(sessionRequests[0].searchParams.get('toys')).toBe('1');
+    expect(sessionQueries[0].filters?.toyIds).toEqual([1]);
     expect(await screen.findByRole('button', { name: 'B Steel ×' })).toBeTruthy();
   });
 

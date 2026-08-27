@@ -3,9 +3,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import type { Toy } from '@/api/types';
 import { type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
+import type { Toy } from '@/api/types';
+import { makeToy } from '@/test/fixtures';
 
 const shape = { sections: [{ order: 0, diameter: 45, height: 150 }] };
 
@@ -20,15 +21,14 @@ const storedGhost = (id: number): GhostToy =>
 
 const seed = (...ghosts: GhostToy[]) => localStorage.setItem('gallery.ghosts', JSON.stringify(ghosts));
 
-const source = {
-  id: 1,
+const source = makeToy({
   brand: 'Acme',
   name: 'Slim',
   size: 'M',
   circumference: 130,
   insertableLength: 150,
   shape,
-} as unknown as Toy;
+} as unknown as Partial<Toy>);
 
 describe('useGhosts', () => {
   beforeEach(() => {

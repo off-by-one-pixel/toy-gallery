@@ -1,22 +1,19 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import en from '@/i18n/catalogs/en.json';
-import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
 import PrivacyToggle from '@/features/preferences/PrivacyToggle';
 import SensitiveContent from '@/features/preferences/SensitiveContent';
+import { withAppProviders } from '@/test/render';
 
-const wrap = (ui: React.ReactNode) => (
-  <NextIntlClientProvider locale="en" messages={en}>
-    <PrivacyProvider>
+const wrap = (ui: React.ReactNode) =>
+  withAppProviders(
+    <>
       <PrivacyToggle />
       <SensitiveContent>{ui}</SensitiveContent>
-    </PrivacyProvider>
-  </NextIntlClientProvider>
-);
+    </>,
+  );
 
 describe('SensitiveContent', () => {
   beforeEach(() => localStorage.clear());

@@ -11,7 +11,6 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    setupFiles: ['src/test/mswSetup.ts'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       provider: 'v8',

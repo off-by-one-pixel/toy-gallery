@@ -3,8 +3,14 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api')>()),
+  patchToy: vi.fn(),
+}));
+
+import { patchToy } from '@/api';
 import type { Toy } from '@/api/types';
-import { api, capture, http, HttpResponse, server, wire, type Captured } from '@/test/msw';
+import { makeToy as baseToy } from '@/test/fixtures';
 import { useAttributesEditor } from '@/features/toys/gallery/useAttributesEditor';
 
 vi.mock('@heroui/react', () => ({
@@ -12,21 +18,17 @@ vi.mock('@heroui/react', () => ({
 }));
 
 const makeToy = (overrides: Partial<Toy> = {}): Toy =>
-  ({
-    id: 1,
-    brand: 'B',
+  baseToy({
     name: 'N',
-    size: '',
     color: '#000',
     insertableLength: null,
     totalLength: null,
     circumference: null,
-    shape: { sections: [] },
     customAttributes: {},
     ...overrides,
-  }) as Toy;
+  } as Partial<Toy>);
 
-const patchReturning = (toy: Toy): Captured => capture('patch', api('/toys/toys/1/'), () => wire(toy));
+const patchReturning = (toy: Toy) => vi.mocked(patchToy).mockResolvedValue(toy);
 
 const flush = async () => {
   for (let i = 0; i < 5; i++) await new Promise<void>((r) => setTimeout(r, 0));
@@ -92,17 +94,17 @@ describe('useAttributesEditor — row mutations', () => {
 
 describe('useAttributesEditor — commit save', () => {
   it('does not call patchToy when there are no unsaved changes', async () => {
-    const patch = patchReturning(makeToy());
+    patchReturning(makeToy());
     const { result } = renderHook(() => useAttributesEditor(makeToy({ customAttributes: { size: 'M' } })));
     act(() => {
       result.current.commitChanges();
     });
     await flush();
-    expect(patch.urls).toHaveLength(0);
+    expect(patchToy).not.toHaveBeenCalled();
   });
 
   it('calls patchToy with the projected dict on commit', async () => {
-    const patch = patchReturning(makeToy({ customAttributes: { size: 'L' } }));
+    patchReturning(makeToy({ customAttributes: { size: 'L' } }));
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -115,8 +117,8 @@ describe('useAttributesEditor — commit save', () => {
       await flush();
     });
 
-    expect(patch.urls).toHaveLength(1);
-    expect(patch.bodies[0]).toEqual({ custom_attributes: { size: 'L' } });
+    expect(patchToy).toHaveBeenCalledTimes(1);
+    expect(patchToy).toHaveBeenCalledWith(1, { customAttributes: { size: 'L' } });
   });
 
   it('applies the server response, replacing local rows with the canonical set', async () => {
@@ -141,7 +143,7 @@ describe('useAttributesEditor — commit save', () => {
   });
 
   it('reverts to the last saved state when patchToy throws', async () => {
-    capture('patch', api('/toys/toys/1/'), () => HttpResponse.json({ detail: 'boom' }, { status: 500 }));
+    vi.mocked(patchToy).mockRejectedValue(new Error('boom'));
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -160,18 +162,15 @@ describe('useAttributesEditor — commit save', () => {
   it('single-flights concurrent commits with one queued retry', async () => {
     let resolveFirst!: (t: Toy) => void;
     const bodies: unknown[] = [];
-    server.use(
-      http.patch(api('/toys/toys/1/'), async ({ request }) => {
-        bodies.push(await request.json());
-        if (bodies.length === 1) {
-          const first = await new Promise<Toy>((resolve) => {
-            resolveFirst = resolve;
-          });
-          return HttpResponse.json(wire(first) as never);
-        }
-        return HttpResponse.json(wire(makeToy({ customAttributes: { size: 'L', gauge: '14' } })) as never);
-      }),
-    );
+    vi.mocked(patchToy).mockImplementation(async (_id, changes) => {
+      bodies.push(changes);
+      if (bodies.length === 1) {
+        return new Promise<Toy>((resolve) => {
+          resolveFirst = resolve;
+        });
+      }
+      return makeToy({ customAttributes: { size: 'L', gauge: '14' } });
+    });
 
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
@@ -212,13 +211,13 @@ describe('useAttributesEditor — commit save', () => {
     });
 
     await waitFor(() => expect(bodies).toHaveLength(2));
-    expect(bodies[1]).toEqual({ custom_attributes: { size: 'L', gauge: '14' } });
+    expect(bodies[1]).toEqual({ customAttributes: { size: 'L', gauge: '14' } });
   });
 });
 
 describe('useAttributesEditor — removeRow', () => {
   it('drops the targeted row and commits the resulting dict', async () => {
-    const patch = patchReturning(makeToy({ customAttributes: { shade: 'blue' } }));
+    patchReturning(makeToy({ customAttributes: { shade: 'blue' } }));
     const toy = makeToy({ customAttributes: { size: 'M', shade: 'blue' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -228,7 +227,7 @@ describe('useAttributesEditor — removeRow', () => {
       await flush();
     });
 
-    expect(patch.bodies[0]).toEqual({ custom_attributes: { shade: 'blue' } });
+    expect(patchToy).toHaveBeenCalledWith(1, { customAttributes: { shade: 'blue' } });
     expect(result.current.rows.map((r) => r.key)).toEqual(['shade']);
   });
 });
@@ -263,7 +262,7 @@ describe('useAttributesEditor — re-hydration on toy.id change', () => {
 
 describe('useAttributesEditor — unmount', () => {
   it('flushes pending edits on unmount', async () => {
-    const patch = patchReturning(makeToy({ customAttributes: { size: 'L' } }));
+    patchReturning(makeToy({ customAttributes: { size: 'L' } }));
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result, unmount } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -274,6 +273,6 @@ describe('useAttributesEditor — unmount', () => {
     unmount();
     await flush();
 
-    expect(patch.bodies[0]).toEqual({ custom_attributes: { size: 'L' } });
+    expect(patchToy).toHaveBeenCalledWith(1, { customAttributes: { size: 'L' } });
   });
 });
