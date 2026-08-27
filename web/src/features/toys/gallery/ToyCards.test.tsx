@@ -1,21 +1,18 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import en from '@/i18n/catalogs/en.json';
 import type { Toy } from '@/api/types';
-import { GirthProvider } from '@/features/preferences/GirthProvider';
-import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
-import { UnitProvider } from '@/features/preferences/UnitProvider';
-import { SortProvider } from '@/providers/SortProvider';
 import { TOY_SORT } from '@/features/toys/toySort';
 import type { GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import ToyCards from '@/features/toys/gallery/ToyCards';
+import { makeToy } from '@/test/fixtures';
+import { withAppProviders } from '@/test/render';
 
 const toy = (id: number, name: string, circumference: number, insertableLength: number): Toy =>
-  ({
+  makeToy({
     id,
     brand: 'Acme',
     name,
@@ -24,15 +21,13 @@ const toy = (id: number, name: string, circumference: number, insertableLength: 
     circumference,
     insertableLength,
     totalLength: insertableLength + 30,
-    usageCount: 0,
-    totalDurationMinutes: 0,
     customAttributes: {},
     shape: {
       topSectionShape: 'EGG',
       bottomSectionShape: 'FLAT',
       sections: [{ order: 0, diameter: 45, height: insertableLength }],
     },
-  }) as unknown as Toy;
+  } as unknown as Partial<Toy>);
 
 const ghost = (id: number, circumference: number, insertableLength: number): GhostToy => ({
   id,
@@ -61,23 +56,16 @@ const renderCards = (props: Partial<React.ComponentProps<typeof ToyCards>> = {})
     onNew: noop,
   };
   render(
-    <NextIntlClientProvider locale="en" messages={en}>
-      <SortProvider config={TOY_SORT}>
-        <UnitProvider>
-          <GirthProvider>
-            <PrivacyProvider>
-              <ToyCards
-                toys={[toy(1, 'Small', 100, 130), toy(2, 'Big', 160, 190)]}
-                ghosts={[]}
-                openToyId={null}
-                {...handlers}
-                {...props}
-              />
-            </PrivacyProvider>
-          </GirthProvider>
-        </UnitProvider>
-      </SortProvider>
-    </NextIntlClientProvider>,
+    withAppProviders(
+      <ToyCards
+        toys={[toy(1, 'Small', 100, 130), toy(2, 'Big', 160, 190)]}
+        ghosts={[]}
+        openToyId={null}
+        {...handlers}
+        {...props}
+      />,
+      { sort: TOY_SORT },
+    ),
   );
   return handlers;
 };

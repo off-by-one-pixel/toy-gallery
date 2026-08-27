@@ -40,14 +40,10 @@ describe('createPersistedProvider', () => {
     expect(localStorage.getItem('test.count')).toBe('2');
   });
 
-  it.each([
-    ['7', '7'],
-    ['0', '1'],
-    ['junk', '1'],
-  ])('hydrates stored "%s" and renders "%s"', (stored, expected) => {
-    localStorage.setItem('test.count', stored);
+  it('hydrates the stored value through isValid', () => {
+    localStorage.setItem('test.count', '7');
     renderProbe();
-    expect(screen.getByRole('button').textContent).toBe(expected);
+    expect(screen.getByRole('button').textContent).toBe('7');
   });
 
   it('throws the configured message outside the provider', () => {

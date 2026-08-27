@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const push = vi.fn();
@@ -11,61 +10,38 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
 }));
 
+vi.mock('@/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api')>()),
+  fetchLiveSession: vi.fn(),
+  startLiveSession: vi.fn(),
+}));
+
 import en from '@/i18n/catalogs/en.json';
-import { useLiveSession } from '@/features/sessions/live/useLiveSession';
-import type { Session } from '@/api/types';
-import { api, capture, http, HttpResponse, liveWire, server, wire } from '@/test/msw';
-import { QueryWrapper } from '@/test/QueryWrapper';
+import { startLiveSession } from '@/api';
+import { makeSession } from '@/test/fixtures';
+import { LiveStartProbe, liveSessionState, stubLiveSession } from '@/test/liveSession';
+import { withAppProviders } from '@/test/render';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 
-const live = (startedAt: string): Session => ({
-  id: 5,
-  startedAt,
-  isLive: true,
-  entries: [],
-  records: [],
-  totalToyDurationMinutes: null,
-  maxInsertableLength: null,
-  maxCircumference: null,
-});
-
-let liveNow: Session | null = null;
-
-const useLiveState = () =>
-  server.use(http.get(api('/toys/sessions/live/'), () => HttpResponse.json(liveWire(liveNow))));
-
-function StartProbe() {
-  const { liveSession, isLoaded, start } = useLiveSession();
-  return (
-    <button type="button" onClick={() => void start()}>
-      {isLoaded ? (liveSession ? `live:${liveSession.id}` : 'idle') : 'loading'}
-    </button>
-  );
-}
-
-const wrap = (ui: React.ReactNode) => (
-  <NextIntlClientProvider locale="en" messages={en}>
-    <QueryWrapper>{ui}</QueryWrapper>
-  </NextIntlClientProvider>
-);
+const live = (startedAt: string) => makeSession({ id: 5, startedAt, isLive: true });
 
 describe('LiveSessionBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useRealTimers();
-    liveNow = null;
-    useLiveState();
+    liveSessionState.current = null;
+    stubLiveSession();
   });
 
   it('renders nothing when no session is live', async () => {
-    render(wrap(<LiveSessionBanner />));
+    render(withAppProviders(<LiveSessionBanner />));
     await screen.findByText('idle', { ignore: 'html' }).catch(() => undefined);
     expect(screen.queryByText(en.session.live.badge)).toBeNull();
   });
 
   it('shows the badge and elapsed time and navigates on open', async () => {
-    liveNow = live(new Date(Date.now() - 95 * 60_000).toISOString());
-    render(wrap(<LiveSessionBanner />));
+    liveSessionState.current = live(new Date(Date.now() - 95 * 60_000).toISOString());
+    render(withAppProviders(<LiveSessionBanner />));
 
     expect(await screen.findByText(en.session.live.badge)).toBeTruthy();
     expect(screen.getByText('1h 35m')).toBeTruthy();
@@ -76,8 +52,8 @@ describe('LiveSessionBanner', () => {
 
   it('ticks the elapsed time forward', async () => {
     vi.useFakeTimers();
-    liveNow = live(new Date(Date.now() - 10 * 60_000).toISOString());
-    render(wrap(<LiveSessionBanner />));
+    liveSessionState.current = live(new Date(Date.now() - 10 * 60_000).toISOString());
+    render(withAppProviders(<LiveSessionBanner />));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
@@ -91,11 +67,11 @@ describe('LiveSessionBanner', () => {
   });
 
   it('start() stores the created session in the query cache', async () => {
-    const started = capture('post', api('/toys/sessions/start/'), () => wire(live(new Date().toISOString())));
-    render(wrap(<StartProbe />));
+    vi.mocked(startLiveSession).mockResolvedValue(live(new Date().toISOString()));
+    render(withAppProviders(<LiveStartProbe />));
     const probe = await screen.findByText('idle');
     fireEvent.click(probe);
     expect(await screen.findByText('live:5')).toBeTruthy();
-    expect(started.urls).toHaveLength(1);
+    expect(startLiveSession).toHaveBeenCalledTimes(1);
   });
 });

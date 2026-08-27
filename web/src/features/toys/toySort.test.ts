@@ -1,20 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
-import { isColumnOf } from '@/lib/sort';
 import type { Toy } from '@/api/types';
+import { makeToy } from '@/test/fixtures';
+import { expectSortConfigGuard } from '@/test/sortConfig';
 
-const toy = (id: number, overrides: Partial<Toy> = {}): Toy =>
-  ({
-    id,
-    brand: 'B',
-    name: `t${id}`,
-    size: '',
-    usageCount: 0,
-    totalDurationMinutes: 0,
-    shape: { sections: [] },
-    ...overrides,
-  }) as Toy;
+const toy = (id: number, overrides: Partial<Toy> = {}): Toy => makeToy({ id, name: `t${id}`, ...overrides });
 
 describe('sortToys', () => {
   it('returns input untouched without a sort', () => {
@@ -36,7 +27,6 @@ describe('sortToys', () => {
 
 describe('TOY_SORT config', () => {
   it('exposes the column list and guard consistently', () => {
-    for (const column of TOY_SORT.columns) expect(isColumnOf(TOY_SORT, column)).toBe(true);
-    expect(isColumnOf(TOY_SORT, 'started_at')).toBe(false);
+    expectSortConfigGuard(TOY_SORT, ['started_at']);
   });
 });

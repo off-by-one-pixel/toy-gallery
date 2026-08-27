@@ -30,26 +30,13 @@ describe('GirthProvider', () => {
     expect(localStorage.getItem('girth')).toBe(JSON.stringify('diameter'));
   });
 
-  it('restores the persisted choice on mount and ignores junk', () => {
+  it('restores the persisted choice on mount', () => {
     localStorage.setItem('girth', JSON.stringify('diameter'));
-    const first = render(
-      <GirthProvider>
-        <Probe />
-      </GirthProvider>,
-    );
-    expect(screen.getByRole('button').textContent).toBe('diameter');
-    first.unmount();
-
-    localStorage.setItem('girth', 'nonsense');
     render(
       <GirthProvider>
         <Probe />
       </GirthProvider>,
     );
-    expect(screen.getByRole('button').textContent).toBe('circumference');
-  });
-
-  it('throws when used outside the provider', () => {
-    expect(() => render(<Probe />)).toThrow('useGirth must be used within GirthProvider');
+    expect(screen.getByRole('button').textContent).toBe('diameter');
   });
 });

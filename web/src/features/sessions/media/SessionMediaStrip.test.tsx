@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const push = vi.fn();
@@ -15,11 +14,17 @@ vi.mock('next/navigation', () => ({
 
 import type { QueryClient } from '@tanstack/react-query';
 
+vi.mock('@/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api')>()),
+  fetchMediaStatus: vi.fn(),
+  fetchSessionMedia: vi.fn(),
+}));
+
 import en from '@/i18n/catalogs/en.json';
-import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
+import { fetchMediaStatus, fetchSessionMedia } from '@/api';
 import type { SessionMedia } from '@/api/types';
-import { api, capture, http, HttpResponse, server, wire } from '@/test/msw';
-import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
+import { createTestQueryClient } from '@/test/QueryWrapper';
+import { withAppProviders } from '@/test/render';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 
 class ResizeObserverStub {
@@ -32,13 +37,7 @@ globalThis.ResizeObserver ??= ResizeObserverStub as never;
 window.HTMLMediaElement.prototype.play = () => Promise.resolve();
 window.HTMLMediaElement.prototype.pause = () => {};
 
-const wrap = (ui: React.ReactNode, client?: QueryClient) => (
-  <NextIntlClientProvider locale="en" messages={en}>
-    <QueryWrapper client={client}>
-      <PrivacyProvider>{ui}</PrivacyProvider>
-    </QueryWrapper>
-  </NextIntlClientProvider>
-);
+const wrap = (ui: React.ReactNode, client?: QueryClient) => withAppProviders(ui, { client });
 
 const media = (items: SessionMedia['items'], overrides: Partial<Omit<SessionMedia, 'items'>> = {}): SessionMedia => ({
   configured: true,
@@ -63,18 +62,12 @@ const video = {
   fullUrl: 'https://immich/full2',
 } as const;
 
-const mediaStatus = (configured: boolean) =>
-  capture('get', api('/toys/sessions/media-status/'), () => ({ configured }));
+const mediaStatus = (configured: boolean) => vi.mocked(fetchMediaStatus).mockResolvedValue({ configured });
 
-const sessionMedia = (value: SessionMedia) => capture('get', api('/toys/sessions/:id/media/'), () => wire(value));
+const sessionMedia = (value: SessionMedia) => vi.mocked(fetchSessionMedia).mockResolvedValue(value);
 
 const hangingSessionMedia = () =>
-  server.use(
-    http.get(api('/toys/sessions/:id/media/'), async () => {
-      await new Promise(() => undefined);
-      return HttpResponse.json({});
-    }),
-  );
+  vi.mocked(fetchSessionMedia).mockImplementation(() => new Promise<never>(() => undefined));
 
 describe('SessionMediaStrip', () => {
   beforeEach(() => {
@@ -85,12 +78,12 @@ describe('SessionMediaStrip', () => {
   });
 
   it('renders nothing when the media provider is not configured', async () => {
-    const status = mediaStatus(false);
-    const mediaCalls = sessionMedia(media([]));
+    mediaStatus(false);
+    sessionMedia(media([]));
     const { container } = render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
-    await waitFor(() => expect(status.urls.length).toBeGreaterThan(0));
+    await waitFor(() => expect(fetchMediaStatus).toHaveBeenCalled());
     expect(container.innerHTML).toBe('');
-    expect(mediaCalls.urls).toHaveLength(0);
+    expect(fetchSessionMedia).not.toHaveBeenCalled();
   });
 
   it('shows placeholders matching the expected count while loading', async () => {
@@ -148,7 +141,7 @@ describe('SessionMediaStrip', () => {
   });
 
   it('shows the error message when loading fails', async () => {
-    capture('get', api('/toys/sessions/:id/media/'), () => HttpResponse.json({ detail: 'boom' }, { status: 500 }));
+    vi.mocked(fetchSessionMedia).mockRejectedValue(new Error('boom'));
     render(wrap(<SessionMediaStrip sessionId={1} expectedCount={1} />));
     expect(await screen.findByText(en.session.media.loadError)).toBeTruthy();
   });
