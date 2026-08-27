@@ -19,6 +19,9 @@ import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
 import { toyActionDefs } from '@/features/toys/gallery/ToyActionButtons';
+import { createGhost, MAX_GHOSTS, type GhostDimensions, type GhostToy } from '@/features/toys/gallery/ghosts';
+import { useGhosts } from '@/features/toys/gallery/useGhosts';
+import GhostModal from '@/features/toys/gallery/GhostModal';
 import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
 import SearchInput from '@/components/SearchInput';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
@@ -34,6 +37,8 @@ import UnitToggle from '@/features/preferences/UnitToggle';
 import ViewToggle from '@/features/preferences/ViewToggle';
 
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
+
+type GhostModalState = { kind: 'new'; source: Toy } | { kind: 'edit'; ghost: GhostToy } | null;
 
 const ToyGallery = () => {
   const router = useRouter();
@@ -83,6 +88,24 @@ const ToyGallery = () => {
   const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
   const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
 
+  const [ghosts, setGhosts] = useGhosts();
+  const [ghostModal, setGhostModal] = useState<GhostModalState>(null);
+  const canAddGhost = ghosts.length < MAX_GHOSTS;
+  const handleGhost = (toy: Toy) => setGhostModal({ kind: 'new', source: toy });
+  const handleEditGhost = (ghost: GhostToy) => setGhostModal({ kind: 'edit', ghost });
+  const handleRemoveGhost = (id: number) => setGhosts((current) => current.filter((g) => g.id !== id));
+  const handleClearGhosts = () => setGhosts([]);
+  const handleGhostSave = (dims: GhostDimensions) => {
+    if (ghostModal?.kind === 'new') {
+      setGhosts((current) =>
+        current.length < MAX_GHOSTS ? [...current, createGhost(ghostModal.source, dims)] : current,
+      );
+    } else if (ghostModal?.kind === 'edit') {
+      setGhosts((current) => current.map((g) => (g.id === ghostModal.ghost.id ? { ...g, ...dims } : g)));
+    }
+    setGhostModal(null);
+  };
+
   const newActions: ActionDef[] = [
     ...(startLiveAction ? [startLiveAction] : []),
     {
@@ -102,6 +125,7 @@ const ToyGallery = () => {
         onEdit: () => handleEdit(openToy),
         onCopy: () => handleCopy(openToy),
         onDelete: () => handleDelete(openToy),
+        onGhost: canAddGhost ? () => handleGhost(openToy) : undefined,
       })
     : null;
 
@@ -128,11 +152,16 @@ const ToyGallery = () => {
     return (
       <ToyCards
         toys={sortedToys}
+        ghosts={ghosts}
         openToyId={openCardId}
         onToggleOpen={toggleOpen}
         onEdit={handleEdit}
         onCopy={handleCopy}
         onDelete={handleDelete}
+        onGhost={canAddGhost ? handleGhost : undefined}
+        onEditGhost={handleEditGhost}
+        onRemoveGhost={handleRemoveGhost}
+        onClearGhosts={handleClearGhosts}
         onNew={toyModal.openNew}
       />
     );
@@ -177,6 +206,27 @@ const ToyGallery = () => {
         )}
         {renderBody()}
       </main>
+
+      {ghostModal && (
+        <GhostModal
+          initial={
+            ghostModal.kind === 'new'
+              ? {
+                  circumference: ghostModal.source.circumference ?? 0,
+                  insertableLength: ghostModal.source.insertableLength ?? 0,
+                }
+              : { circumference: ghostModal.ghost.circumference, insertableLength: ghostModal.ghost.insertableLength }
+          }
+          sourceName={
+            ghostModal.kind === 'new'
+              ? [ghostModal.source.brand, ghostModal.source.name, ghostModal.source.size].filter(Boolean).join(' ')
+              : ghostModal.ghost.sourceName
+          }
+          isEdit={ghostModal.kind === 'edit'}
+          onSave={handleGhostSave}
+          onClose={() => setGhostModal(null)}
+        />
+      )}
 
       {editorMode.kind !== 'closed' && (
         <ToyEditModal

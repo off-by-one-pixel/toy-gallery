@@ -16,7 +16,8 @@
     "length": "Length",
     "edit": "Edit",
     "copy": "Copy",
-    "delete": "Delete"
+    "delete": "Delete",
+    "compare": "Compare"
   },
   "shape": {
     "FLAT": "Flat",
@@ -53,7 +54,19 @@
     "timesUsed": "Times used",
     "timeUsed": "Plugged time",
     "topCap": "{shape} cap",
-    "viewSessions": "View sessions"
+    "viewSessions": "View sessions",
+    "ghost": {
+      "badge": "Ghost",
+      "from": "from {name}",
+      "editHint": "click to edit",
+      "remove": "Remove comparison",
+      "modalTitleNew": "New comparison",
+      "modalTitleEdit": "Edit comparison",
+      "modalSubtitle": "Cloned from {name} — adjust to the listing specs",
+      "add": "Add ghost",
+      "comparisons": "{count, plural, one {# comparison} other {# comparisons}}",
+      "clearAll": "Clear all"
+    }
   },
   "viewToggle": {
     "ariaLabel": "Gallery view",
