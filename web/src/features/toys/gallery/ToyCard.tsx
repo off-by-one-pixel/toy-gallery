@@ -18,6 +18,8 @@ import { cardSortValue } from '@/features/toys/gallery/cardSortValue';
 import type { ToyPropertyContext } from '@/features/toys/properties';
 import { formatDuration } from '@/lib/duration';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
+import GhostCompareOverlay from '@/features/toys/gallery/ghost/GhostCompareOverlay';
+import { formatSignedMm, ghostColor, ghostDelta, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 type Props = Readonly<{
@@ -28,9 +30,23 @@ type Props = Readonly<{
   onEdit: (toy: Toy) => void;
   onCopy: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
+  onGhost?: (toy: Toy) => void;
+  ghosts?: readonly GhostToy[];
+  maxHeightMm?: number;
 }>;
 
-export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails, onEdit, onCopy, onDelete }: Props) {
+export default function ToyCard({
+  toy,
+  heightRatio,
+  detailsOpen,
+  onToggleDetails,
+  onEdit,
+  onCopy,
+  onDelete,
+  onGhost,
+  ghosts = [],
+  maxHeightMm,
+}: Props) {
   const { unit } = useUnit();
   const { girth } = useGirth();
   const common = useTranslations('common');
@@ -92,9 +108,13 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
             onEdit={() => onEdit(toy)}
             onCopy={() => onCopy(toy)}
             onDelete={() => onDelete(toy)}
+            onGhost={onGhost && (() => onGhost(toy))}
             stopPropagation
           />
         </div>
+        {ghosts.length > 0 && maxHeightMm != null && (
+          <GhostCompareOverlay ghosts={ghosts} maxHeightMm={maxHeightMm} visible={detailsOpen} />
+        )}
       </ToyThumbnail>
       <div className="px-3.5 py-3">
         <div className="mb-2 flex items-start gap-2">
@@ -109,8 +129,29 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
           )}
         </div>
         <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-border pt-2.5">
-          <Metric label={common('insertable')} value={toy.insertableLength} unit={unit} />
-          <Metric label={common(girth)} value={displayGirth(toy.circumference, girth)} unit={unit} bordered />
+          <Metric
+            label={common('insertable')}
+            value={toy.insertableLength}
+            unit={unit}
+            deltas={ghosts.map((ghost) => ({
+              id: ghost.id,
+              color: ghostColor(ghost),
+              value: ghostDelta(toy.insertableLength, ghost.insertableLength),
+            }))}
+            deltasVisible={detailsOpen}
+          />
+          <Metric
+            label={common(girth)}
+            value={displayGirth(toy.circumference, girth)}
+            unit={unit}
+            deltas={ghosts.map((ghost) => ({
+              id: ghost.id,
+              color: ghostColor(ghost),
+              value: ghostDelta(displayGirth(toy.circumference, girth), displayGirth(ghost.circumference, girth) ?? 0),
+            }))}
+            deltasVisible={detailsOpen}
+            bordered
+          />
         </div>
       </div>
 
@@ -147,22 +188,39 @@ export default function ToyCard({ toy, heightRatio, detailsOpen, onToggleDetails
   );
 }
 
+const DELTA_TEXT_SIZES = ['text-sm', 'text-sm', 'text-xs', 'text-[10px]'] as const;
+
 function Metric({
   label,
   value,
   unit,
+  deltas = [],
+  deltasVisible,
   bordered,
 }: Readonly<{
   label: string;
   value: number | null | undefined;
   unit: Unit;
+  deltas?: readonly { id: number; color: string; value: number | null }[];
+  deltasVisible?: boolean;
   bordered?: boolean;
 }>) {
+  const deltaSize = DELTA_TEXT_SIZES[Math.min(deltas.length, DELTA_TEXT_SIZES.length - 1)];
+  const deltaOpacity = deltasVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100';
   return (
     <div className={bordered ? 'pl-3 border-l border-border' : ''}>
-      <div className="flex items-baseline gap-1 text-[22px] font-semibold leading-none tracking-tight text-foreground tabular-nums">
+      <div className="flex flex-wrap items-baseline gap-1 text-[22px] font-semibold leading-none tracking-tight text-foreground tabular-nums">
         {formatValue(value, unit)}
         {value != null && <span className="text-xs font-medium text-muted">{unit.id}</span>}
+        {deltas.length > 0 && (
+          <span className={`flex gap-1 self-start font-semibold transition-opacity ${deltaOpacity} ${deltaSize}`}>
+            {deltas.map((delta) => (
+              <span key={delta.id} style={{ color: delta.color }} className="whitespace-nowrap">
+                {formatSignedMm(delta.value, unit)}
+              </span>
+            ))}
+          </span>
+        )}
       </div>
       <div className="mt-0.5 text-caption uppercase tracking-wider text-text-tertiary">{label}</div>
     </div>

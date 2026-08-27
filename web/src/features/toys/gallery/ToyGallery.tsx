@@ -19,6 +19,9 @@ import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
 import { toyActionDefs } from '@/features/toys/gallery/ToyActionButtons';
+import type { GhostDimensions, GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
+import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
 import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
 import SearchInput from '@/components/SearchInput';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
@@ -83,6 +86,15 @@ const ToyGallery = () => {
   const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
   const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
 
+  const { ghosts, canAddGhost, saveGhost, removeGhost, clearGhosts } = useGhosts();
+  const [ghostModal, setGhostModal] = useState<GhostTarget | null>(null);
+  const handleGhost = (toy: Toy) => setGhostModal({ kind: 'new', source: toy });
+  const handleEditGhost = (ghost: GhostToy) => setGhostModal({ kind: 'edit', ghost });
+  const handleGhostSave = (dims: GhostDimensions) => {
+    if (ghostModal) saveGhost(ghostModal, dims);
+    setGhostModal(null);
+  };
+
   const newActions: ActionDef[] = [
     ...(startLiveAction ? [startLiveAction] : []),
     {
@@ -102,6 +114,7 @@ const ToyGallery = () => {
         onEdit: () => handleEdit(openToy),
         onCopy: () => handleCopy(openToy),
         onDelete: () => handleDelete(openToy),
+        onGhost: canAddGhost ? () => handleGhost(openToy) : undefined,
       })
     : null;
 
@@ -128,11 +141,16 @@ const ToyGallery = () => {
     return (
       <ToyCards
         toys={sortedToys}
+        ghosts={ghosts}
         openToyId={openCardId}
         onToggleOpen={toggleOpen}
         onEdit={handleEdit}
         onCopy={handleCopy}
         onDelete={handleDelete}
+        onGhost={canAddGhost ? handleGhost : undefined}
+        onEditGhost={handleEditGhost}
+        onRemoveGhost={removeGhost}
+        onClearGhosts={clearGhosts}
         onNew={toyModal.openNew}
       />
     );
@@ -177,6 +195,8 @@ const ToyGallery = () => {
         )}
         {renderBody()}
       </main>
+
+      {ghostModal && <GhostModal target={ghostModal} onSave={handleGhostSave} onClose={() => setGhostModal(null)} />}
 
       {editorMode.kind !== 'closed' && (
         <ToyEditModal
