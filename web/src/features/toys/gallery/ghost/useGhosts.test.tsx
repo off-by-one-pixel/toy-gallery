@@ -4,8 +4,8 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { Toy } from '@/api/types';
-import { createGhost, type GhostToy } from '@/features/toys/gallery/ghosts';
-import { useGhosts } from '@/features/toys/gallery/useGhosts';
+import { createGhost, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
 
 const shape = { sections: [{ order: 0, diameter: 45, height: 150 }] };
 

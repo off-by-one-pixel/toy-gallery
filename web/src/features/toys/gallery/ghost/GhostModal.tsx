@@ -13,7 +13,7 @@ import {
   parseGhostInputs,
   type GhostDimensions,
   type GhostInputs,
-} from '@/features/toys/gallery/ghosts';
+} from '@/features/toys/gallery/ghost/ghosts';
 
 type Props = Readonly<{
   initial: GhostDimensions;

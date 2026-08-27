@@ -1,6 +1,6 @@
 'use client';
 
-import { ghostColor, ghostEditorToy, ghostSilhouetteHeight, type GhostToy } from '@/features/toys/gallery/ghosts';
+import { ghostColor, ghostEditorToy, ghostSilhouetteHeight, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { heightRatioFor } from '@/features/toys/scaling';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 

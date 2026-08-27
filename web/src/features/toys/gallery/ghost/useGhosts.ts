@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 
-import { ensureGhostIdsAbove, isGhostToy, MAX_GHOSTS, type GhostToy } from '@/features/toys/gallery/ghosts';
+import { ensureGhostIdsAbove, isGhostToy, MAX_GHOSTS, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { usePersistedState } from '@/hooks/usePersistedState';
 
 const isGhostToyList = (value: unknown): value is GhostToy[] =>

@@ -6,11 +6,11 @@ import { useTranslations } from 'next-intl';
 
 import { silhouetteHeight } from '@/features/toys/dimensions';
 import { heightRatioFor, maxSilhouetteHeight } from '@/features/toys/scaling';
-import { ghostSilhouetteHeight, mergeGalleryItems, type GhostToy } from '@/features/toys/gallery/ghosts';
+import { ghostSilhouetteHeight, mergeGalleryItems, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { TOY_SORT } from '@/features/toys/toySort';
 import { useSortOf } from '@/hooks/useSortOf';
 import type { Toy } from '@/api/types';
-import GhostToyCard from '@/features/toys/gallery/GhostToyCard';
+import GhostToyCard from '@/features/toys/gallery/ghost/GhostToyCard';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyCard from '@/features/toys/gallery/ToyCard';
 

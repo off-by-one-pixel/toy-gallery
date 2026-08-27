@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import en from '@/i18n/catalogs/en.json';
 import { GirthProvider } from '@/features/preferences/GirthProvider';
 import { UnitProvider } from '@/features/preferences/UnitProvider';
-import GhostModal from '@/features/toys/gallery/GhostModal';
+import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
 
 const renderModal = (overrides: Partial<React.ComponentProps<typeof GhostModal>> = {}) => {
   const onSave = vi.fn();

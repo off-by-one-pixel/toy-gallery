@@ -7,7 +7,7 @@ import { useGirth } from '@/features/preferences/GirthProvider';
 import { displayGirth } from '@/features/preferences/girth';
 import { useUnit } from '@/features/preferences/UnitProvider';
 import { formatValue } from '@/features/preferences/units';
-import { ghostColor, ghostEditorToy, type GhostToy } from '@/features/toys/gallery/ghosts';
+import { ghostColor, ghostEditorToy, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 type Props = Readonly<{

@@ -11,7 +11,7 @@ import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
 import { UnitProvider } from '@/features/preferences/UnitProvider';
 import { SortProvider } from '@/providers/SortProvider';
 import { TOY_SORT } from '@/features/toys/toySort';
-import type { GhostToy } from '@/features/toys/gallery/ghosts';
+import type { GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import ToyCards from '@/features/toys/gallery/ToyCards';
 
 const toy = (id: number, name: string, circumference: number, insertableLength: number): Toy =>

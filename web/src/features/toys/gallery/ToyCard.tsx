@@ -18,8 +18,8 @@ import { cardSortValue } from '@/features/toys/gallery/cardSortValue';
 import type { ToyPropertyContext } from '@/features/toys/properties';
 import { formatDuration } from '@/lib/duration';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
-import GhostCompareOverlay from '@/features/toys/gallery/GhostCompareOverlay';
-import { formatSignedMm, ghostColor, ghostDelta, type GhostToy } from '@/features/toys/gallery/ghosts';
+import GhostCompareOverlay from '@/features/toys/gallery/ghost/GhostCompareOverlay';
+import { formatSignedMm, ghostColor, ghostDelta, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 type Props = Readonly<{

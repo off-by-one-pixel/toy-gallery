@@ -16,7 +16,7 @@ import {
   mergeGalleryItems,
   parseGhostInputs,
   type GhostToy,
-} from '@/features/toys/gallery/ghosts';
+} from '@/features/toys/gallery/ghost/ghosts';
 
 const shape = { sections: [{ order: 0, diameter: 45, height: 150, circumference: 130 }] } as Toy['shape'];
 
