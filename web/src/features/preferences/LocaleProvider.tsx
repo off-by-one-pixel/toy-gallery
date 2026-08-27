@@ -4,7 +4,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { ReactNode, useEffect, useMemo } from 'react';
 
 import en from '@/i18n/catalogs/en.json';
-import { DEFAULT_LOCALE, isLocale, Locale } from '@/i18n/routing';
+import { oneOf } from '@/hooks/usePersistedState';
+import { DEFAULT_LOCALE, Locale, LOCALE_CODES } from '@/i18n/routing';
 import { createPersistedProvider } from '@/providers/createPersistedProvider';
 
 const MESSAGES: Record<Locale, typeof en> = {
@@ -19,8 +20,7 @@ interface LocaleContextValue {
 const { Provider, useValue } = createPersistedProvider<Locale>({
   storageKey: 'locale',
   defaultValue: DEFAULT_LOCALE,
-  decode: (stored) => (isLocale(stored) ? stored : undefined),
-  encode: (locale) => locale,
+  isValid: oneOf(LOCALE_CODES),
   errorMessage: 'useLocaleContext must be used within LocaleProvider',
 });
 

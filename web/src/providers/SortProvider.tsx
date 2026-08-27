@@ -1,6 +1,8 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, ReactNode, useContext, useMemo } from 'react';
+
+import { usePersistedState } from '@/hooks/usePersistedState';
 import { isValidSort, type Sort, type SortConfig } from '@/lib/sort';
 
 interface SortContextValue {
@@ -10,36 +12,15 @@ interface SortContextValue {
 
 const SortContext = createContext<SortContextValue | null>(null);
 
-const parseStoredSort = (raw: string): unknown => {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-};
+const sortValidator =
+  (config: SortConfig) =>
+  (value: unknown): value is Sort | null =>
+    value === null || isValidSort(value, config);
 
 export function SortProvider({ children, config }: Readonly<{ children: ReactNode; config: SortConfig }>) {
-  const [sortState, setSortState] = useState<Sort | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(config.storageKey);
-    if (!stored) return;
-    const parsed = parseStoredSort(stored);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (isValidSort(parsed, config)) setSortState(parsed);
-  }, [config]);
-
-  const setSort = useCallback(
-    (next: Sort | null) => {
-      setSortState(next);
-      if (next) localStorage.setItem(config.storageKey, JSON.stringify(next));
-      else localStorage.removeItem(config.storageKey);
-    },
-    [config],
-  );
-
-  const value = useMemo(() => ({ sort: sortState, setSort }), [sortState, setSort]);
-
+  const isValid = useMemo(() => sortValidator(config), [config]);
+  const [sort, setSort] = usePersistedState<Sort | null>(config.storageKey, null, isValid);
+  const value = useMemo(() => ({ sort, setSort }), [sort, setSort]);
   return <SortContext.Provider value={value}>{children}</SortContext.Provider>;
 }
 

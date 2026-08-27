@@ -9,17 +9,10 @@ interface PrivacyContextValue {
   toggleHideSensitive: () => void;
 }
 
-const decodeFlag = (stored: string): boolean | undefined => {
-  if (stored === '1') return true;
-  if (stored === '0') return false;
-  return undefined;
-};
-
 const { Provider, useValue } = createPersistedProvider<boolean>({
   storageKey: 'hideSensitive',
   defaultValue: false,
-  decode: decodeFlag,
-  encode: (hide) => (hide ? '1' : '0'),
+  isValid: (value): value is boolean => typeof value === 'boolean',
   errorMessage: 'usePrivacy must be used within PrivacyProvider',
 });
 

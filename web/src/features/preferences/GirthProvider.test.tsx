@@ -27,11 +27,11 @@ describe('GirthProvider', () => {
     expect(probe.textContent).toBe('circumference');
     fireEvent.click(probe);
     expect(probe.textContent).toBe('diameter');
-    expect(localStorage.getItem('girth')).toBe('diameter');
+    expect(localStorage.getItem('girth')).toBe(JSON.stringify('diameter'));
   });
 
   it('restores the persisted choice on mount and ignores junk', () => {
-    localStorage.setItem('girth', 'diameter');
+    localStorage.setItem('girth', JSON.stringify('diameter'));
     const first = render(
       <GirthProvider>
         <Probe />

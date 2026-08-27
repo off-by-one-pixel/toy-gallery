@@ -1,6 +1,8 @@
 'use client';
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactNode, useContext, useMemo } from 'react';
+
+import { usePersistedState } from '@/hooks/usePersistedState';
 
 export interface PersistedValue<T> {
   value: T;
@@ -10,32 +12,18 @@ export interface PersistedValue<T> {
 interface PersistedProviderOptions<T> {
   readonly storageKey: string;
   readonly defaultValue: T;
-  readonly decode: (stored: string) => T | undefined;
-  readonly encode: (value: T) => string;
+  readonly isValid: (value: unknown) => value is T;
   readonly errorMessage: string;
 }
 
 export function createPersistedProvider<T>(options: PersistedProviderOptions<T>) {
-  const { storageKey, defaultValue, decode, encode, errorMessage } = options;
+  const { storageKey, defaultValue, isValid, errorMessage } = options;
   const Context = createContext<PersistedValue<T> | null>(null);
 
   function Provider({ children }: Readonly<{ children: ReactNode }>) {
-    const [state, setState] = useState<T>(defaultValue);
-
-    useEffect(() => {
-      const stored = localStorage.getItem(storageKey);
-      const restored = stored === null ? undefined : decode(stored);
-      if (restored !== undefined) setState(restored);
-    }, []);
-
-    const setValue = useCallback((next: T) => {
-      setState(next);
-      localStorage.setItem(storageKey, encode(next));
-    }, []);
-
-    const value = useMemo(() => ({ value: state, setValue }), [state, setValue]);
-
-    return <Context.Provider value={value}>{children}</Context.Provider>;
+    const [value, setValue] = usePersistedState(storageKey, defaultValue, isValid);
+    const ctx = useMemo(() => ({ value, setValue }), [value, setValue]);
+    return <Context.Provider value={ctx}>{children}</Context.Provider>;
   }
 
   function useValue(): PersistedValue<T> {
