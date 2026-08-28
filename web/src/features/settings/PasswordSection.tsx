@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import { Alert, Button, Toast } from '@heroui/react';
+import { Alert, Button } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 
-import { useAsyncAction } from '@/hooks/useAsyncAction';
 import { changePassword } from '@/api';
+import { useApiMutation } from '@/hooks/useApi';
 import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
 import TextInput from '@/components/TextInput';
@@ -18,9 +18,19 @@ export default function PasswordSection() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const runAction = useAsyncAction(setError);
+
+  const change = useApiMutation({
+    fn: () => changePassword(currentPassword, newPassword),
+    success: () => cp('successToast'),
+    onSuccess: () => {
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setError(null);
+    },
+    errorSink: setError,
+  });
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,16 +39,7 @@ export default function PasswordSection() {
       setError(cp('mismatch'));
       return;
     }
-    await runAction(() => changePassword(currentPassword, newPassword), {
-      busy: setSubmitting,
-      onSuccess: () => {
-        Toast.toast.success(cp('successToast'));
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        setError(null);
-      },
-    });
+    await change.run();
   };
 
   return (
@@ -81,8 +82,8 @@ export default function PasswordSection() {
           />
         </Field>
         <div className="mt-1 flex justify-end">
-          <Button variant="primary" size="sm" type="submit" isDisabled={submitting}>
-            {submitting ? common('saving') : common('save')}
+          <Button variant="primary" size="sm" type="submit" isDisabled={change.isPending}>
+            {change.isPending ? common('saving') : common('save')}
           </Button>
         </div>
       </form>

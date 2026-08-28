@@ -6,7 +6,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useApiMutation } from '@/hooks/useApi';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import { SortProvider } from '@/providers/SortProvider';
@@ -48,7 +48,13 @@ function SessionListContent() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
-  const runToast = useAsyncAction();
+  const removeAction = useApiMutation({
+    fn: deleteSession,
+    onSettled: () => {
+      setSelectedId(null);
+      data.reload();
+    },
+  });
 
   const addStartedSession = (session: Session) => {
     data.prependSession(session);
@@ -60,12 +66,7 @@ function SessionListContent() {
   const editSession = (id: number) => router.push(`/sessions/edit?id=${id}`);
   const removeSession = (id: number) => {
     if (!confirm(t('deleteConfirm'))) return;
-    runToast(() => deleteSession(id), {
-      onDone: () => {
-        setSelectedId(null);
-        data.reload();
-      },
-    });
+    void removeAction.run(id);
   };
 
   const selectedActions: ActionDef[] | null =

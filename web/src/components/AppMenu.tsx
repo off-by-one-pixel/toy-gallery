@@ -1,16 +1,14 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Toast } from '@heroui/react';
 import { Image as ImageIcon, LogOut, Settings, Trophy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { APP_COMMIT_SHA, APP_VERSION } from '@/config';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { fetchMediaStatus, rebuildRecords, refreshAllSessionMedia } from '@/api';
-import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
+import { queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import ActionDropdownMenu, { type ActionMenuItem } from '@/components/ActionDropdownMenu';
 import ActionDropdownMenuRow from '@/components/ActionDropdownMenuRow';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay';
@@ -21,29 +19,20 @@ export default function AppMenu() {
   const tData = useTranslations('settings.data');
   const router = useRouter();
   const { username, logout } = useAuth();
-  const runToast = useAsyncAction();
-  const queryClient = useQueryClient();
-  const { data: status } = useQuery({ queryKey: queryKeys.media.status, queryFn: fetchMediaStatus });
+  const { data: status } = useApiQuery({ key: queryKeys.media.status, fn: fetchMediaStatus });
   const mediaConfigured = status?.configured ?? false;
 
-  const refreshMedia = () => {
-    void runToast(refreshAllSessionMedia, {
-      onSuccess: (refreshed) => {
-        Toast.toast.success(tMedia('refreshedToast', { count: refreshed.sessionsWithMedia }));
-        void queryClient.invalidateQueries({ queryKey: queryKeys.media.all });
-        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
-      },
-    });
-  };
+  const refreshMedia = useApiMutation({
+    fn: refreshAllSessionMedia,
+    success: (refreshed) => tMedia('refreshedToast', { count: refreshed.sessionsWithMedia }),
+    invalidates: [queryKeys.media.all, queryKeys.sessions.lists],
+  });
 
-  const rebuild = () => {
-    void runToast(rebuildRecords, {
-      onSuccess: (count) => {
-        Toast.toast.success(tData('rebuiltToast', { count }));
-        invalidateSessionData(queryClient);
-      },
-    });
-  };
+  const rebuild = useApiMutation({
+    fn: rebuildRecords,
+    success: (count) => tData('rebuiltToast', { count }),
+    invalidates: sessionDataKeys,
+  });
 
   const items: ActionMenuItem[] = [
     {
@@ -60,7 +49,7 @@ export default function AppMenu() {
             icon: ImageIcon,
             label: tMedia('refreshButtonLabel'),
             description: tMedia('refreshButton'),
-            onAction: refreshMedia,
+            onAction: () => void refreshMedia.run(),
           } satisfies ActionMenuItem,
         ]
       : []),
@@ -69,7 +58,7 @@ export default function AppMenu() {
       icon: Trophy,
       label: tData('rebuildLabel'),
       description: tData('rebuildDescription'),
-      onAction: rebuild,
+      onAction: () => void rebuild.run(),
     },
     {
       id: 'logout',

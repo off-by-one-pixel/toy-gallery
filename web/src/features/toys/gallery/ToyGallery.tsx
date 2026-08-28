@@ -1,16 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { deleteToy, fetchToys } from '@/api';
-import { formatError } from '@/api/errors';
 import { queryKeys } from '@/api/queryKeys';
 import type { Toy } from '@/api/types';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 import { useToyEditorWizardNav } from '@/features/toys/editor/useToyEditorWizardNav';
 import { useToyModalNav } from '@/features/toys/gallery/useToyModalNav';
 import { useSortOf } from '@/hooks/useSortOf';
@@ -49,10 +48,9 @@ const ToyGallery = () => {
   const {
     data: toysData,
     isPending: isLoading,
-    error: toysError,
-  } = useQuery({ queryKey: queryKeys.toys.all, queryFn: fetchToys });
+    errorMessage: error,
+  } = useApiQuery({ key: queryKeys.toys.all, fn: fetchToys });
   const toys = useMemo(() => toysData ?? [], [toysData]);
-  const error = toysError ? formatError(toysError) : null;
   const [query, setQuery] = useState('');
   const [openCardId, setOpenCardId] = useState<number | null>(null);
   const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
@@ -70,12 +68,12 @@ const ToyGallery = () => {
   }, [toyModal.kind, toyModal.toyId, toys]);
 
   const invalidateToys = () => void queryClient.invalidateQueries({ queryKey: queryKeys.toys.all });
-  const runToast = useAsyncAction();
+  const removeToy = useApiMutation({ fn: deleteToy, onSettled: invalidateToys });
   const startLiveAction = useStartLiveAction();
 
   const handleDelete = async (toy: Toy) => {
     if (!confirm(t('toy.deleteConfirm', { brand: toy.brand, name: toy.name }))) return;
-    await runToast(() => deleteToy(toy.id), { onDone: invalidateToys });
+    await removeToy.run(toy.id);
   };
 
   const handleEditorSaved = () => {

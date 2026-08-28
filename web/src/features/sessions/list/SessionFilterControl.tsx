@@ -1,12 +1,12 @@
 'use client';
 
 import { useContext, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@heroui/react';
 import { Check, Funnel, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { fetchSessionStats } from '@/api';
+import { useApiQuery } from '@/hooks/useApi';
 import { BottomSheetContext } from '@/components/BottomSheet';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay';
 import { queryKeys } from '@/api/queryKeys';
@@ -37,9 +37,9 @@ export default function SessionFilterControl({ toys, filter, filters, onChange }
   const count = activeFilterCount(filters);
 
   const start = filterStartDate(filter);
-  const { data: usageGroups } = useQuery({
-    queryKey: queryKeys.sessions.stat('toy', ['count'], start, ''),
-    queryFn: () => fetchSessionStats('toy', ['count'], { start }),
+  const { data: usageGroups } = useApiQuery({
+    key: queryKeys.sessions.stat('toy', ['count'], start, ''),
+    fn: () => fetchSessionStats('toy', ['count'], { start }),
   });
   const usageByToy = useMemo(
     () => new Map((usageGroups ?? []).map((group) => [Number(group.key), group.values.count ?? 0])),

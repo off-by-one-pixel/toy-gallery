@@ -22,8 +22,8 @@ export const queryKeys = {
   },
 };
 
+export const sessionDataKeys = [queryKeys.sessions.lists, queryKeys.sessions.stats, queryKeys.sessions.live] as const;
+
 export const invalidateSessionData = (queryClient: QueryClient): void => {
-  void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
-  void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
-  void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.live });
+  for (const queryKey of sessionDataKeys) void queryClient.invalidateQueries({ queryKey });
 };

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useReducer, useState } from 'react';
 import { useToyStore } from 'toy-editor';
 import type { Toy as EditorToy } from 'toy-editor';
 
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useApiMutation } from '@/hooks/useApi';
 import { createToy, patchToy } from '@/api';
 import type { EditorState } from '@/features/toys/converters/editor';
 import { editorToTemplateJson } from '@/features/toys/converters/editor';
@@ -77,9 +77,16 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
     [sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm],
   );
 
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const runAction = useAsyncAction(setError);
+
+  const persist = useApiMutation({
+    fn: async ({ mode: saveMode, payload }: { mode: ToyEditMode; payload: Parameters<typeof createToy>[0] }) => {
+      if (saveMode.kind === 'edit') await patchToy(saveMode.toy.id, payload);
+      else await createToy(payload);
+      return true;
+    },
+    errorSink: setError,
+  });
 
   const save = useCallback(
     async (saveMode: ToyEditMode, onSuccess: () => void) => {
@@ -89,18 +96,11 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
         setError(result.error);
         return;
       }
-      await runAction(
-        async () => {
-          if (saveMode.kind === 'edit') await patchToy(saveMode.toy.id, result.payload);
-          else await createToy(result.payload);
-        },
-        { busy: setSaving, onSuccess },
-      );
+      const ok = await persist.run({ mode: saveMode, payload: result.payload });
+      if (ok) onSuccess();
     },
-    // editorState pulls from the store reads above; tracking those
-    // captures any change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [identity, sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm, runAction],
+    [identity, sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm, persist.run],
   );
 
   return {
@@ -111,7 +111,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
     editorState,
     hydrate,
     exportText,
-    saving,
+    saving: persist.isPending,
     error,
     save,
   };
