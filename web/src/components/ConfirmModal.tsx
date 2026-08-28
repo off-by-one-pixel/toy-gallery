@@ -8,7 +8,7 @@ import SectionHeading from '@/components/SectionHeading';
 type Props = Readonly<{
   onClose: () => void;
   title: string;
-  body: string;
+  body?: string;
   confirmLabel: string;
   confirmVariant?: 'primary' | 'danger';
   busy?: boolean;

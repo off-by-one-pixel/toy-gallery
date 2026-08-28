@@ -6,11 +6,21 @@ import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
 import { useSearchParams } from 'next/navigation';
 
-import { useApiInfiniteQuery, useApiQuery, useReportError } from '@/hooks/useApi';
+import { useTranslations } from 'next-intl';
+
+import { useApiInfiniteQuery, useApiMutation, useApiQuery, useReportError } from '@/hooks/useApi';
 import { useUrlUpdate } from '@/hooks/useUrlNav';
 import { useSortOf } from '@/hooks/useSortOf';
-import { fetchSessions, fetchToys, type SessionPage } from '@/api';
-import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
+import {
+  createSession,
+  deleteSession,
+  fetchSession,
+  fetchSessions,
+  patchSessionStart,
+  updateSession,
+  type SessionPage,
+} from '@/api';
+import { invalidateSessionData, queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import { sessionListKey, sessionListQuery } from '@/features/sessions/list/sessionQuery';
 import {
   type FilterKey,
@@ -21,9 +31,33 @@ import {
   toysById as buildToysById,
 } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
+import { useToys } from '@/features/toys/useToys';
 import type { Session, Toy } from '@/api/types';
 
-export type SessionListData = Readonly<{
+export type SessionPayload = Parameters<typeof createSession>[0];
+
+export type SaveSessionArgs = Readonly<{
+  sessionId: number | null;
+  liveStartOnly: boolean;
+  payload: SessionPayload;
+}>;
+
+const persistSession = ({ sessionId, liveStartOnly, payload }: SaveSessionArgs): Promise<Session> => {
+  if (sessionId === null) return createSession(payload);
+  if (liveStartOnly) return patchSessionStart(sessionId, payload.startedAt);
+  return updateSession(sessionId, payload);
+};
+
+export type SessionsOptions = Readonly<{
+  sessionId?: number | null;
+  sessionInitial?: Session;
+}>;
+
+export type SessionsData = Readonly<{
+  session: Session | null;
+  isSessionLoading: boolean;
+  sessionError: string | null;
+
   sessionCount: number;
   sessions: Session[];
   toysById: Map<number, Toy>;
@@ -42,9 +76,22 @@ export type SessionListData = Readonly<{
 
   isLoading: boolean;
   error: string | null;
+
+  saveSession: (args: SaveSessionArgs) => Promise<Session | undefined>;
+  isSavingSession: boolean;
+  removeSession: (id: number) => Promise<unknown>;
+  isRemovingSession: boolean;
 }>;
 
-export function useSessionList(): SessionListData {
+export function useSessions(options: SessionsOptions = {}): SessionsData {
+  const t = useTranslations('session');
+  const detailId = options.sessionId ?? null;
+  const detail = useApiQuery({
+    key: queryKeys.sessions.detail(detailId ?? 0),
+    fn: () => fetchSession(detailId ?? 0),
+    enabled: detailId !== null,
+    initialData: options.sessionInitial,
+  });
   const searchParams = useSearchParams();
   const updateUrl = useUrlUpdate();
   const [filter, setFilter] = useState<FilterKey>('all');
@@ -68,13 +115,13 @@ export function useSessionList(): SessionListData {
     getNextPage: (lastPage: SessionPage, pages: SessionPage[]) => (lastPage.hasMore ? pages.length + 1 : undefined),
   });
 
-  const { data: loadedToys, errorMessage: toysError } = useApiQuery({ key: queryKeys.toys.all, fn: fetchToys });
+  const { toys: loadedToys, error: toysError } = useToys();
 
   const sessions = useMemo(
     () => (list.data?.pages ?? []).reduce<Session[]>((acc, page) => mergeSessions(acc, page.sessions), []),
     [list.data],
   );
-  const toysById = useMemo(() => buildToysById(loadedToys ?? []), [loadedToys]);
+  const toysById = useMemo(() => buildToysById(loadedToys), [loadedToys]);
 
   useEffect(() => {
     for (const session of sessions) {
@@ -108,9 +155,23 @@ export function useSessionList(): SessionListData {
     invalidateSessionData(queryClient);
   };
 
+  const save = useApiMutation({
+    fn: persistSession,
+    success: () => t('savedToast'),
+    invalidates: (saved) => [queryKeys.sessions.detail(saved.id), ...sessionDataKeys],
+  });
+
+  const removal = useApiMutation({
+    fn: deleteSession,
+    onSettled: () => invalidateSessionData(queryClient),
+  });
+
   const listError = list.data ? null : list.errorMessage;
 
   return {
+    session: detail.data ?? null,
+    isSessionLoading: detailId !== null && detail.isPending,
+    sessionError: detail.errorMessage,
     sessionCount: list.data?.pages.at(-1)?.count ?? 0,
     sessions,
     toysById,
@@ -121,10 +182,14 @@ export function useSessionList(): SessionListData {
     reload,
     filter,
     setFilter,
-    toys: loadedToys ?? [],
+    toys: loadedToys,
     sessionFilters,
     setSessionFilters,
     isLoading: list.isPending,
     error: listError ?? toysError,
+    saveSession: save.run,
+    isSavingSession: save.isPending,
+    removeSession: removal.run,
+    isRemovingSession: removal.isPending,
   };
 }

@@ -1,15 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { deleteToy, fetchToys } from '@/api';
-import { queryKeys } from '@/api/queryKeys';
 import type { Toy } from '@/api/types';
-import { useApiMutation, useApiQuery } from '@/hooks/useApi';
+import { useToys } from '@/features/toys/useToys';
 import { useToyEditorWizardNav } from '@/features/toys/editor/useToyEditorWizardNav';
 import { useToyModalNav } from '@/features/toys/gallery/useToyModalNav';
 import { useSortOf } from '@/hooks/useSortOf';
@@ -26,6 +23,7 @@ import SearchInput from '@/components/SearchInput';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import TopBar from '@/components/TopBar';
 import ToyCards from '@/features/toys/gallery/ToyCards';
+import ConfirmModal from '@/components/ConfirmModal';
 import ToyEditModal from '@/features/toys/editor/ToyEditModal';
 import ToyList from '@/features/toys/gallery/ToyList';
 import GirthToggle from '@/features/preferences/GirthToggle';
@@ -44,13 +42,7 @@ const ToyGallery = () => {
   const t = useTranslations();
   const common = useTranslations('common');
 
-  const queryClient = useQueryClient();
-  const {
-    data: toysData,
-    isPending: isLoading,
-    errorMessage: error,
-  } = useApiQuery({ key: queryKeys.toys.all, fn: fetchToys });
-  const toys = useMemo(() => toysData ?? [], [toysData]);
+  const { toys, isLoading, error, removeToy, isRemovingToy } = useToys();
   const [query, setQuery] = useState('');
   const [openCardId, setOpenCardId] = useState<number | null>(null);
   const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
@@ -67,18 +59,18 @@ const ToyGallery = () => {
     return { kind: 'closed' };
   }, [toyModal.kind, toyModal.toyId, toys]);
 
-  const invalidateToys = () => void queryClient.invalidateQueries({ queryKey: queryKeys.toys.all });
-  const removeToy = useApiMutation({ fn: deleteToy, onSettled: invalidateToys });
   const startLiveAction = useStartLiveAction();
 
-  const handleDelete = async (toy: Toy) => {
-    if (!confirm(t('toy.deleteConfirm', { brand: toy.brand, name: toy.name }))) return;
-    await removeToy.run(toy.id);
+  const [pendingDelete, setPendingDelete] = useState<Toy | null>(null);
+  const handleDelete = (toy: Toy) => setPendingDelete(toy);
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    await removeToy(pendingDelete.id);
+    setPendingDelete(null);
   };
 
   const handleEditorSaved = () => {
     toyModal.close();
-    invalidateToys();
   };
 
   const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
@@ -195,6 +187,17 @@ const ToyGallery = () => {
       </main>
 
       {ghostModal && <GhostModal target={ghostModal} onSave={handleGhostSave} onClose={() => setGhostModal(null)} />}
+
+      {pendingDelete && (
+        <ConfirmModal
+          onClose={() => setPendingDelete(null)}
+          title={t('toy.deleteConfirm', { brand: pendingDelete.brand, name: pendingDelete.name })}
+          confirmLabel={common('delete')}
+          confirmVariant="danger"
+          busy={isRemovingToy}
+          onConfirm={() => void confirmDelete()}
+        />
+      )}
 
       {editorMode.kind !== 'closed' && (
         <ToyEditModal

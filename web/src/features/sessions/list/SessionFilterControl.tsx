@@ -1,22 +1,19 @@
 'use client';
 
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useState } from 'react';
 import { Button } from '@heroui/react';
 import { Check, Funnel, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { fetchSessionStats } from '@/api';
-import { useApiQuery } from '@/hooks/useApi';
+import { useToyUsage } from '@/features/sessions/list/useToyUsage';
 import { BottomSheetContext } from '@/components/BottomSheet';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay';
-import { queryKeys } from '@/api/queryKeys';
 import type { Toy } from '@/api/types';
 import { filterToys } from '@/features/toys/search';
 import { toyTooltip } from '@/features/sessions/session';
 import {
   activeFilterCount,
   type FilterKey,
-  filterStartDate,
   SESSION_FLAG_FILTERS,
   SESSION_FLAG_KEYS,
   type SessionFilters,
@@ -36,15 +33,7 @@ export default function SessionFilterControl({ toys, filter, filters, onChange }
   const t = useTranslations('session.filters');
   const count = activeFilterCount(filters);
 
-  const start = filterStartDate(filter);
-  const { data: usageGroups } = useApiQuery({
-    key: queryKeys.sessions.stat('toy', ['count'], start, ''),
-    fn: () => fetchSessionStats('toy', ['count'], { start }),
-  });
-  const usageByToy = useMemo(
-    () => new Map((usageGroups ?? []).map((group) => [Number(group.key), group.values.count ?? 0])),
-    [usageGroups],
-  );
+  const usageByToy = useToyUsage(filter);
 
   const triggerClass = `inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors ${
     count > 0

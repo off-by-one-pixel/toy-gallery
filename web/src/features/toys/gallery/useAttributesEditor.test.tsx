@@ -3,19 +3,15 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/api')>()),
-  patchToy: vi.fn(),
+const { updateToyMock } = vi.hoisted(() => ({ updateToyMock: vi.fn() }));
+
+vi.mock('@/features/toys/useToys', () => ({
+  useToys: () => ({ updateToy: updateToyMock }),
 }));
 
-import { patchToy } from '@/api';
 import type { Toy } from '@/api/types';
 import { makeToy as baseToy } from '@/test/fixtures';
 import { useAttributesEditor } from '@/features/toys/gallery/useAttributesEditor';
-
-vi.mock('@heroui/react', () => ({
-  Toast: { toast: { danger: vi.fn(), success: vi.fn() } },
-}));
 
 const makeToy = (overrides: Partial<Toy> = {}): Toy =>
   baseToy({
@@ -28,7 +24,7 @@ const makeToy = (overrides: Partial<Toy> = {}): Toy =>
     ...overrides,
   } as Partial<Toy>);
 
-const patchReturning = (toy: Toy) => vi.mocked(patchToy).mockResolvedValue(toy);
+const patchReturning = (toy: Toy) => updateToyMock.mockResolvedValue(toy);
 
 const flush = async () => {
   for (let i = 0; i < 5; i++) await new Promise<void>((r) => setTimeout(r, 0));
@@ -100,7 +96,7 @@ describe('useAttributesEditor — commit save', () => {
       result.current.commitChanges();
     });
     await flush();
-    expect(patchToy).not.toHaveBeenCalled();
+    expect(updateToyMock).not.toHaveBeenCalled();
   });
 
   it('calls patchToy with the projected dict on commit', async () => {
@@ -117,8 +113,8 @@ describe('useAttributesEditor — commit save', () => {
       await flush();
     });
 
-    expect(patchToy).toHaveBeenCalledTimes(1);
-    expect(patchToy).toHaveBeenCalledWith(1, { customAttributes: { size: 'L' } });
+    expect(updateToyMock).toHaveBeenCalledTimes(1);
+    expect(updateToyMock).toHaveBeenCalledWith({ toyId: 1, changes: { customAttributes: { size: 'L' } } });
   });
 
   it('applies the server response, replacing local rows with the canonical set', async () => {
@@ -143,7 +139,7 @@ describe('useAttributesEditor — commit save', () => {
   });
 
   it('reverts to the last saved state when patchToy throws', async () => {
-    vi.mocked(patchToy).mockRejectedValue(new Error('boom'));
+    updateToyMock.mockResolvedValue(undefined);
     const toy = makeToy({ customAttributes: { size: 'M' } });
     const { result } = renderHook(() => useAttributesEditor(toy));
     const target = result.current.rows[0].rowId;
@@ -162,7 +158,7 @@ describe('useAttributesEditor — commit save', () => {
   it('single-flights concurrent commits with one queued retry', async () => {
     let resolveFirst!: (t: Toy) => void;
     const bodies: unknown[] = [];
-    vi.mocked(patchToy).mockImplementation(async (_id, changes) => {
+    updateToyMock.mockImplementation(async ({ changes }: { changes: object }) => {
       bodies.push(changes);
       if (bodies.length === 1) {
         return new Promise<Toy>((resolve) => {
@@ -227,7 +223,7 @@ describe('useAttributesEditor — removeRow', () => {
       await flush();
     });
 
-    expect(patchToy).toHaveBeenCalledWith(1, { customAttributes: { shade: 'blue' } });
+    expect(updateToyMock).toHaveBeenCalledWith({ toyId: 1, changes: { customAttributes: { shade: 'blue' } } });
     expect(result.current.rows.map((r) => r.key)).toEqual(['shade']);
   });
 });
@@ -273,6 +269,6 @@ describe('useAttributesEditor — unmount', () => {
     unmount();
     await flush();
 
-    expect(patchToy).toHaveBeenCalledWith(1, { customAttributes: { size: 'L' } });
+    expect(updateToyMock).toHaveBeenCalledWith({ toyId: 1, changes: { customAttributes: { size: 'L' } } });
   });
 });

@@ -1,15 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useMediaLightboxNav } from '@/features/sessions/media/useMediaLightboxNav';
-import { fetchMediaStatus, fetchSessionMedia } from '@/api';
 import { usePrivacy } from '@/features/preferences/PrivacyProvider';
-import { queryKeys } from '@/api/queryKeys';
-import { useApiQuery } from '@/hooks/useApi';
+import { useSessionMedia } from '@/features/sessions/media/useSessionMedia';
 import MediaLightbox from '@/features/sessions/media/MediaLightbox';
 import SensitiveContent from '@/features/preferences/SensitiveContent';
 
@@ -20,28 +17,13 @@ export default function SessionMediaStrip({ sessionId, expectedCount }: Props) {
   const { hideSensitive } = usePrivacy();
   const { openIndex, open, close } = useMediaLightboxNav(sessionId);
 
-  const { data: status } = useApiQuery({ key: queryKeys.media.status, fn: fetchMediaStatus });
-  const {
-    data: media,
-    isPending,
-    isError,
-  } = useApiQuery({
-    key: queryKeys.media.session(sessionId),
-    fn: () => fetchSessionMedia(sessionId),
-    enabled: status?.configured === true,
-  });
+  const { configured, media, isPending, isError } = useSessionMedia(sessionId);
 
   useEffect(() => {
     if (hideSensitive && openIndex !== null) close({ replace: true });
   }, [hideSensitive, openIndex, close]);
 
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    if (!media?.configured) return;
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
-  }, [media, queryClient, sessionId]);
-
-  if (!status?.configured) return null;
+  if (!configured) return null;
   if (media && !media.configured) return null;
 
   const items = media?.items ?? [];
