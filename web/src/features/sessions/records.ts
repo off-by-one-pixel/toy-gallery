@@ -15,7 +15,7 @@ export type SessionRecordDisplay = Readonly<{
 export const SESSION_RECORDS = {
   'pr-width': {
     peak: 'circumference',
-    label: (ctx) => ctx.t(ctx.girth === 'diameter' ? 'records.widthDiameter' : 'records.widthCircumference'),
+    label: (ctx) => ctx.t(`records.width.${ctx.girth}`),
   },
   'pr-depth': {
     peak: 'length',

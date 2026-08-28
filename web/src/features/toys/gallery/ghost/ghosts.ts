@@ -2,7 +2,7 @@ import type { Shape, Toy } from '@/api/types';
 import { TOY_PROPERTIES } from '@/features/toys/properties';
 import type { ToySort, ToySortColumn } from '@/features/toys/toySort';
 import { diameterToCircumference, formatForInput, parseToMm, type Unit } from '@/features/preferences/units';
-import { displayGirth, type Girth } from '@/features/preferences/girth';
+import { displayGirth, storedGirth, type Girth } from '@/features/preferences/girth';
 
 export type GhostToy = Readonly<{
   id: number;
@@ -107,7 +107,7 @@ export const parseGhostInputs = (inputs: GhostInputs, unit: Unit, girth: Girth):
   const lengthMm = parseToMm(inputs.lengthValue, unit);
   if (girthMm == null || lengthMm == null) return null;
   return {
-    circumference: girth === 'diameter' ? (diameterToCircumference(girthMm) ?? girthMm) : girthMm,
+    circumference: storedGirth(girthMm, girth),
     insertableLength: lengthMm,
   };
 };

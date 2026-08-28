@@ -36,18 +36,15 @@
   },
   "toy": {
     "items": "{count, plural, one {# item} other {# items}}",
-    "circumferenceInline": "circumference",
-    "circumferenceShort": "circ.",
-    "diameterInline": "diameter",
-    "diameterShort": "dia.",
+    "girthInline": { "circumference": "circumference", "diameter": "diameter" },
+    "girthShort": { "circumference": "circ.", "diameter": "dia." },
     "deleteConfirm": "Delete {brand} {name}?",
     "new": "New Toy",
     "columns": {
       "brandModel": "Brand / Model",
       "brandModelShort": "Model",
       "insertableShort": "Ins",
-      "circumferenceShort": "Circ",
-      "diameterShort": "Dia",
+      "girthShort": { "circumference": "Circ", "diameter": "Dia" },
       "topShape": "Top shape",
       "sections": "Sections"
     },
@@ -126,8 +123,7 @@
       "monthShort": "Month"
     },
     "peakLength": "max len",
-    "peakCircumference": "max circ",
-    "peakDiameter": "max dia",
+    "peakGirth": { "circumference": "max circ", "diameter": "max dia" },
     "perDayTitle": "Sessions",
     "timePerDayTitle": "Plugged time",
     "toyDeleted": "deleted",
@@ -185,8 +181,7 @@
       "doneButton": "Done"
     },
     "records": {
-      "widthCircumference": "Circumference PR",
-      "widthDiameter": "Diameter PR",
+      "width": { "circumference": "Circumference PR", "diameter": "Diameter PR" },
       "depth": "Depth PR"
     }
   },
@@ -290,8 +285,7 @@
       "duration": "Plugged time",
       "date": "Date",
       "peakLength": "Peak length",
-      "peakCircumference": "Peak circumference",
-      "peakDiameter": "Peak diameter"
+      "peakGirth": { "circumference": "Peak circumference", "diameter": "Peak diameter" }
     }
   },
   "colorPicker": {

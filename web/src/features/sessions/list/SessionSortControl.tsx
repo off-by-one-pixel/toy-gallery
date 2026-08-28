@@ -18,7 +18,7 @@ export default function SessionSortControl() {
       case 'length':
         return tSort('column.peakLength');
       default:
-        return girth === 'diameter' ? tSort('column.peakDiameter') : tSort('column.peakCircumference');
+        return tSort(`column.peakGirth.${girth}`);
     }
   };
   return <SortControl config={SESSION_SORT} columnLabel={columnLabel} />;
