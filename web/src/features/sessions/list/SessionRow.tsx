@@ -1,6 +1,5 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import { Image as ImageIcon, Pencil, Trash2, Video } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -13,6 +12,7 @@ import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
 import { fetchSession } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
+import { useApiQuery } from '@/hooks/useApi';
 import type { Session, Toy } from '@/api/types';
 import { type Unit } from '@/features/preferences/units';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
@@ -56,11 +56,12 @@ export default function SessionRow({
   onEdit,
   onDelete,
 }: Props) {
-  const { data: session } = useQuery({
-    queryKey: queryKeys.sessions.detail(listed.id),
-    queryFn: () => fetchSession(listed.id),
+  const { data } = useApiQuery({
+    key: queryKeys.sessions.detail(listed.id),
+    fn: () => fetchSession(listed.id),
     initialData: listed,
   });
+  const session = data ?? listed;
   const t = useTranslations('session');
   const photoCount = session.photoCount ?? 0;
   const videoCount = session.videoCount ?? 0;

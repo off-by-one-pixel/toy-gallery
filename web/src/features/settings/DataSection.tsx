@@ -2,57 +2,45 @@
 
 import { useRef, useState } from 'react';
 
-import { Button, Toast } from '@heroui/react';
-import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@heroui/react';
 import { Download, Trash2, Trophy, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { deleteCollection, downloadExport, importFromFile, rebuildRecords } from '@/api';
-import { invalidateSessionData } from '@/api/queryKeys';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { sessionDataKeys } from '@/api/queryKeys';
+import { useApiMutation } from '@/hooks/useApi';
 import ConfirmModal from '@/features/settings/ConfirmModal';
 import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
 
 export default function DataSection() {
   const t = useTranslations('settings.data');
-  const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const runAction = useAsyncAction();
-  const queryClient = useQueryClient();
 
-  const handleExport = () =>
-    runAction(downloadExport, {
-      busy: setBusy,
-      onSuccess: () => Toast.toast.success(t('exportedToast')),
-    });
+  const exportData = useApiMutation({ fn: downloadExport, success: () => t('exportedToast') });
+  const importData = useApiMutation({
+    fn: importFromFile,
+    success: ({ toys_created, sessions_created }) =>
+      t('importedToast', { toys: toys_created, sessions: sessions_created }),
+  });
+  const rebuild = useApiMutation({
+    fn: rebuildRecords,
+    success: (count) => t('rebuiltToast', { count }),
+    invalidates: sessionDataKeys,
+  });
+  const deleteAll = useApiMutation({
+    fn: deleteCollection,
+    success: ({ toys_deleted, sessions_deleted }) =>
+      t('deletedToast', { toys: toys_deleted, sessions: sessions_deleted }),
+    onSuccess: () => setConfirmOpen(false),
+  });
+  const busy = [exportData, importData, rebuild, deleteAll].some((m) => m.isPending);
 
-  const handleImportFile = (file: File) =>
-    runAction(() => importFromFile(file), {
-      busy: setBusy,
-      onSuccess: ({ toys_created, sessions_created }) => {
-        Toast.toast.success(t('importedToast', { toys: toys_created, sessions: sessions_created }));
-      },
-    });
-
-  const handleRebuild = () =>
-    runAction(rebuildRecords, {
-      busy: setBusy,
-      onSuccess: (count) => {
-        Toast.toast.success(t('rebuiltToast', { count }));
-        invalidateSessionData(queryClient);
-      },
-    });
-
-  const handleDelete = () =>
-    runAction(deleteCollection, {
-      busy: setBusy,
-      onSuccess: ({ toys_deleted, sessions_deleted }) => {
-        Toast.toast.success(t('deletedToast', { toys: toys_deleted, sessions: sessions_deleted }));
-        setConfirmOpen(false);
-      },
-    });
+  const handleExport = () => void exportData.run();
+  const handleImportFile = (file: File) => void importData.run(file);
+  const handleRebuild = () => void rebuild.run();
+  const handleDelete = () => void deleteAll.run();
 
   return (
     <SectionCard>

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useApiMutation } from '@/hooks/useApi';
 import TextInput from '@/components/TextInput';
 
 const LoginPage = () => {
@@ -17,16 +17,17 @@ const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const runAction = useAsyncAction(setError);
+
+  const signIn = useApiMutation({
+    fn: () => login(username, password),
+    onSuccess: () => router.replace(searchParams.get('next') || '/'),
+    errorSink: setError,
+  });
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    await runAction(() => login(username, password), {
-      busy: setSubmitting,
-      onSuccess: () => router.replace(searchParams.get('next') || '/'),
-    });
+    await signIn.run();
   };
 
   return (
@@ -69,10 +70,10 @@ const LoginPage = () => {
             </Field>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={signIn.isPending}
               className="mt-1.5 w-full rounded-xl bg-accent px-4 py-3.5 text-[15px] font-semibold text-accent-foreground transition-colors hover:bg-accent-hover active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? t('submitting') : t('submit')}
+              {signIn.isPending ? t('submitting') : t('submit')}
             </button>
           </form>
 

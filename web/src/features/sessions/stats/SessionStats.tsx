@@ -4,7 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { keepPreviousData, useQueries } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { useReportError } from '@/hooks/useAsyncAction';
+import { useReportError } from '@/hooks/useApi';
 import { useGirth } from '@/features/preferences/GirthProvider';
 import { useUnit } from '@/features/preferences/UnitProvider';
 import { fetchSessionStats } from '@/api';

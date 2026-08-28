@@ -2,10 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { fetchLiveSession, startLiveSession } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
+import { useApiQuery } from '@/hooks/useApi';
 import type { Session } from '@/api/types';
 
 export const LIVE_SYNC_INTERVAL_MS = 2_000;
@@ -18,9 +19,9 @@ export interface LiveSessionState {
 
 export function useLiveSession(): LiveSessionState {
   const queryClient = useQueryClient();
-  const { data, isFetched } = useQuery({
-    queryKey: queryKeys.sessions.live,
-    queryFn: fetchLiveSession,
+  const { data, isFetched } = useApiQuery({
+    key: queryKeys.sessions.live,
+    fn: fetchLiveSession,
     refetchInterval: LIVE_SYNC_INTERVAL_MS,
     refetchOnWindowFocus: 'always',
   });

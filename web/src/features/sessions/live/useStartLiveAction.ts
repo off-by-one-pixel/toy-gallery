@@ -6,12 +6,12 @@ import { useTranslations } from 'next-intl';
 import type { ActionDef } from '@/components/ActionButtons';
 import { useLiveSession } from '@/features/sessions/live/useLiveSession';
 import type { Session } from '@/api/types';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useApiMutation } from '@/hooks/useApi';
 
 export function useStartLiveAction(onStarted?: (session: Session) => void): ActionDef | null {
   const { liveSession, isLoaded, start } = useLiveSession();
   const t = useTranslations('session.live');
-  const runToast = useAsyncAction();
+  const startAction = useApiMutation({ fn: start, onSuccess: onStarted });
   if (!isLoaded || liveSession) return null;
   return {
     key: 'start-live',
@@ -20,6 +20,6 @@ export function useStartLiveAction(onStarted?: (session: Session) => void): Acti
     variant: 'primary',
     className: 'bg-emerald-600 text-white hover:bg-emerald-500',
     fabIconSize: 22,
-    onPress: () => void runToast(start, onStarted ? { onSuccess: onStarted } : {}),
+    onPress: () => void startAction.run(),
   };
 }

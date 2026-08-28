@@ -3,7 +3,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { patchToy } from '@/api';
 import { newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
 import type { AttributeRow, Toy } from '@/api/types';
-import { useReportError } from '@/hooks/useAsyncAction';
+import { useReportError } from '@/hooks/useApi';
 
 export type AttributeSaveState = 'idle' | 'saving' | 'saved';
 

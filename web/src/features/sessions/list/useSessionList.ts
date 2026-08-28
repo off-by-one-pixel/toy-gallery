@@ -2,15 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
 import { useSearchParams } from 'next/navigation';
 
-import { useReportError } from '@/hooks/useAsyncAction';
+import { useApiInfiniteQuery, useApiQuery, useReportError } from '@/hooks/useApi';
 import { useUrlUpdate } from '@/hooks/useUrlNav';
 import { useSortOf } from '@/hooks/useSortOf';
 import { fetchSessions, fetchToys, type SessionPage } from '@/api';
-import { formatError } from '@/api/errors';
 import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
 import {
   type FilterKey,
@@ -64,21 +63,19 @@ export function useSessionList(): SessionListData {
   const ordering = sessionOrderingParam(sort);
   const listKey = queryKeys.sessions.list(filter, ordering, sessionFiltersKey(sessionFilters));
 
-  const list = useInfiniteQuery({
-    queryKey: listKey,
-    queryFn: ({ pageParam }) =>
+  const list = useApiInfiniteQuery({
+    key: listKey,
+    fn: (page) =>
       fetchSessions({
-        page: pageParam,
+        page,
         start: filterStartDate(filter),
         ordering,
         filters: sessionFilters,
       }),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage: SessionPage, pages: SessionPage[]) =>
-      lastPage.hasMore ? pages.length + 1 : undefined,
+    getNextPage: (lastPage: SessionPage, pages: SessionPage[]) => (lastPage.hasMore ? pages.length + 1 : undefined),
   });
 
-  const { data: loadedToys, error: toysError } = useQuery({ queryKey: queryKeys.toys.all, queryFn: fetchToys });
+  const { data: loadedToys, errorMessage: toysError } = useApiQuery({ key: queryKeys.toys.all, fn: fetchToys });
 
   const sessions = useMemo(
     () => (list.data?.pages ?? []).reduce<Session[]>((acc, page) => mergeSessions(acc, page.sessions), []),
@@ -118,7 +115,7 @@ export function useSessionList(): SessionListData {
     invalidateSessionData(queryClient);
   };
 
-  const listError = list.data ? null : list.error;
+  const listError = list.data ? null : list.errorMessage;
 
   return {
     sessionCount: list.data?.pages.at(-1)?.count ?? 0,
@@ -135,6 +132,6 @@ export function useSessionList(): SessionListData {
     sessionFilters,
     setSessionFilters,
     isLoading: list.isPending,
-    error: (listError && formatError(listError)) ?? (toysError ? formatError(toysError) : null),
+    error: listError ?? toysError,
   };
 }

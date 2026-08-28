@@ -1,15 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Spinner, Toast } from '@heroui/react';
+import { Alert, Button, Spinner } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { createSession, fetchToys, fetchSession, patchSessionStart, updateSession } from '@/api';
-import { formatError } from '@/api/errors';
-import { invalidateSessionData, queryKeys } from '@/api/queryKeys';
+import { queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import { Involvement } from '@/api/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
@@ -19,7 +17,7 @@ import { datetimeLocalValue } from '@/lib/dates';
 import { minutesBetween } from '@/lib/duration';
 import { filterToys } from '@/features/toys/search';
 import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 import SearchInput from '@/components/SearchInput';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
 import SectionHeading from '@/components/SectionHeading';
@@ -55,27 +53,23 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const router = useRouter();
   const t = useTranslations('session');
   const common = useTranslations('common');
-  const [saving, setSaving] = useState(false);
   const [startedAt, setStartedAt] = useState(datetimeLocalNow);
   const [endedAt, setEndedAt] = useState('');
   const [query, setQuery] = useState('');
   const [selections, setSelections] = useState<Map<number, ToySelection>>(() => new Map());
-
-  const queryClient = useQueryClient();
-  const runToast = useAsyncAction();
 
   const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
 
   const {
     data: toysData,
     isPending: toysPending,
-    error: toysError,
-  } = useQuery({ queryKey: queryKeys.toys.all, queryFn: fetchToys });
+    errorMessage: toysError,
+  } = useApiQuery({ key: queryKeys.toys.all, fn: fetchToys });
   const toys = useMemo(() => toysData ?? [], [toysData]);
 
-  const detail = useQuery({
-    queryKey: queryKeys.sessions.detail(sessionId ?? 0),
-    queryFn: () => fetchSession(sessionId ?? 0),
+  const detail = useApiQuery({
+    key: queryKeys.sessions.detail(sessionId ?? 0),
+    fn: () => fetchSession(sessionId ?? 0),
     enabled: sessionId !== null,
   });
 
@@ -97,8 +91,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   }, [loadedSession]);
 
   const isLoading = toysPending || (sessionId !== null && detail.isPending);
-  const loadError = toysError ?? detail.error;
-  const errorMessage = loadError ? formatError(loadError) : null;
+  const errorMessage = toysError ?? detail.errorMessage;
 
   const { sort } = useSortOf(SESSION_FORM_TOY_SORT);
   const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
@@ -148,19 +141,16 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
       })),
     });
 
+  const save = useApiMutation({
+    fn: saveSession,
+    success: () => t('savedToast'),
+    invalidates: () => [...(sessionId !== null ? [queryKeys.sessions.detail(sessionId)] : []), ...sessionDataKeys],
+    onSuccess: () => router.push('/sessions'),
+  });
+
   const handleSave = () => {
     if (!canSave) return;
-    runToast(saveSession, {
-      busy: setSaving,
-      onSuccess: () => {
-        Toast.toast.success(t('savedToast'));
-        if (sessionId !== null) {
-          void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
-        }
-        invalidateSessionData(queryClient);
-        router.push('/sessions');
-      },
-    });
+    void save.run();
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
@@ -302,7 +292,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
           <Button
             variant="primary"
             size="sm"
-            isDisabled={!canSave || saving}
+            isDisabled={!canSave || save.isPending}
             className={liveUpdateMode ? 'bg-emerald-600 text-white hover:bg-emerald-500' : ''}
             onPress={handleSave}
           >
