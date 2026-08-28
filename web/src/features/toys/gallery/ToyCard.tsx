@@ -165,7 +165,7 @@ export default function ToyCard({
         }
       >
         <AttrRow
-          label="Total length"
+          label={common('totalLength')}
           value={toy.totalLength == null ? '—' : `${formatValue(toy.totalLength, unit)} ${unit.id}`}
         />
         <AttrRow
