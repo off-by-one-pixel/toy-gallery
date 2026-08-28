@@ -158,7 +158,7 @@ describe('SessionList', () => {
       ]);
     render(wrap(<SessionList />));
     await screen.findByText(`2 ${en.session.recorded}`);
-    expect(screen.getAllByLabelText(en.session.records.widthCircumference)).toHaveLength(2);
+    expect(screen.getAllByLabelText(en.session.records.width.circumference)).toHaveLength(2);
     expect(screen.queryByLabelText(/pr-future/)).toBeNull();
 
     const rows = screen.getAllByRole('button', { name: en.session.detailsToggleLabel }).map((b) => b.parentElement);

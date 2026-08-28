@@ -163,7 +163,7 @@ export default function SessionRow({
             recordLabel={peakRecordLabel('length')}
           />
           <PeakRow
-            label={girth === 'diameter' ? t('peakDiameter') : t('peakCircumference')}
+            label={t(`peakGirth.${girth}`)}
             mm={displayGirth(session.maxCircumference, girth)}
             unit={unit}
             recordLabel={peakRecordLabel('circumference')}

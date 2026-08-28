@@ -19,8 +19,8 @@ describe('SESSION_RECORDS', () => {
   });
 
   it('labels width by the girth preference', () => {
-    expect(SESSION_RECORDS['pr-width'].label(ctx())).toBe('records.widthCircumference');
-    expect(SESSION_RECORDS['pr-width'].label(ctx({ girth: 'diameter' }))).toBe('records.widthDiameter');
+    expect(SESSION_RECORDS['pr-width'].label(ctx())).toBe('records.width.circumference');
+    expect(SESSION_RECORDS['pr-width'].label(ctx({ girth: 'diameter' }))).toBe('records.width.diameter');
     expect(SESSION_RECORDS['pr-depth'].label(ctx())).toBe('records.depth');
   });
 });

@@ -87,7 +87,7 @@ function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (col
       />
       <SortHeader
         label={common(girth)}
-        shortLabel={girth === 'diameter' ? t('diameterShort') : t('circumferenceShort')}
+        shortLabel={t(`girthShort.${girth}`)}
         column="circumference"
         sort={sort}
         onSort={onSort}
@@ -350,10 +350,8 @@ function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number;
         {girthValue != null ? (
           <>
             <span className="whitespace-nowrap">{Math.round(girthValue)} mm</span>{' '}
-            <span className="sm:hidden">{girth === 'diameter' ? t('diameterShort') : t('circumferenceShort')}</span>
-            <span className="hidden sm:inline">
-              {girth === 'diameter' ? t('diameterInline') : t('circumferenceInline')}
-            </span>
+            <span className="sm:hidden">{t(`girthShort.${girth}`)}</span>
+            <span className="hidden sm:inline">{t(`girthInline.${girth}`)}</span>
           </>
         ) : (
           ''
