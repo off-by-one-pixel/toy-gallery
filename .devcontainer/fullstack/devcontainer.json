@@ -4,6 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": "../.."
   },
+  "runArgs": ["--memory=6g", "--memory-swap=8g"],
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
   "forwardPorts": [3000, 8000],
@@ -40,7 +41,22 @@
         },
         "editor.formatOnSave": true,
         "files.trimTrailingWhitespace": true,
-        "terminal.integrated.defaultProfile.linux": "bash"
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "sonarlint.ls.vmargs": "-Xmx512m",
+        "sonarlint.analysisExcludesStandalone": "**/node_modules/**,**/.venv/**,**/.next/**,**/dist/**",
+        "js/ts.tsserver.maxMemory": 2048,
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.venv/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        },
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/.venv": true,
+          "**/.next": true,
+          "**/dist": true
+        }
       }
     }
   },
