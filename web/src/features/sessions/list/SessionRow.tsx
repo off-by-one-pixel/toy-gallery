@@ -10,9 +10,7 @@ import { formatElapsed } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
-import { fetchSession } from '@/api';
-import { queryKeys } from '@/api/queryKeys';
-import { useApiQuery } from '@/hooks/useApi';
+import { useSessions } from '@/features/sessions/useSessions';
 import type { Session, Toy } from '@/api/types';
 import { type Unit } from '@/features/preferences/units';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
@@ -56,12 +54,7 @@ export default function SessionRow({
   onEdit,
   onDelete,
 }: Props) {
-  const { data } = useApiQuery({
-    key: queryKeys.sessions.detail(listed.id),
-    fn: () => fetchSession(listed.id),
-    initialData: listed,
-  });
-  const session = data ?? listed;
+  const session = useSessions({ sessionId: listed.id, sessionInitial: listed }).session ?? listed;
   const t = useTranslations('session');
   const photoCount = session.photoCount ?? 0;
   const videoCount = session.videoCount ?? 0;

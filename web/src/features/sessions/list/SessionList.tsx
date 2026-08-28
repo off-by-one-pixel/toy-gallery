@@ -6,12 +6,10 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { useApiMutation } from '@/hooks/useApi';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import { SortProvider } from '@/providers/SortProvider';
 import { useUnit } from '@/features/preferences/UnitProvider';
-import { deleteSession } from '@/api';
 import { activeFilterCount, FILTERS, type FilterKey } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session } from '@/api/types';
@@ -19,6 +17,7 @@ import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButton
 import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
+import ConfirmModal from '@/components/ConfirmModal';
 import TopBar from '@/components/TopBar';
 import GirthToggle from '@/features/preferences/GirthToggle';
 import PrivacyToggle from '@/features/preferences/PrivacyToggle';
@@ -29,7 +28,7 @@ import SessionFilterControl from '@/features/sessions/list/SessionFilterControl'
 import SessionRow from '@/features/sessions/list/SessionRow';
 import SessionSortControl from '@/features/sessions/list/SessionSortControl';
 import SessionStats from '@/features/sessions/stats/SessionStats';
-import { useSessionList } from '@/features/sessions/list/useSessionList';
+import { useSessions } from '@/features/sessions/useSessions';
 
 export default function SessionList() {
   return (
@@ -42,19 +41,12 @@ export default function SessionList() {
 function SessionListContent() {
   const router = useRouter();
   const { unit } = useUnit();
-  const data = useSessionList();
+  const data = useSessions();
   const t = useTranslations('session');
   const common = useTranslations('common');
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
-  const removeAction = useApiMutation({
-    fn: deleteSession,
-    onSettled: () => {
-      setSelectedId(null);
-      data.reload();
-    },
-  });
 
   const addStartedSession = (session: Session) => {
     data.prependSession(session);
@@ -64,9 +56,13 @@ function SessionListContent() {
   const startLiveAction = useStartLiveAction(addStartedSession);
 
   const editSession = (id: number) => router.push(`/sessions/edit?id=${id}`);
-  const removeSession = (id: number) => {
-    if (!confirm(t('deleteConfirm'))) return;
-    void removeAction.run(id);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const removeSession = (id: number) => setPendingDeleteId(id);
+  const confirmRemove = async () => {
+    if (pendingDeleteId === null) return;
+    await data.removeSession(pendingDeleteId);
+    setSelectedId(null);
+    setPendingDeleteId(null);
   };
 
   const selectedActions: ActionDef[] | null =
@@ -160,6 +156,17 @@ function SessionListContent() {
         </div>
         {renderBody()}
       </main>
+
+      {pendingDeleteId !== null && (
+        <ConfirmModal
+          onClose={() => setPendingDeleteId(null)}
+          title={t('deleteConfirm')}
+          confirmLabel={common('delete')}
+          confirmVariant="danger"
+          busy={data.isRemovingSession}
+          onConfirm={() => void confirmRemove()}
+        />
+      )}
     </>
   );
 

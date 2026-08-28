@@ -1,9 +1,8 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
-import { patchToy } from '@/api';
 import { newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
 import type { AttributeRow, Toy } from '@/api/types';
-import { useReportError } from '@/hooks/useApi';
+import { useToys } from '@/features/toys/useToys';
 
 export type AttributeSaveState = 'idle' | 'saving' | 'saved';
 
@@ -28,7 +27,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const rowsRef = useRef(rows);
   const savedRef = useRef<Record<string, string>>(initial);
-  const reportError = useReportError();
+  const { updateToy } = useToys();
 
   const inFlight = useRef(false);
   const pending = useRef(false);
@@ -58,24 +57,20 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
     }
     inFlight.current = true;
     setSaveState('saving');
-    try {
-      const updated = await patchToy(toy.id, {
-        customAttributes: toDict(rowsRef.current),
-      });
+    const updated = await updateToy({ toyId: toy.id, changes: { customAttributes: toDict(rowsRef.current) } });
+    if (updated) {
       applyServerResponse(updated.customAttributes ?? {});
       setSaveState('saved');
       clearTimeout(savedTimer.current);
       savedTimer.current = setTimeout(() => setSaveState('idle'), 2000);
-    } catch (err) {
+    } else {
       revertToLastSaved();
-      reportError(err);
       setSaveState('idle');
-    } finally {
-      inFlight.current = false;
-      if (pending.current) {
-        pending.current = false;
-        void commitSave();
-      }
+    }
+    inFlight.current = false;
+    if (pending.current) {
+      pending.current = false;
+      void commitSave();
     }
   };
 

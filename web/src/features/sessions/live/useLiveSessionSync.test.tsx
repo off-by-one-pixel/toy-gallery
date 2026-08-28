@@ -91,6 +91,15 @@ describe('useLiveSessionSync', () => {
     vi.useRealTimers();
   });
 
+  it('start() stores the created session in the query cache', async () => {
+    vi.mocked(startLiveSession).mockResolvedValue(live(5));
+    render(withAppProviders(<LiveStartProbe />));
+    const probe = await screen.findByText('idle');
+    fireEvent.click(probe);
+    expect(await screen.findByText('live:5')).toBeTruthy();
+    expect(startLiveSession).toHaveBeenCalledTimes(1);
+  });
+
   it('runs one invalidation cycle when this device starts a session', async () => {
     vi.mocked(startLiveSession).mockResolvedValue(live(9));
     const client = createTestQueryClient();

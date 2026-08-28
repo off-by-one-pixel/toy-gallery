@@ -4,8 +4,7 @@ import { useCallback, useMemo, useReducer, useState } from 'react';
 import { useToyStore } from 'toy-editor';
 import type { Toy as EditorToy } from 'toy-editor';
 
-import { useApiMutation } from '@/hooks/useApi';
-import { createToy, patchToy } from '@/api';
+import { useToys } from '@/features/toys/useToys';
 import type { EditorState } from '@/features/toys/converters/editor';
 import { editorToTemplateJson } from '@/features/toys/converters/editor';
 import { toyToEditor } from '@/features/toys/converters/toy';
@@ -78,15 +77,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
   );
 
   const [error, setError] = useState<string | null>(null);
-
-  const persist = useApiMutation({
-    fn: async ({ mode: saveMode, payload }: { mode: ToyEditMode; payload: Parameters<typeof createToy>[0] }) => {
-      if (saveMode.kind === 'edit') await patchToy(saveMode.toy.id, payload);
-      else await createToy(payload);
-      return true;
-    },
-    errorSink: setError,
-  });
+  const { saveToy, isSavingToy } = useToys({ saveErrorSink: setError });
 
   const save = useCallback(
     async (saveMode: ToyEditMode, onSuccess: () => void) => {
@@ -96,11 +87,14 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
         setError(result.error);
         return;
       }
-      const ok = await persist.run({ mode: saveMode, payload: result.payload });
-      if (ok) onSuccess();
+      const saved = await saveToy({
+        toyId: saveMode.kind === 'edit' ? saveMode.toy.id : null,
+        payload: result.payload,
+      });
+      if (saved) onSuccess();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [identity, sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm, persist.run],
+    [identity, sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm, saveToy],
   );
 
   return {
@@ -111,7 +105,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
     editorState,
     hydrate,
     exportText,
-    saving: persist.isPending,
+    saving: isSavingToy,
     error,
     save,
   };

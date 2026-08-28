@@ -6,8 +6,6 @@ import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { createSession, fetchToys, fetchSession, patchSessionStart, updateSession } from '@/api';
-import { queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import { Involvement } from '@/api/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
@@ -17,7 +15,8 @@ import { datetimeLocalValue } from '@/lib/dates';
 import { minutesBetween } from '@/lib/duration';
 import { filterToys } from '@/features/toys/search';
 import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
-import { useApiMutation, useApiQuery } from '@/hooks/useApi';
+import { useSessions } from '@/features/sessions/useSessions';
+import { useToys } from '@/features/toys/useToys';
 import SearchInput from '@/components/SearchInput';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
 import SectionHeading from '@/components/SectionHeading';
@@ -25,14 +24,6 @@ import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
-
-type SavePayload = Parameters<typeof createSession>[0];
-
-const persistSession = (sessionId: number | null, liveStartOnly: boolean, payload: SavePayload) => {
-  if (sessionId === null) return createSession(payload);
-  if (liveStartOnly) return patchSessionStart(sessionId, payload.startedAt);
-  return updateSession(sessionId, payload);
-};
 
 const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: (key: string) => string): string => {
   if (!isLive) return t('save');
@@ -60,20 +51,11 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
 
   const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
 
-  const {
-    data: toysData,
-    isPending: toysPending,
-    errorMessage: toysError,
-  } = useApiQuery({ key: queryKeys.toys.all, fn: fetchToys });
-  const toys = useMemo(() => toysData ?? [], [toysData]);
+  const { toys, isLoading: toysPending, error: toysError } = useToys();
 
-  const detail = useApiQuery({
-    key: queryKeys.sessions.detail(sessionId ?? 0),
-    fn: () => fetchSession(sessionId ?? 0),
-    enabled: sessionId !== null,
-  });
+  const detail = useSessions({ sessionId });
 
-  const loadedSession = detail.data;
+  const loadedSession = detail.session;
   const hasSeededDraft = useRef(false);
   useEffect(() => {
     if (!loadedSession || hasSeededDraft.current) return;
@@ -90,8 +72,8 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
     );
   }, [loadedSession]);
 
-  const isLoading = toysPending || (sessionId !== null && detail.isPending);
-  const errorMessage = toysError ?? detail.errorMessage;
+  const isLoading = toysPending || detail.isSessionLoading;
+  const errorMessage = toysError ?? detail.sessionError;
 
   const { sort } = useSortOf(SESSION_FORM_TOY_SORT);
   const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
@@ -130,27 +112,24 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
   const startDirty = loadedSession == null || startedAt !== datetimeLocalValue(new Date(loadedSession.startedAt));
   const canSave = selectedCount > 0 || (liveStartOnly && startDirty);
 
-  const saveSession = () =>
-    persistSession(sessionId, liveStartOnly, {
-      startedAt: new Date(startedAt).toISOString(),
-      endedAt: endedAt ? new Date(endedAt).toISOString() : null,
-      entries: [...selections.entries()].map(([toy, sel]) => ({
-        toy,
-        involvement: sel.involvement,
-        durationMinutes: sel.durationMinutes,
-      })),
-    });
+  const { saveSession, isSavingSession } = detail;
 
-  const save = useApiMutation({
-    fn: saveSession,
-    success: () => t('savedToast'),
-    invalidates: () => [...(sessionId !== null ? [queryKeys.sessions.detail(sessionId)] : []), ...sessionDataKeys],
-    onSuccess: () => router.push('/sessions'),
-  });
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) return;
-    void save.run();
+    const saved = await saveSession({
+      sessionId,
+      liveStartOnly,
+      payload: {
+        startedAt: new Date(startedAt).toISOString(),
+        endedAt: endedAt ? new Date(endedAt).toISOString() : null,
+        entries: [...selections.entries()].map(([toy, sel]) => ({
+          toy,
+          involvement: sel.involvement,
+          durationMinutes: sel.durationMinutes,
+        })),
+      },
+    });
+    if (saved) router.push('/sessions');
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
@@ -292,7 +271,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
           <Button
             variant="primary"
             size="sm"
-            isDisabled={!canSave || save.isPending}
+            isDisabled={!canSave || isSavingSession}
             className={liveUpdateMode ? 'bg-emerald-600 text-white hover:bg-emerald-500' : ''}
             onPress={handleSave}
           >
