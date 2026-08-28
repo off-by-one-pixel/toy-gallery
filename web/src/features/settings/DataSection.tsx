@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { deleteCollection, downloadExport, importFromFile, rebuildRecords } from '@/api';
 import { sessionDataKeys } from '@/api/queryKeys';
 import { useApiMutation } from '@/hooks/useApi';
-import ConfirmModal from '@/features/settings/ConfirmModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
 
