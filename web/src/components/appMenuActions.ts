@@ -1,6 +1,6 @@
 import { Image as ImageIcon, LogOut, Settings, Trophy, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 
 import { fetchMediaStatus, rebuildRecords, refreshAllSessionMedia } from '@/api';
 import { queryKeys, sessionDataKeys } from '@/api/queryKeys';
@@ -58,7 +58,7 @@ export const APP_MENU_ACTIONS: readonly AppMenuActionDef[] = [
 
 export function useAppMenuItems(): ActionMenuItem[] {
   const t = useTranslations() as unknown as AppMenuTranslator;
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const { username, logout } = useAuth();
   const { data: status } = useApiQuery({ key: queryKeys.media.status, fn: fetchMediaStatus });
 
@@ -76,7 +76,7 @@ export function useAppMenuItems(): ActionMenuItem[] {
 
   const ctx: AppMenuContext = { mediaConfigured: status?.configured ?? false, username: username ?? null };
   const run: Record<AppMenuActionId, () => void> = {
-    settings: () => router.push('/settings'),
+    settings: () => navigate('/settings'),
     'refresh-media': () => void refreshMedia.run(),
     'rebuild-records': () => void rebuild.run(),
     logout,

@@ -1,6 +1,6 @@
 'use client';
 
-import { type Update, useEnumParam, useUrlUpdate } from '@/hooks/useUrlNav';
+import { parseEnumParam, type Update, useNavigation } from '@/hooks/useNavigation';
 
 const STAGES = ['template', 'editor'] as const;
 const STEPS = ['template', 'size'] as const;
@@ -19,11 +19,11 @@ export const wizardUpdates = {
 };
 
 export function useToyEditorWizardNav() {
-  const update = useUrlUpdate();
+  const { param, updateParams: update } = useNavigation();
   return {
-    stage: useEnumParam<WizardStage>('stage', STAGES) ?? 'template',
-    step: useEnumParam<WizardStep>('step', STEPS) ?? 'template',
-    dialog: useEnumParam<WizardDialog>('dialog', DIALOGS),
+    stage: parseEnumParam<WizardStage>(param('stage'), STAGES) ?? 'template',
+    step: parseEnumParam<WizardStep>(param('step'), STEPS) ?? 'template',
+    dialog: parseEnumParam<WizardDialog>(param('dialog'), DIALOGS),
     goToStage: (next: WizardStage) => update(wizardUpdates.goToStage(next)),
     goToStep: (next: WizardStep) => update(wizardUpdates.goToStep(next)),
     openDialog: (next: WizardDialog) => update(wizardUpdates.openDialog(next)),

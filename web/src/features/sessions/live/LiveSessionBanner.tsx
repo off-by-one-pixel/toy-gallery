@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 
 import { useLiveSession } from '@/features/sessions/live/useLiveSession';
 import { formatElapsed, minutesBetween } from '@/lib/duration';
@@ -13,7 +13,7 @@ const TICK_MS = 60_000;
 
 export default function LiveSessionBanner() {
   const { liveSession } = useLiveSession();
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const t = useTranslations('session');
   const locale = useLocale();
   const [now, setNow] = useState(() => new Date());
@@ -61,7 +61,7 @@ export default function LiveSessionBanner() {
             variant="outline"
             size="sm"
             className="shrink-0 bg-surface"
-            onPress={() => router.push(`/sessions/edit?id=${liveSession.id}`)}
+            onPress={() => navigate(`/sessions/edit?id=${liveSession.id}`)}
           >
             {t('live.openButton')}
           </Button>

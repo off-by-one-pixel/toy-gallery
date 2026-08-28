@@ -4,11 +4,11 @@ import type { QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const push = vi.fn();
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push }),
-}));
+vi.mock('@/hooks/useNavigation', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
+  const { testNavigation } = await import('@/test/navigation');
+  return { ...original, useNavigation: () => testNavigation() };
+});
 
 vi.mock('@/api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api')>()),
@@ -18,6 +18,7 @@ vi.mock('@/api', async (importOriginal) => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
+import { navigateMock, resetNavigation } from '@/test/navigation';
 import { fetchMediaStatus, rebuildRecords, refreshAllSessionMedia } from '@/api';
 import { tokenStorage } from '@/api/http';
 import { useAppMenuItems } from '@/components/appMenuActions';
@@ -46,6 +47,7 @@ const item = (items: ReturnType<typeof useAppMenuItems>, id: string) => {
 describe('useAppMenuItems', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavigation();
     localStorage.clear();
     vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true });
   });
@@ -88,7 +90,7 @@ describe('useAppMenuItems', () => {
     const { result } = renderItems();
     await settle();
     item(result.current, 'settings').onAction();
-    expect(push).toHaveBeenCalledWith('/settings');
+    expect(navigateMock).toHaveBeenCalledWith('/settings');
   });
 
   it('refreshes media and invalidates media and session lists', async () => {

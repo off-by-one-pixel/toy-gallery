@@ -4,12 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
-import { useSearchParams } from 'next/navigation';
-
 import { useTranslations } from 'next-intl';
 
 import { useApiInfiniteQuery, useApiMutation, useApiQuery, useReportError } from '@/hooks/useApi';
-import { useUrlUpdate } from '@/hooks/useUrlNav';
+import { useNavigation } from '@/hooks/useNavigation';
 import { useSortOf } from '@/hooks/useSortOf';
 import {
   createSession,
@@ -92,15 +90,14 @@ export function useSessions(options: SessionsOptions = {}): SessionsData {
     enabled: detailId !== null,
     initialData: options.sessionInitial,
   });
-  const searchParams = useSearchParams();
-  const updateUrl = useUrlUpdate();
+  const { searchParams, updateParams } = useNavigation();
   const [filter, setFilter] = useState<FilterKey>('all');
   const sessionFilters = useMemo<SessionFilters>(
     () => parseSessionFilters((name) => searchParams.get(name)),
     [searchParams],
   );
   const setSessionFilters = (next: SessionFilters) => {
-    updateUrl(sessionFiltersUrlParams(next));
+    updateParams(sessionFiltersUrlParams(next));
   };
   const { sort } = useSortOf(SESSION_SORT);
   const queryClient = useQueryClient();

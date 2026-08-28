@@ -4,16 +4,11 @@ import type { QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-let search = '';
-const navigate = (href: string) => {
-  search = href.split('?')[1] ?? '';
-};
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: navigate, replace: navigate }),
-  usePathname: () => '/sessions',
-  useSearchParams: () => new URLSearchParams(search),
-}));
+vi.mock('@/hooks/useNavigation', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
+  const { testNavigation } = await import('@/test/navigation');
+  return { ...original, useNavigation: () => testNavigation() };
+});
 
 vi.mock('@/api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api')>()),
@@ -40,6 +35,7 @@ import type { Session } from '@/api/types';
 import { filterStartDate } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import { makeSession, makeToy } from '@/test/fixtures';
+import { navState, resetNavigation } from '@/test/navigation';
 import { createTestQueryClient } from '@/test/QueryWrapper';
 import { withAppProviders } from '@/test/render';
 import { useSessions, type SessionPayload, type SessionsOptions } from '@/features/sessions/useSessions';
@@ -67,8 +63,9 @@ const renderSessions = (options: SessionsOptions = {}, client: QueryClient = cre
 describe('useSessions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavigation();
+    navState.pathname = '/sessions';
     localStorage.clear();
-    search = '';
     sessionQueries.length = 0;
     respondSessions = () => page([makeSession({ id: 1 }), makeSession({ id: 2 })]);
     vi.mocked(fetchSessions).mockImplementation(async (query = {}) => {
@@ -112,7 +109,7 @@ describe('useSessions', () => {
   });
 
   it('seeds the toy filter from the url and refetches when filters change', async () => {
-    search = 'toys=1';
+    navState.search = 'toys=1';
     const { result } = renderSessions();
     await waitFor(() => expect(sessionQueries[0]?.filters?.toyIds).toEqual([1]));
 

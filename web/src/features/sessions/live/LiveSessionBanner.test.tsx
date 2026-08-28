@@ -3,12 +3,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const push = vi.fn();
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push }),
-  usePathname: () => '/',
-}));
+vi.mock('@/hooks/useNavigation', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
+  const { testNavigation } = await import('@/test/navigation');
+  return { ...original, useNavigation: () => testNavigation() };
+});
 
 const liveState = vi.hoisted(() => ({
   current: { liveSession: null, isLoaded: true, start: vi.fn() } as {
@@ -24,6 +23,7 @@ vi.mock('@/features/sessions/live/useLiveSession', async (importOriginal) => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
+import { navigateMock, resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
@@ -33,6 +33,7 @@ const live = (startedAt: string) => makeSession({ id: 5, startedAt, isLive: true
 describe('LiveSessionBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavigation();
     vi.useRealTimers();
     liveState.current = { liveSession: null, isLoaded: true, start: vi.fn() };
   });
@@ -50,7 +51,7 @@ describe('LiveSessionBanner', () => {
     expect(screen.getByText('1h 35m')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: en.session.live.openButton }));
-    expect(push).toHaveBeenCalledWith('/sessions/edit?id=5');
+    expect(navigateMock).toHaveBeenCalledWith('/sessions/edit?id=5');
   });
 
   it('ticks the elapsed time forward', () => {

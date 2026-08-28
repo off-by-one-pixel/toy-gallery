@@ -1,8 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-
-import { parseIntParam, type Update, useUrlUpdate } from '@/hooks/useUrlNav';
+import { parseIntParam, type Update, useNavigation } from '@/hooks/useNavigation';
 
 const KEY = 'media';
 
@@ -20,8 +18,8 @@ export function parseMediaParam(raw: string | null, sessionId: number): number |
 }
 
 export function useMediaLightboxNav(sessionId: number) {
-  const update = useUrlUpdate();
-  const openIndex = parseMediaParam(useSearchParams().get(KEY), sessionId);
+  const { param, updateParams: update } = useNavigation();
+  const openIndex = parseMediaParam(param(KEY), sessionId);
   return {
     openIndex,
     open: (index: number) => update(mediaLightboxUpdates.open(sessionId, index)),

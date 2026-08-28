@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 
@@ -17,7 +17,7 @@ type Props = Readonly<{
 }>;
 
 export default function SectionTabs({ className }: Props) {
-  const pathname = usePathname() ?? '/';
+  const { pathname } = useNavigation();
   const t = useTranslations('nav');
   const active = TABS.find((tab) => tab.matches(pathname))?.key ?? null;
   const items: SwitcherItem<Key>[] = TABS.map((tab) => ({
