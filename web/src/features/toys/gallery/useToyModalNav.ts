@@ -1,6 +1,6 @@
 'use client';
 
-import { type Update, useEnumParam, useIntParam, useUrlUpdate } from '@/hooks/useUrlNav';
+import { parseEnumParam, parseIntParam, type Update, useNavigation } from '@/hooks/useNavigation';
 
 const KINDS = ['new', 'edit', 'copy'] as const;
 export type ToyModalKind = (typeof KINDS)[number];
@@ -24,10 +24,10 @@ export const toyModalUpdates = {
 };
 
 export function useToyModalNav() {
-  const update = useUrlUpdate();
+  const { param, updateParams: update } = useNavigation();
   return {
-    kind: useEnumParam<ToyModalKind>('modal', KINDS),
-    toyId: useIntParam('toyId'),
+    kind: parseEnumParam<ToyModalKind>(param('modal'), KINDS),
+    toyId: parseIntParam(param('toyId')),
     openNew: () => update(toyModalUpdates.openNew()),
     openEdit: (id: number) => update(toyModalUpdates.openEdit(id)),
     openCopy: (id: number) => update(toyModalUpdates.openCopy(id)),

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 import type { Toy } from '@/api/types';
 import { useToys } from '@/features/toys/useToys';
 import { useToyEditorWizardNav } from '@/features/toys/editor/useToyEditorWizardNav';
@@ -36,7 +36,7 @@ import ViewToggle from '@/features/preferences/ViewToggle';
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
 const ToyGallery = () => {
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const toyModal = useToyModalNav();
   const wizard = useToyEditorWizardNav();
   const t = useTranslations();
@@ -93,7 +93,7 @@ const ToyGallery = () => {
       icon: CalendarClock,
       variant: 'outline',
       iconStrokeWidth: 1.8,
-      onPress: () => router.push('/sessions/new'),
+      onPress: () => navigate('/sessions/new'),
     },
     { key: 'new-toy', label: t('toy.new'), icon: Plus, variant: 'primary', onPress: toyModal.openNew },
   ];

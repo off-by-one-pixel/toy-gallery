@@ -2,15 +2,14 @@
 
 import { Alert } from '@heroui/react';
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 import { useState } from 'react';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useApiMutation } from '@/hooks/useApi';
 import TextInput from '@/components/TextInput';
 
 const LoginPage = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { param, replace } = useNavigation();
   const { login } = useAuth();
   const t = useTranslations('login');
 
@@ -20,7 +19,7 @@ const LoginPage = () => {
 
   const signIn = useApiMutation({
     fn: () => login(username, password),
-    onSuccess: () => router.replace(searchParams.get('next') || '/'),
+    onSuccess: () => replace(param('next') || '/'),
     errorSink: setError,
   });
 

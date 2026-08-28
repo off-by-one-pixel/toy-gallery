@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useUrlUpdate } from '@/hooks/useUrlNav';
+import { useNavigation } from '@/hooks/useNavigation';
 
 const push = vi.fn();
 const replace = vi.fn();
@@ -23,13 +23,29 @@ beforeEach(() => {
   pathname = '/sessions/new';
 });
 
-describe('useUrlUpdate', () => {
+describe('useNavigation', () => {
+  it('exposes the pathname and reads params', () => {
+    searchParams = new URLSearchParams('stage=template');
+    const { result } = renderHook(() => useNavigation());
+    expect(result.current.pathname).toBe('/sessions/new');
+    expect(result.current.param('stage')).toBe('template');
+    expect(result.current.param('missing')).toBeNull();
+  });
+
+  it('navigates and replaces plain hrefs through the router', () => {
+    const { result } = renderHook(() => useNavigation());
+    result.current.navigate('/sessions');
+    expect(push).toHaveBeenCalledWith('/sessions');
+    result.current.replace('/login');
+    expect(replace).toHaveBeenCalledWith('/login');
+  });
+
   it('builds the new URL by merging the update onto the current params', () => {
     searchParams = new URLSearchParams('stage=template');
-    const { result } = renderHook(() => useUrlUpdate());
+    const { result } = renderHook(() => useNavigation());
 
     act(() => {
-      result.current({ stage: 'editor', dialog: null });
+      result.current.updateParams({ stage: 'editor', dialog: null });
     });
 
     expect(push).toHaveBeenCalledTimes(1);
@@ -37,33 +53,27 @@ describe('useUrlUpdate', () => {
   });
 
   it('routes through router.replace when { replace: true } is passed', () => {
-    const { result } = renderHook(() => useUrlUpdate());
+    const { result } = renderHook(() => useNavigation());
 
     act(() => {
-      result.current({ stage: 'editor' }, { replace: true });
+      result.current.updateParams({ stage: 'editor' }, { replace: true });
     });
 
     expect(push).not.toHaveBeenCalled();
     expect(replace).toHaveBeenCalledWith('/sessions/new?stage=editor', { scroll: false });
   });
 
-  // Documents the footgun behind the "Start blank doesn't advance" bug:
-  // both calls capture the same useSearchParams() snapshot, so the second
-  // push rebuilds the URL from the original params — silently overwriting
-  // the first. Always batch related changes into one update().
-  it('chained calls within one event handler clobber each other', () => {
+  it('chained updates within one event handler clobber each other', () => {
     searchParams = new URLSearchParams('stage=template');
-    const { result } = renderHook(() => useUrlUpdate());
+    const { result } = renderHook(() => useNavigation());
 
     act(() => {
-      result.current({ stage: 'editor' });
-      result.current({ dialog: null });
+      result.current.updateParams({ stage: 'editor' });
+      result.current.updateParams({ dialog: null });
     });
 
     expect(push).toHaveBeenCalledTimes(2);
-    // First push moved us to editor…
     expect(push).toHaveBeenNthCalledWith(1, '/sessions/new?stage=editor', { scroll: false });
-    // …but the second push rebuilt from the unchanged snapshot, reverting stage.
     expect(push).toHaveBeenNthCalledWith(2, '/sessions/new?stage=template', { scroll: false });
   });
 });

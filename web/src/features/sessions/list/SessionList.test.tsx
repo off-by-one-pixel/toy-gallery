@@ -3,13 +3,11 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-let search = '';
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  usePathname: () => '/sessions',
-  useSearchParams: () => new URLSearchParams(search),
-}));
+vi.mock('@/hooks/useNavigation', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
+  const { testNavigation } = await import('@/test/navigation');
+  return { ...original, useNavigation: () => testNavigation() };
+});
 
 type IOCallback = (entries: Array<{ isIntersecting: boolean }>) => void;
 const ioCallbacks: IOCallback[] = [];
@@ -59,6 +57,7 @@ vi.mock('@/features/sessions/stats/SessionStats', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
+import { resetNavigation } from '@/test/navigation';
 import type { Session, Toy } from '@/api/types';
 import { parseSessionFilters, toysById } from '@/features/sessions/session';
 import { makeSession, makeToy } from '@/test/fixtures';
@@ -113,8 +112,8 @@ const renderList = (overrides: Record<string, unknown> = {}) => {
 describe('SessionList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavigation();
     localStorage.clear();
-    search = '';
     ioCallbacks.length = 0;
     startActionState.current = null;
   });

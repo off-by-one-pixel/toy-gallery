@@ -3,13 +3,13 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const push = vi.fn();
-let search = '';
+const lightboxState = vi.hoisted(() => ({
+  current: { openIndex: null as number | null, open: vi.fn(), close: vi.fn() },
+}));
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push, replace: vi.fn() }),
-  usePathname: () => '/sessions',
-  useSearchParams: () => new URLSearchParams(search),
+vi.mock('@/features/sessions/media/useMediaLightboxNav', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/sessions/media/useMediaLightboxNav')>()),
+  useMediaLightboxNav: () => lightboxState.current,
 }));
 
 const mediaState = vi.hoisted(() => ({
@@ -74,7 +74,7 @@ describe('SessionMediaStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    search = '';
+    lightboxState.current = { openIndex: null, open: vi.fn(), close: vi.fn() };
     mediaState.current = { configured: true, media: undefined, isPending: true, isError: false };
   });
 
@@ -130,7 +130,7 @@ describe('SessionMediaStrip', () => {
     expect(screen.getByText(en.session.media.loadError)).toBeTruthy();
   });
 
-  it('opens the lightbox by pushing the media URL param', () => {
+  it('opens the lightbox for the clicked thumbnail', () => {
     setMedia(media([image, video]));
     renderStrip();
     const thumbs = screen.getAllByRole('button', { name: en.session.media.openLabel });
@@ -138,32 +138,29 @@ describe('SessionMediaStrip', () => {
     expect(thumbs[0].querySelector('img')?.getAttribute('src')).toBe(image.thumbnailUrl);
 
     fireEvent.click(thumbs[1]);
-    expect(push).toHaveBeenCalledWith('/sessions?media=1%3A1', { scroll: false });
+    expect(lightboxState.current.open).toHaveBeenCalledWith(1);
   });
 
-  it('shows the lightbox when the media param addresses this session', () => {
-    search = 'media=1:1';
+  it('shows the lightbox when the nav reports an open index', () => {
+    lightboxState.current.openIndex = 1;
     setMedia(media([image, video]));
     renderStrip();
     expect(screen.getByRole('button', { name: en.session.media.closeLabel })).toBeTruthy();
   });
 
-  it('ignores media params for other sessions or out-of-range indexes', () => {
+  it('keeps the lightbox closed for an out-of-range index', () => {
+    lightboxState.current.openIndex = 5;
     setMedia(media([image]));
-    for (const value of ['media=2:0', 'media=1:5', 'media=junk']) {
-      search = value;
-      const view = renderStrip();
-      expect(screen.getAllByRole('button', { name: en.session.media.openLabel })).toHaveLength(1);
-      expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull();
-      view.unmount();
-    }
+    renderStrip();
+    expect(screen.getAllByRole('button', { name: en.session.media.openLabel })).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull();
   });
 
-  it('closes by clearing the media param', async () => {
-    search = 'media=1:0';
+  it('closes through the lightbox nav', async () => {
+    lightboxState.current.openIndex = 0;
     setMedia(media([image]));
     renderStrip();
     fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/sessions', { scroll: false }));
+    await waitFor(() => expect(lightboxState.current.close).toHaveBeenCalledTimes(1));
   });
 });

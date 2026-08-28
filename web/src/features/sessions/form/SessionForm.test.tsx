@@ -3,11 +3,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const push = vi.fn();
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push }),
-}));
+vi.mock('@/hooks/useNavigation', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
+  const { testNavigation } = await import('@/test/navigation');
+  return { ...original, useNavigation: () => testNavigation() };
+});
 
 const sessionsState = vi.hoisted(() => ({
   current: {
@@ -28,6 +28,7 @@ vi.mock('@/features/toys/useToys', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
+import { navigateMock, resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionForm from '@/features/sessions/form/SessionForm';
@@ -39,6 +40,7 @@ const liveSession = (startedAt: string) => makeSession({ id: 5, startedAt, isLiv
 describe('SessionForm live sessions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavigation();
     localStorage.clear();
     sessionsState.current.session = null;
     sessionsState.current.isSavingSession = false;
@@ -68,7 +70,7 @@ describe('SessionForm live sessions', () => {
         payload: expect.objectContaining({ entries: [] }),
       }),
     );
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/sessions'));
+    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/sessions'));
   });
 
   it('keeps save disabled for a finished session without toys', async () => {
