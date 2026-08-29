@@ -3,6 +3,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/features/toys/useToys', () => ({
+  useToys: () => ({ updateToy: vi.fn() }),
+}));
+
 import en from '@/i18n/catalogs/en.json';
 import type { Toy } from '@/api/types';
 import { TOY_SORT } from '@/features/toys/toySort';
