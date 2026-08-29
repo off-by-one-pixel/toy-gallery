@@ -113,7 +113,7 @@ export const parseGhostInputs = (inputs: GhostInputs, unit: Unit, girth: Girth):
 };
 
 export const ghostDelta = (toyValueMm: number | null | undefined, ghostValueMm: number): number | null =>
-  toyValueMm == null ? null : toyValueMm - ghostValueMm;
+  toyValueMm == null ? null : ghostValueMm - toyValueMm;
 
 export const formatSignedMm = (mm: number | null, unit: Unit): string => {
   if (mm == null) return '—';

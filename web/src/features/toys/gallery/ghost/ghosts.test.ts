@@ -134,9 +134,9 @@ describe('ghost input parsing', () => {
 });
 
 describe('ghost helpers', () => {
-  it('computes signed deltas and passes through missing toy values', () => {
-    expect(ghostDelta(150, 140)).toBe(10);
-    expect(ghostDelta(130, 140)).toBe(-10);
+  it('computes ghost-minus-toy deltas and passes through missing toy values', () => {
+    expect(ghostDelta(150, 140)).toBe(-10);
+    expect(ghostDelta(130, 140)).toBe(10);
     expect(ghostDelta(null, 140)).toBeNull();
   });
 });

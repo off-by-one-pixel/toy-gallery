@@ -132,9 +132,9 @@ describe('ToyCards ghosts', () => {
 
   it('annotates each toy card metric with signed deltas against the ghost', () => {
     renderCards({ ghosts: [ghost(1, 140, 165)] });
-    expect(screen.getByText('-35')).toBeTruthy();
-    expect(screen.getByText('-40')).toBeTruthy();
-    expect(screen.getByText('+25')).toBeTruthy();
-    expect(screen.getByText('+20')).toBeTruthy();
+    expect(screen.getByText('+35')).toBeTruthy();
+    expect(screen.getByText('+40')).toBeTruthy();
+    expect(screen.getByText('-25')).toBeTruthy();
+    expect(screen.getByText('-20')).toBeTruthy();
   });
 });
