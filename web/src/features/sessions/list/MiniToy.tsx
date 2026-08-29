@@ -48,6 +48,7 @@ export default function MiniToy({ entry, toy, heightRatio, recordLabels = [] }: 
         scaleFactor={0.18}
         heightRatio={heightRatio}
         background="none"
+        insetTop={0}
         insetBottom={0}
         filter={STATE_FILTER[entry.involvement]}
         className="h-14 w-full"
