@@ -7,6 +7,7 @@ import { silhouetteDiameter, silhouetteHeight } from '@/features/toys/dimensions
 import {
   createGhost,
   ghostDelta,
+  isDangerousGirthDelta,
   formatSignedMm,
   ghostColor,
   GHOST_COLORS,
@@ -138,6 +139,14 @@ describe('ghost helpers', () => {
     expect(ghostDelta(150, 140)).toBe(-10);
     expect(ghostDelta(130, 140)).toBe(10);
     expect(ghostDelta(null, 140)).toBeNull();
+  });
+
+  it('flags only girth increases beyond half an inch as dangerous', () => {
+    expect(isDangerousGirthDelta(13)).toBe(true);
+    expect(isDangerousGirthDelta(-13)).toBe(false);
+    expect(isDangerousGirthDelta(12.7)).toBe(false);
+    expect(isDangerousGirthDelta(10)).toBe(false);
+    expect(isDangerousGirthDelta(null)).toBe(false);
   });
 });
 

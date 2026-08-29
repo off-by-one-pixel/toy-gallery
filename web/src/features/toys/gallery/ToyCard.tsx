@@ -19,7 +19,13 @@ import type { ToyPropertyContext } from '@/features/toys/properties';
 import { formatDuration } from '@/lib/duration';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 import GhostCompareOverlay from '@/features/toys/gallery/ghost/GhostCompareOverlay';
-import { formatSignedMm, ghostColor, ghostDelta, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import {
+  formatSignedMm,
+  ghostColor,
+  ghostDelta,
+  isDangerousGirthDelta,
+  type GhostToy,
+} from '@/features/toys/gallery/ghost/ghosts';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 type Props = Readonly<{
@@ -138,7 +144,6 @@ export default function ToyCard({
               color: ghostColor(ghost),
               value: ghostDelta(toy.insertableLength, ghost.insertableLength),
             }))}
-            deltasVisible={detailsOpen}
           />
           <Metric
             label={common(girth)}
@@ -148,8 +153,8 @@ export default function ToyCard({
               id: ghost.id,
               color: ghostColor(ghost),
               value: ghostDelta(displayGirth(toy.circumference, girth), displayGirth(ghost.circumference, girth) ?? 0),
+              dangerous: isDangerousGirthDelta(ghostDelta(toy.circumference, ghost.circumference)),
             }))}
-            deltasVisible={detailsOpen}
             bordered
           />
         </div>
@@ -188,40 +193,41 @@ export default function ToyCard({
   );
 }
 
-const DELTA_TEXT_SIZES = ['text-sm', 'text-sm', 'text-xs', 'text-[10px]'] as const;
+const DELTA_TEXT_SIZES = ['text-xs', 'text-xs', 'text-[10px]', 'text-[9px]'] as const;
 
 function Metric({
   label,
   value,
   unit,
   deltas = [],
-  deltasVisible,
   bordered,
 }: Readonly<{
   label: string;
   value: number | null | undefined;
   unit: Unit;
-  deltas?: readonly { id: number; color: string; value: number | null }[];
-  deltasVisible?: boolean;
+  deltas?: readonly { id: number; color: string; value: number | null; dangerous?: boolean }[];
   bordered?: boolean;
 }>) {
   const deltaSize = DELTA_TEXT_SIZES[Math.min(deltas.length, DELTA_TEXT_SIZES.length - 1)];
-  const deltaOpacity = deltasVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100';
   return (
     <div className={bordered ? 'pl-3 border-l border-border' : ''}>
-      <div className="flex flex-wrap items-baseline gap-1 text-[22px] font-semibold leading-none tracking-tight text-foreground tabular-nums">
+      <div className="flex items-baseline gap-1 text-[22px] font-semibold leading-none tracking-tight text-foreground tabular-nums">
         {formatValue(value, unit)}
         {value != null && <span className="text-xs font-medium text-muted">{unit.id}</span>}
-        {deltas.length > 0 && (
-          <span className={`flex gap-1 self-start font-semibold transition-opacity ${deltaOpacity} ${deltaSize}`}>
-            {deltas.map((delta) => (
-              <span key={delta.id} style={{ color: delta.color }} className="whitespace-nowrap">
-                {formatSignedMm(delta.value, unit)}
-              </span>
-            ))}
-          </span>
-        )}
       </div>
+      {deltas.length > 0 && (
+        <div className={`mt-1 flex gap-1 font-semibold tabular-nums ${deltaSize}`}>
+          {deltas.map((delta) => (
+            <span
+              key={delta.id}
+              style={{ color: delta.color }}
+              className={delta.dangerous ? 'whitespace-nowrap rounded bg-danger/15 px-1' : 'whitespace-nowrap'}
+            >
+              {formatSignedMm(delta.value, unit)}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="mt-0.5 text-caption uppercase tracking-wider text-text-tertiary">{label}</div>
     </div>
   );
