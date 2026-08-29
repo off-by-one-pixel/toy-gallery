@@ -1,6 +1,7 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/hooks/useNavigation', async (importOriginal) => {
@@ -238,8 +239,8 @@ describe('SessionList', () => {
     expect(within(dialog).getByText(en.session.deleteConfirm)).toBeTruthy();
 
     fireEvent.click(within(dialog).getByRole('button', { name: en.common.delete }));
-    await waitFor(() => expect(removeSession).toHaveBeenCalledWith(1));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await settle(() => expect(removeSession).toHaveBeenCalledWith(1));
+    await settle(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   it('keeps the session when the confirmation is cancelled', async () => {
@@ -250,7 +251,7 @@ describe('SessionList', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: en.common.cancel }));
 
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await settle(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(removeSession).not.toHaveBeenCalled();
   });
 });

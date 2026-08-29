@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 import type { QueryClient } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api', async (importOriginal) => ({
@@ -40,7 +41,7 @@ describe('useSessionMedia', () => {
   it('does not fetch media while the provider is not configured', async () => {
     vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
     const { result } = renderMedia();
-    await waitFor(() => expect(fetchMediaStatus).toHaveBeenCalled());
+    await settle(() => expect(fetchMediaStatus).toHaveBeenCalled());
     expect(result.current.configured).toBe(false);
     expect(fetchSessionMedia).not.toHaveBeenCalled();
   });
@@ -48,7 +49,7 @@ describe('useSessionMedia', () => {
   it('loads the session media once configured', async () => {
     vi.mocked(fetchSessionMedia).mockResolvedValue(media());
     const { result } = renderMedia();
-    await waitFor(() => expect(result.current.media).toEqual(media()));
+    await settle(() => expect(result.current.media).toEqual(media()));
     expect(fetchSessionMedia).toHaveBeenCalledWith(1);
   });
 
@@ -57,7 +58,7 @@ describe('useSessionMedia', () => {
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     renderMedia(client);
-    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'detail', 1] }));
+    await settle(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'detail', 1] }));
   });
 
   it('leaves the session detail alone when media is not configured server-side', async () => {
@@ -65,13 +66,13 @@ describe('useSessionMedia', () => {
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const { result } = renderMedia(client);
-    await waitFor(() => expect(result.current.media).toBeTruthy());
+    await settle(() => expect(result.current.media).toBeTruthy());
     expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ['sessions', 'detail', 1] });
   });
 
   it('reports a load failure', async () => {
     vi.mocked(fetchSessionMedia).mockRejectedValue(new Error('boom'));
     const { result } = renderMedia();
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await settle(() => expect(result.current.isError).toBe(true));
   });
 });

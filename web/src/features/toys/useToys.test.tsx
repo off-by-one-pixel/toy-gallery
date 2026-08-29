@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 import type { QueryClient } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api', async (importOriginal) => ({
@@ -34,14 +35,14 @@ beforeEach(() => {
 describe('useToys', () => {
   it('loads the toys', async () => {
     const { result } = renderToys();
-    await waitFor(() => expect(result.current.toys).toEqual([makeToy({ id: 1 })]));
+    await settle(() => expect(result.current.toys).toEqual([makeToy({ id: 1 })]));
     expect(result.current.error).toBeNull();
   });
 
   it('exposes a formatted load error', async () => {
     vi.mocked(fetchToys).mockRejectedValue(new Error('boom'));
     const { result } = renderToys();
-    await waitFor(() => expect(result.current.error).toBe('boom'));
+    await settle(() => expect(result.current.error).toBe('boom'));
     expect(result.current.toys).toEqual([]);
   });
 

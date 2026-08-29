@@ -1,6 +1,7 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const lightboxState = vi.hoisted(() => ({
@@ -161,6 +162,6 @@ describe('SessionMediaStrip', () => {
     setMedia(media([image]));
     renderStrip();
     fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
-    await waitFor(() => expect(lightboxState.current.close).toHaveBeenCalledTimes(1));
+    await settle(() => expect(lightboxState.current.close).toHaveBeenCalledTimes(1));
   });
 });

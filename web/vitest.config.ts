@@ -9,6 +9,7 @@ export default defineConfig({
     },
   },
   test: {
+    pool: 'threads',
     environment: 'node',
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],

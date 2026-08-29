@@ -1,6 +1,7 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/hooks/useNavigation', async (importOriginal) => {
@@ -59,10 +60,10 @@ describe('SessionForm live sessions', () => {
     const startInput = document.querySelector('input[type="datetime-local"]');
     expect(startInput).not.toBeNull();
     fireEvent.change(startInput as Element, { target: { value: '2026-08-22T07:00' } });
-    await waitFor(() => expect(save.hasAttribute('disabled')).toBe(false));
+    await settle(() => expect(save.hasAttribute('disabled')).toBe(false));
     fireEvent.click(save);
 
-    await waitFor(() => expect(sessionsState.current.saveSession).toHaveBeenCalledTimes(1));
+    await settle(() => expect(sessionsState.current.saveSession).toHaveBeenCalledTimes(1));
     expect(sessionsState.current.saveSession).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: 5,
@@ -70,7 +71,7 @@ describe('SessionForm live sessions', () => {
         payload: expect.objectContaining({ entries: [] }),
       }),
     );
-    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/sessions'));
+    await settle(() => expect(navigateMock).toHaveBeenCalledWith('/sessions'));
   });
 
   it('keeps save disabled for a finished session without toys', async () => {
