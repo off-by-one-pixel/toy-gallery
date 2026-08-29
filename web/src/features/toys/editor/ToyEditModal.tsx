@@ -1,6 +1,9 @@
 'use client';
 
-import { Alert, Modal, useOverlayState } from '@heroui/react';
+import { Alert } from '@heroui/react';
+
+import AppModal from '@/components/AppModal';
+import { useTranslations } from 'next-intl';
 import { ToyEditor } from 'toy-editor';
 import type { StyleOption } from 'toy-editor';
 
@@ -38,6 +41,7 @@ export default function ToyEditModal({
   onClose,
   onSaved,
 }: Props) {
+  const t = useTranslations('toy');
   const { unit } = useUnit();
   const form = useToyEditForm(mode);
 
@@ -57,13 +61,6 @@ export default function ToyEditModal({
     onStageChange('editor');
   };
 
-  const overlayState = useOverlayState({
-    defaultOpen: true,
-    onOpenChange: (isOpen) => {
-      if (!isOpen) onClose();
-    },
-  });
-
   const style: StyleOption = {
     borderWidth: 2,
     borderColor: '#1f2937',
@@ -71,57 +68,49 @@ export default function ToyEditModal({
   };
 
   return (
-    <Modal.Root state={overlayState}>
-      <Modal.Backdrop>
-        <Modal.Container size="full" placement="center">
-          <Modal.Dialog className="flex flex-col overflow-hidden">
-            <Header
-              mode={mode}
-              effectiveStage={effectiveStage}
-              saving={form.saving}
-              onBack={
-                effectiveStage === 'template' && step === 'size'
-                  ? () => onStepChange('template')
-                  : () => overlayState.close()
-              }
-              onClose={() => overlayState.close()}
-              onSave={() => form.save(mode, onSaved)}
-              onOpenExport={() => onDialogChange('export')}
-              onOpenImport={() => onDialogChange('import')}
+    <>
+      <AppModal label={t('editorDialogLabel')} onClose={onClose} size="full" className="flex flex-col overflow-hidden">
+        <Header
+          mode={mode}
+          effectiveStage={effectiveStage}
+          saving={form.saving}
+          onBack={effectiveStage === 'template' && step === 'size' ? () => onStepChange('template') : onClose}
+          onClose={onClose}
+          onSave={() => form.save(mode, onSaved)}
+          onOpenExport={() => onDialogChange('export')}
+          onOpenImport={() => onDialogChange('import')}
+        />
+
+        {form.error && (
+          <Alert status="danger" className="rounded-none">
+            <Alert.Description>{form.error}</Alert.Description>
+          </Alert>
+        )}
+
+        <div className="flex-1 min-h-0">
+          {effectiveStage === 'template' ? (
+            <NewToyTemplateStep
+              step={step}
+              onStepChange={onStepChange}
+              onPick={goToEditor}
+              onSkip={() => goToEditor(NEW_TOY_MM)}
             />
-
-            {form.error && (
-              <Alert status="danger" className="rounded-none">
-                <Alert.Description>{form.error}</Alert.Description>
-              </Alert>
-            )}
-
-            <div className="flex-1 min-h-0">
-              {effectiveStage === 'template' ? (
-                <NewToyTemplateStep
-                  step={step}
-                  onStepChange={onStepChange}
-                  onPick={goToEditor}
-                  onSkip={() => goToEditor(NEW_TOY_MM)}
-                />
-              ) : (
-                <ToyEditor
-                  initialToy={form.initialToy ?? NEW_TOY_MM}
-                  style={style}
-                  unit={unit}
-                  leadingSlot={<IdentificationGroup form={form} />}
-                />
-              )}
-            </div>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
+          ) : (
+            <ToyEditor
+              initialToy={form.initialToy ?? NEW_TOY_MM}
+              style={style}
+              unit={unit}
+              leadingSlot={<IdentificationGroup form={form} />}
+            />
+          )}
+        </div>
+      </AppModal>
       <JsonDialogs
         dialog={dialog}
         exportText={form.exportText}
         onClose={() => onDialogChange(null)}
         onImport={handleJsonImport}
       />
-    </Modal.Root>
+    </>
   );
 }
