@@ -4,9 +4,11 @@
     "dockerfile": "Dockerfile",
     "context": "../.."
   },
-  "runArgs": ["--memory=6g", "--memory-swap=8g"],
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "remoteEnv": {
+    "TZ": "America/Toronto"
+  },
   "forwardPorts": [3000, 8000],
   "portsAttributes": {
     "3000": { "label": "Frontend (web)" },
