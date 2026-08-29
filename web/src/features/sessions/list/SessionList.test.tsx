@@ -40,17 +40,40 @@ vi.mock('@/features/sessions/live/useStartLiveAction', () => ({
   },
 }));
 
-vi.mock('@/features/sessions/live/useLiveSession', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/features/sessions/live/useLiveSession')>()),
-  useLiveSession: () => ({ liveSession: null, isLoaded: false, start: vi.fn() }),
-}));
-
 vi.mock('@/features/sessions/list/useToyUsage', () => ({
   useToyUsage: () => new Map([[1, 9]]),
 }));
 
 vi.mock('@/features/sessions/media/useSessionMedia', () => ({
   useSessionMedia: () => ({ configured: false, media: undefined, isPending: true, isError: false }),
+}));
+
+const { setSubtitleMock } = vi.hoisted(() => ({ setSubtitleMock: vi.fn() }));
+
+vi.mock('@/components/TopBarProvider', () => ({
+  useSetTopBarSubtitle: (subtitle: string | null) => setSubtitleMock(subtitle),
+}));
+
+vi.mock('@/components/PageToolbar', () => ({
+  default: ({
+    start,
+    actions,
+    children,
+  }: {
+    start: React.ReactNode;
+    actions: readonly { key: string; label: string; onPress: () => void }[];
+    children?: React.ReactNode;
+  }) => (
+    <header>
+      {start}
+      {actions.map((action) => (
+        <button key={action.key} type="button" onClick={() => action.onPress()}>
+          {action.label}
+        </button>
+      ))}
+      {children}
+    </header>
+  ),
 }));
 
 vi.mock('@/features/sessions/stats/SessionStats', () => ({
@@ -121,7 +144,6 @@ describe('SessionList', () => {
 
   it('renders a row per session and a media badge for flagged sessions', () => {
     renderList();
-    expect(screen.getByText(`2 ${en.session.recorded}`)).toBeTruthy();
     expect(screen.getAllByRole('button', { name: en.session.detailsToggleLabel })).toHaveLength(2);
     expect(screen.getAllByLabelText('2 photos, 1 videos')).toHaveLength(1);
   });
@@ -151,9 +173,9 @@ describe('SessionList', () => {
     expect(rows[1]?.className).not.toContain('border-amber-500');
   });
 
-  it('shows the server count in the subtitle, not the loaded page size', () => {
+  it('publishes the server count to the top bar, not the loaded page size', () => {
     renderList({ sessions: [session(1)], sessionCount: 41 });
-    expect(screen.getByText(`41 ${en.session.recorded}`)).toBeTruthy();
+    expect(setSubtitleMock).toHaveBeenCalledWith(`41 ${en.session.recorded}`);
   });
 
   it('renders the start-live action and prepends the started session', () => {

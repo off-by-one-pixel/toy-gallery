@@ -13,24 +13,20 @@ import { useSortOf } from '@/hooks/useSortOf';
 import { useViewMode, ViewMode } from '@/features/preferences/ViewModeProvider';
 import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
-import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
+import { ActionFabs, type ActionDef } from '@/components/ActionButtons';
 import { toyActionDefs } from '@/features/toys/gallery/ToyActionButtons';
 import type { GhostDimensions, GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
-import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
+import PageToolbar from '@/components/PageToolbar';
 import SearchInput from '@/components/SearchInput';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
-import TopBar from '@/components/TopBar';
+import { useSetTopBarSubtitle } from '@/components/TopBarProvider';
 import ToyCards from '@/features/toys/gallery/ToyCards';
 import ConfirmModal from '@/components/ConfirmModal';
 import ToyEditModal from '@/features/toys/editor/ToyEditModal';
 import ToyList from '@/features/toys/gallery/ToyList';
-import GirthToggle from '@/features/preferences/GirthToggle';
-import PrivacyToggle from '@/features/preferences/PrivacyToggle';
-import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
-import UnitToggle from '@/features/preferences/UnitToggle';
 import ViewToggle from '@/features/preferences/ViewToggle';
 
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
@@ -43,6 +39,7 @@ const ToyGallery = () => {
   const common = useTranslations('common');
 
   const { toys, isLoading, error, removeToy, isRemovingToy } = useToys();
+  useSetTopBarSubtitle(isLoading ? null : t('toy.items', { count: toys.length }));
   const [query, setQuery] = useState('');
   const [openCardId, setOpenCardId] = useState<number | null>(null);
   const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
@@ -148,29 +145,18 @@ const ToyGallery = () => {
 
   return (
     <>
-      <TopBar subtitle={isLoading ? null : t('toy.items', { count: toys.length })} />
-      <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
-        <LiveSessionBanner />
-        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
+      <PageToolbar
+        start={
           <div className="min-w-0 flex-1 sm:w-auto sm:flex-initial">
             <SearchInput value={query} onChange={setQuery} />
           </div>
-          <DisplayOptionsMenu>
-            <ViewToggle view={view} onChange={setView} />
-            <UnitToggle />
-            <GirthToggle />
-            {view === ViewMode.cards && <ToySortControl />}
-          </DisplayOptionsMenu>
-          <div className="hidden sm:contents">
-            <ViewToggle view={view} onChange={setView} />
-            <UnitToggle />
-            <GirthToggle />
-          </div>
-          <div className="hidden flex-1 sm:block" />
-          <ActionBar actions={newActions} />
-          <PrivacyToggle />
-        </div>
-      </header>
+        }
+        menuExtrasStart={<ViewToggle view={view} onChange={setView} />}
+        menuExtrasEnd={view === ViewMode.cards ? <ToySortControl /> : undefined}
+        inlineExtras={<ViewToggle view={view} onChange={setView} />}
+        actions={newActions}
+        growStart
+      />
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {openToyActions && <ActionFabs actions={openToyActions} />}
