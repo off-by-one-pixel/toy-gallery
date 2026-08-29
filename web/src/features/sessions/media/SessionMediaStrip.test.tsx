@@ -26,6 +26,15 @@ vi.mock('@/features/sessions/media/useSessionMedia', () => ({
   useSessionMedia: () => mediaState.current,
 }));
 
+vi.mock('@/features/sessions/media/MediaLightbox', async () => {
+  const { default: en } = await import('@/i18n/catalogs/en.json');
+  return {
+    default: ({ onClose }: { onClose: () => void }) => (
+      <button type="button" aria-label={en.session.media.closeLabel} onClick={onClose} />
+    ),
+  };
+});
+
 import en from '@/i18n/catalogs/en.json';
 import type { SessionMedia } from '@/api/types';
 import { withAppProviders } from '@/test/render';

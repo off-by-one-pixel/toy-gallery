@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -194,7 +194,7 @@ describe('SessionList', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
 
     const onStarted = startActionState.current?.onStarted as (s: Session) => void;
-    onStarted(session(9));
+    act(() => onStarted(session(9)));
     expect(data.prependSession).toHaveBeenCalledWith(session(9));
   });
 
