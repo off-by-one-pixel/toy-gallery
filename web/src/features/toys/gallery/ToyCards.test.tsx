@@ -132,9 +132,17 @@ describe('ToyCards ghosts', () => {
 
   it('annotates each toy card metric with signed deltas against the ghost', () => {
     renderCards({ ghosts: [ghost(1, 140, 165)] });
-    expect(screen.getByText('-35')).toBeTruthy();
-    expect(screen.getByText('-40')).toBeTruthy();
-    expect(screen.getByText('+25')).toBeTruthy();
-    expect(screen.getByText('+20')).toBeTruthy();
+    expect(screen.getByText('+35')).toBeTruthy();
+    expect(screen.getByText('+40')).toBeTruthy();
+    expect(screen.getByText('-25')).toBeTruthy();
+    expect(screen.getByText('-20')).toBeTruthy();
+  });
+
+  it('highlights girth increases beyond half an inch as dangerous', () => {
+    renderCards({ ghosts: [ghost(1, 140, 165)] });
+    expect(screen.getByText('+40').className).toContain('bg-danger/15');
+    expect(screen.getByText('-20').className).not.toContain('bg-danger/15');
+    expect(screen.getByText('+35').className).not.toContain('bg-danger/15');
+    expect(screen.getByText('-25').className).not.toContain('bg-danger/15');
   });
 });

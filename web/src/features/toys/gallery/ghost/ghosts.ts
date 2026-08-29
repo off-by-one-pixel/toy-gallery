@@ -1,7 +1,7 @@
 import type { Shape, Toy } from '@/api/types';
 import { TOY_PROPERTIES } from '@/features/toys/properties';
 import type { ToySort, ToySortColumn } from '@/features/toys/toySort';
-import { diameterToCircumference, formatForInput, parseToMm, type Unit } from '@/features/preferences/units';
+import { diameterToCircumference, formatForInput, parseToMm, toMm, Unit } from '@/features/preferences/units';
 import { displayGirth, storedGirth, type Girth } from '@/features/preferences/girth';
 
 export type GhostToy = Readonly<{
@@ -113,7 +113,12 @@ export const parseGhostInputs = (inputs: GhostInputs, unit: Unit, girth: Girth):
 };
 
 export const ghostDelta = (toyValueMm: number | null | undefined, ghostValueMm: number): number | null =>
-  toyValueMm == null ? null : toyValueMm - ghostValueMm;
+  toyValueMm == null ? null : ghostValueMm - toyValueMm;
+
+const DANGEROUS_GIRTH_DELTA_MM = toMm(0.5, Unit.in);
+
+export const isDangerousGirthDelta = (deltaMm: number | null): boolean =>
+  deltaMm != null && deltaMm > DANGEROUS_GIRTH_DELTA_MM;
 
 export const formatSignedMm = (mm: number | null, unit: Unit): string => {
   if (mm == null) return '—';

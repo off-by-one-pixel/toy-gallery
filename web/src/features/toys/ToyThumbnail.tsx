@@ -37,7 +37,7 @@ export default function ToyThumbnail({
   scaleFactor,
   heightRatio = 1,
   background = 'gradient',
-  insetTop = 0,
+  insetTop = 8,
   insetBottom = 8,
   insetX = 0,
   className,

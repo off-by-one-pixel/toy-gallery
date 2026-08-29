@@ -82,7 +82,7 @@ export default function ToyChipSelector({
         (state ? CHIP_BORDER[state] : 'border-border')
       }
     >
-      <ToyThumbnail toy={editorToy} fillColor={toy.color} insetTop={8} className="h-35 border-b border-border">
+      <ToyThumbnail toy={editorToy} fillColor={toy.color} className="h-35 border-b border-border">
         {state && (
           <div
             className={
