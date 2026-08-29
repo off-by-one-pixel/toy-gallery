@@ -1,6 +1,7 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/hooks/useNavigation', async (importOriginal) => {
@@ -39,17 +40,40 @@ vi.mock('@/features/sessions/live/useStartLiveAction', () => ({
   },
 }));
 
-vi.mock('@/features/sessions/live/useLiveSession', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/features/sessions/live/useLiveSession')>()),
-  useLiveSession: () => ({ liveSession: null, isLoaded: false, start: vi.fn() }),
-}));
-
 vi.mock('@/features/sessions/list/useToyUsage', () => ({
   useToyUsage: () => new Map([[1, 9]]),
 }));
 
 vi.mock('@/features/sessions/media/useSessionMedia', () => ({
   useSessionMedia: () => ({ configured: false, media: undefined, isPending: true, isError: false }),
+}));
+
+const { setSubtitleMock } = vi.hoisted(() => ({ setSubtitleMock: vi.fn() }));
+
+vi.mock('@/components/TopBarProvider', () => ({
+  useSetTopBarSubtitle: (subtitle: string | null) => setSubtitleMock(subtitle),
+}));
+
+vi.mock('@/components/PageToolbar', () => ({
+  default: ({
+    start,
+    actions,
+    children,
+  }: {
+    start: React.ReactNode;
+    actions: readonly { key: string; label: string; onPress: () => void }[];
+    children?: React.ReactNode;
+  }) => (
+    <header>
+      {start}
+      {actions.map((action) => (
+        <button key={action.key} type="button" onClick={() => action.onPress()}>
+          {action.label}
+        </button>
+      ))}
+      {children}
+    </header>
+  ),
 }));
 
 vi.mock('@/features/sessions/stats/SessionStats', () => ({
@@ -120,7 +144,6 @@ describe('SessionList', () => {
 
   it('renders a row per session and a media badge for flagged sessions', () => {
     renderList();
-    expect(screen.getByText(`2 ${en.session.recorded}`)).toBeTruthy();
     expect(screen.getAllByRole('button', { name: en.session.detailsToggleLabel })).toHaveLength(2);
     expect(screen.getAllByLabelText('2 photos, 1 videos')).toHaveLength(1);
   });
@@ -150,9 +173,9 @@ describe('SessionList', () => {
     expect(rows[1]?.className).not.toContain('border-amber-500');
   });
 
-  it('shows the server count in the subtitle, not the loaded page size', () => {
+  it('publishes the server count to the top bar, not the loaded page size', () => {
     renderList({ sessions: [session(1)], sessionCount: 41 });
-    expect(screen.getByText(`41 ${en.session.recorded}`)).toBeTruthy();
+    expect(setSubtitleMock).toHaveBeenCalledWith(`41 ${en.session.recorded}`);
   });
 
   it('renders the start-live action and prepends the started session', () => {
@@ -238,8 +261,8 @@ describe('SessionList', () => {
     expect(within(dialog).getByText(en.session.deleteConfirm)).toBeTruthy();
 
     fireEvent.click(within(dialog).getByRole('button', { name: en.common.delete }));
-    await waitFor(() => expect(removeSession).toHaveBeenCalledWith(1));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await settle(() => expect(removeSession).toHaveBeenCalledWith(1));
+    await settle(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   it('keeps the session when the confirmation is cancelled', async () => {
@@ -250,7 +273,7 @@ describe('SessionList', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: en.common.cancel }));
 
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await settle(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(removeSession).not.toHaveBeenCalled();
   });
 });

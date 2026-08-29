@@ -1,7 +1,7 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 import type { QueryClient } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/hooks/useNavigation', async (importOriginal) => {
@@ -36,6 +36,7 @@ import { filterStartDate } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import { makeSession, makeToy } from '@/test/fixtures';
 import { navState, resetNavigation } from '@/test/navigation';
+import { settle } from '@/test/wait';
 import { createTestQueryClient } from '@/test/QueryWrapper';
 import { withAppProviders } from '@/test/render';
 import { useSessions, type SessionPayload, type SessionsOptions } from '@/features/sessions/useSessions';
@@ -78,7 +79,7 @@ describe('useSessions', () => {
   it('loads and merges the session pages with the server count', async () => {
     respondSessions = () => page([makeSession({ id: 1 })], { count: 41, hasMore: true });
     const { result } = renderSessions();
-    await waitFor(() => expect(result.current.sessions.map((s) => s.id)).toEqual([1]));
+    await settle(() => expect(result.current.sessions.map((s) => s.id)).toEqual([1]));
     expect(result.current.sessionCount).toBe(41);
     expect(result.current.hasMore).toBe(true);
   });
@@ -89,19 +90,19 @@ describe('useSessions', () => {
         ? page([makeSession({ id: 2 }), makeSession({ id: 3 })], { count: 3 })
         : page([makeSession({ id: 1 }), makeSession({ id: 2 })], { count: 3, hasMore: true });
     const { result } = renderSessions();
-    await waitFor(() => expect(result.current.sessions).toHaveLength(2));
+    await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     act(() => result.current.loadMore());
-    await waitFor(() => expect(result.current.sessions.map((s) => s.id)).toEqual([1, 2, 3]));
+    await settle(() => expect(result.current.sessions.map((s) => s.id)).toEqual([1, 2, 3]));
     expect(sessionQueries.map((q) => q.page)).toContain(2);
   });
 
   it('refetches with the filter window start and resets to the first page', async () => {
     const { result } = renderSessions();
-    await waitFor(() => expect(result.current.sessions).toHaveLength(2));
+    await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     act(() => result.current.setFilter('week'));
-    await waitFor(() => {
+    await settle(() => {
       const last = sessionQueries[sessionQueries.length - 1];
       expect(last.start).toBe(filterStartDate('week'));
       expect(last.page).toBe(1);
@@ -111,10 +112,10 @@ describe('useSessions', () => {
   it('seeds the toy filter from the url and refetches when filters change', async () => {
     navState.search = 'toys=1';
     const { result } = renderSessions();
-    await waitFor(() => expect(sessionQueries[0]?.filters?.toyIds).toEqual([1]));
+    await settle(() => expect(sessionQueries[0]?.filters?.toyIds).toEqual([1]));
 
     act(() => result.current.setSessionFilters({ ...result.current.sessionFilters, hasMedia: true }));
-    await waitFor(() => {
+    await settle(() => {
       const last = sessionQueries[sessionQueries.length - 1];
       expect(last.filters?.hasMedia).toBe(true);
     });
@@ -123,38 +124,38 @@ describe('useSessions', () => {
   it('refetches when the session data is invalidated', async () => {
     const client = createTestQueryClient();
     const { result } = renderSessions({}, client);
-    await waitFor(() => expect(result.current.sessions).toHaveLength(2));
+    await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     respondSessions = () => page([makeSession({ id: 1 }), makeSession({ id: 2 }), makeSession({ id: 3 })]);
     act(() => result.current.reload());
-    await waitFor(() => expect(result.current.sessions).toHaveLength(3));
+    await settle(() => expect(result.current.sessions).toHaveLength(3));
   });
 
   it('prepends a freshly started session to the list', async () => {
     const { result } = renderSessions();
-    await waitFor(() => expect(result.current.sessions).toHaveLength(2));
+    await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     act(() => result.current.prependSession(makeSession({ id: 9 })));
-    await waitFor(() => expect(result.current.sessions[0].id).toBe(9));
+    await settle(() => expect(result.current.sessions[0].id).toBe(9));
     expect(result.current.sessionCount).toBe(3);
   });
 
   it('exposes the toys and the lookup map', async () => {
     const { result } = renderSessions();
-    await waitFor(() => expect(result.current.toys.map((t) => t.name)).toEqual(['Steel']));
+    await settle(() => expect(result.current.toys.map((t) => t.name)).toEqual(['Steel']));
     expect(result.current.toysById.get(1)?.name).toBe('Steel');
   });
 
   it('loads the session detail when an id is given', async () => {
     vi.mocked(fetchSession).mockResolvedValue(makeSession({ id: 5, isLive: true }));
     const { result } = renderSessions({ sessionId: 5 });
-    await waitFor(() => expect(result.current.session?.isLive).toBe(true));
+    await settle(() => expect(result.current.session?.isLive).toBe(true));
     expect(fetchSession).toHaveBeenCalledWith(5);
   });
 
   it('does not fetch a detail without an id', async () => {
     const { result } = renderSessions();
-    await waitFor(() => expect(result.current.sessions).toHaveLength(2));
+    await settle(() => expect(result.current.sessions).toHaveLength(2));
     expect(fetchSession).not.toHaveBeenCalled();
     expect(result.current.session).toBeNull();
     expect(result.current.isSessionLoading).toBe(false);

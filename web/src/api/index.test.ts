@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -31,6 +31,7 @@ import {
   toysToysImportCreate,
 } from '@/api/generated/sdk';
 import { createSession, createToy, downloadExport, importFromFile, login, refreshTokens } from '@/api/index';
+import { localDateKey } from '@/lib/dates';
 import { APIError } from '@/api/types';
 
 const fetchMock = vi.fn<(...args: Parameters<typeof fetch>) => Promise<Response>>();
@@ -145,7 +146,7 @@ describe('downloadExport', () => {
 
     await downloadExport();
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateKey(new Date());
     expect(anchors[0].download).toBe(`toy-gallery-${today}.json`);
     appendSpy.mockRestore();
   });

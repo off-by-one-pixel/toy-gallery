@@ -1,6 +1,7 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api', async (importOriginal) => ({
@@ -26,7 +27,7 @@ describe('useToyUsage', () => {
       { key: '2', values: { count: 3 } },
     ]);
     const { result } = renderHook(() => useToyUsage('week'), { wrapper });
-    await waitFor(() => expect(result.current.get(1)).toBe(9));
+    await settle(() => expect(result.current.get(1)).toBe(9));
     expect(result.current.get(2)).toBe(3);
     expect(vi.mocked(fetchSessionStats).mock.calls[0].slice(0, 3)).toEqual([
       'toy',

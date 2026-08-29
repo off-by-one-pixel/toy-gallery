@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 import type { QueryClient } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@heroui/react', () => ({
@@ -121,9 +122,9 @@ describe('useApiMutation', () => {
     );
 
     void result.current.run();
-    await waitFor(() => expect(result.current.isPending).toBe(true));
+    await settle(() => expect(result.current.isPending).toBe(true));
     resolveCall();
-    await waitFor(() => expect(result.current.isPending).toBe(false));
+    await settle(() => expect(result.current.isPending).toBe(false));
   });
 });
 
@@ -133,7 +134,7 @@ describe('useApiQuery', () => {
     const { result } = renderHook(() => useApiQuery({ key: ['thing'], fn: async () => 'value' }), {
       wrapper: makeWrapper(client),
     });
-    await waitFor(() => expect(result.current.data).toBe('value'));
+    await settle(() => expect(result.current.data).toBe('value'));
     expect(result.current.errorMessage).toBeNull();
   });
 
@@ -149,6 +150,6 @@ describe('useApiQuery', () => {
         }),
       { wrapper: makeWrapper(client) },
     );
-    await waitFor(() => expect(result.current.errorMessage).toBe('boom'));
+    await settle(() => expect(result.current.errorMessage).toBe('boom'));
   });
 });

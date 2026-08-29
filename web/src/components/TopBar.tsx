@@ -1,20 +1,16 @@
 'use client';
 
-import type { ReactNode } from 'react';
-
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import AppMenu from '@/components/AppMenu';
 import SectionTabs from '@/components/SectionTabs';
+import { useTopBarSubtitle } from '@/components/TopBarProvider';
 import ThemeToggle from '@/features/preferences/ThemeToggle';
 
-type Props = Readonly<{
-  subtitle?: ReactNode;
-}>;
-
-export default function TopBar({ subtitle }: Props) {
+export default function TopBar() {
   const t = useTranslations('collection');
+  const subtitle = useTopBarSubtitle();
   return (
     <div className="bg-surface-secondary/90 backdrop-blur-sm">
       <div className="mx-auto flex max-w-300 flex-wrap items-center gap-3 px-4 py-2.5 sm:px-6">
@@ -26,9 +22,7 @@ export default function TopBar({ subtitle }: Props) {
           >
             {t('appTitle')}
           </Link>
-          {subtitle !== undefined && (
-            <span className="inline-block min-w-22 text-sm font-normal text-muted">{subtitle}</span>
-          )}
+          <span className="inline-block min-w-22 text-sm font-normal text-muted">{subtitle}</span>
         </h1>
         <SectionTabs className="order-last sm:order-0" />
         <div className="flex-1" />

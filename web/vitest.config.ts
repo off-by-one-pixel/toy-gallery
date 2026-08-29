@@ -9,8 +9,10 @@ export default defineConfig({
     },
   },
   test: {
+    pool: 'threads',
     environment: 'node',
     globals: true,
+    setupFiles: ['src/test/noNetwork.ts'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       provider: 'v8',

@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 import type { QueryClient } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import { settle as settleAssert } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/hooks/useNavigation', async (importOriginal) => {
@@ -34,7 +35,7 @@ const renderItems = (client: QueryClient = createTestQueryClient()) =>
   renderHook(() => useAppMenuItems(), { wrapper: makeWrapper(client) });
 
 const settle = async () => {
-  await waitFor(() => expect(fetchMediaStatus).toHaveBeenCalled());
+  await settleAssert(() => expect(fetchMediaStatus).toHaveBeenCalled());
   await act(async () => undefined);
 };
 
@@ -54,7 +55,7 @@ describe('useAppMenuItems', () => {
 
   it('lists the registry items in order with resolved labels', async () => {
     const { result } = renderItems();
-    await waitFor(() =>
+    await settleAssert(() =>
       expect(result.current.map((entry) => entry.id)).toEqual([
         'settings',
         'refresh-media',
@@ -98,12 +99,12 @@ describe('useAppMenuItems', () => {
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const { result } = renderItems(client);
-    await waitFor(() => expect(result.current.some((entry) => entry.id === 'refresh-media')).toBe(true));
+    await settleAssert(() => expect(result.current.some((entry) => entry.id === 'refresh-media')).toBe(true));
 
     act(() => item(result.current, 'refresh-media').onAction());
 
-    await waitFor(() => expect(refreshAllSessionMedia).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['media'] }));
+    await settleAssert(() => expect(refreshAllSessionMedia).toHaveBeenCalledTimes(1));
+    await settleAssert(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['media'] }));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'list'] });
   });
 
@@ -116,8 +117,8 @@ describe('useAppMenuItems', () => {
 
     act(() => item(result.current, 'rebuild-records').onAction());
 
-    await waitFor(() => expect(rebuildRecords).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'list'] }));
+    await settleAssert(() => expect(rebuildRecords).toHaveBeenCalledTimes(1));
+    await settleAssert(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'list'] }));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'stats'] });
   });
 

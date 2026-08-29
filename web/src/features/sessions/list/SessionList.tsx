@@ -13,15 +13,11 @@ import { useUnit } from '@/features/preferences/UnitProvider';
 import { activeFilterCount, FILTERS, type FilterKey } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session } from '@/api/types';
-import { ActionBar, ActionFabs, type ActionDef } from '@/components/ActionButtons';
-import DisplayOptionsMenu from '@/components/DisplayOptionsMenu';
-import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
+import { ActionFabs, type ActionDef } from '@/components/ActionButtons';
+import PageToolbar from '@/components/PageToolbar';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 import ConfirmModal from '@/components/ConfirmModal';
-import TopBar from '@/components/TopBar';
-import GirthToggle from '@/features/preferences/GirthToggle';
-import PrivacyToggle from '@/features/preferences/PrivacyToggle';
-import UnitToggle from '@/features/preferences/UnitToggle';
+import { useSetTopBarSubtitle } from '@/components/TopBarProvider';
 import EmptyState from '@/features/sessions/list/EmptyState';
 import SessionFilterChips from '@/features/sessions/list/SessionFilterChips';
 import SessionFilterControl from '@/features/sessions/list/SessionFilterControl';
@@ -44,6 +40,7 @@ function SessionListContent() {
   const data = useSessions();
   const t = useTranslations('session');
   const common = useTranslations('common');
+  useSetTopBarSubtitle(data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
@@ -107,37 +104,28 @@ function SessionListContent() {
 
   return (
     <>
-      <TopBar subtitle={data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`} />
-      <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
-        <LiveSessionBanner />
-        <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
-          <Switcher
-            items={filterItems}
-            value={data.filter}
-            onChange={data.setFilter}
-            ariaLabel={t('filter.ariaLabel')}
-          />
-          <SessionFilterControl
-            toys={data.toys}
-            filter={data.filter}
-            filters={data.sessionFilters}
-            onChange={data.setSessionFilters}
-          />
-          <div className="hidden sm:contents">
-            <UnitToggle />
-            <GirthToggle />
-          </div>
-          <div className="flex-1" />
-          <DisplayOptionsMenu>
-            <UnitToggle />
-            <GirthToggle />
-            <SessionSortControl />
-          </DisplayOptionsMenu>
-          <ActionBar actions={newActions} />
-          <PrivacyToggle />
-        </div>
+      <PageToolbar
+        start={
+          <>
+            <Switcher
+              items={filterItems}
+              value={data.filter}
+              onChange={data.setFilter}
+              ariaLabel={t('filter.ariaLabel')}
+            />
+            <SessionFilterControl
+              toys={data.toys}
+              filter={data.filter}
+              filters={data.sessionFilters}
+              onChange={data.setSessionFilters}
+            />
+          </>
+        }
+        menuExtrasEnd={<SessionSortControl />}
+        actions={newActions}
+      >
         <SessionFilterChips toysById={data.toysById} filters={data.sessionFilters} onChange={data.setSessionFilters} />
-      </header>
+      </PageToolbar>
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {selectedActions && <ActionFabs actions={selectedActions} />}
