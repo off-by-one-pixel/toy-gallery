@@ -39,6 +39,7 @@
     "girthInline": { "circumference": "circumference", "diameter": "diameter" },
     "girthShort": { "circumference": "circ.", "diameter": "dia." },
     "deleteConfirm": "Delete {brand} {name}?",
+    "editorDialogLabel": "Toy editor",
     "new": "New Toy",
     "columns": {
       "brandModel": "Brand / Model",
