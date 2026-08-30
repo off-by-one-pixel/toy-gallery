@@ -47,8 +47,11 @@ jobs:
           pnpm test --coverage
           sed -i 's|^SF:src/|SF:web/src/|' coverage/lcov.info
 
+      - name: Keep scanner downloads in the runner home
+        run: echo "SONAR_USER_HOME=$HOME/.sonar" >> "$GITHUB_ENV"
+
       - name: SonarQube Scan and Quality Gate
-        uses: SonarSource/sonarqube-scan-action@v3
+        uses: SonarSource/sonarqube-scan-action@v5
         with:
           args: >
             -Dsonar.projectVersion=${{ github.sha }}
