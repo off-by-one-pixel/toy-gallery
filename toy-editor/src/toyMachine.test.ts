@@ -104,3 +104,33 @@ describe("cycleTopCurveAngle / cycleBottomCurveAngle", () => {
     expect(useToyStore.getState().sections[0].topCurveAngle).toBeUndefined();
   });
 });
+
+describe("setSectionColor", () => {
+  it("sets a color on the targeted section only", () => {
+    useToyStore.setState({
+      sections: [
+        { id: 1, diameter: 100, height: 50 },
+        { id: 2, diameter: 80, height: 40 },
+      ],
+    });
+    useToyStore.getState().setSectionColor(2, "#ff0000");
+    const sections = useToyStore.getState().sections;
+    expect(sections[0].color).toBeUndefined();
+    expect(sections[1].color).toBe("#ff0000");
+  });
+
+  it("clears back to the toy color with null", () => {
+    useToyStore.setState({ sections: [{ id: 1, diameter: 100, height: 50, color: "#ff0000" }] });
+    useToyStore.getState().setSectionColor(1, null);
+    expect(useToyStore.getState().sections[0].color).toBeNull();
+  });
+
+  it("survives hydrate and getToy round-trips", () => {
+    useToyStore.getState().hydrate({
+      sections: [{ id: 1, diameter: 100, height: 50, color: "#00ff00" }],
+      topShape: "EGG",
+      bottomShape: "FLAT",
+    });
+    expect(useToyStore.getState().getToy().sections[0].color).toBe("#00ff00");
+  });
+});

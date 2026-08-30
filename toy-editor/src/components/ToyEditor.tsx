@@ -3,8 +3,11 @@ import { useEffect } from "react";
 import type { StyleOption, Toy } from "../toyMachine";
 import { Shape, useToyStore } from "../toyMachine";
 import EditorRender from "./editor/EditorRender";
+import { EditorPaletteContext, type PaletteColor } from "./editor/palette";
 import KnownMeasurements from "./KnownMeasurements";
 import { EditorUnitContext, type Unit } from "./unit";
+
+const NO_PALETTE: readonly PaletteColor[] = [];
 
 type Props = {
   style?: Partial<StyleOption>;
@@ -25,6 +28,9 @@ type Props = {
   /** Display unit for numeric inputs. Storage is always canonical
    *  (mm-equivalent). */
   unit: Unit;
+  /** Preset colors offered by the per-section color picker. When omitted
+   *  or empty, the section color controls are hidden entirely. */
+  palette?: readonly PaletteColor[];
 };
 
 const CAP_SHAPES: { id: Shape; label: string; glyph: string }[] = [
@@ -34,7 +40,15 @@ const CAP_SHAPES: { id: Shape; label: string; glyph: string }[] = [
   { id: Shape.SPIKE, label: "Spike", glyph: "▲" },
 ];
 
-const ToyEditor = ({ style = {}, onChange, ref, initialToy, leadingSlot, unit }: Props) => {
+const ToyEditor = ({
+  style = {},
+  onChange,
+  ref,
+  initialToy,
+  leadingSlot,
+  unit,
+  palette = NO_PALETTE,
+}: Props) => {
   const toy = useToyStore();
   const hydrate = useToyStore((s) => s.hydrate);
   const mergedStyle = { ...toy.style, ...style } as StyleOption;
@@ -57,7 +71,8 @@ const ToyEditor = ({ style = {}, onChange, ref, initialToy, leadingSlot, unit }:
 
   return (
     <EditorUnitContext.Provider value={unit}>
-      <div className="toy-editor-root">
+      <EditorPaletteContext.Provider value={palette}>
+        <div className="toy-editor-root">
         <div className="toy-editor-main">
           <KnownMeasurements />
 
@@ -101,8 +116,9 @@ const ToyEditor = ({ style = {}, onChange, ref, initialToy, leadingSlot, unit }:
           </section>
         </div>
 
-        {leadingSlot && <aside className="toy-editor-side">{leadingSlot}</aside>}
-      </div>
+          {leadingSlot && <aside className="toy-editor-side">{leadingSlot}</aside>}
+        </div>
+      </EditorPaletteContext.Provider>
     </EditorUnitContext.Provider>
   );
 };

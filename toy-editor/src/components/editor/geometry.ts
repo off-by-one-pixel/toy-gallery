@@ -178,15 +178,21 @@ export const diameterHandlePosition = (
   cy: mmToY(meta.bottomMm, layout),
 });
 
+export const lastInputRightX = (
+  layout: EditorLayout,
+  showSectionCircumference: boolean,
+): number =>
+  showSectionCircumference
+    ? layout.diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX + LABEL_INPUT_W_PX
+    : layout.diameterLabelX + LABEL_INPUT_W_PX;
+
 export const removeButtonPosition = (
   meta: SectionMeta,
   layout: EditorLayout,
   showSectionCircumference: boolean,
+  xOffset = 0,
 ): { cx: number; cy: number } => {
-  const lastInputRight = showSectionCircumference
-    ? layout.diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX + LABEL_INPUT_W_PX
-    : layout.diameterLabelX + LABEL_INPUT_W_PX;
-  const cx = lastInputRight + REMOVE_R_PX + 2;
+  const cx = lastInputRightX(layout, showSectionCircumference) + xOffset + REMOVE_R_PX + 2;
   const cy = meta.isLast
     ? mmToY(meta.bottomMm, layout) + BOTTOM_INPUT_OFFSET_PX
     : mmToY(meta.midMm, layout);

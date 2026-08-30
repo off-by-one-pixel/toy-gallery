@@ -41,4 +41,12 @@ describe("ThumbnailRender", () => {
     const svg = renderedSvg(toy([[40, 100]]));
     expect(svg.style.overflow).toBe("visible");
   });
+
+  it("fills each section with its own color, falling back to the toy color", () => {
+    const colored = toy([[40, 60], [50, 90]]);
+    colored.sections[1].color = "#ff8800";
+    const svg = renderedSvg(colored);
+    const fills = Array.from(svg.querySelectorAll("path")).map((p) => p.getAttribute("fill"));
+    expect(fills).toEqual([STYLE.color, "#ff8800"]);
+  });
 });

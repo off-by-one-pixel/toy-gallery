@@ -17,3 +17,4 @@ export type {
   Shape,
   CurveAngle,
 } from "./toyMachine";
+export type { PaletteColor } from "./components/editor/palette";
