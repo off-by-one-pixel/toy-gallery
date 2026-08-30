@@ -1,8 +1,5 @@
 name: SonarQube
 
-# SonarQube Community Edition only supports single-branch (main) analysis.
-# Trigger only on pushes to main — PR analysis would overwrite main's
-# project view since there's no per-PR scope at this edition.
 on:
   push:
     branches: [main]
@@ -13,11 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Sonar uses git history for blame data on new-code highlighting.
           fetch-depth: 0
           submodules: recursive
 
-      # ─── Backend (Django) coverage ──────────────────────────────────
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
@@ -29,20 +24,11 @@ jobs:
           cd api
           uv run coverage run --source=toys manage.py test toys
           uv run coverage xml -o coverage.xml
-          # `coverage xml` writes paths relative to its cwd (here:
-          # api/), so filenames look like `toys/models.py`. Sonar's
-          # project root is the repo root, where the same files live at
-          # `api/toys/models.py`. Prefix the filenames so they're
-          # relative to the project root, and point <source> at "." —
-          # the scanner runs inside a Docker container where
-          # $GITHUB_WORKSPACE (a host path) doesn't exist, but a
-          # relative path resolves against sonar.projectBaseDir.
           sed -i \
             -e 's|<source>.*</source>|<source>.</source>|' \
             -e 's|filename="toys/|filename="api/toys/|g' \
             coverage.xml
 
-      # ─── Frontend (Next.js) coverage ────────────────────────────────
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -59,34 +45,15 @@ jobs:
         run: |
           cd web
           pnpm test --coverage
-          # Same path fix as the BE: vitest emits `SF:src/...` paths
-          # rooted at web/, but Sonar indexes from repo root, so prefix
-          # every source path.
           sed -i 's|^SF:src/|SF:web/src/|' coverage/lcov.info
 
-      # ─── SonarQube scan + Quality Gate ──────────────────────────────
-      # SonarQube Community Edition doesn't support PR analysis
-      # (sonar.pullrequest.* needs Developer Edition or higher).
-      # Every scan goes against the main project; PR decoration via
-      # the GitHub App won't render per-PR reports.
-      #
-      # `sonar.projectVersion=<commit SHA>` stamps each scan with a
-      # unique version so SonarQube's "Previous version" New Code Period
-      # treats every push to main as a fresh boundary. Set the period
-      # mode to "Previous version" in the Sonar UI (Admin → New Code →
-      # Project settings) for this to take effect.
-      - name: SonarQube Scan
+      - name: SonarQube Scan and Quality Gate
         uses: SonarSource/sonarqube-scan-action@v3
         with:
           args: >
             -Dsonar.projectVersion=${{ github.sha }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 5
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
