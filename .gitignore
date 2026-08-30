@@ -3,6 +3,8 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-store/
+.pnpm-debug.log*
 
 # Python artifacts
 __pycache__/

@@ -45,23 +45,25 @@
         "files.trimTrailingWhitespace": true,
         "terminal.integrated.defaultProfile.linux": "bash",
         "sonarlint.ls.vmargs": "-Xmx512m",
-        "sonarlint.analysisExcludesStandalone": "**/node_modules/**,**/.venv/**,**/.next/**,**/dist/**",
+        "sonarlint.analysisExcludesStandalone": "**/node_modules/**,**/.venv/**,**/.next/**,**/dist/**,**/.pnpm-store/**",
         "js/ts.tsserver.maxMemory": 2048,
         "files.watcherExclude": {
           "**/node_modules/**": true,
           "**/.venv/**": true,
           "**/.next/**": true,
-          "**/dist/**": true
+          "**/dist/**": true,
+          "**/.pnpm-store/**": true
         },
         "search.exclude": {
           "**/node_modules": true,
           "**/.venv": true,
           "**/.next": true,
-          "**/dist": true
+          "**/dist": true,
+          "**/.pnpm-store": true
         }
       }
     }
   },
-  "postCreateCommand": "cd api && uv sync && cd ../web && npm install && cd /workspace && pre-commit install",
+  "postCreateCommand": "sudo corepack enable pnpm && cd /workspace/api && uv sync && cd /workspace/toy-editor && pnpm install && cd /workspace/web && pnpm install && cd /workspace && pre-commit install",
   "remoteUser": "vscode"
 }

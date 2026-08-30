@@ -1,7 +1,7 @@
 {
   "name": "web",
   "version": "1.0.0",
-  "description": "Toy Gallery web app — Next.js + HeroUI frontend that talks to the Django API.",
+  "description": "Toy Gallery web app \u2014 Next.js + HeroUI frontend that talks to the Django API.",
   "scripts": {
     "codegen": "orval --config orval.config.ts",
     "predev": "npm run codegen",
@@ -32,7 +32,7 @@
     "react": "^19.1.1",
     "react-calendar-heatmap": "^1.10.0",
     "react-dom": "^19.1.1",
-    "toy-editor": "file:../toy-editor",
+    "toy-editor": "link:../toy-editor",
     "yet-another-react-lightbox": "^3.32.2"
   },
   "devDependencies": {
@@ -51,5 +51,16 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "packageManager": "pnpm@10.34.5+sha512.a4ee05f2f73658255bd6a89859c065a45c28a57daefae2c893a168ee2b73168c37b91e83e57ea67654ad03f03031746430e8bce38e362e042605fb8abc80192e",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
+      "@tailwindcss/oxide",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
 }

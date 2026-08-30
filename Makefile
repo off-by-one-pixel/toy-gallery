@@ -23,7 +23,7 @@ be:
 PROD_SETTINGS = DJANGO_SETTINGS_MODULE=toy_gallery.settings_docker_local
 
 be-prod:
-	cd web && npm run build
+	cd web && pnpm build
 	cd api && $(PROD_SETTINGS) uv run python manage.py migrate --noinput
 	cd api && $(PROD_SETTINGS) uv run python manage.py collectstatic --noinput
 	cd api && $(PROD_SETTINGS) uv run gunicorn toy_gallery.wsgi:application --bind 0.0.0.0:8000
@@ -32,7 +32,7 @@ migrate:
 	cd api && uv run python manage.py migrate
 
 fe:
-	cd web && npm run dev
+	cd web && pnpm dev
 
 test: test-be test-fe
 
@@ -40,7 +40,7 @@ test-be:
 	cd api && uv run python manage.py test toys
 
 test-fe:
-	cd web && npm test
+	cd web && pnpm test
 
 schema:
 	cd api && uv run python manage.py spectacular --file schema.yml --validate
