@@ -29,7 +29,7 @@ const RemoveButtons = () => {
             aria-label={`Remove section ${meta.index + 1}`}
           >
             <circle cx={cx} cy={cy} r={REMOVE_R_PX} />
-            <text x={cx} y={cy + 3} textAnchor="middle">×</text>
+            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">×</text>
           </g>
         );
       })}

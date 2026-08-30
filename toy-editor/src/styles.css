@@ -466,11 +466,7 @@
 
 .toy-editor-remove {
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.12s ease;
 }
-.toy-editor-remove:hover,
-.toy-editor-chrome:hover .toy-editor-remove { opacity: 1; }
 .toy-editor-remove circle {
   fill: var(--toy-editor-surface);
   stroke: var(--toy-editor-line-strong);
