@@ -16,7 +16,7 @@ permissions:
 jobs:
   build:
     name: Build and push :edge to GHCR
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
         with:
