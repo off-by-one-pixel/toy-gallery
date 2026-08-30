@@ -40,6 +40,22 @@ describe('templateJsonToEditor', () => {
     expect(out.sections[1].topCurveAngle).toBeUndefined();
   });
 
+  it('preserves per-section colors and drops non-string values', () => {
+    const entry = {
+      ...fullEntry,
+      shape: {
+        ...fullEntry.shape,
+        sections: [
+          { ...fullEntry.shape.sections[0], color: '#ff8800' },
+          { ...fullEntry.shape.sections[1], color: 7 },
+        ],
+      },
+    };
+    const out = templateJsonToEditor(JSON.stringify(entry));
+    expect(out.sections[0].color).toBe('#ff8800');
+    expect(out.sections[1].color).toBeUndefined();
+  });
+
   it('defaults missing topSectionShape / bottomSectionShape to FLAT', () => {
     const out = templateJsonToEditor(JSON.stringify({ ...fullEntry, shape: { sections: fullEntry.shape.sections } }));
     expect(out.topShape).toBe(SectionShape.FLAT);

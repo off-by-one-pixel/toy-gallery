@@ -70,6 +70,7 @@ export function editorToTemplateJson(state: EditorState): string {
         order: idx,
         diameter: s.diameter,
         height: s.height,
+        color: s.color ?? undefined,
         topCurveAngle: s.topCurveAngle,
         bottomCurveAngle: s.bottomCurveAngle,
       })),
