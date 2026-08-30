@@ -1,4 +1,4 @@
-import type { Toy as EditorToy } from 'toy-editor';
+import type { PaletteColor, Toy as EditorToy } from 'toy-editor';
 
 import { SectionShape } from '@/api/types';
 
@@ -14,6 +14,11 @@ export const PRESET_COLORS: readonly { name: string; hex: string }[] = [
   { name: 'Red', hex: '#fca5a5' },
   { name: 'Green', hex: '#bbf7d0' },
 ];
+
+export const SECTION_PALETTE: readonly PaletteColor[] = PRESET_COLORS.map(({ name, hex }) => ({
+  name,
+  value: hex,
+}));
 
 /** Legacy three-section default toy seeded into the editor when the
  *  user picks "Start blank" in the template wizard. Kept here so the

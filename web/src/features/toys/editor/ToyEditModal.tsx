@@ -15,7 +15,7 @@ import NewToyTemplateStep from '@/features/toys/template/NewToyTemplateStep';
 import Header from '@/features/toys/editor/Header';
 import IdentificationGroup from '@/features/toys/editor/IdentificationGroup';
 import JsonDialogs from '@/features/toys/editor/JsonDialogs';
-import { NEW_TOY_MM } from '@/features/toys/editor/constants';
+import { NEW_TOY_MM, SECTION_PALETTE } from '@/features/toys/editor/constants';
 import { useToyEditForm } from '@/features/toys/editor/useToyEditForm';
 
 type Props = Readonly<{
@@ -100,6 +100,7 @@ export default function ToyEditModal({
               initialToy={form.initialToy ?? NEW_TOY_MM}
               style={style}
               unit={unit}
+              palette={SECTION_PALETTE}
               leadingSlot={<IdentificationGroup form={form} />}
             />
           )}

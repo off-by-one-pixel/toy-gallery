@@ -54,6 +54,15 @@ describe('editorToPayload', () => {
     expect(out.shape.sections[0].circumference).toBeNull();
   });
 
+  it('carries per-section colors into the payload', () => {
+    const colored: EditorState = {
+      ...baseState,
+      sections: [{ ...sections[0], color: '#ff8800' }],
+    };
+    const out = editorToPayload({ state: colored, identity });
+    expect(out.shape.sections[0].color).toBe('#ff8800');
+  });
+
   it('drops the editor-only touched flag from sections', () => {
     const withTouched: EditorState = {
       ...baseState,
