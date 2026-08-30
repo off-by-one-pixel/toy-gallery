@@ -9,6 +9,7 @@ import CurveAngleButtons from "./CurveAngleButtons";
 import { EditorLayoutProvider } from "./EditorLayoutContext";
 import { useEditorUiStore } from "./editorUiStore";
 import Ruler from "./Ruler";
+import SectionColorControls from "./SectionColorControls";
 import SectionLabels from "./SectionLabels";
 import TotalReadout from "./TotalReadout";
 import { useDragHandlers } from "./hooks/useDragHandlers";
@@ -58,6 +59,7 @@ const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
             <SectionLabels />
             <DragLayer handlers={handlers} />
             <CurveAngleButtons />
+            <SectionColorControls />
           </g>
         </EditorLayoutProvider>
       )}

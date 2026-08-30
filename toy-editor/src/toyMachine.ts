@@ -38,6 +38,7 @@ export interface ToySection {
   id: number;
   diameter: number;
   height: number;
+  color?: string | null;
   /** Optional measured circumference in the same units as diameter.
    *  Preserved for backward compatibility with consumers that persist it
    *  per-section (notably the toy_gallery backend). */
@@ -110,6 +111,7 @@ interface ToyStore extends Toy {
   setDiameter: (id: number, diameter: number) => void;
   setHeight: (id: number, height: number) => void;
   setCircumference: (id: number, circumference: number | null) => void;
+  setSectionColor: (id: number, color: string | null) => void;
 
   /**
    * Move the boundary between two sections. `aboveId` is the section above
@@ -249,6 +251,13 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     set((state) => ({
       sections: state.sections.map((section) =>
         section.id === id ? { ...section, circumference } : section,
+      ),
+    }));
+  },
+  setSectionColor: (id, color) => {
+    set((state) => ({
+      sections: state.sections.map((section) =>
+        section.id === id ? { ...section, color } : section,
       ),
     }));
   },

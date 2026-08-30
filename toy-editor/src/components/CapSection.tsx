@@ -51,7 +51,7 @@ const CapSection = ({
     >
       <path
         d={d}
-        fill={style.color}
+        fill={section.color || style.color}
         stroke={style.borderColor}
         strokeWidth={style.borderWidth}
         vectorEffect="non-scaling-stroke"
