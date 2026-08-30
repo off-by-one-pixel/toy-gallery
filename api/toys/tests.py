@@ -157,6 +157,33 @@ class CurveAngleTests(TestCase):
         self.assertEqual(sections[1]["top_curve_angle"], 0)
         self.assertEqual(sections[1]["bottom_curve_angle"], 45)
 
+    def test_create_defaults_section_color_to_null(self):
+        response = self.client.post("/toys/toys/", _payload(), format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        for section in response.data["shape"]["sections"]:
+            self.assertIsNone(section["color"])
+
+    def test_create_persists_section_colors(self):
+        payload = _payload()
+        payload["shape"]["sections"][1]["color"] = "#ff8800"
+        response = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        sections = response.data["shape"]["sections"]
+        self.assertIsNone(sections[0]["color"])
+        self.assertEqual(sections[1]["color"], "#ff8800")
+
+    def test_update_clears_section_color(self):
+        payload = _payload()
+        payload["shape"]["sections"][0]["color"] = "#ff8800"
+        created = self.client.post("/toys/toys/", payload, format="json")
+        self.assertEqual(created.status_code, 201, created.content)
+        payload["shape"]["sections"][0]["color"] = None
+        response = self.client.put(
+            f"/toys/toys/{created.data['id']}/", payload, format="json"
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertIsNone(response.data["shape"]["sections"][0]["color"])
+
     def test_rejects_curve_angle_outside_choices(self):
         payload = _payload()
         payload["shape"]["sections"][0]["top_curve_angle"] = 30  # not in [0,45,90,135,180]

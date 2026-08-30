@@ -46,6 +46,7 @@ class ShapeSection(models.Model):
     diameter = models.FloatField()
     height = models.FloatField()
     order = models.IntegerField()
+    color = models.CharField(max_length=50, null=True, blank=True)
     circumference = models.FloatField(null=True, blank=True)
     top_curve_angle = models.IntegerField(choices=CURVE_ANGLE_CHOICES, default=0)
     bottom_curve_angle = models.IntegerField(choices=CURVE_ANGLE_CHOICES, default=180)
