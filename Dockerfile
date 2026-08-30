@@ -15,7 +15,7 @@
 FROM node:22-alpine AS toy_editor
 WORKDIR /toy-editor
 COPY toy-editor/ ./
-RUN npm ci && npm run build
+RUN corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
 
 # ----- Stage 2: build the Next.js static export --------------------------
 FROM node:22-alpine AS frontend
@@ -23,8 +23,8 @@ ARG APP_VERSION=dev
 ARG APP_COMMIT_SHA=local
 COPY --from=toy_editor /toy-editor /workspace/toy-editor
 WORKDIR /workspace/web
-COPY web/package.json web/package-lock.json ./
-RUN npm ci
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 COPY web/ ./
 COPY api/schema.yml /workspace/api/schema.yml
 # Empty string flips the frontend into same-origin mode (see src/config.ts).
@@ -33,7 +33,7 @@ COPY api/schema.yml /workspace/api/schema.yml
 ENV NEXT_PUBLIC_API_URL=""
 ENV NEXT_PUBLIC_APP_VERSION=$APP_VERSION
 ENV NEXT_PUBLIC_APP_COMMIT_SHA=$APP_COMMIT_SHA
-RUN npm run build
+RUN pnpm build
 
 # ----- Stage 3: install Python deps with uv ------------------------------
 FROM python:3.13-slim AS python_deps

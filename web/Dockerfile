@@ -8,23 +8,24 @@ FROM node:22-alpine AS toy_editor
 WORKDIR /toy-editor
 RUN apk add --no-cache git
 RUN git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git . \
- && npm ci \
- && npm run build
+ && corepack enable pnpm \
+ && pnpm install --frozen-lockfile \
+ && pnpm build
 
 # ----- Stage 2: install + build the Next.js app -------------------------
 FROM node:22-alpine AS builder
-# The Next.js app's package.json has `toy-editor: file:../toy-editor`.
+# The Next.js app's package.json has `toy-editor: link:../toy-editor`.
 # Preserve the sibling layout under /workspace/.
 COPY --from=toy_editor /toy-editor /workspace/toy-editor
 WORKDIR /workspace/web
-COPY web/package.json web/package-lock.json ./
-RUN npm ci
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 COPY web/ ./
 # The orval config reads `../api/schema.yml`. Bring just that file
 # into the builder so the generated SDK is always regenerated from the
 # committed schema at image-build time.
 COPY api/schema.yml /workspace/api/schema.yml
-RUN npm run build
+RUN pnpm build
 
 # ----- Stage 3: runtime (serves the static export) ----------------------
 FROM node:22-alpine AS runner
