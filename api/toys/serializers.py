@@ -20,6 +20,7 @@ class ToyShapeSectionSerializer(serializers.ModelSerializer):
             "height",
             "diameter",
             "circumference",
+            "color",
             "top_curve_angle",
             "bottom_curve_angle",
         ]

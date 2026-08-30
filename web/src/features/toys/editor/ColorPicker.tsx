@@ -12,12 +12,12 @@ type Props = Readonly<{
 
 export default function ColorPicker({ value, onChange }: Props) {
   const t = useTranslations('colorPicker');
-  const isPreset = PRESET_COLORS.some((p) => p.hex.toLowerCase() === value.toLowerCase());
+  const isPreset = PRESET_COLORS.some((p) => p.value.toLowerCase() === value.toLowerCase());
   return (
     <div className="flex flex-wrap items-center gap-2">
       <ColorSwatchPicker value={value} onChange={(c) => onChange(c.toString('hex'))} aria-label={t('presets')}>
         {PRESET_COLORS.map((p) => (
-          <ColorSwatchPicker.Item key={p.hex} color={p.hex} aria-label={p.name}>
+          <ColorSwatchPicker.Item key={p.value} color={p.value} aria-label={p.name}>
             <ColorSwatchPicker.Swatch />
             <ColorSwatchPicker.Indicator />
           </ColorSwatchPicker.Item>

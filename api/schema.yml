@@ -1276,6 +1276,10 @@ components:
           type: number
           format: double
           nullable: true
+        color:
+          type: string
+          nullable: true
+          maxLength: 50
         top_curve_angle:
           allOf:
           - $ref: '#/components/schemas/CurveAngleEnum'
@@ -1309,6 +1313,10 @@ components:
           type: number
           format: double
           nullable: true
+        color:
+          type: string
+          nullable: true
+          maxLength: 50
         top_curve_angle:
           allOf:
           - $ref: '#/components/schemas/CurveAngleEnum'
