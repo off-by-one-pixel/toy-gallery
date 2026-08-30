@@ -46,17 +46,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Enable pnpm
+        run: corepack enable pnpm
       - name: Install and build toy-editor
         working-directory: toy-editor
         run: |
-          npm ci
-          npm run build
+          pnpm install --frozen-lockfile
+          pnpm build
       - name: Install FE dependencies
-        run: cd web && npm ci
+        run: cd web && pnpm install --frozen-lockfile
       - name: Run FE tests with coverage
         run: |
           cd web
-          npm test -- --coverage
+          pnpm test --coverage
           # Same path fix as the BE: vitest emits `SF:src/...` paths
           # rooted at web/, but Sonar indexes from repo root, so prefix
           # every source path.
