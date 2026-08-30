@@ -122,4 +122,12 @@ describe('editorToTemplateJson', () => {
     const parsed = JSON.parse(editorToTemplateJson(baseState));
     expect(parsed.shape.sections[0].topCurveAngle).toBe(90);
   });
+
+  it('emits section colors when set and omits the key when inherited', () => {
+    const parsed = JSON.parse(
+      editorToTemplateJson({ ...baseState, sections: [{ ...sections[0], color: '#ff8800' }, sections[1]] }),
+    );
+    expect(parsed.shape.sections[0].color).toBe('#ff8800');
+    expect(parsed.shape.sections[1]).not.toHaveProperty('color');
+  });
 });

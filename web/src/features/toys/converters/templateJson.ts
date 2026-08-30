@@ -21,6 +21,7 @@ export function templateJsonToEditor(text: string): EditorToy {
       id: typeof s.id === 'number' ? s.id : idx,
       diameter: Number(s.diameter),
       height: Number(s.height),
+      color: typeof s.color === 'string' ? s.color : undefined,
       topCurveAngle: s.topCurveAngle,
       bottomCurveAngle: s.bottomCurveAngle,
     })),
