@@ -7,18 +7,13 @@ import { SectionShape } from '@/api/types';
 export const DEFAULT_FILL = '#c4b5fd';
 
 /** Preset color chips shown in the modal's color picker. */
-export const PRESET_COLORS: readonly { name: string; hex: string }[] = [
-  { name: 'Purple', hex: '#c4b5fd' },
-  { name: 'Slate', hex: '#475569' },
-  { name: 'Blue', hex: '#bae6fd' },
-  { name: 'Red', hex: '#fca5a5' },
-  { name: 'Green', hex: '#bbf7d0' },
+export const PRESET_COLORS: readonly PaletteColor[] = [
+  { name: 'Purple', value: '#c4b5fd' },
+  { name: 'Slate', value: '#475569' },
+  { name: 'Blue', value: '#bae6fd' },
+  { name: 'Red', value: '#fca5a5' },
+  { name: 'Green', value: '#bbf7d0' },
 ];
-
-export const SECTION_PALETTE: readonly PaletteColor[] = PRESET_COLORS.map(({ name, hex }) => ({
-  name,
-  value: hex,
-}));
 
 /** Legacy three-section default toy seeded into the editor when the
  *  user picks "Start blank" in the template wizard. Kept here so the
