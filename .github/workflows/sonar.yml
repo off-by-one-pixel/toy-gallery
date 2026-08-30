@@ -51,7 +51,7 @@ jobs:
         run: echo "SONAR_USER_HOME=$HOME/.sonar" >> "$GITHUB_ENV"
 
       - name: SonarQube Scan and Quality Gate
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
         with:
           args: >
             -Dsonar.projectVersion=${{ github.sha }}
