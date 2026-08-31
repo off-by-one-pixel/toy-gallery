@@ -12,11 +12,15 @@ type Dict = { [key: string]: unknown };
 const toCamel = (key: string) => key.replaceAll(/_([a-z])/g, (_, c) => (c as string).toUpperCase());
 const toSnake = (key: string) => key.replaceAll(/([A-Z])/g, (c) => `_${c.toLowerCase()}`);
 
+const OPAQUE_KEYS = new Set(['customAttributes', 'custom_attributes']);
+
 const mapKeysDeep = (value: unknown, rename: (key: string) => string): unknown => {
   if (Array.isArray(value)) return value.map((v) => mapKeysDeep(v, rename));
   if (value && typeof value === 'object' && value.constructor === Object) {
     const out: Dict = {};
-    for (const [k, v] of Object.entries(value as Dict)) out[rename(k)] = mapKeysDeep(v, rename);
+    for (const [k, v] of Object.entries(value as Dict)) {
+      out[rename(k)] = OPAQUE_KEYS.has(k) ? v : mapKeysDeep(v, rename);
+    }
     return out;
   }
   return value;

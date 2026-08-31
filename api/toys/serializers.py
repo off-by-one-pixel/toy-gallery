@@ -319,6 +319,11 @@ class MediaStatusSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
 
 
+class AttributeSuggestionSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    values = serializers.ListField(child=serializers.CharField())
+
+
 class RefreshMediaResponseSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
     sessions_with_media = serializers.IntegerField()

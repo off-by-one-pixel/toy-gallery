@@ -40,6 +40,27 @@ class ToyViewSet(viewsets.ModelViewSet):
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(responses=serializers.AttributeSuggestionSerializer(many=True))
+    @action(detail=False, methods=["get"], url_path="attribute-suggestions")
+    def attribute_suggestions(self, request):
+        canonical: dict[str, str] = {}
+        values: dict[str, set[str]] = {}
+        for attrs in models.Toy.objects.values_list("custom_attributes", flat=True):
+            for raw_key, raw_value in (attrs or {}).items():
+                key = raw_key.strip()
+                if not key:
+                    continue
+                fold = key.casefold()
+                canonical.setdefault(fold, key)
+                value = str(raw_value).strip()
+                if value:
+                    values.setdefault(fold, set()).add(value)
+        data = [
+            {"key": canonical[fold], "values": sorted(values.get(fold, set()), key=lambda v: (v.casefold(), v))}
+            for fold in sorted(canonical)
+        ]
+        return Response(serializers.AttributeSuggestionSerializer(data, many=True).data)
+
     @extend_schema(responses=serializers.ExportEnvelopeSerializer)
     @action(detail=False, methods=["get"])
     def export(self, request):

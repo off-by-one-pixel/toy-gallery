@@ -1,4 +1,4 @@
-import type { AttributeRow } from '@/api/types';
+import type { AttributeRow, AttributeSuggestion } from '@/api/types';
 
 /** Returns a fresh row id on each call. The hook supplies a
  *  per-instance counter (via `useRef`) so test setups are isolated. */
@@ -29,6 +29,24 @@ export function toDict(rows: readonly AttributeRow[]): Record<string, string> {
     if (isRowReady(row)) out[row.key.trim()] = row.value;
   }
   return out;
+}
+
+export type AttributeSuggestions = {
+  keys: readonly string[];
+  valuesByKey: ReadonlyMap<string, readonly string[]>;
+};
+
+export const NO_SUGGESTIONS: AttributeSuggestions = { keys: [], valuesByKey: new Map() };
+
+export function toAttributeSuggestions(entries: readonly AttributeSuggestion[]): AttributeSuggestions {
+  return {
+    keys: entries.map((entry) => entry.key),
+    valuesByKey: new Map(entries.map((entry) => [entry.key.toLowerCase(), entry.values])),
+  };
+}
+
+export function suggestedValues(suggestions: AttributeSuggestions, key: string): readonly string[] {
+  return suggestions.valuesByKey.get(key.trim().toLowerCase()) ?? [];
 }
 
 /** Shallow equality on string-keyed string-valued dictionaries. */

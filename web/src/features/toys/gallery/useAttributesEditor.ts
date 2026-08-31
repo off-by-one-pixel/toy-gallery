@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
+import { useAttributeSuggestions } from '@/features/toys/gallery/useAttributeSuggestions';
 import type { AttributeRow, Toy } from '@/api/types';
 import { useToys } from '@/features/toys/useToys';
 
@@ -9,6 +10,8 @@ export type AttributeSaveState = 'idle' | 'saving' | 'saved';
 export interface AttributesEditor {
   rows: AttributeRow[];
   saveState: AttributeSaveState;
+  keySuggestions: readonly string[];
+  valuesFor: (key: string) => readonly string[];
   updateKey: (rowId: number, key: string) => void;
   updateValue: (rowId: number, value: string) => void;
   removeRow: (rowId: number) => void;
@@ -28,6 +31,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   const rowsRef = useRef(rows);
   const savedRef = useRef<Record<string, string>>(initial);
   const { updateToy } = useToys();
+  const { keySuggestions, valuesFor, invalidateSuggestions } = useAttributeSuggestions();
 
   const inFlight = useRef(false);
   const pending = useRef(false);
@@ -60,6 +64,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
     const updated = await updateToy({ toyId: toy.id, changes: { customAttributes: toDict(rowsRef.current) } });
     if (updated) {
       applyServerResponse(updated.customAttributes ?? {});
+      invalidateSuggestions();
       setSaveState('saved');
       clearTimeout(savedTimer.current);
       savedTimer.current = setTimeout(() => setSaveState('idle'), 2000);
@@ -103,6 +108,8 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   return {
     rows,
     saveState,
+    keySuggestions,
+    valuesFor,
     updateKey: (rowId, key) => mutateRow(rowId, (r) => ({ ...r, key })),
     updateValue: (rowId, value) => mutateRow(rowId, (r) => ({ ...r, value })),
     removeRow: (rowId) => {

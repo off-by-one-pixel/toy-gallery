@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -7,7 +8,10 @@ import { useAttributesEditor } from '@/features/toys/gallery/useAttributesEditor
 import type { Toy } from '@/api/types';
 
 export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
-  const { rows, saveState, updateKey, updateValue, removeRow, addRow, commitChanges } = useAttributesEditor(toy);
+  const { rows, saveState, keySuggestions, valuesFor, updateKey, updateValue, removeRow, addRow, commitChanges } =
+    useAttributesEditor(toy);
+  const listId = useId();
+  const keyListId = `${listId}-keys`;
   const blurOnEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') e.currentTarget.blur();
   };
@@ -21,6 +25,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
             <input
               type="text"
               value={row.key}
+              list={keyListId}
               placeholder={t('keyPlaceholder')}
               onChange={(e) => updateKey(row.rowId, e.target.value)}
               onBlur={commitChanges}
@@ -30,12 +35,18 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
             <input
               type="text"
               value={row.value}
+              list={`${listId}-values-${row.rowId}`}
               placeholder={t('valuePlaceholder')}
               onChange={(e) => updateValue(row.rowId, e.target.value)}
               onBlur={commitChanges}
               onKeyDown={blurOnEnter}
               className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
             />
+            <datalist id={`${listId}-values-${row.rowId}`}>
+              {valuesFor(row.key).map((value) => (
+                <option key={value} value={value} />
+              ))}
+            </datalist>
             <button
               type="button"
               onClick={() => removeRow(row.rowId)}
@@ -47,6 +58,11 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
           </li>
         ))}
       </ul>
+      <datalist id={keyListId}>
+        {keySuggestions.map((key) => (
+          <option key={key} value={key} />
+        ))}
+      </datalist>
       <div className="mt-1.5 flex items-center justify-between gap-2">
         <button type="button" onClick={addRow} className="text-caption text-muted transition-colors hover:text-accent">
           {t('addButton')}
