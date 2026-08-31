@@ -378,11 +378,12 @@ class PatchToyShapeTests(TestCase):
 
 class ExportRegistryTests(TestCase):
     def test_latest_returns_highest_version(self):
-        self.assertIs(export_mod.latest(), export_mod.ExportV2)
+        self.assertIs(export_mod.latest(), export_mod.ExportV3)
 
     def test_for_version_returns_handler(self):
         self.assertIs(export_mod.for_version(1), export_mod.ExportV1)
         self.assertIs(export_mod.for_version(2), export_mod.ExportV2)
+        self.assertIs(export_mod.for_version(3), export_mod.ExportV3)
 
     def test_for_version_rejects_unknown(self):
         from rest_framework.exceptions import ValidationError
@@ -413,7 +414,7 @@ class ExportImportTests(TestCase):
         response = self.client.get("/toys/toys/export/")
         self.assertEqual(response.status_code, 200, response.content)
         data = response.data
-        self.assertEqual(data["version"], 2)
+        self.assertEqual(data["version"], 3)
         self.assertIn("exported_at", data)
         self.assertIn("sessions", data)
         self.assertEqual(len(data["toys"]), 1)
@@ -510,20 +511,28 @@ class ExportV2SessionsTests(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         return response.data["id"]
 
-    def test_v2_round_trip_includes_sessions(self):
+    def test_round_trip_includes_sessions_with_durations_and_end_time(self):
         self._create_session(
             [
-                {"toy": self.toy_a, "involvement": "FULLY_INSERTED"},
+                {"toy": self.toy_a, "involvement": "FULLY_INSERTED", "duration_minutes": 45},
                 {"toy": self.toy_b, "involvement": "USED"},
             ],
             started_at="2026-04-01T10:00:00Z",
         )
+        session_id = models.Session.objects.get().id
+        self.client.patch(
+            f"/toys/sessions/{session_id}/", {"ended_at": "2026-04-01T11:00:00Z"}, format="json"
+        )
         exported = self.client.get("/toys/toys/export/").data
-        self.assertEqual(exported["version"], 2)
+        self.assertEqual(exported["version"], 3)
         self.assertEqual(len(exported["sessions"]), 1)
         local_ids = {t["_id"] for t in exported["toys"]}
         self.assertEqual(local_ids, {0, 1})
-        for entry in exported["sessions"][0]["entries"]:
+        exported_session = exported["sessions"][0]
+        self.assertIn("2026-04-01T11:00:00", exported_session["ended_at"])
+        durations = {e["duration_minutes"] for e in exported_session["entries"]}
+        self.assertEqual(durations, {45, None})
+        for entry in exported_session["entries"]:
             self.assertIn(entry["toy_id"], local_ids)
 
         models.Session.objects.all().delete()
@@ -535,10 +544,32 @@ class ExportV2SessionsTests(TestCase):
         self.assertEqual(models.Toy.objects.count(), 2)
         self.assertEqual(models.Session.objects.count(), 1)
         session = models.Session.objects.get()
+        self.assertIsNotNone(session.ended_at)
         involvements = {e.involvement for e in session.entries.all()}
         self.assertEqual(involvements, {"FULLY_INSERTED", "USED"})
         toy_names = {e.toy.name for e in session.entries.all()}
         self.assertEqual(toy_names, {"A", "B"})
+        self.assertEqual({e.duration_minutes for e in session.entries.all()}, {45, None})
+
+    def test_v2_envelope_still_imports(self):
+        envelope = {
+            "version": 2,
+            "exported_at": "x",
+            "toys": [
+                {**_payload(section_circumferences=(None, 200.0, None)), "_id": 0},
+            ],
+            "sessions": [
+                {
+                    "started_at": "2026-04-01T10:00:00Z",
+                    "entries": [{"toy_id": 0, "involvement": "USED"}],
+                }
+            ],
+        }
+        response = self.client.post("/toys/toys/import/", envelope, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        session = models.Session.objects.latest("id")
+        self.assertIsNone(session.ended_at)
+        self.assertEqual([e.duration_minutes for e in session.entries.all()], [None])
 
     def test_v2_import_rejects_unknown_toy_id_in_session_entry(self):
         envelope = {
