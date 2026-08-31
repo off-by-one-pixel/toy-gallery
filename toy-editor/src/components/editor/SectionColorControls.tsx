@@ -104,7 +104,7 @@ const SectionColorControls = () => {
                   type="color"
                   aria-label="Custom color"
                   value={customPickerValue(openMeta.section.color)}
-                  onChange={(e) => pick(openMeta.section.id, e.target.value)}
+                  onChange={(e) => setSectionColor(openMeta.section.id, e.target.value)}
                 />
               </label>
             </div>
