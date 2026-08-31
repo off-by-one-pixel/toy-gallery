@@ -54,8 +54,10 @@ describe('useAttributesEditor — suggestions', () => {
     expect(result.current.valuesFor('Material')).toEqual(['Glass', 'Silicone']);
 
     act(() => result.current.updateValue(result.current.rows[0].rowId, 'Glass'));
-    act(() => result.current.commitChanges());
-    await flush();
+    await act(async () => {
+      result.current.commitChanges();
+      await flush();
+    });
     expect(invalidateSuggestionsMock).toHaveBeenCalledTimes(1);
   });
 });
