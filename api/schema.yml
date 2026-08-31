@@ -579,6 +579,22 @@ paths:
       responses:
         '204':
           description: No response body
+  /toys/toys/attribute-suggestions/:
+    get:
+      operationId: toys_toys_attribute_suggestions_list
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttributeSuggestion'
+          description: ''
   /toys/toys/delete_all/:
     delete:
       operationId: toys_toys_delete_all_destroy
@@ -635,6 +651,18 @@ paths:
           description: ''
 components:
   schemas:
+    AttributeSuggestion:
+      type: object
+      properties:
+        key:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+      required:
+      - key
+      - values
     ChangePasswordRequest:
       type: object
       properties:

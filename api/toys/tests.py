@@ -204,6 +204,38 @@ class CustomAttributesTests(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         return response.data
 
+    def _suggestions(self):
+        response = self.client.get("/toys/toys/attribute-suggestions/")
+        self.assertEqual(response.status_code, 200, response.content)
+        return response.data
+
+    def test_suggestions_empty_without_attributes(self):
+        self._create_toy()
+        self.assertEqual(self._suggestions(), [])
+
+    def test_suggestions_collect_keys_sorted_with_per_key_values(self):
+        self._create_toy(custom_attributes={"Material": "Silicone", "Firmness": "Soft"})
+        self._create_toy(custom_attributes={"Base": "Suction", "Material": "Glass"})
+        self.assertEqual(
+            self._suggestions(),
+            [
+                {"key": "Base", "values": ["Suction"]},
+                {"key": "Firmness", "values": ["Soft"]},
+                {"key": "Material", "values": ["Glass", "Silicone"]},
+            ],
+        )
+
+    def test_suggestions_merge_keys_case_insensitively_and_skip_blanks(self):
+        self._create_toy(custom_attributes={"Material": "Silicone", "  ": "ignored"})
+        self._create_toy(custom_attributes={"material": "silicone", "Base": "  "})
+        self.assertEqual(
+            self._suggestions(),
+            [
+                {"key": "Base", "values": []},
+                {"key": "Material", "values": ["Silicone", "silicone"]},
+            ],
+        )
+
     def test_create_round_trips_custom_attributes(self):
         data = self._create_toy(custom_attributes={"firmness": "medium", "price": "99.00"})
         self.assertEqual(data["custom_attributes"], {"firmness": "medium", "price": "99.00"})
