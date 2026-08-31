@@ -15,7 +15,7 @@
 FROM node:22-alpine AS toy_editor
 WORKDIR /toy-editor
 COPY toy-editor/package.json toy-editor/pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN corepack enable pnpm && pnpm install --frozen-lockfile --ignore-scripts
 COPY toy-editor/ ./
 RUN pnpm build
 
