@@ -47,7 +47,7 @@ export const SESSION_STATS: readonly StatDef[] = [
     window: 'year',
     metric: METRIC_TOTAL_DURATION,
     hue: ACTIVITY_PALETTE.durationHue,
-    gamma: ACTIVITY_PALETTE.sessionsGamma,
+    gamma: ACTIVITY_PALETTE.durationGamma,
     title: (ctx) => ctx.t('session.timePerDayTitle'),
     formatLegend: (value, ctx) => formatDuration(Math.round(value), ctx.locale),
   },

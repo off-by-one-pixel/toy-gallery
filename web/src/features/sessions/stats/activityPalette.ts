@@ -8,6 +8,7 @@ export interface ActivityPalette {
   durationHue: number;
   weekdayHue: number;
   sessionsGamma: number;
+  durationGamma: number;
   saturation: number;
   lightnessMax: number;
   lightnessMin: number;
@@ -24,6 +25,7 @@ export const ACTIVITY_PALETTE: ActivityPalette = {
   durationHue: 185,
   weekdayHue: 270,
   sessionsGamma: 1.4,
+  durationGamma: 0.9,
   saturation: 65,
   lightnessMax: 90,
   lightnessMin: 40,
