@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query';
 export const queryKeys = {
   toys: {
     all: ['toys'] as const,
+    attributeSuggestions: ['toys', 'attributeSuggestions'] as const,
   },
   sessions: {
     all: ['sessions'] as const,

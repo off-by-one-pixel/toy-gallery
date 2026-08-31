@@ -14,6 +14,7 @@ import {
   toysSessionsRetrieve,
   toysSessionsUpdate,
   toysTokenCreate,
+  toysToysAttributeSuggestionsList,
   toysToysCreate,
   toysToysDeleteAllDestroy,
   toysToysDestroy,
@@ -35,6 +36,7 @@ import type {
 } from '@/api/generated/schemas';
 import {
   APIError,
+  type AttributeSuggestion,
   type StatsGroup,
   type Session,
   type SessionMedia,
@@ -82,6 +84,11 @@ export const changePassword = async (currentPassword: string, newPassword: strin
 export const fetchToys = async (): Promise<Toy[]> => {
   const { data } = await toysToysList();
   return data.map((t) => snakeToCamel<Toy>(t));
+};
+
+export const fetchAttributeSuggestions = async (): Promise<AttributeSuggestion[]> => {
+  const { data } = await toysToysAttributeSuggestionsList();
+  return data;
 };
 
 export const deleteToy = async (id: number | string): Promise<void> => {

@@ -3,10 +3,21 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { updateToyMock } = vi.hoisted(() => ({ updateToyMock: vi.fn() }));
+const { updateToyMock, invalidateSuggestionsMock } = vi.hoisted(() => ({
+  updateToyMock: vi.fn(),
+  invalidateSuggestionsMock: vi.fn(),
+}));
 
 vi.mock('@/features/toys/useToys', () => ({
   useToys: () => ({ updateToy: updateToyMock }),
+}));
+
+vi.mock('@/features/toys/gallery/useAttributeSuggestions', () => ({
+  useAttributeSuggestions: () => ({
+    keySuggestions: ['Firmness', 'Material'],
+    valuesFor: (key: string) => (key === 'Material' ? ['Glass', 'Silicone'] : []),
+    invalidateSuggestions: invalidateSuggestionsMock,
+  }),
 }));
 
 import type { Toy } from '@/api/types';
@@ -32,6 +43,21 @@ const flush = async () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+describe('useAttributesEditor — suggestions', () => {
+  it('exposes the suggestion source and refreshes it after a successful save', async () => {
+    const toy = makeToy({ customAttributes: { Material: 'Silicone' } });
+    patchReturning(makeToy({ customAttributes: { Material: 'Glass' } }));
+    const { result } = renderHook(() => useAttributesEditor(toy));
+    expect(result.current.keySuggestions).toEqual(['Firmness', 'Material']);
+    expect(result.current.valuesFor('Material')).toEqual(['Glass', 'Silicone']);
+
+    act(() => result.current.updateValue(result.current.rows[0].rowId, 'Glass'));
+    act(() => result.current.commitChanges());
+    await flush();
+    expect(invalidateSuggestionsMock).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('useAttributesEditor — initial state', () => {

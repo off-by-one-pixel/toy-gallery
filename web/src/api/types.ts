@@ -1,4 +1,6 @@
 import { InvolvementEnum, SectionShapeEnum } from '@/api/generated/schemas';
+
+export type { AttributeSuggestion } from '@/api/generated/schemas';
 import type {
   PersonalRecord as ApiPersonalRecord,
   Session as ApiSession,

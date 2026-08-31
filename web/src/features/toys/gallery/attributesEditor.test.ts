@@ -6,6 +6,8 @@ import {
   newRow,
   reconcileRows,
   sameDict,
+  suggestedValues,
+  toAttributeSuggestions,
   toDict,
   toRows,
 } from '@/features/toys/gallery/attributesEditor';
@@ -142,5 +144,28 @@ describe('newRow', () => {
   it('gives every call a distinct id', () => {
     expect(newRow(ids).rowId).toBe(1);
     expect(newRow(ids).rowId).toBe(2);
+  });
+});
+
+describe('attribute suggestions', () => {
+  const entries = [
+    { key: 'Base', values: ['Suction'] },
+    { key: 'Material', values: ['Glass', 'Silicone'] },
+  ];
+
+  it('exposes the server key order and looks up values by key', () => {
+    const suggestions = toAttributeSuggestions(entries);
+    expect(suggestions.keys).toEqual(['Base', 'Material']);
+    expect(suggestedValues(suggestions, 'Material')).toEqual(['Glass', 'Silicone']);
+  });
+
+  it('matches values case-insensitively and ignores surrounding whitespace', () => {
+    const suggestions = toAttributeSuggestions(entries);
+    expect(suggestedValues(suggestions, '  MATERIAL ')).toEqual(['Glass', 'Silicone']);
+  });
+
+  it('returns no values for unknown keys and empty input', () => {
+    expect(suggestedValues(toAttributeSuggestions(entries), 'unknown')).toEqual([]);
+    expect(toAttributeSuggestions([]).keys).toEqual([]);
   });
 });
