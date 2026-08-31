@@ -15,11 +15,16 @@
   --toy-fill-dim: none;
 
   --color-thumb: oklch(0.4 0.005 286);
+
+  --color-live: var(--live);
+  --color-live-strong: var(--live-strong);
 }
 
 :root {
   --surface-tertiary: oklch(0.91 0.002 286);
   --default: oklch(0.91 0.002 286);
+  --live: oklch(0.696 0.17 162.48);
+  --live-strong: oklch(0.596 0.145 163.23);
 }
 
 [data-theme='dark'] {

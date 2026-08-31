@@ -44,12 +44,14 @@ describe('LiveSessionBanner', () => {
   });
 
   it('shows the badge and elapsed time and navigates on open', () => {
+    vi.useFakeTimers();
     liveState.current.liveSession = live(new Date(Date.now() - 95 * 60_000).toISOString());
     render(withAppProviders(<LiveSessionBanner />));
 
     expect(screen.getByText(en.session.live.badge)).toBeTruthy();
-    expect(screen.getByText('1h 35m')).toBeTruthy();
+    expect(screen.getByText('1h 35m 00s')).toBeTruthy();
 
+    vi.useRealTimers();
     fireEvent.click(screen.getByRole('button', { name: en.session.live.openButton }));
     expect(navigateMock).toHaveBeenCalledWith('/sessions/edit?id=5');
   });
@@ -58,12 +60,12 @@ describe('LiveSessionBanner', () => {
     vi.useFakeTimers();
     liveState.current.liveSession = live(new Date(Date.now() - 10 * 60_000).toISOString());
     render(withAppProviders(<LiveSessionBanner />));
-    expect(screen.getByText('10m')).toBeTruthy();
+    expect(screen.getByText('10m 00s')).toBeTruthy();
 
     act(() => {
-      vi.advanceTimersByTime(2 * 60_000);
+      vi.advanceTimersByTime(42_000);
     });
-    expect(screen.getByText('12m')).toBeTruthy();
+    expect(screen.getByText('10m 42s')).toBeTruthy();
     vi.useRealTimers();
   });
 });
