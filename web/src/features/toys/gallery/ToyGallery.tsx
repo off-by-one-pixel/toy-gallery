@@ -163,7 +163,7 @@ const ToyGallery = () => {
         <ActionFabs actions={newActions} />
       </div>
 
-      <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-6">
+      <main className="mx-auto max-w-300 px-6 pt-6 pb-28 sm:pb-34">
         {error && (
           <Alert status="danger" className="mb-4">
             <Alert.Description>{error}</Alert.Description>

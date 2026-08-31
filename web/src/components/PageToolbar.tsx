@@ -29,7 +29,7 @@ export default function PageToolbar({
   children,
 }: Props) {
   return (
-    <header className="sticky top-0 z-10 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 border-y border-border bg-surface-secondary/90 backdrop-blur-sm">
       <LiveSessionBanner />
       <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 py-2.5 sm:flex-nowrap sm:gap-3 sm:px-6">
         {start}
