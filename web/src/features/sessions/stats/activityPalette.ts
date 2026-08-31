@@ -25,7 +25,7 @@ export const ACTIVITY_PALETTE: ActivityPalette = {
   durationHue: 185,
   weekdayHue: 270,
   sessionsGamma: 1.4,
-  durationGamma: 0.5,
+  durationGamma: 0.9,
   saturation: 65,
   lightnessMax: 90,
   lightnessMin: 40,
