@@ -115,15 +115,10 @@ class ExportV2(ExportVersion):
                     # whole session rather than emit a dangling reference.
                     skip_session = True
                     break
-                entries.append({"toy_id": local, "involvement": entry.involvement})
+                entries.append({"toy_id": local, **cls._entry_payload(entry)})
             if skip_session or not entries:
                 continue
-            sessions.append(
-                {
-                    "started_at": session.started_at.isoformat(),
-                    "entries": entries,
-                }
-            )
+            sessions.append({**cls._session_payload(session), "entries": entries})
 
         return {
             "version": cls.version,
@@ -143,6 +138,22 @@ class ExportV2(ExportVersion):
             sessions_created = sum(cls._import_session(s, id_map) for s in sessions)
         return {"toys_created": len(id_map), "sessions_created": sessions_created}
 
+    @classmethod
+    def _entry_payload(cls, entry: models.ToySessionEntry) -> dict:
+        return {"involvement": entry.involvement}
+
+    @classmethod
+    def _session_payload(cls, session: models.Session) -> dict:
+        return {"started_at": session.started_at.isoformat()}
+
+    @classmethod
+    def _entry_fields(cls, entry: dict) -> dict:
+        return {"involvement": entry.get("involvement")}
+
+    @classmethod
+    def _session_fields(cls, session: dict) -> dict:
+        return {"started_at": session["started_at"]}
+
     @staticmethod
     def _import_toy(item: dict, id_map: dict[int, int]) -> None:
         local_id = item.get("_id")
@@ -152,32 +163,52 @@ class ExportV2(ExportVersion):
         toy = _save_toy(payload_for_toy)
         id_map[local_id] = toy.pk
 
-    @staticmethod
-    def _import_session(session: dict, id_map: dict[int, int]) -> int:
+    @classmethod
+    def _import_session(cls, session: dict, id_map: dict[int, int]) -> int:
         started_at = session.get("started_at")
         entries = session.get("entries")
         if not started_at or not isinstance(entries, list) or not entries:
             raise drf_serializers.ValidationError(
                 "Each session must have 'started_at' and a non-empty 'entries' array."
             )
-        resolved = [ExportV2._resolve_entry(e, id_map) for e in entries]
-        new_session = models.Session.objects.create(started_at=started_at)
+        resolved = [cls._resolve_entry(e, id_map) for e in entries]
+        new_session = models.Session.objects.create(**cls._session_fields(session))
         for e in resolved:
             e.session = new_session
         models.ToySessionEntry.objects.bulk_create(resolved)
         return 1
 
-    @staticmethod
-    def _resolve_entry(entry: dict, id_map: dict[int, int]) -> models.ToySessionEntry:
+    @classmethod
+    def _resolve_entry(cls, entry: dict, id_map: dict[int, int]) -> models.ToySessionEntry:
         local = entry.get("toy_id")
         if local not in id_map:
             raise drf_serializers.ValidationError(
                 f"Session entry references unknown toy_id {local!r}."
             )
-        return models.ToySessionEntry(
-            toy_id=id_map[local],
-            involvement=entry.get("involvement"),
-        )
+        return models.ToySessionEntry(toy_id=id_map[local], **cls._entry_fields(entry))
+
+
+class ExportV3(ExportV2):
+    version = 3
+
+    @classmethod
+    def _entry_payload(cls, entry: models.ToySessionEntry) -> dict:
+        return {**super()._entry_payload(entry), "duration_minutes": entry.duration_minutes}
+
+    @classmethod
+    def _session_payload(cls, session: models.Session) -> dict:
+        return {
+            **super()._session_payload(session),
+            "ended_at": session.ended_at.isoformat() if session.ended_at else None,
+        }
+
+    @classmethod
+    def _entry_fields(cls, entry: dict) -> dict:
+        return {**super()._entry_fields(entry), "duration_minutes": entry.get("duration_minutes")}
+
+    @classmethod
+    def _session_fields(cls, session: dict) -> dict:
+        return {**super()._session_fields(session), "ended_at": session.get("ended_at")}
 
 
 def _require_list(payload: dict, key: str, optional: bool = False) -> list:
