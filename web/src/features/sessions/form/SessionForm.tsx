@@ -272,7 +272,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
             variant="primary"
             size="sm"
             isDisabled={!canSave || isSavingSession}
-            className={liveUpdateMode ? 'bg-emerald-600 text-white hover:bg-emerald-500' : ''}
+            className={liveUpdateMode ? 'bg-live-strong text-white hover:bg-live' : ''}
             onPress={handleSave}
           >
             <Check size={14} strokeWidth={2.2} />

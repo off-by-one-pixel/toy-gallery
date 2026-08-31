@@ -18,7 +18,7 @@ export function useStartLiveAction(onStarted?: (session: Session) => void): Acti
     label: t('startButton'),
     icon: Play,
     variant: 'primary',
-    className: 'bg-emerald-600 text-white hover:bg-emerald-500',
+    className: 'bg-live-strong text-white hover:bg-live',
     fabIconSize: 22,
     onPress: () => void startAction.run(),
   };
