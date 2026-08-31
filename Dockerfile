@@ -14,8 +14,10 @@
 # repo and the editor in lockstep.
 FROM node:22-alpine AS toy_editor
 WORKDIR /toy-editor
+COPY toy-editor/package.json toy-editor/pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 COPY toy-editor/ ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
+RUN pnpm build
 
 # ----- Stage 2: build the Next.js static export --------------------------
 FROM node:22-alpine AS frontend
