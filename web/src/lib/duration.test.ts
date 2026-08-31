@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDuration, formatElapsed, minutesBetween } from '@/lib/duration';
+import { formatDuration, formatElapsed, formatElapsedSeconds, minutesBetween, secondsBetween } from '@/lib/duration';
 
 describe('formatDuration', () => {
   it('formats minutes only', () => {
@@ -57,5 +57,30 @@ describe('minutesBetween', () => {
 
   it('is negative when end precedes start', () => {
     expect(minutesBetween('2026-05-02T22:15', '2026-05-02T20:00')).toBeLessThan(0);
+  });
+});
+
+describe('formatElapsedSeconds', () => {
+  it('shows bare seconds under a minute', () => {
+    expect(formatElapsedSeconds(45, 'en')).toBe('45s');
+    expect(formatElapsedSeconds(0, 'en')).toBe('00s');
+  });
+
+  it('shows minutes with seconds', () => {
+    expect(formatElapsedSeconds(33 * 60 + 12, 'en')).toBe('33m 12s');
+  });
+
+  it('keeps zero middle units once a larger unit appears', () => {
+    expect(formatElapsedSeconds(3600 + 5, 'en')).toBe('1h 0m 05s');
+  });
+
+  it('clamps negative input to zero', () => {
+    expect(formatElapsedSeconds(-30, 'en')).toBe('00s');
+  });
+});
+
+describe('secondsBetween', () => {
+  it('returns whole seconds between two timestamps', () => {
+    expect(secondsBetween('2026-08-31T12:00:00', '2026-08-31T12:00:42')).toBe(42);
   });
 });

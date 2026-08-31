@@ -6,7 +6,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
 import { useGirth } from '@/features/preferences/GirthProvider';
 import { displayGirth } from '@/features/preferences/girth';
-import { formatElapsed } from '@/lib/duration';
+import { formatElapsed, formatElapsedSeconds, secondsBetween } from '@/lib/duration';
+import { useNow } from '@/hooks/useNow';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
@@ -22,7 +23,7 @@ import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 const STRIP_LIMIT = 5;
 
 const ROW_TONES = {
-  live: { border: 'border-emerald-500', ring: 'ring-2 ring-emerald-500' },
+  live: { border: 'border-live', ring: 'ring-2 ring-live' },
   record: { border: 'border-amber-500', ring: 'ring-2 ring-amber-500' },
   default: { border: 'border-border', ring: 'ring-2 ring-accent' },
 } as const;
@@ -69,7 +70,11 @@ export default function SessionRow({
   const overflow = orderedEntries.length - visibleEntries.length;
 
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
+  const now = useNow(1000, session.isLive);
   const totalMinutes = session.totalToyDurationMinutes ?? 0;
+  const timeValue = session.isLive
+    ? formatElapsedSeconds(Math.max(0, secondsBetween(session.startedAt, now.toISOString())), locale)
+    : formatElapsed(totalMinutes, locale);
 
   const recordCtx = { t: t as unknown as (key: string) => string, girth };
   const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);
@@ -101,7 +106,7 @@ export default function SessionRow({
       />
       <div className="flex items-center justify-between gap-3 sm:contents">
         <div className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground sm:order-1">
-          {formatWhen(session.startedAt, new Date(), locale, whenT)}
+          <span className="whitespace-nowrap">{formatWhen(session.startedAt, new Date(), locale, whenT)}</span>
           {session.isLive && <LiveBadge />}
           {photoCount + videoCount > 0 && (
             <span
@@ -161,13 +166,18 @@ export default function SessionRow({
             unit={unit}
             recordLabel={peakRecordLabel('circumference')}
           />
-          {totalMinutes > 0 && (
+          {(session.isLive || totalMinutes > 0) && (
             <div className="flex items-baseline gap-2 py-0.5 sm:contents">
               <span className="text-caption uppercase tracking-wider text-text-tertiary sm:justify-self-end">
                 {t('totalTime')}
               </span>
-              <span className="text-[15px] font-semibold tracking-tight tabular-nums text-foreground sm:justify-self-start sm:text-[17px]">
-                {formatElapsed(totalMinutes, locale)}
+              <span
+                className={
+                  'text-[15px] font-semibold tracking-tight tabular-nums sm:justify-self-start sm:text-[17px] ' +
+                  (session.isLive ? 'rounded-full bg-live/15 px-2.5 py-0.5 text-live-strong' : 'text-foreground')
+                }
+              >
+                {timeValue}
               </span>
             </div>
           )}
