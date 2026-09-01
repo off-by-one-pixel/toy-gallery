@@ -134,7 +134,7 @@ export default function SessionRow({
         </div>
       </div>
       <div className="mt-3 sm:mt-0 sm:contents">
-        <div className="flex flex-wrap items-center gap-3 sm:order-2">
+        <div className="flex flex-wrap items-start gap-3 sm:order-2">
           {visibleEntries.map((entry) => {
             const toy = toysById.get(entry.toy);
             return (
@@ -148,7 +148,7 @@ export default function SessionRow({
             );
           })}
           {overflow > 0 && (
-            <span className="rounded-full bg-surface-secondary px-2.5 py-1 text-xs font-medium text-muted">
+            <span className="self-center rounded-full bg-surface-secondary px-2.5 py-1 text-xs font-medium text-muted">
               {t('overflowMore', { count: overflow })}
             </span>
           )}
