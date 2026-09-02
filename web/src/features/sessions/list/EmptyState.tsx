@@ -25,6 +25,7 @@ export default function EmptyState({ anyExist, filterLabel }: Props) {
       <div className="text-sm text-muted">{t('empty')}</div>
       <Link
         href="/sessions/new"
+        replace
         className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
       >
         <Plus size={14} strokeWidth={2.2} />

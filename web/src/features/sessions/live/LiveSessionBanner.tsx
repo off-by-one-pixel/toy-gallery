@@ -14,7 +14,7 @@ const TICK_MS = 1000;
 
 export default function LiveSessionBanner() {
   const { liveSession } = useLiveSession();
-  const { navigate } = useNavigation();
+  const { replace } = useNavigation();
   const t = useTranslations('session');
   const locale = useLocale();
   const now = useNow(TICK_MS, liveSession != null);
@@ -56,7 +56,7 @@ export default function LiveSessionBanner() {
             variant="outline"
             size="sm"
             className="shrink-0 bg-surface"
-            onPress={() => navigate(`/sessions/edit?id=${liveSession.id}`)}
+            onPress={() => replace(`/sessions/edit?id=${liveSession.id}`)}
           >
             {t('live.openButton')}
           </Button>
