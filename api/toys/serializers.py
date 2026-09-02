@@ -62,7 +62,6 @@ class ToySerializer(serializers.ModelSerializer):
         child=serializers.CharField(allow_blank=True),
         required=False,
     )
-    # Session aggregates, annotated once by the viewset queryset.
     usage_count = serializers.IntegerField(read_only=True)
     total_duration_minutes = serializers.IntegerField(read_only=True)
     max_duration_minutes = serializers.IntegerField(read_only=True)

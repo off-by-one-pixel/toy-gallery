@@ -34,11 +34,6 @@ class ToyViewSet(viewsets.ModelViewSet):
         self._reload_annotated(serializer)
 
     def _reload_annotated(self, serializer):
-        """Re-read the saved toy through the annotated queryset.
-
-        `serializer.save()` hands back a plain instance, so the write response
-        would otherwise be the one place without the session aggregates.
-        """
         serializer.instance = self.get_queryset().get(pk=serializer.instance.pk)
 
     def destroy(self, request, *args, **kwargs):
