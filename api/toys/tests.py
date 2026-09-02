@@ -130,6 +130,27 @@ class UsageCountTests(TestCase):
         response = self.client.post("/toys/toys/", _payload(), format="json")
         self.assertEqual(response.status_code, 201, response.content)
         self.assertEqual(response.data["usage_count"], 0)
+        self.assertEqual(response.data["total_duration_minutes"], 0)
+        self.assertEqual(response.data["max_duration_minutes"], 0)
+
+    def test_update_response_reports_session_aggregates(self):
+        toy_id = self._create_toy()
+        for minutes in (30, 65):
+            self.client.post(
+                "/toys/sessions/",
+                {
+                    "started_at": "2026-04-01T10:00:00Z",
+                    "entries": [
+                        {"toy": toy_id, "involvement": "USED", "duration_minutes": minutes}
+                    ],
+                },
+                format="json",
+            )
+        response = self.client.patch(f"/toys/toys/{toy_id}/", {"name": "Renamed"}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["usage_count"], 2)
+        self.assertEqual(response.data["total_duration_minutes"], 95)
+        self.assertEqual(response.data["max_duration_minutes"], 65)
 
 
 class CurveAngleTests(TestCase):
@@ -178,9 +199,7 @@ class CurveAngleTests(TestCase):
         created = self.client.post("/toys/toys/", payload, format="json")
         self.assertEqual(created.status_code, 201, created.content)
         payload["shape"]["sections"][0]["color"] = None
-        response = self.client.put(
-            f"/toys/toys/{created.data['id']}/", payload, format="json"
-        )
+        response = self.client.put(f"/toys/toys/{created.data['id']}/", payload, format="json")
         self.assertEqual(response.status_code, 200, response.content)
         self.assertIsNone(response.data["shape"]["sections"][0]["color"])
 
