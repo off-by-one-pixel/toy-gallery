@@ -35,7 +35,7 @@ export default function SessionList() {
 }
 
 function SessionListContent() {
-  const { navigate } = useNavigation();
+  const { replace } = useNavigation();
   const { unit } = useUnit();
   const data = useSessions();
   const t = useTranslations('session');
@@ -52,7 +52,7 @@ function SessionListContent() {
 
   const startLiveAction = useStartLiveAction(addStartedSession);
 
-  const editSession = (id: number) => navigate(`/sessions/edit?id=${id}`);
+  const editSession = (id: number) => replace(`/sessions/edit?id=${id}`);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const removeSession = (id: number) => setPendingDeleteId(id);
   const confirmRemove = async () => {
@@ -88,7 +88,7 @@ function SessionListContent() {
       label: t('newButton'),
       icon: Plus,
       variant: 'primary',
-      onPress: () => navigate('/sessions/new'),
+      onPress: () => replace('/sessions/new'),
     },
   ];
 

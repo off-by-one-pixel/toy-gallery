@@ -23,14 +23,16 @@ export const toyModalUpdates = {
   close: (): Update => ({ ...CLEAR }),
 };
 
+const REPLACE = { replace: true } as const;
+
 export function useToyModalNav() {
   const { param, updateParams: update } = useNavigation();
   return {
     kind: parseEnumParam<ToyModalKind>(param('modal'), KINDS),
     toyId: parseIntParam(param('toyId')),
-    openNew: () => update(toyModalUpdates.openNew()),
-    openEdit: (id: number) => update(toyModalUpdates.openEdit(id)),
-    openCopy: (id: number) => update(toyModalUpdates.openCopy(id)),
-    close: () => update(toyModalUpdates.close()),
+    openNew: () => update(toyModalUpdates.openNew(), REPLACE),
+    openEdit: (id: number) => update(toyModalUpdates.openEdit(id), REPLACE),
+    openCopy: (id: number) => update(toyModalUpdates.openCopy(id), REPLACE),
+    close: () => update(toyModalUpdates.close(), REPLACE),
   };
 }

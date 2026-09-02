@@ -41,7 +41,7 @@ export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }
 }
 
 function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
-  const { navigate } = useNavigation();
+  const { replace } = useNavigation();
   const t = useTranslations('session');
   const common = useTranslations('common');
   const [startedAt, setStartedAt] = useState(datetimeLocalNow);
@@ -129,7 +129,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         })),
       },
     });
-    if (saved) navigate('/sessions');
+    if (saved) replace('/sessions');
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
@@ -141,7 +141,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
           <button
             type="button"
-            onClick={() => navigate('/sessions')}
+            onClick={() => replace('/sessions')}
             className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-muted transition-colors hover:bg-surface-tertiary/60 hover:text-foreground"
           >
             <ArrowLeft size={14} strokeWidth={2} />
@@ -265,7 +265,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
             {t('toysSelected', { count: selectedCount })}
           </div>
           <div className="flex-1" />
-          <Button variant="outline" size="sm" onPress={() => navigate('/sessions')}>
+          <Button variant="outline" size="sm" onPress={() => replace('/sessions')}>
             {common('cancel')}
           </Button>
           <Button

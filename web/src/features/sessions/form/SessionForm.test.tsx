@@ -29,7 +29,7 @@ vi.mock('@/features/toys/useToys', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
-import { navigateMock, resetNavigation } from '@/test/navigation';
+import { replaceMock, resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionForm from '@/features/sessions/form/SessionForm';
@@ -71,7 +71,7 @@ describe('SessionForm live sessions', () => {
         payload: expect.objectContaining({ entries: [] }),
       }),
     );
-    await settle(() => expect(navigateMock).toHaveBeenCalledWith('/sessions'));
+    await settle(() => expect(replaceMock).toHaveBeenCalledWith('/sessions'));
   });
 
   it('keeps save disabled for a finished session without toys', async () => {
