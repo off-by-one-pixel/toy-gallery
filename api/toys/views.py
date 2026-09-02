@@ -1,6 +1,7 @@
 from django.db import IntegrityError, transaction
 from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Sum, When
 from django.db.models.deletion import ProtectedError
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers as drf_serializers
@@ -19,9 +20,21 @@ from . import media, models, serializers, stats
 class ToyViewSet(viewsets.ModelViewSet):
     queryset = models.Toy.objects.annotate(
         usage_count=Count("toysessionentry"),
-        total_duration_minutes=Sum("toysessionentry__duration_minutes"),
+        total_duration_minutes=Coalesce(Sum("toysessionentry__duration_minutes"), 0),
+        max_duration_minutes=Coalesce(Max("toysessionentry__duration_minutes"), 0),
     )
     serializer_class = serializers.ToySerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
+        self._reload_annotated(serializer)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        self._reload_annotated(serializer)
+
+    def _reload_annotated(self, serializer):
+        serializer.instance = self.get_queryset().get(pk=serializer.instance.pk)
 
     def destroy(self, request, *args, **kwargs):
         toy = self.get_object()
@@ -56,7 +69,10 @@ class ToyViewSet(viewsets.ModelViewSet):
                 if value:
                     values.setdefault(fold, set()).add(value)
         data = [
-            {"key": canonical[fold], "values": sorted(values.get(fold, set()), key=lambda v: (v.casefold(), v))}
+            {
+                "key": canonical[fold],
+                "values": sorted(values.get(fold, set()), key=lambda v: (v.casefold(), v)),
+            }
             for fold in sorted(canonical)
         ]
         return Response(serializers.AttributeSuggestionSerializer(data, many=True).data)

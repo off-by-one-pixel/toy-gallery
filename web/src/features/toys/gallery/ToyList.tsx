@@ -294,8 +294,15 @@ function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
         <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">{t('toy.timesUsed')}</dt>
         <dd className="text-foreground tabular-nums">{toy.usageCount ?? 0}</dd>
 
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">{t('toy.timeUsed')}</dt>
-        <dd className="text-foreground tabular-nums">{formatDuration(toy.totalDurationMinutes ?? 0, locale)}</dd>
+        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
+          {t('toy.timeUsedLabel')}
+        </dt>
+        <dd className="text-foreground tabular-nums">
+          {t('toy.timeUsedWithMax', {
+            total: formatDuration(toy.totalDurationMinutes ?? 0, locale),
+            max: formatDuration(toy.maxDurationMinutes ?? 0, locale),
+          })}
+        </dd>
 
         <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
           {t('toy.columns.topShape')}

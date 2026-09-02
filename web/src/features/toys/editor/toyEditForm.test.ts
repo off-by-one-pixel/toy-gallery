@@ -39,6 +39,7 @@ const SOURCE_TOY: Toy = {
   retired: false,
   usageCount: 0,
   totalDurationMinutes: 0,
+  maxDurationMinutes: 0,
   shape: { topSectionShape: SectionShape.EGG, bottomSectionShape: SectionShape.FLAT, sections: [] },
   customAttributes: { season: 'spring' },
 };

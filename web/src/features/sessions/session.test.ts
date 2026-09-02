@@ -59,6 +59,7 @@ describe('sortEntriesByInvolvement', () => {
       size: '',
       usageCount: 0,
       totalDurationMinutes: 0,
+      maxDurationMinutes: 0,
       circumference,
       shape: { sections: [] },
     }) as Toy;
@@ -105,6 +106,7 @@ describe('toysById', () => {
     size: '',
     usageCount: 0,
     totalDurationMinutes: 0,
+    maxDurationMinutes: 0,
     shape: { sections: [] },
   } as Toy;
   const t2: Toy = {
@@ -114,6 +116,7 @@ describe('toysById', () => {
     size: '',
     usageCount: 0,
     totalDurationMinutes: 0,
+    maxDurationMinutes: 0,
     shape: { sections: [] },
   } as Toy;
 

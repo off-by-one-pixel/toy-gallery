@@ -19,6 +19,7 @@ const toy = (overrides: Partial<Toy> = {}): Toy =>
     size: '',
     usageCount: 12,
     totalDurationMinutes: 95,
+    maxDurationMinutes: 65,
     totalLength: 180,
     shape: { sections: [] },
     ...overrides,
@@ -54,6 +55,13 @@ describe('cardSortValue', () => {
     expect(cardSortValue({ column: 'duration', direction: 'desc' }, toy(), ctx)).toEqual({
       label: 'sort.column.duration',
       value: '1h 35m',
+    });
+  });
+
+  it('formats the longest single session as a localized duration', () => {
+    expect(cardSortValue({ column: 'maxDuration', direction: 'desc' }, toy(), ctx)).toEqual({
+      label: 'sort.column.maxDuration',
+      value: '1h 5m',
     });
   });
 });

@@ -23,6 +23,7 @@ export const makeToy = (overrides: Partial<Toy> = {}): Toy =>
     size: '',
     usageCount: 0,
     totalDurationMinutes: 0,
+    maxDurationMinutes: 0,
     shape: { sections: [] },
     ...overrides,
   }) as Toy;
