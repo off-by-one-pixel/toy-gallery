@@ -153,7 +153,7 @@ export default function SessionRow({
             </span>
           )}
         </div>
-        <div className="mt-3 flex items-baseline gap-5 border-t border-border pt-2.5 sm:order-3 sm:mt-0 sm:grid sm:min-w-32 sm:shrink-0 sm:grid-cols-[auto_auto] sm:items-baseline sm:justify-end sm:gap-x-2.5 sm:gap-y-1 sm:border-t-0 sm:pt-0">
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-2 border-t border-border pt-2.5 sm:order-3 sm:mt-0 sm:grid sm:min-w-32 sm:shrink-0 sm:grid-cols-[auto_auto] sm:items-baseline sm:justify-end sm:gap-x-2.5 sm:gap-y-1 sm:border-t-0 sm:pt-0">
           <PeakRow
             label={t('peakLength')}
             mm={session.maxInsertableLength}
@@ -173,7 +173,7 @@ export default function SessionRow({
               </span>
               <span
                 className={
-                  'text-[15px] font-semibold tracking-tight tabular-nums sm:justify-self-start sm:text-[17px] ' +
+                  'whitespace-nowrap text-[15px] font-semibold tracking-tight tabular-nums sm:justify-self-start sm:text-[17px] ' +
                   (session.isLive ? 'rounded-full bg-live/15 px-2.5 py-0.5 text-live-strong' : 'text-foreground')
                 }
               >
