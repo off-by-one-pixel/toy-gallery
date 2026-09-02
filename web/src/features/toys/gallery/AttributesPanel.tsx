@@ -21,7 +21,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
     <div>
       <ul className="flex flex-col gap-1">
         {rows.map((row) => (
-          <li key={row.rowId} className="group grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+          <li key={row.rowId} className="group grid grid-cols-[1.3fr_1fr_auto] items-center gap-2">
             <input
               type="text"
               value={row.key}
@@ -30,7 +30,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
               onChange={(e) => updateKey(row.rowId, e.target.value)}
               onBlur={commitChanges}
               onKeyDown={blurOnEnter}
-              className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
+              className="-ml-1.5 w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
             />
             <input
               type="text"
@@ -40,7 +40,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
               onChange={(e) => updateValue(row.rowId, e.target.value)}
               onBlur={commitChanges}
               onKeyDown={blurOnEnter}
-              className="w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
+              className="-ml-1.5 w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-0.5 text-xs text-foreground hover:border-border focus:border-accent focus:bg-surface focus:outline-none"
             />
             <datalist id={`${listId}-values-${row.rowId}`}>
               {valuesFor(row.key).map((value) => (

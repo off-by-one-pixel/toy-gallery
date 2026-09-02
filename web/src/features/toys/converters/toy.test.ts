@@ -14,6 +14,7 @@ const baseToy: Toy = {
   circumference: 40 * Math.PI,
   usageCount: 0,
   totalDurationMinutes: 0,
+  maxDurationMinutes: 0,
   shape: {
     topSectionShape: SectionShape.EGG,
     bottomSectionShape: SectionShape.FLAT,

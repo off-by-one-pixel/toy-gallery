@@ -57,6 +57,12 @@ export const TOY_PROPERTIES = {
     sortValue: (toy) => toy.totalDurationMinutes ?? 0,
     format: (toy, ctx) => formatDuration(toy.totalDurationMinutes ?? 0, ctx.locale),
   },
+  maxDuration: {
+    onCard: false,
+    label: (ctx) => ctx.t('sort.column.maxDuration'),
+    sortValue: (toy) => toy.maxDurationMinutes ?? 0,
+    format: (toy, ctx) => formatDuration(toy.maxDurationMinutes ?? 0, ctx.locale),
+  },
 } as const satisfies Record<string, ToyProperty>;
 
 export type ToyPropertyKey = keyof typeof TOY_PROPERTIES;

@@ -36,8 +36,14 @@
   },
   "toy": {
     "items": "{count, plural, one {# item} other {# items}}",
-    "girthInline": { "circumference": "circumference", "diameter": "diameter" },
-    "girthShort": { "circumference": "circ.", "diameter": "dia." },
+    "girthInline": {
+      "circumference": "circumference",
+      "diameter": "diameter"
+    },
+    "girthShort": {
+      "circumference": "circ.",
+      "diameter": "dia."
+    },
     "deleteConfirm": "Delete {brand} {name}?",
     "editorDialogLabel": "Toy editor",
     "new": "New Toy",
@@ -45,12 +51,17 @@
       "brandModel": "Brand / Model",
       "brandModelShort": "Model",
       "insertableShort": "Ins",
-      "girthShort": { "circumference": "Circ", "diameter": "Dia" },
+      "girthShort": {
+        "circumference": "Circ",
+        "diameter": "Dia"
+      },
       "topShape": "Top shape",
       "sections": "Sections"
     },
     "timesUsed": "Times used",
     "timeUsed": "Plugged time",
+    "timeUsedLabel": "Plugged time (max)",
+    "timeUsedWithMax": "{total} ({max})",
     "topCap": "{shape} cap",
     "viewSessions": "View sessions",
     "ghost": {
@@ -124,7 +135,10 @@
       "monthShort": "Month"
     },
     "peakLength": "max len",
-    "peakGirth": { "circumference": "max circ", "diameter": "max dia" },
+    "peakGirth": {
+      "circumference": "max circ",
+      "diameter": "max dia"
+    },
     "perDayTitle": "Sessions",
     "timePerDayTitle": "Plugged time",
     "toyDeleted": "deleted",
@@ -182,7 +196,10 @@
       "doneButton": "Done"
     },
     "records": {
-      "width": { "circumference": "Circumference PR", "diameter": "Diameter PR" },
+      "width": {
+        "circumference": "Circumference PR",
+        "diameter": "Diameter PR"
+      },
       "depth": "Depth PR"
     }
   },
@@ -283,10 +300,14 @@
     "column": {
       "name": "Brand / Model",
       "popularity": "Times used",
-      "duration": "Plugged time",
+      "duration": "Total plugged time",
+      "maxDuration": "Max plugged time",
       "date": "Date",
       "peakLength": "Peak length",
-      "peakGirth": { "circumference": "Peak circumference", "diameter": "Peak diameter" }
+      "peakGirth": {
+        "circumference": "Peak circumference",
+        "diameter": "Peak diameter"
+      }
     }
   },
   "colorPicker": {
