@@ -20,6 +20,7 @@ class ToyViewSet(viewsets.ModelViewSet):
     queryset = models.Toy.objects.annotate(
         usage_count=Count("toysessionentry"),
         total_duration_minutes=Sum("toysessionentry__duration_minutes"),
+        max_duration_minutes=Max("toysessionentry__duration_minutes"),
     )
     serializer_class = serializers.ToySerializer
 

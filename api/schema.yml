@@ -1169,9 +1169,13 @@ components:
         total_duration_minutes:
           type: integer
           readOnly: true
+        max_duration_minutes:
+          type: integer
+          readOnly: true
       required:
       - brand
       - id
+      - max_duration_minutes
       - name
       - shape
       - size

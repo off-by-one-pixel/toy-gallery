@@ -64,6 +64,7 @@ class ToySerializer(serializers.ModelSerializer):
     )
     usage_count = serializers.SerializerMethodField()
     total_duration_minutes = serializers.SerializerMethodField()
+    max_duration_minutes = serializers.SerializerMethodField()
 
     def validate_custom_attributes(self, value):
         return {k.strip(): v for k, v in value.items() if k.strip()}
@@ -79,6 +80,12 @@ class ToySerializer(serializers.ModelSerializer):
             return obj.total_duration_minutes or 0
         entries = obj.toysessionentry_set.all()
         return sum(entry.duration_minutes or 0 for entry in entries)
+
+    def get_max_duration_minutes(self, obj) -> int:
+        if hasattr(obj, "max_duration_minutes"):
+            return obj.max_duration_minutes or 0
+        durations = [e.duration_minutes or 0 for e in obj.toysessionentry_set.all()]
+        return max(durations, default=0)
 
     class Meta:
         model = models.Toy
@@ -97,6 +104,7 @@ class ToySerializer(serializers.ModelSerializer):
             "custom_attributes",
             "usage_count",
             "total_duration_minutes",
+            "max_duration_minutes",
         ]
 
     def create(self, validated_data):
