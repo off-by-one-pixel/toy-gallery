@@ -165,7 +165,7 @@ describe('SessionList', () => {
         session(2),
       ],
     });
-    expect(screen.getAllByLabelText(en.session.records.width.circumference)).toHaveLength(2);
+    expect(screen.getAllByLabelText(en.session.records.width.circumference)).toHaveLength(3);
     expect(screen.queryByLabelText(/pr-future/)).toBeNull();
 
     const rows = screen.getAllByRole('button', { name: en.session.detailsToggleLabel }).map((b) => b.parentElement);

@@ -18,6 +18,7 @@ import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
+import SessionRecordList from '@/features/sessions/list/SessionRecordList';
 import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 
 const STRIP_LIMIT = 5;
@@ -183,8 +184,13 @@ export default function SessionRow({
           )}
         </div>
       </div>
+      {session.records.length > 0 && (
+        <div className="relative sm:order-5 sm:col-span-4">
+          <SessionRecordList records={session.records} toysById={toysById} unit={unit} />
+        </div>
+      )}
       {selected && (
-        <div className="relative mt-3 sm:order-5 sm:col-span-4 sm:mt-1">
+        <div className="relative mt-3 sm:order-6 sm:col-span-4 sm:mt-1">
           <SessionMediaStrip sessionId={session.id} expectedCount={photoCount + videoCount} />
         </div>
       )}
