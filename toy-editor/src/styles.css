@@ -1,0 +1,568 @@
+/* toy-editor default styles
+ * Import with: import "toy-editor/styles.css";
+ * All class names are prefixed with `toy-editor-` so they're easy to scope
+ * or override from the consumer.
+ */
+
+.toy-editor-root {
+  --toy-editor-ink: #111827;
+  --toy-editor-ink-muted: #6b7280;
+  --toy-editor-ink-soft: #9ca3af;
+  --toy-editor-line: #e5e7eb;
+  --toy-editor-line-strong: #d1d5db;
+  --toy-editor-accent: #2563eb;
+  --toy-editor-accent-soft: rgba(37, 99, 235, 0.08);
+  --toy-editor-surface: #ffffff;
+  --toy-editor-bg: #f3f4f6;
+  --toy-editor-canvas-a: #fafaff;
+  --toy-editor-canvas-b: #f0fdfa;
+  --toy-editor-guide: #d97706;
+  --toy-editor-guide-soft: rgba(217, 119, 6, 0.18);
+  --toy-editor-warn: #d97706;
+
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  font-family: inherit;
+  color: var(--toy-editor-ink);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  background: var(--toy-editor-surface);
+}
+
+/* ---------- Layout: main editing area + side panel for app fields ---------- */
+
+.toy-editor-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.toy-editor-side {
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 18px;
+  border-left: 1px solid var(--toy-editor-line);
+  background: var(--toy-editor-surface);
+  overflow-y: auto;
+}
+.toy-editor-known {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--toy-editor-line);
+  background: var(--toy-editor-surface);
+}
+.toy-editor-known-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.toy-editor-known-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--toy-editor-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.toy-editor-known-field-label {
+  white-space: nowrap;
+}
+.toy-editor-known-field-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border: 1px solid var(--toy-editor-line);
+  border-radius: 6px;
+  background: var(--toy-editor-surface);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.toy-editor-known-field-input:focus-within {
+  border-color: var(--toy-editor-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.toy-editor-known-field-input input {
+  width: 60px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  color: var(--toy-editor-ink);
+  text-align: right;
+  text-transform: none;
+}
+.toy-editor-known-field-input input:focus { outline: none; }
+.toy-editor-known-field-unit {
+  font-size: 10px;
+  color: var(--toy-editor-ink-soft);
+  text-transform: uppercase;
+}
+
+.toy-editor-display-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 12px;
+  color: var(--toy-editor-ink);
+}
+.toy-editor-display-mode-legend {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--toy-editor-ink-soft);
+  text-transform: uppercase;
+  margin-right: 4px;
+  padding: 0;
+}
+.toy-editor-display-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.toy-editor-snap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--toy-editor-ink);
+  cursor: pointer;
+}
+
+/* ---------- Canvas ---------- */
+
+.toy-editor-canvas {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: linear-gradient(135deg, var(--toy-editor-canvas-a), var(--toy-editor-canvas-b));
+  padding: 14px 24px 18px;
+  overflow: hidden;
+}
+
+/* Editor chrome (cap selectors, add-section button, in-SVG ruler / handles /
+ * inputs) only appears when the canvas is hovered, so the silhouette has
+ * the spotlight when the user isn't actively editing. */
+.toy-editor-cap-row,
+.toy-editor-canvas-actions,
+.toy-editor-chrome {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+.toy-editor-main:hover .toy-editor-cap-row,
+.toy-editor-main:hover .toy-editor-canvas-actions,
+.toy-editor-main:hover .toy-editor-chrome {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toy-editor-cap-row {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+.toy-editor-stage {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+.toy-editor-canvas-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+.toy-editor-svg {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  user-select: none;
+}
+
+/* ---------- Silhouette parts (clickable) ---------- */
+
+.toy-editor-part { transition: filter 0.15s ease; }
+.toy-editor-part:hover { filter: brightness(0.96); }
+
+.toy-editor-selection-tint {
+  fill: var(--toy-editor-accent);
+  fill-opacity: 0.12;
+}
+.toy-editor-selection-outline {
+  fill: none;
+  stroke: var(--toy-editor-accent);
+  stroke-width: 2;
+  stroke-dasharray: 5 3;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---------- Reference guides ---------- */
+
+.toy-editor-guide {
+  fill: none;
+  stroke: var(--toy-editor-guide);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+}
+.toy-editor-guide-label {
+  fill: var(--toy-editor-guide);
+  font-size: 10px;
+  font-weight: 600;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ---------- Ruler ---------- */
+
+.toy-editor-ruler-axis {
+  stroke: var(--toy-editor-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.toy-editor-ruler-tick {
+  stroke: var(--toy-editor-ink-muted);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.toy-editor-ruler-label,
+.toy-editor-ruler-unit,
+.toy-editor-ruler-bottom {
+  fill: var(--toy-editor-ink-muted);
+  font-size: 10px;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+.toy-editor-ruler-bottom { font-weight: 600; }
+.toy-editor-total-readout {
+  fill: var(--toy-editor-ink);
+  font-size: 13px;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ---------- Floating value labels (foreignObject inputs) ---------- */
+
+.toy-editor-floating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  padding: 0 4px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid transparent;
+  color: var(--toy-editor-ink);
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1;
+  box-sizing: border-box;
+}
+.toy-editor-floating:hover {
+  border-color: var(--toy-editor-line-strong);
+  background: var(--toy-editor-surface);
+}
+.toy-editor-floating:focus-within {
+  border-color: var(--toy-editor-accent);
+  background: var(--toy-editor-surface);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.toy-editor-floating.is-touched {
+  font-weight: 700;
+  color: var(--toy-editor-ink);
+}
+.toy-editor-floating.is-default {
+  font-weight: 400;
+  color: var(--toy-editor-ink-soft);
+  font-style: italic;
+}
+.toy-editor-floating-prefix {
+  color: var(--toy-editor-ink-soft);
+  font-size: 10px;
+  font-weight: 500;
+  font-style: normal;
+}
+.toy-editor-floating input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: right;
+  padding: 0;
+}
+.toy-editor-floating input:focus { outline: none; }
+.toy-editor-floating-warn {
+  color: var(--toy-editor-warn);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  cursor: help;
+}
+
+.toy-editor-swatch {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid var(--toy-editor-line-strong);
+  background: var(--toy-editor-surface);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.toy-editor-swatch:hover {
+  border-color: var(--toy-editor-accent);
+}
+.toy-editor-swatch.is-auto,
+.toy-editor-palette-chip.is-auto {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.92),
+    rgba(255, 255, 255, 0.92) 3px,
+    rgba(148, 163, 184, 0.45) 3px,
+    rgba(148, 163, 184, 0.45) 6px
+  );
+}
+.toy-editor-palette {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--toy-editor-surface);
+  border: 1px solid var(--toy-editor-line-strong);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+  box-sizing: border-box;
+}
+.toy-editor-palette-chip {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+}
+.toy-editor-palette-chip:hover {
+  border-color: var(--toy-editor-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+.toy-editor-palette-chip.is-custom {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  box-sizing: border-box;
+  background: conic-gradient(#ef4444, #f59e0b, #84cc16, #06b6d4, #6366f1, #d946ef, #ef4444);
+}
+.toy-editor-palette-chip.is-custom input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  padding: 0;
+  border: 0;
+}
+
+/* leader lines from silhouette to diameter labels */
+.toy-editor-leader {
+  fill: none;
+  stroke: var(--toy-editor-line-strong);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+.toy-editor-leader.is-touched { stroke: var(--toy-editor-ink-soft); }
+.toy-editor-leader.is-default { stroke-dasharray: 2 2; }
+
+/* ---------- Drag handles ---------- */
+
+.toy-editor-handle {
+  fill: var(--toy-editor-surface);
+  stroke: var(--toy-editor-accent);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+  transition: r 0.1s ease;
+}
+.toy-editor-handle-diameter {
+  cursor: ew-resize;
+}
+.toy-editor-handle-diameter:hover { r: 7; }
+.toy-editor-handle-height { cursor: ns-resize; }
+
+.toy-editor-handle-boundary {
+  fill: rgba(37, 99, 235, 0);
+  stroke: rgba(37, 99, 235, 0);
+  cursor: ns-resize;
+  transition:
+    fill 0.1s ease,
+    stroke 0.1s ease;
+}
+.toy-editor-handle-boundary:hover {
+  fill: rgba(37, 99, 235, 0.08);
+  stroke: rgba(37, 99, 235, 0.45);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---------- Per-section rim angle cycle button ---------- */
+
+.toy-editor-rim-btn {
+  cursor: pointer;
+}
+.toy-editor-rim-btn circle {
+  fill: var(--toy-editor-surface);
+  stroke: var(--toy-editor-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition:
+    fill 0.12s ease,
+    stroke 0.12s ease;
+}
+.toy-editor-rim-btn line {
+  stroke: var(--toy-editor-ink-muted);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.toy-editor-rim-btn:hover circle {
+  fill: var(--toy-editor-accent-soft);
+  stroke: var(--toy-editor-accent);
+}
+.toy-editor-rim-btn:hover line {
+  stroke: var(--toy-editor-accent);
+}
+
+/* ---------- Per-section remove button (× chip) ---------- */
+
+.toy-editor-remove {
+  cursor: pointer;
+}
+.toy-editor-remove circle {
+  fill: var(--toy-editor-surface);
+  stroke: var(--toy-editor-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.toy-editor-remove:hover circle {
+  fill: #fef2f2;
+  stroke: #fca5a5;
+}
+.toy-editor-remove text {
+  fill: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+  font-family:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  pointer-events: none;
+}
+
+/* ---------- Cap-shape selectors (above / below silhouette) ---------- */
+
+.toy-editor-shape-select {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--toy-editor-ink);
+  background: var(--toy-editor-surface);
+  padding: 5px 24px 5px 10px;
+  border: 1px solid var(--toy-editor-line);
+  border-radius: 6px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M3 5 L6 8 L9 5' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 11px 11px;
+  transition: border-color 0.15s ease;
+}
+.toy-editor-shape-select:hover { border-color: var(--toy-editor-line-strong); }
+.toy-editor-shape-select:focus {
+  outline: none;
+  border-color: var(--toy-editor-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* ---------- Buttons ---------- */
+
+.toy-editor-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 6px 14px;
+  border: 1px solid var(--toy-editor-line);
+  border-radius: 6px;
+  background: var(--toy-editor-surface);
+  color: var(--toy-editor-ink);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.toy-editor-btn:hover:not(:disabled) {
+  border-color: var(--toy-editor-line-strong);
+  background: var(--toy-editor-bg);
+}
+.toy-editor-btn:focus-visible {
+  outline: none;
+  border-color: var(--toy-editor-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+.toy-editor-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.toy-editor-add {
+  background: var(--toy-editor-surface);
+  border: 1px dashed var(--toy-editor-ink-soft);
+  color: var(--toy-editor-ink-muted);
+}
+.toy-editor-add:hover:not(:disabled) {
+  color: var(--toy-editor-accent);
+  border-color: var(--toy-editor-accent);
+  background: var(--toy-editor-accent-soft);
+}
+
+/* ---------- Group title (used by KnownMeasurements) ---------- */
+
+.toy-editor-group-title {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--toy-editor-ink-soft);
+}
