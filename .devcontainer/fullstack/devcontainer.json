@@ -64,6 +64,6 @@
       }
     }
   },
-  "postCreateCommand": "sudo corepack enable pnpm && cd /workspace/api && uv sync && cd /workspace/toy-editor && pnpm install && cd /workspace/web && pnpm install && cd /workspace && pre-commit install",
+  "postCreateCommand": "sudo corepack enable pnpm && cd /workspace/api && uv sync && cd /workspace && pnpm install && pnpm --filter toy-editor build && pre-commit install",
   "remoteUser": "vscode"
 }
