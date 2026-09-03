@@ -8,10 +8,6 @@
 #   docker build -t toy-gallery .
 
 # ----- Stage 1: build toy-editor (the React component library) ----------
-# Builds the submodule that's pinned in this repo (`git submodule update
-# --init` must have populated toy-editor/ before `docker build`). Using
-# the submodule rather than cloning a fresh tip-of-main keeps the parent
-# repo and the editor in lockstep.
 FROM node:22-alpine AS toy_editor
 WORKDIR /toy-editor
 COPY toy-editor/package.json toy-editor/pnpm-lock.yaml ./

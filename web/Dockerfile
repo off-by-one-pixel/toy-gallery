@@ -3,14 +3,13 @@
 # Build context: repo root. Invoke with:
 #   docker build -f web/Dockerfile .
 
-# ----- Stage 1: fetch + build toy-editor (the library) ------------------
+# ----- Stage 1: build toy-editor (the vendored library) -----------------
 FROM node:22-alpine AS toy_editor
 WORKDIR /toy-editor
-RUN apk add --no-cache git
-RUN git clone --depth=1 https://github.com/off-by-one-pixel/toy-editor.git . \
- && corepack enable pnpm \
- && pnpm install --frozen-lockfile \
- && pnpm build
+COPY toy-editor/package.json toy-editor/pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile --ignore-scripts
+COPY toy-editor/ ./
+RUN pnpm build
 
 # ----- Stage 2: install + build the Next.js app -------------------------
 FROM node:22-alpine AS builder

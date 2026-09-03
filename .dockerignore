@@ -17,11 +17,7 @@ api/staticfiles
 api/**/__pycache__
 api/**/*.pyc
 
-# toy-editor is a submodule that gets built in stage 1 of the all-in-one
-# Dockerfile — we need its source in the build context. Exclude only the
-# build outputs and tooling state.
 toy-editor/dist
-toy-editor/.devcontainer
 
 # VCS / editor
 .git
