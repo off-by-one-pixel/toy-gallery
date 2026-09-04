@@ -189,6 +189,7 @@
       "selectedHeading": "Selected · {count}",
       "toysHeading": "Toys · by use",
       "noToys": "No toys match",
+      "showAllToys": "Show all · {count}",
       "moreHeading": "More",
       "clearAll": "Clear all",
       "hasMedia": "Has media",

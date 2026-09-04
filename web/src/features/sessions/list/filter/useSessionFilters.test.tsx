@@ -53,6 +53,50 @@ describe('useSessionFilters', () => {
     expect(onChange).toHaveBeenCalledWith({ ...NO_SESSION_FILTERS, toyIds: [1, 2] });
   });
 
+  it('caps the available list at ten toys until expanded', () => {
+    const many = Array.from({ length: 14 }, (_, i) => makeToy({ id: i + 1, name: `toy${i + 1}` }));
+    usageState.current = new Map(many.map((toy, i) => [toy.id, 14 - i]));
+    const { result } = renderHook(() =>
+      useSessionFilters({
+        toys: many,
+        toysById: new Map(many.map((toy) => [toy.id, toy])),
+        filter: 'all',
+        filters: NO_SESSION_FILTERS,
+        onChange: vi.fn(),
+      }),
+    );
+    expect(result.current.availableToys).toHaveLength(10);
+    expect(result.current.hiddenToyCount).toBe(4);
+
+    act(() => result.current.showAllToys());
+    expect(result.current.availableToys).toHaveLength(14);
+    expect(result.current.hiddenToyCount).toBe(0);
+  });
+
+  it('lifts the cap while searching', () => {
+    const many = Array.from({ length: 14 }, (_, i) => makeToy({ id: i + 1, name: `toy${i + 1}` }));
+    usageState.current = new Map(many.map((toy, i) => [toy.id, 14 - i]));
+    const { result } = renderHook(() =>
+      useSessionFilters({
+        toys: many,
+        toysById: new Map(many.map((toy) => [toy.id, toy])),
+        filter: 'all',
+        filters: NO_SESSION_FILTERS,
+        onChange: vi.fn(),
+      }),
+    );
+    act(() => result.current.setQuery('toy1'));
+    expect(result.current.availableToys.map((o) => o.toy.name)).toEqual([
+      'toy1',
+      'toy10',
+      'toy11',
+      'toy12',
+      'toy13',
+      'toy14',
+    ]);
+    expect(result.current.hiddenToyCount).toBe(0);
+  });
+
   it('filters available toys by the search query', () => {
     const { result } = renderFilters();
     act(() => result.current.setQuery('fav'));
@@ -90,10 +134,14 @@ describe('useSessionFilters', () => {
   it('shows the full day slider when no window is set and commits a narrowed one', () => {
     const { result, onChange } = renderFilters();
     expect(result.current.slider.value).toEqual([0, 24]);
-    expect(result.current.slider.isFullDay).toBe(true);
 
     result.current.slider.onCommit([18, 20]);
     expect(onChange).toHaveBeenCalledWith({ ...NO_SESSION_FILTERS, timeWindow: { from: 18, to: 20 } });
+  });
+
+  it('reflects the committed window in the slider value', () => {
+    const { result } = renderFilters({ ...NO_SESSION_FILTERS, timeWindow: { from: 18, to: 20 } });
+    expect(result.current.slider.value).toEqual([18, 20]);
   });
 
   it('commits a full-range release as clearing the window', () => {
@@ -102,26 +150,10 @@ describe('useSessionFilters', () => {
     expect(onChange).toHaveBeenCalledWith(NO_SESSION_FILTERS);
   });
 
-  it('keeps the drag draft visible until the committed window catches up', () => {
-    const { result, rerender, onChange } = renderFilters();
-    act(() => result.current.slider.onDraft([18, 20]));
-    expect(result.current.slider.value).toEqual([18, 20]);
-
-    act(() => result.current.slider.onCommit([18, 20]));
-    expect(result.current.slider.value).toEqual([18, 20]);
-
-    rerender({ current: { ...NO_SESSION_FILTERS, timeWindow: { from: 18, to: 20 } } });
-    expect(result.current.slider.value).toEqual([18, 20]);
-    expect(result.current.slider.isFullDay).toBe(false);
-    expect(onChange).toHaveBeenCalledTimes(1);
-  });
-
-  it('reverts an empty-window release', () => {
+  it('ignores an empty-window release', () => {
     const { result, onChange } = renderFilters();
-    act(() => result.current.slider.onDraft([5, 5]));
-    act(() => result.current.slider.onCommit([5, 5]));
+    result.current.slider.onCommit([5, 5]);
     expect(onChange).not.toHaveBeenCalled();
-    expect(result.current.slider.value).toEqual([0, 24]);
   });
 
   it('counts filters and clears them all', () => {

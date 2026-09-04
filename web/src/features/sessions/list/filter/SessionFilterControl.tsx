@@ -10,13 +10,17 @@ import ResponsiveOverlay from '@/components/ResponsiveOverlay';
 import { toyTooltip } from '@/features/sessions/session';
 import { localizedHourLabel } from '@/lib/dates';
 import {
+  FULL_DAY,
+  type SessionFiltersArgs,
   type SessionFiltersState,
   type TimeSliderState,
   type ToyOption,
+  useSessionFilters,
 } from '@/features/sessions/list/filter/useSessionFilters';
 
-export default function SessionFilterControl({ state }: Readonly<{ state: SessionFiltersState }>) {
+export default function SessionFilterControl(props: SessionFiltersArgs) {
   const t = useTranslations('session.filters');
+  const state = useSessionFilters(props);
 
   const triggerClass = `inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors ${
     state.count > 0
@@ -97,6 +101,15 @@ function FilterPanel({ state }: Readonly<{ state: SessionFiltersState }>) {
           <ToyRow key={option.toy.id} option={option} checked={false} />
         ))}
         {state.availableToys.length === 0 && <p className="px-2.5 py-1.5 text-xs text-text-tertiary">{t('noToys')}</p>}
+        {state.hiddenToyCount > 0 && (
+          <button
+            type="button"
+            onClick={state.showAllToys}
+            className="w-full px-2.5 py-1.5 text-left text-xs font-medium text-accent transition-colors hover:text-accent-hover"
+          >
+            {t('showAllToys', { count: state.availableToys.length + state.hiddenToyCount })}
+          </button>
+        )}
       </div>
       <div className="my-1.5 h-px shrink-0 bg-border" />
       <SectionLabel text={t('moreHeading')} />
@@ -127,25 +140,27 @@ function TimeWindowSlider({
   const locale = useLocale();
   return (
     <div className="shrink-0 px-2.5 py-1.5">
-      <div className="mb-1 flex items-center justify-between text-xs tabular-nums text-foreground">
-        {slider.isFullDay ? (
-          <span className="text-muted">{anyLabel}</span>
-        ) : (
-          <>
-            <span>{localizedHourLabel(slider.value[0], locale)}</span>
-            <span>{localizedHourLabel(slider.value[1] % 24, locale)}</span>
-          </>
-        )}
-      </div>
       <Slider.Root
+        key={slider.value.join('-')}
         aria-label={`${fromLabel} – ${toLabel}`}
         minValue={0}
         maxValue={24}
         step={1}
-        value={[...slider.value]}
-        onChange={(next) => slider.onDraft(next as [number, number])}
+        defaultValue={[...slider.value]}
         onChangeEnd={(next) => slider.onCommit(next as [number, number])}
       >
+        <Slider.Output className="mb-1 flex w-full items-center justify-between text-xs tabular-nums text-foreground">
+          {({ state }) =>
+            state.values[0] === FULL_DAY[0] && state.values[1] === FULL_DAY[1] ? (
+              <span className="text-muted">{anyLabel}</span>
+            ) : (
+              <>
+                <span>{localizedHourLabel(state.values[0], locale)}</span>
+                <span>{localizedHourLabel(state.values[1] % 24, locale)}</span>
+              </>
+            )
+          }
+        </Slider.Output>
         <Slider.Track>
           <Slider.Fill />
           <Slider.Thumb index={0} aria-label={fromLabel} className="size-4 rounded-full" />

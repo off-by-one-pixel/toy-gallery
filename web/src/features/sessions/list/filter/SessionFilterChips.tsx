@@ -4,12 +4,17 @@ import { X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { localizedHourLabel } from '@/lib/dates';
-import { type FilterChip, type SessionFiltersState } from '@/features/sessions/list/filter/useSessionFilters';
+import {
+  type FilterChip,
+  type SessionFiltersArgs,
+  useSessionFilters,
+} from '@/features/sessions/list/filter/useSessionFilters';
 
-export default function SessionFilterChips({ state }: Readonly<{ state: SessionFiltersState }>) {
+export default function SessionFilterChips(props: SessionFiltersArgs) {
   const t = useTranslations('session.filters');
   const locale = useLocale();
   const translate = t as unknown as (key: string) => string;
+  const state = useSessionFilters(props);
   if (state.count === 0) return null;
 
   const chipLabel = (chip: FilterChip): string => {
