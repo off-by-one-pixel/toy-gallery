@@ -245,3 +245,66 @@ class SessionHasPrFilterTests(SessionListTestBase):
         data = self._get(has_pr="true")
 
         self.assertEqual({r["id"] for r in data["results"]}, {holder.id, live.id})
+
+
+class SessionTimeWindowFilterTests(SessionListTestBase):
+    def _session(self, start, end=None):
+        session = self._make_session(_utc(start))
+        if end:
+            session.ended_at = _utc(end)
+            session.save(update_fields=["ended_at"])
+        return session
+
+    def test_matches_sessions_starting_inside_the_window(self):
+        inside = self._session("2026-06-01T18:30:00")
+        self._session("2026-06-01T12:00:00")
+        data = self._get(time_from=18, time_to=20)
+        self.assertEqual([s["id"] for s in data["results"]], [inside.id])
+
+    def test_matches_sessions_ending_inside_the_window(self):
+        ends_inside = self._session("2026-06-01T16:00:00", "2026-06-01T18:30:00")
+        self._session("2026-06-01T14:00:00", "2026-06-01T15:00:00")
+        data = self._get(time_from=18, time_to=20)
+        self.assertEqual([s["id"] for s in data["results"]], [ends_inside.id])
+
+    def test_matches_sessions_spanning_the_whole_window(self):
+        spans = self._session("2026-06-01T16:00:00", "2026-06-01T22:00:00")
+        data = self._get(time_from=18, time_to=20)
+        self.assertEqual([s["id"] for s in data["results"]], [spans.id])
+
+    def test_session_without_end_time_counts_only_at_its_start(self):
+        self._session("2026-06-01T16:00:00")
+        self.assertEqual(self._get(time_from=18, time_to=20)["count"], 0)
+
+    def test_window_uses_the_request_timezone(self):
+        session = self._session("2026-06-01T23:30:00")
+        self.assertEqual(self._get(time_from=18, time_to=20)["count"], 0)
+        toronto = self._get(time_from=18, time_to=20, tz="America/Toronto")
+        self.assertEqual([s["id"] for s in toronto["results"]], [session.id])
+
+    def test_multi_day_session_matches_any_window(self):
+        marathon = self._session("2026-06-01T03:00:00", "2026-06-02T05:00:00")
+        data = self._get(time_from=18, time_to=20)
+        self.assertEqual([s["id"] for s in data["results"]], [marathon.id])
+
+    def test_overnight_session_matches_windows_on_both_sides_of_midnight(self):
+        overnight = self._session("2026-06-01T23:00:00", "2026-06-02T01:30:00")
+        self.assertEqual(self._get(time_from=23, time_to=24)["count"], 1)
+        data = self._get(time_from=1, time_to=2)
+        self.assertEqual([s["id"] for s in data["results"]], [overnight.id])
+        self.assertEqual(self._get(time_from=3, time_to=5)["count"], 0)
+
+    def test_rejects_half_specified_empty_or_out_of_range_windows(self):
+        self.assertEqual(self.client.get(URL, {"time_from": 18}).status_code, 400)
+        self.assertEqual(self.client.get(URL, {"time_to": 20}).status_code, 400)
+        self.assertEqual(self.client.get(URL, {"time_from": 5, "time_to": 5}).status_code, 400)
+        self.assertEqual(self.client.get(URL, {"time_from": 22, "time_to": 2}).status_code, 400)
+        self.assertEqual(self.client.get(URL, {"time_from": 22, "time_to": 0}).status_code, 400)
+        self.assertEqual(self.client.get(URL, {"time_from": 24, "time_to": 2}).status_code, 400)
+
+    def test_live_session_is_listed_despite_the_time_window(self):
+        live = self._session("2026-06-01T08:00:00")
+        live.is_live = True
+        live.save(update_fields=["is_live"])
+        data = self._get(time_from=18, time_to=20)
+        self.assertEqual([s["id"] for s in data["results"]], [live.id])

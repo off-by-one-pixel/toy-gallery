@@ -240,6 +240,20 @@ class SessionFilterQuerySerializer(DateWindowQuerySerializer):
     toys = ToyIdListField(required=False)
     has_media = serializers.BooleanField(required=False)
     has_pr = serializers.BooleanField(required=False)
+    time_from = serializers.IntegerField(required=False, min_value=0, max_value=23)
+    time_to = serializers.IntegerField(required=False, min_value=1, max_value=24)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        time_from = attrs.get("time_from")
+        time_to = attrs.get("time_to")
+        if (time_from is None) != (time_to is None):
+            raise serializers.ValidationError(
+                {"time_from": "time_from and time_to must be provided together."}
+            )
+        if time_from is not None and time_from >= time_to:
+            raise serializers.ValidationError({"time_to": "time_to must be after time_from."})
+        return attrs
 
 
 class SessionListQuerySerializer(SessionFilterQuerySerializer):

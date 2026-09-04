@@ -77,6 +77,18 @@ paths:
           type: string
           format: date
       - in: query
+        name: time_from
+        schema:
+          type: integer
+          maximum: 23
+          minimum: 0
+      - in: query
+        name: time_to
+        schema:
+          type: integer
+          maximum: 24
+          minimum: 1
+      - in: query
         name: toys
         schema:
           type: array
@@ -361,6 +373,18 @@ paths:
         schema:
           type: string
           format: date
+      - in: query
+        name: time_from
+        schema:
+          type: integer
+          maximum: 23
+          minimum: 0
+      - in: query
+        name: time_to
+        schema:
+          type: integer
+          maximum: 24
+          minimum: 1
       - in: query
         name: toys
         schema:

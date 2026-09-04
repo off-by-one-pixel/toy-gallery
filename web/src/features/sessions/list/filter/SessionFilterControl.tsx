@@ -1,42 +1,25 @@
 'use client';
 
-import { useContext, useState } from 'react';
-import { Button } from '@heroui/react';
+import { useContext } from 'react';
+import { Button, Slider } from '@heroui/react';
 import { Check, Funnel, Search } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
-import { useToyUsage } from '@/features/sessions/list/useToyUsage';
 import { BottomSheetContext } from '@/components/BottomSheet';
 import ResponsiveOverlay from '@/components/ResponsiveOverlay';
-import type { Toy } from '@/api/types';
-import { filterToys } from '@/features/toys/search';
 import { toyTooltip } from '@/features/sessions/session';
+import { localizedHourLabel } from '@/lib/dates';
 import {
-  activeFilterCount,
-  type FilterKey,
-  SESSION_FLAG_FILTERS,
-  SESSION_FLAG_KEYS,
-  type SessionFilters,
-  NO_SESSION_FILTERS,
-  toggleFlagFilter,
-  toggleToyFilter,
-} from '@/features/sessions/session';
+  type SessionFiltersState,
+  type TimeSliderState,
+  type ToyOption,
+} from '@/features/sessions/list/filter/useSessionFilters';
 
-type Props = Readonly<{
-  toys: readonly Toy[];
-  filter: FilterKey;
-  filters: SessionFilters;
-  onChange: (next: SessionFilters) => void;
-}>;
-
-export default function SessionFilterControl({ toys, filter, filters, onChange }: Props) {
+export default function SessionFilterControl({ state }: Readonly<{ state: SessionFiltersState }>) {
   const t = useTranslations('session.filters');
-  const count = activeFilterCount(filters);
-
-  const usageByToy = useToyUsage(filter);
 
   const triggerClass = `inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors ${
-    count > 0
+    state.count > 0
       ? 'bg-accent-soft text-accent-soft-foreground hover:bg-accent-soft/80'
       : 'bg-surface-tertiary/70 text-muted hover:text-foreground'
   }`;
@@ -44,13 +27,13 @@ export default function SessionFilterControl({ toys, filter, filters, onChange }
   return (
     <ResponsiveOverlay
       label={t('buttonLabel')}
-      trigger={<TriggerContent label={t('buttonLabel')} count={count} />}
+      trigger={<TriggerContent label={t('buttonLabel')} count={state.count} />}
       triggerClassName={triggerClass}
       popoverClassName="flex flex-col overflow-hidden"
     >
       {({ close, mode }) => (
         <>
-          <FilterPanel toys={toys} filters={filters} onChange={onChange} usageByToy={usageByToy} />
+          <FilterPanel state={state} />
           {mode === 'sheet' && (
             <div className="shrink-0 px-2.5 pt-2">
               <Button variant="primary" size="sm" className="w-full" onPress={close}>
@@ -78,55 +61,31 @@ function TriggerContent({ label, count }: Readonly<{ label: string; count: numbe
   );
 }
 
-function FilterPanel({
-  toys,
-  filters,
-  onChange,
-  usageByToy,
-}: Readonly<{
-  toys: readonly Toy[];
-  filters: SessionFilters;
-  onChange: (next: SessionFilters) => void;
-  usageByToy: ReadonlyMap<number, number>;
-}>) {
+function FilterPanel({ state }: Readonly<{ state: SessionFiltersState }>) {
   const t = useTranslations('session.filters');
   const translate = t as unknown as (key: string) => string;
   const wide = useContext(BottomSheetContext);
-  const [query, setQuery] = useState('');
-  const count = activeFilterCount(filters);
-  const byWindowUsage = (a: Toy, b: Toy) => (usageByToy.get(b.id) ?? 0) - (usageByToy.get(a.id) ?? 0);
-
-  const selected = toys.filter((toy) => filters.toyIds.includes(toy.id)).sort(byWindowUsage);
-  const unselected = filterToys(
-    toys.filter((toy) => !filters.toyIds.includes(toy.id) && usageByToy.has(toy.id)),
-    query,
-  )
-    .slice()
-    .sort(byWindowUsage);
 
   return (
     <div className={`flex min-h-0 flex-col p-2.5 ${wide ? 'w-full' : 'w-66'}`}>
+      <SectionLabel text={t('timeLabel')} />
+      <TimeWindowSlider slider={state.slider} anyLabel={t('timeAny')} fromLabel={t('timeFrom')} toLabel={t('timeTo')} />
+      <div className="my-1.5 h-px shrink-0 bg-border" />
       <label className="mb-2 flex shrink-0 items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5">
         <Search size={13} strokeWidth={2} className="shrink-0 text-muted" />
         <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={state.query}
+          onChange={(e) => state.setQuery(e.target.value)}
           placeholder={t('searchPlaceholder')}
           className="min-w-0 flex-1 border-0 bg-transparent text-xs text-foreground outline-none placeholder:text-text-tertiary"
         />
       </label>
-      {selected.length > 0 && (
+      {state.selectedToys.length > 0 && (
         <>
-          <SectionLabel text={t('selectedHeading', { count: selected.length })} />
+          <SectionLabel text={t('selectedHeading', { count: state.selectedToys.length })} />
           <div className="flex max-h-40 shrink-0 flex-col gap-px overflow-y-auto pr-1.5">
-            {selected.map((toy) => (
-              <ToyRow
-                key={toy.id}
-                toy={toy}
-                uses={usageByToy.get(toy.id) ?? 0}
-                checked
-                onToggle={() => onChange(toggleToyFilter(filters, toy.id))}
-              />
+            {state.selectedToys.map((option) => (
+              <ToyRow key={option.toy.id} option={option} checked />
             ))}
           </div>
           <div className="my-1.5 h-px shrink-0 bg-border" />
@@ -134,33 +93,22 @@ function FilterPanel({
       )}
       <SectionLabel text={t('toysHeading')} />
       <div className="min-h-0 flex-1 overflow-y-auto pr-1.5">
-        {unselected.map((toy) => (
-          <ToyRow
-            key={toy.id}
-            toy={toy}
-            uses={usageByToy.get(toy.id) ?? 0}
-            checked={false}
-            onToggle={() => onChange(toggleToyFilter(filters, toy.id))}
-          />
+        {state.availableToys.map((option) => (
+          <ToyRow key={option.toy.id} option={option} checked={false} />
         ))}
-        {unselected.length === 0 && <p className="px-2.5 py-1.5 text-xs text-text-tertiary">{t('noToys')}</p>}
+        {state.availableToys.length === 0 && <p className="px-2.5 py-1.5 text-xs text-text-tertiary">{t('noToys')}</p>}
       </div>
       <div className="my-1.5 h-px shrink-0 bg-border" />
       <SectionLabel text={t('moreHeading')} />
       <div className="shrink-0">
-        {SESSION_FLAG_KEYS.map((key) => (
-          <CheckRow
-            key={key}
-            label={translate(SESSION_FLAG_FILTERS[key].labelKey)}
-            checked={filters[key]}
-            onToggle={() => onChange(toggleFlagFilter(filters, key))}
-          />
+        {state.flags.map((flag) => (
+          <CheckRow key={flag.key} label={translate(flag.labelKey)} checked={flag.active} onToggle={flag.toggle} />
         ))}
       </div>
-      {count > 0 && (
+      {state.count > 0 && (
         <button
           type="button"
-          onClick={() => onChange(NO_SESSION_FILTERS)}
+          onClick={state.clearAll}
           className="mt-2 shrink-0 self-start px-2.5 text-xs font-medium text-muted transition-colors hover:text-foreground"
         >
           {t('clearAll')}
@@ -170,17 +118,50 @@ function FilterPanel({
   );
 }
 
+function TimeWindowSlider({
+  slider,
+  anyLabel,
+  fromLabel,
+  toLabel,
+}: Readonly<{ slider: TimeSliderState; anyLabel: string; fromLabel: string; toLabel: string }>) {
+  const locale = useLocale();
+  return (
+    <div className="shrink-0 px-2.5 py-1.5">
+      <div className="mb-1 flex items-center justify-between text-xs tabular-nums text-foreground">
+        {slider.isFullDay ? (
+          <span className="text-muted">{anyLabel}</span>
+        ) : (
+          <>
+            <span>{localizedHourLabel(slider.value[0], locale)}</span>
+            <span>{localizedHourLabel(slider.value[1] % 24, locale)}</span>
+          </>
+        )}
+      </div>
+      <Slider.Root
+        aria-label={`${fromLabel} – ${toLabel}`}
+        minValue={0}
+        maxValue={24}
+        step={1}
+        value={[...slider.value]}
+        onChange={(next) => slider.onDraft(next as [number, number])}
+        onChangeEnd={(next) => slider.onCommit(next as [number, number])}
+      >
+        <Slider.Track>
+          <Slider.Fill />
+          <Slider.Thumb index={0} aria-label={fromLabel} className="size-4 rounded-full" />
+          <Slider.Thumb index={1} aria-label={toLabel} className="size-4 rounded-full" />
+        </Slider.Track>
+      </Slider.Root>
+    </div>
+  );
+}
+
 function SectionLabel({ text }: Readonly<{ text: string }>) {
   return <div className="shrink-0 px-2.5 pb-1 text-caption uppercase tracking-wider text-text-tertiary">{text}</div>;
 }
 
-function ToyRow({
-  toy,
-  uses,
-  checked,
-  onToggle,
-}: Readonly<{ toy: Toy; uses: number; checked: boolean; onToggle: () => void }>) {
-  return <CheckRow label={toyTooltip(toy)} meta={`${uses}`} checked={checked} onToggle={onToggle} />;
+function ToyRow({ option, checked }: Readonly<{ option: ToyOption; checked: boolean }>) {
+  return <CheckRow label={toyTooltip(option.toy)} meta={`${option.uses}`} checked={checked} onToggle={option.toggle} />;
 }
 
 function CheckRow({
