@@ -7,33 +7,27 @@
 # Build context: repo root.
 #   docker build -t toy-gallery .
 
-# ----- Stage 1: build toy-editor (the React component library) ----------
-FROM node:22-alpine AS toy_editor
-WORKDIR /toy-editor
-COPY toy-editor/package.json toy-editor/pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile --ignore-scripts
-COPY toy-editor/ ./
-RUN pnpm build
-
-# ----- Stage 2: build the Next.js static export --------------------------
+# ----- Stage 1: build the frontend (toy-editor + Next.js export) ---------
 FROM node:22-alpine AS frontend
 ARG APP_VERSION=dev
 ARG APP_COMMIT_SHA=local
-COPY --from=toy_editor /toy-editor /workspace/toy-editor
-WORKDIR /workspace/web
-COPY web/package.json web/pnpm-lock.yaml ./
+WORKDIR /workspace
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY web/package.json web/
+COPY toy-editor/package.json toy-editor/
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
-COPY web/ ./
-COPY api/schema.yml /workspace/api/schema.yml
+COPY toy-editor/ toy-editor/
+COPY web/ web/
+COPY api/schema.yml api/schema.yml
 # Empty string flips the frontend into same-origin mode (see src/config.ts).
 # APP_VERSION + APP_COMMIT_SHA are inlined into the static bundle so the UI
 # can show what the user is running.
 ENV NEXT_PUBLIC_API_URL=""
 ENV NEXT_PUBLIC_APP_VERSION=$APP_VERSION
 ENV NEXT_PUBLIC_APP_COMMIT_SHA=$APP_COMMIT_SHA
-RUN pnpm build
+RUN pnpm --filter toy-editor build && pnpm --filter web build
 
-# ----- Stage 3: install Python deps with uv ------------------------------
+# ----- Stage 2: install Python deps with uv ------------------------------
 FROM python:3.13-slim AS python_deps
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1
@@ -42,7 +36,7 @@ WORKDIR /app
 COPY api/pyproject.toml api/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-# ----- Stage 4: runtime --------------------------------------------------
+# ----- Stage 3: runtime --------------------------------------------------
 FROM python:3.13-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

@@ -33,13 +33,10 @@ jobs:
           node-version: '22'
       - name: Enable pnpm
         run: corepack enable pnpm
-      - name: Install and build toy-editor
-        working-directory: toy-editor
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm build
       - name: Install FE dependencies
-        run: cd web && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
+      - name: Build toy-editor
+        run: pnpm --filter toy-editor build
       - name: Run FE tests with coverage
         run: |
           cd web
