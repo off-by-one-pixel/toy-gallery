@@ -1,7 +1,9 @@
+from datetime import timedelta
+
 from django.db import IntegrityError, transaction
 from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Sum, When
 from django.db.models.deletion import ProtectedError
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, ExtractHour
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers as drf_serializers
@@ -158,8 +160,32 @@ def _apply_session_ordering(queryset, ordering):
     return queryset.order_by(F("is_live").desc(), ordered, "-id")
 
 
+def _with_filter_aliases(queryset, params):
+    if params.get("time_from") is not None:
+        tz = params["tz"]
+        queryset = queryset.alias(
+            local_start_hour=ExtractHour("started_at", tzinfo=tz),
+            local_end_hour=ExtractHour(Coalesce("ended_at", "started_at"), tzinfo=tz),
+        )
+    return queryset
+
+
+def _hour_segment_q(first, last):
+    session_wraps = Q(local_end_hour__lt=F("local_start_hour"))
+    straight = ~session_wraps & Q(local_start_hour__lte=last, local_end_hour__gte=first)
+    wrapped = session_wraps & (Q(local_start_hour__lte=last) | Q(local_end_hour__gte=first))
+    return straight | wrapped
+
+
+def _time_window_q(time_from, time_to):
+    covers_full_day = Q(ended_at__gte=F("started_at") + timedelta(days=1))
+    return covers_full_day | _hour_segment_q(time_from, time_to - 1)
+
+
 def _session_filter_q(params):
     filters = Q()
+    if params.get("time_from") is not None:
+        filters &= _time_window_q(params["time_from"], params["time_to"])
     toy_ids = params.get("toys")
     if toy_ids:
         filters &= Q(
@@ -204,6 +230,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         query = serializers.SessionListQuerySerializer(data=self.request.query_params)
         query.is_valid(raise_exception=True)
         params = query.validated_data
+        queryset = _with_filter_aliases(queryset, params)
         lower, upper = stats.range_bounds(params.get("start"), params.get("end"), params["tz"])
         window = Q()
         if lower is not None:
@@ -287,7 +314,9 @@ class SessionViewSet(viewsets.ModelViewSet):
         query.is_valid(raise_exception=True)
         params = query.validated_data
         lower, upper = stats.range_bounds(params.get("start"), params.get("end"), params["tz"])
-        sessions = models.Session.objects.prefetch_related("entries", "entries__toy")
+        sessions = _with_filter_aliases(
+            models.Session.objects.prefetch_related("entries", "entries__toy"), params
+        )
         if lower is not None:
             sessions = sessions.filter(started_at__gte=lower)
         if upper is not None:
