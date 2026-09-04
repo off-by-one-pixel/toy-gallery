@@ -26,8 +26,10 @@ venv.bak/
 # VS Code settings
 .vscode/
 
-# Claude Code project settings
+# Local assistant/tooling files
 .claude/
+CLAUDE.md
+specs/
 
 # OS generated files
 .DS_Store
