@@ -1,47 +1,31 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
-import type { Toy } from '@/api/types';
-import {
-  activeFilterCount,
-  activeFlagKeys,
-  SESSION_FLAG_FILTERS,
-  type SessionFilters,
-  NO_SESSION_FILTERS,
-  toggleFlagFilter,
-  toggleToyFilter,
-  toyTooltip,
-} from '@/features/sessions/session';
+import { localizedHourLabel } from '@/lib/dates';
+import { type FilterChip, type SessionFiltersState } from '@/features/sessions/list/filter/useSessionFilters';
 
-type Props = Readonly<{
-  toysById: ReadonlyMap<number, Toy>;
-  filters: SessionFilters;
-  onChange: (next: SessionFilters) => void;
-}>;
-
-export default function SessionFilterChips({ toysById, filters, onChange }: Props) {
+export default function SessionFilterChips({ state }: Readonly<{ state: SessionFiltersState }>) {
   const t = useTranslations('session.filters');
+  const locale = useLocale();
   const translate = t as unknown as (key: string) => string;
-  if (activeFilterCount(filters) === 0) return null;
+  if (state.count === 0) return null;
+
+  const chipLabel = (chip: FilterChip): string => {
+    if (chip.kind === 'label') return chip.label;
+    if (chip.kind === 'flag') return translate(chip.labelKey);
+    return `${localizedHourLabel(chip.from, locale)} – ${localizedHourLabel(chip.to % 24, locale)}`;
+  };
+
   return (
     <div className="mx-auto flex max-w-300 flex-wrap items-center gap-2 px-4 pt-1 pb-3 sm:px-6">
-      {filters.toyIds.map((toyId) => {
-        const toy = toysById.get(toyId);
-        const label = toy ? toyTooltip(toy) : `#${toyId}`;
-        return <Chip key={toyId} label={label} onRemove={() => onChange(toggleToyFilter(filters, toyId))} />;
-      })}
-      {activeFlagKeys(filters).map((key) => (
-        <Chip
-          key={key}
-          label={translate(SESSION_FLAG_FILTERS[key].labelKey)}
-          onRemove={() => onChange(toggleFlagFilter(filters, key))}
-        />
+      {state.chips.map((chip) => (
+        <Chip key={chip.key} label={chipLabel(chip)} onRemove={chip.remove} />
       ))}
       <button
         type="button"
-        onClick={() => onChange(NO_SESSION_FILTERS)}
+        onClick={state.clearAll}
         className="text-xs font-medium text-muted transition-colors hover:text-foreground"
       >
         {t('clearAll')}

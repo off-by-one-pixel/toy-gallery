@@ -193,6 +193,10 @@
       "clearAll": "Clear all",
       "hasMedia": "Has media",
       "hasPr": "Has PR",
+      "timeLabel": "Time of day",
+      "timeAny": "Any time",
+      "timeFrom": "From hour",
+      "timeTo": "To hour",
       "doneButton": "Done"
     },
     "records": {

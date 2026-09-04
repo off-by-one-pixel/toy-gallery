@@ -76,13 +76,26 @@ export const SESSION_FLAG_FILTERS = {
 
 export type SessionFlagKey = keyof typeof SESSION_FLAG_FILTERS;
 
+export type TimeWindow = Readonly<{ from: number; to: number }>;
+
+export const parseTimeWindowParam = (value: string | null): TimeWindow | null => {
+  const match = value?.match(/^(\d{1,2})-(\d{1,2})$/);
+  if (!match) return null;
+  const from = Number(match[1]);
+  const to = Number(match[2]);
+  const valid = from >= 0 && from <= 23 && to > from && to <= 24;
+  return valid ? { from, to } : null;
+};
+
 export const SESSION_FLAG_KEYS = Object.keys(SESSION_FLAG_FILTERS) as readonly SessionFlagKey[];
 
-export type SessionFilters = Readonly<{ toyIds: readonly number[] } & Record<SessionFlagKey, boolean>>;
+export type SessionFilters = Readonly<
+  { toyIds: readonly number[]; timeWindow: TimeWindow | null } & Record<SessionFlagKey, boolean>
+>;
 
 const NO_FLAGS = Object.fromEntries(SESSION_FLAG_KEYS.map((key) => [key, false])) as Record<SessionFlagKey, boolean>;
 
-export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], ...NO_FLAGS };
+export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], timeWindow: null, ...NO_FLAGS };
 
 export const activeFlagKeys = (filters: SessionFilters): SessionFlagKey[] =>
   SESSION_FLAG_KEYS.filter((key) => filters[key]);
@@ -93,10 +106,11 @@ export const sessionFiltersKey = (filters: SessionFilters): string =>
     activeFlagKeys(filters)
       .map((key) => SESSION_FLAG_FILTERS[key].keyToken)
       .join(''),
+    filters.timeWindow ? `${filters.timeWindow.from}-${filters.timeWindow.to}` : '',
   ].join('|');
 
 export const activeFilterCount = (filters: SessionFilters): number =>
-  filters.toyIds.length + activeFlagKeys(filters).length;
+  filters.toyIds.length + activeFlagKeys(filters).length + (filters.timeWindow ? 1 : 0);
 
 export const toggleToyFilter = (filters: SessionFilters, toyId: number): SessionFilters => ({
   ...filters,
@@ -108,8 +122,14 @@ export const toggleFlagFilter = (filters: SessionFilters, key: SessionFlagKey): 
   [key]: !filters[key],
 });
 
+export const setTimeWindowFilter = (filters: SessionFilters, timeWindow: TimeWindow | null): SessionFilters => ({
+  ...filters,
+  timeWindow,
+});
+
 export const parseSessionFilters = (get: (name: string) => string | null): SessionFilters => ({
   toyIds: parseToyIdsParam(get('toys')),
+  timeWindow: parseTimeWindowParam(get('time')),
   ...(Object.fromEntries(
     SESSION_FLAG_KEYS.map((key) => [key, get(SESSION_FLAG_FILTERS[key].urlParam) === '1']),
   ) as Record<SessionFlagKey, boolean>),
@@ -117,6 +137,7 @@ export const parseSessionFilters = (get: (name: string) => string | null): Sessi
 
 export const sessionFiltersUrlParams = (filters: SessionFilters): Record<string, string | null> => ({
   toys: filters.toyIds.length > 0 ? filters.toyIds.join(',') : null,
+  time: filters.timeWindow ? `${filters.timeWindow.from}-${filters.timeWindow.to}` : null,
   ...Object.fromEntries(
     SESSION_FLAG_KEYS.map((key) => [SESSION_FLAG_FILTERS[key].urlParam, filters[key] ? '1' : null]),
   ),
@@ -124,8 +145,10 @@ export const sessionFiltersUrlParams = (filters: SessionFilters): Record<string,
 
 export const sessionFilterWireParams = (
   filters: SessionFilters,
-): Partial<Record<SessionFlagFilterDef['wireParam'], boolean>> =>
-  Object.fromEntries(activeFlagKeys(filters).map((key) => [SESSION_FLAG_FILTERS[key].wireParam, true]));
+): Partial<Record<SessionFlagFilterDef['wireParam'], boolean> & { time_from: number; time_to: number }> => ({
+  ...Object.fromEntries(activeFlagKeys(filters).map((key) => [SESSION_FLAG_FILTERS[key].wireParam, true])),
+  ...(filters.timeWindow ? { time_from: filters.timeWindow.from, time_to: filters.timeWindow.to } : {}),
+});
 
 export const parseToyIdsParam = (value: string | null): number[] =>
   value

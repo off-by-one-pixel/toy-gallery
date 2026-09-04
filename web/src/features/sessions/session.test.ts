@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   activeFilterCount,
   parseSessionFilters,
+  parseTimeWindowParam,
+  setTimeWindowFilter,
   sessionFiltersKey,
   sessionFiltersUrlParams,
   sessionFilterWireParams,
@@ -157,6 +159,39 @@ describe('session filters', () => {
     expect(withToy.toyIds).toEqual([5]);
     expect(toggleToyFilter(withToy, 5).toyIds).toEqual([]);
   });
+
+  it('counts and keys the time window as one filter', () => {
+    const filters = setTimeWindowFilter(NO_SESSION_FILTERS, { from: 18, to: 20 });
+    expect(activeFilterCount(filters)).toBe(1);
+    expect(sessionFiltersKey(filters)).toBe('||18-20');
+    expect(setTimeWindowFilter(filters, null)).toEqual(NO_SESSION_FILTERS);
+  });
+
+  it('round-trips the time window through url params and sends wire hours', () => {
+    const filters = setTimeWindowFilter(NO_SESSION_FILTERS, { from: 18, to: 20 });
+    const params = sessionFiltersUrlParams(filters);
+    expect(params.time).toBe('18-20');
+    const map = new Map(Object.entries(params).filter(([, v]) => v !== null) as [string, string][]);
+    expect(parseSessionFilters((name) => map.get(name) ?? null)).toEqual(filters);
+    expect(sessionFilterWireParams(filters)).toEqual({ time_from: 18, time_to: 20 });
+  });
+});
+
+describe('parseTimeWindowParam', () => {
+  it('parses valid hour ranges', () => {
+    expect(parseTimeWindowParam('18-20')).toEqual({ from: 18, to: 20 });
+    expect(parseTimeWindowParam('0-24')).toEqual({ from: 0, to: 24 });
+  });
+
+  it('rejects malformed, empty, or out-of-range windows', () => {
+    expect(parseTimeWindowParam(null)).toBeNull();
+    expect(parseTimeWindowParam('18')).toBeNull();
+    expect(parseTimeWindowParam('5-5')).toBeNull();
+    expect(parseTimeWindowParam('25-3')).toBeNull();
+    expect(parseTimeWindowParam('22-0')).toBeNull();
+    expect(parseTimeWindowParam('22-2')).toBeNull();
+    expect(parseTimeWindowParam('junk')).toBeNull();
+  });
 });
 
 describe('parseToyIdsParam', () => {
@@ -181,14 +216,14 @@ describe('session flag filter registry', () => {
   it('round-trips filters through url params', () => {
     const filters = { ...NO_SESSION_FILTERS, toyIds: [3], hasMedia: true };
     const params = sessionFiltersUrlParams(filters);
-    expect(params).toEqual({ toys: '3', media: '1', pr: null });
+    expect(params).toEqual({ toys: '3', time: null, media: '1', pr: null });
     const map = new Map(Object.entries(params).filter(([, v]) => v !== null) as [string, string][]);
     expect(parseSessionFilters((name) => map.get(name) ?? null)).toEqual(filters);
   });
 
   it('builds cache keys and wire params from active flags', () => {
     const filters = { ...NO_SESSION_FILTERS, toyIds: [1], hasMedia: true, hasPr: true };
-    expect(sessionFiltersKey(filters)).toBe('1|mr');
+    expect(sessionFiltersKey(filters)).toBe('1|mr|');
     expect(sessionFilterWireParams(filters)).toEqual({ has_media: true, has_pr: true });
     expect(sessionFilterWireParams(NO_SESSION_FILTERS)).toEqual({});
   });
