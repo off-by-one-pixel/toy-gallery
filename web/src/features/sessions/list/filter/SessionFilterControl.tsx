@@ -101,6 +101,15 @@ function FilterPanel({ state }: Readonly<{ state: SessionFiltersState }>) {
           <ToyRow key={option.toy.id} option={option} checked={false} />
         ))}
         {state.availableToys.length === 0 && <p className="px-2.5 py-1.5 text-xs text-text-tertiary">{t('noToys')}</p>}
+        {state.hiddenToyCount > 0 && (
+          <button
+            type="button"
+            onClick={state.showAllToys}
+            className="w-full px-2.5 py-1.5 text-left text-xs font-medium text-accent transition-colors hover:text-accent-hover"
+          >
+            {t('showAllToys', { count: state.availableToys.length + state.hiddenToyCount })}
+          </button>
+        )}
       </div>
       <div className="my-1.5 h-px shrink-0 bg-border" />
       <SectionLabel text={t('moreHeading')} />

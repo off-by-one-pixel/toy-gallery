@@ -22,6 +22,8 @@ import {
 
 export const FULL_DAY: SliderValue = [0, 24];
 
+const TOP_TOYS_LIMIT = 10;
+
 export type SliderValue = readonly [number, number];
 
 const sliderValueToWindow = ([from, to]: SliderValue): TimeWindow | null | undefined => {
@@ -50,6 +52,8 @@ export type SessionFiltersState = Readonly<{
   setQuery: (query: string) => void;
   selectedToys: readonly ToyOption[];
   availableToys: readonly ToyOption[];
+  hiddenToyCount: number;
+  showAllToys: () => void;
   flags: readonly FlagOption[];
   slider: TimeSliderState;
   chips: readonly FilterChip[];
@@ -73,6 +77,7 @@ export function useSessionFilters({
 }: SessionFiltersArgs): SessionFiltersState {
   const usageByToy = useToyUsage(filter);
   const [query, setQuery] = useState('');
+  const [toysExpanded, setToysExpanded] = useState(false);
 
   const byWindowUsage = (a: Toy, b: Toy) => (usageByToy.get(b.id) ?? 0) - (usageByToy.get(a.id) ?? 0);
   const toOption = (toy: Toy): ToyOption => ({
@@ -85,13 +90,15 @@ export function useSessionFilters({
     .filter((toy) => filters.toyIds.includes(toy.id))
     .sort(byWindowUsage)
     .map(toOption);
-  const availableToys = filterToys(
+  const matchingToys = filterToys(
     toys.filter((toy) => !filters.toyIds.includes(toy.id) && usageByToy.has(toy.id)),
     query,
   )
     .slice()
     .sort(byWindowUsage)
     .map(toOption);
+  const capped = !toysExpanded && query === '';
+  const availableToys = capped ? matchingToys.slice(0, TOP_TOYS_LIMIT) : matchingToys;
 
   const flags = SESSION_FLAG_KEYS.map((key) => ({
     key,
@@ -137,6 +144,8 @@ export function useSessionFilters({
     setQuery,
     selectedToys,
     availableToys,
+    hiddenToyCount: matchingToys.length - availableToys.length,
+    showAllToys: () => setToysExpanded(true),
     flags,
     chips,
     slider: {
