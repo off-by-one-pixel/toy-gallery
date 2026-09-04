@@ -35,8 +35,6 @@ export type FlagOption = Readonly<{ key: string; labelKey: string; active: boole
 
 export type TimeSliderState = Readonly<{
   value: SliderValue;
-  isFullDay: boolean;
-  onDraft: (value: SliderValue) => void;
   onCommit: (value: SliderValue) => void;
 }>;
 
@@ -75,7 +73,6 @@ export function useSessionFilters({
 }: SessionFiltersArgs): SessionFiltersState {
   const usageByToy = useToyUsage(filter);
   const [query, setQuery] = useState('');
-  const [draft, setDraft] = useState<SliderValue | null>(null);
 
   const byWindowUsage = (a: Toy, b: Toy) => (usageByToy.get(b.id) ?? 0) - (usageByToy.get(a.id) ?? 0);
   const toOption = (toy: Toy): ToyOption => ({
@@ -132,9 +129,7 @@ export function useSessionFilters({
       : []),
   ];
 
-  const committed: SliderValue = filters.timeWindow ? [filters.timeWindow.from, filters.timeWindow.to] : FULL_DAY;
-  if (draft?.[0] === committed[0] && draft?.[1] === committed[1]) setDraft(null);
-  const value = draft ?? committed;
+  const timeValue: SliderValue = filters.timeWindow ? [filters.timeWindow.from, filters.timeWindow.to] : FULL_DAY;
 
   return {
     count: activeFilterCount(filters),
@@ -145,13 +140,10 @@ export function useSessionFilters({
     flags,
     chips,
     slider: {
-      value,
-      isFullDay: sliderValueToWindow(value) === null,
-      onDraft: setDraft,
+      value: timeValue,
       onCommit: (next) => {
         const timeWindow = sliderValueToWindow(next);
-        if (timeWindow === undefined) setDraft(null);
-        else onChange(setTimeWindowFilter(filters, timeWindow));
+        if (timeWindow !== undefined) onChange(setTimeWindowFilter(filters, timeWindow));
       },
     },
     clearAll: () => onChange(NO_SESSION_FILTERS),

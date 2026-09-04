@@ -21,7 +21,6 @@ import { useSetTopBarSubtitle } from '@/components/TopBarProvider';
 import EmptyState from '@/features/sessions/list/EmptyState';
 import SessionFilterChips from '@/features/sessions/list/filter/SessionFilterChips';
 import SessionFilterControl from '@/features/sessions/list/filter/SessionFilterControl';
-import { useSessionFilters } from '@/features/sessions/list/filter/useSessionFilters';
 import SessionRow from '@/features/sessions/list/SessionRow';
 import SessionSortControl from '@/features/sessions/list/SessionSortControl';
 import SessionStats from '@/features/sessions/stats/SessionStats';
@@ -39,13 +38,13 @@ function SessionListContent() {
   const { replace } = useNavigation();
   const { unit } = useUnit();
   const data = useSessions();
-  const filterState = useSessionFilters({
+  const filterArgs = {
     toys: data.toys,
     toysById: data.toysById,
     filter: data.filter,
     filters: data.sessionFilters,
     onChange: data.setSessionFilters,
-  });
+  };
   const t = useTranslations('session');
   const common = useTranslations('common');
   useSetTopBarSubtitle(data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`);
@@ -121,13 +120,13 @@ function SessionListContent() {
               onChange={data.setFilter}
               ariaLabel={t('filter.ariaLabel')}
             />
-            <SessionFilterControl state={filterState} />
+            <SessionFilterControl {...filterArgs} />
           </>
         }
         menuExtrasEnd={<SessionSortControl />}
         actions={newActions}
       >
-        <SessionFilterChips state={filterState} />
+        <SessionFilterChips {...filterArgs} />
       </PageToolbar>
 
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
