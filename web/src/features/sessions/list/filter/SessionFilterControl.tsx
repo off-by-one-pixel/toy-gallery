@@ -149,23 +149,25 @@ function TimeWindowSlider({
         defaultValue={[...slider.value]}
         onChangeEnd={(next) => slider.onCommit(next as [number, number])}
       >
-        <Slider.Output className="mb-1 flex w-full items-center justify-between text-xs tabular-nums text-foreground">
-          {({ state }) =>
-            state.values[0] === FULL_DAY[0] && state.values[1] === FULL_DAY[1] ? (
-              <span className="text-muted">{anyLabel}</span>
-            ) : (
-              <>
-                <span>{localizedHourLabel(state.values[0], locale)}</span>
-                <span>{localizedHourLabel(state.values[1] % 24, locale)}</span>
-              </>
-            )
-          }
-        </Slider.Output>
-        <Slider.Track>
-          <Slider.Fill />
-          <Slider.Thumb index={0} aria-label={fromLabel} className="size-4 rounded-full" />
-          <Slider.Thumb index={1} aria-label={toLabel} className="size-4 rounded-full" />
-        </Slider.Track>
+        {({ state }) => (
+          <>
+            <div className="col-span-2 mb-1 flex items-center justify-between text-xs tabular-nums text-foreground">
+              {state.values[0] === FULL_DAY[0] && state.values[1] === FULL_DAY[1] ? (
+                <span className="text-muted">{anyLabel}</span>
+              ) : (
+                <>
+                  <span>{localizedHourLabel(state.values[0], locale)}</span>
+                  <span>{localizedHourLabel(state.values[1] % 24, locale)}</span>
+                </>
+              )}
+            </div>
+            <Slider.Track>
+              <Slider.Fill />
+              <Slider.Thumb index={0} aria-label={fromLabel} className="size-4 rounded-full" />
+              <Slider.Thumb index={1} aria-label={toLabel} className="size-4 rounded-full" />
+            </Slider.Track>
+          </>
+        )}
       </Slider.Root>
     </div>
   );
