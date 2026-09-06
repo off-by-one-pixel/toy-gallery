@@ -98,6 +98,8 @@ class ToySessionEntry(models.Model):
         (FULLY_INSERTED, "Fully inserted"),
     ]
 
+    INVOLVEMENT_VALUE = {USED: 0, INSERTED: 1, FULLY_INSERTED: 2}
+
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="entries")
     toy = models.ForeignKey(Toy, on_delete=models.PROTECT)
     involvement = models.CharField(max_length=20, choices=INVOLVEMENT_CHOICES)
@@ -113,6 +115,7 @@ class PersonalRecord(models.Model):
     id = models.BigAutoField(primary_key=True)
     key = models.CharField(max_length=16)
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="records")
+    toy = models.ForeignKey(Toy, on_delete=models.CASCADE, related_name="records", null=True)
     toy_entry = models.ForeignKey(ToySessionEntry, on_delete=models.CASCADE)
     value = models.FloatField()
     achieved_at = models.DateTimeField(auto_now_add=True)

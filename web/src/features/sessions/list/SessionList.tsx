@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -59,9 +59,10 @@ function SessionListContent() {
 
   const startLiveAction = useStartLiveAction(addStartedSession);
 
-  const editSession = (id: number) => replace(`/sessions/edit?id=${id}`);
+  const editSession = useCallback((id: number) => replace(`/sessions/edit?id=${id}`), [replace]);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
-  const removeSession = (id: number) => setPendingDeleteId(id);
+  const removeSession = useCallback((id: number) => setPendingDeleteId(id), []);
+  const toggleSelect = useCallback((id: number) => setSelectedId((cur) => (cur === id ? null : id)), []);
   const confirmRemove = async () => {
     if (pendingDeleteId === null) return;
     await data.removeSession(pendingDeleteId);
@@ -186,9 +187,9 @@ function SessionListContent() {
             unit={unit}
             selected={selectedId === session.id}
             flash={flashId === session.id}
-            onToggleSelect={() => setSelectedId((cur) => (cur === session.id ? null : session.id))}
-            onEdit={() => editSession(session.id)}
-            onDelete={() => removeSession(session.id)}
+            onToggleSelect={toggleSelect}
+            onEdit={editSession}
+            onDelete={removeSession}
           />
         ))}
         {data.isLoadingMore && (

@@ -205,7 +205,9 @@
         "circumference": "Circumference PR",
         "diameter": "Diameter PR"
       },
-      "depth": "Depth PR"
+      "depth": "Depth PR",
+      "time": "Time PR",
+      "level": "Level PR"
     }
   },
   "template": {

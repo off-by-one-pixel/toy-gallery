@@ -14,7 +14,7 @@ help:
 	@echo "For dev, run 'make be' and 'make fe' in separate terminals."
 
 be:
-	cd api && uv run python manage.py runserver 0.0.0.0:8000
+	cd api && uv run $(if $(wildcard .env),--env-file=../.env,) python manage.py runserver 0.0.0.0:8000
 
 # Mirrors the Docker entrypoint: builds the Next.js export, runs the same
 # migrate + collectstatic + gunicorn sequence under settings_docker_local

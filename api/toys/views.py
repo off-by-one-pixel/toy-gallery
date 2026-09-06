@@ -13,10 +13,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from toys import records
-
 from . import export as export_mod
 from . import media, models, serializers, stats
+from .records import session
 
 
 class ToyViewSet(viewsets.ModelViewSet):
@@ -333,7 +332,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["post"], url_path="rebuild-records")
     def rebuild_records(self, _):
-        records.resync_records()
+        session.resync_records()
         return Response({"records": models.PersonalRecord.objects.count()})
 
 

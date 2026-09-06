@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { Image as ImageIcon, Pencil, Trash2, Video } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -18,6 +19,7 @@ import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
+import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
 import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 
@@ -41,12 +43,12 @@ type Props = Readonly<{
   unit: Unit;
   selected: boolean;
   flash?: boolean;
-  onToggleSelect: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  onToggleSelect: (id: number) => void;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
 }>;
 
-export default function SessionRow({
+function SessionRow({
   session: listed,
   toysById,
   unit,
@@ -61,6 +63,8 @@ export default function SessionRow({
   const photoCount = session.photoCount ?? 0;
   const videoCount = session.videoCount ?? 0;
   const common = useTranslations('common');
+  const catalog = useTranslations();
+  const { configured: mediaConfigured } = useMediaStatus();
   const locale = useLocale();
   const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
@@ -77,7 +81,7 @@ export default function SessionRow({
     ? formatElapsedSeconds(Math.max(0, secondsBetween(session.startedAt, now.toISOString())), locale)
     : formatElapsed(totalMinutes, locale);
 
-  const recordCtx = { t: t as unknown as (key: string) => string, girth };
+  const recordCtx = { t: catalog as unknown as (key: string) => string, girth, unit, locale };
   const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);
   const peakRecordLabel = (peak: RecordPeak) => {
     const record = session.records.find((r) => recordDisplay(r.key)?.peak === peak);
@@ -87,8 +91,14 @@ export default function SessionRow({
     session.records.filter((r) => r.toy === toyId).flatMap((r) => recordLabel(r.key) ?? []);
 
   const actions: ActionDef[] = [
-    { key: 'edit', label: common('edit'), icon: Pencil, variant: 'outline', onPress: onEdit },
-    { key: 'delete', label: common('delete'), icon: Trash2, variant: 'danger-soft', onPress: onDelete },
+    { key: 'edit', label: common('edit'), icon: Pencil, variant: 'outline', onPress: () => onEdit(session.id) },
+    {
+      key: 'delete',
+      label: common('delete'),
+      icon: Trash2,
+      variant: 'danger-soft',
+      onPress: () => onDelete(session.id),
+    },
   ];
 
   return (
@@ -102,7 +112,7 @@ export default function SessionRow({
         type="button"
         aria-label={t('detailsToggleLabel')}
         aria-expanded={selected}
-        onClick={onToggleSelect}
+        onClick={() => onToggleSelect(session.id)}
         className="absolute inset-0 cursor-pointer rounded-xl"
       />
       <div className="flex items-center justify-between gap-3 sm:contents">
@@ -189,7 +199,7 @@ export default function SessionRow({
           <SessionRecordList records={session.records} toysById={toysById} unit={unit} />
         </div>
       )}
-      {selected && (
+      {selected && mediaConfigured && (
         <div className="relative mt-3 sm:order-6 sm:col-span-4 sm:mt-1">
           <SessionMediaStrip sessionId={session.id} expectedCount={photoCount + videoCount} />
         </div>
@@ -197,3 +207,5 @@ export default function SessionRow({
     </div>
   );
 }
+
+export default memo(SessionRow);

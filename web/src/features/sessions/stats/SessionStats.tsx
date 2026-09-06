@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import { keepPreviousData, useQueries } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -23,7 +23,7 @@ import ActivityTracker from '@/features/sessions/stats/ActivityTracker';
 
 type Props = Readonly<{ filter: FilterKey; sessionFilters: SessionFilters; defs?: readonly StatDef[] }>;
 
-export default function SessionStats({ filter, sessionFilters, defs = SESSION_STATS }: Props) {
+function SessionStats({ filter, sessionFilters, defs = SESSION_STATS }: Props) {
   const { unit } = useUnit();
   const { girth } = useGirth();
   const locale = useLocale();
@@ -72,3 +72,5 @@ export default function SessionStats({ filter, sessionFilters, defs = SESSION_ST
     </div>
   );
 }
+
+export default memo(SessionStats);
