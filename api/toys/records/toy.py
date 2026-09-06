@@ -26,13 +26,15 @@ def _get_session_record(ctx: SessionRecordCheckCtx):
     return records
 
 
+def _get_toy_sessions(toy_id: int, sessions: list[Session]) -> list[Session]:
+    return [s for s in sessions if any(e.toy_id == toy_id for e in s.entries.all())]
+
+
 def _calculate_toys_records(ctx: SessionRecordCheckCtx):  # pyright: ignore[reportUnusedFunction]
     toy_records = _get_session_record(ctx)
     for t in ctx.session.entries.all():
         toy_ctx = ToyRecordCheckCtx(
-            sessions=[
-                s for s in ctx.sessions if any(e.toy_id == t.toy_id for e in s.entries.all())
-            ],
+            sessions=_get_toy_sessions(t.toy_id, ctx.sessions),
             entry=t,
         )
         for key, check in TOY_RECORD_DEFINITIONS.items():
@@ -70,7 +72,7 @@ def _pr_field(ctx, accessor):
 @toy_record("toy-time")
 def toy_time(ctx: ToyRecordCheckCtx) -> RecordCheckResult | None:
     def accessor(s: Session) -> int | None:
-        return s.entries.filter(toy=ctx.entry.toy).get().duration_minutes
+        return next(e for e in s.entries.all() if e.toy_id == ctx.entry.toy_id).duration_minutes
 
     return _pr_field(ctx, accessor)
 
@@ -79,7 +81,7 @@ def toy_time(ctx: ToyRecordCheckCtx) -> RecordCheckResult | None:
 def toy_level(ctx: ToyRecordCheckCtx) -> RecordCheckResult | None:
     def accessor(s: Session) -> int | None:
         return ToySessionEntry.INVOLVEMENT_VALUE[
-            s.entries.filter(toy=ctx.entry.toy).get().involvement
+            next(e for e in s.entries.all() if e.toy_id == ctx.entry.toy_id).involvement
         ]
 
     return _pr_field(ctx, accessor)
