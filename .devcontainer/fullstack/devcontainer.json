@@ -6,8 +6,12 @@
   },
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "mounts": [
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
+  ],
   "remoteEnv": {
-    "TZ": "America/Toronto"
+    "TZ": "America/Toronto",
+    "MANAGE_PY_PATH": "/workspace/api/manage.py"
   },
   "forwardPorts": [3000, 8000],
   "portsAttributes": {
@@ -25,10 +29,11 @@
         "bradlc.vscode-tailwindcss",
         "dsznajder.es7-react-js-snippets",
         "SonarSource.sonarlint-vscode",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "anthropic.claude-code"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "api/.venv/bin/python",
+        "python.defaultInterpreterPath": "/workspace/api/.venv/bin/python",
         "python.analysis.autoImportCompletions": true,
         "python.analysis.indexing": true,
         "ruff.importStrategy": "fromEnvironment",
