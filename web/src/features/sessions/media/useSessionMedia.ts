@@ -4,9 +4,10 @@ import { useEffect } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { fetchMediaStatus, fetchSessionMedia } from '@/api';
+import { fetchSessionMedia } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import type { SessionMedia } from '@/api/types';
+import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
 import { useApiQuery } from '@/hooks/useApi';
 
 export interface SessionMediaState {
@@ -18,7 +19,7 @@ export interface SessionMediaState {
 
 export function useSessionMedia(sessionId: number): SessionMediaState {
   const queryClient = useQueryClient();
-  const { data: status } = useApiQuery({ key: queryKeys.media.status, fn: fetchMediaStatus });
+  const { configured } = useMediaStatus();
   const {
     data: media,
     isPending,
@@ -26,7 +27,7 @@ export function useSessionMedia(sessionId: number): SessionMediaState {
   } = useApiQuery({
     key: queryKeys.media.session(sessionId),
     fn: () => fetchSessionMedia(sessionId),
-    enabled: status?.configured === true,
+    enabled: configured,
   });
 
   useEffect(() => {
@@ -34,5 +35,5 @@ export function useSessionMedia(sessionId: number): SessionMediaState {
     void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.detail(sessionId) });
   }, [media, queryClient, sessionId]);
 
-  return { configured: status?.configured === true, media, isPending, isError };
+  return { configured, media, isPending, isError };
 }

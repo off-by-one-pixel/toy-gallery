@@ -18,6 +18,7 @@ import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
+import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
 import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 
@@ -62,6 +63,7 @@ export default function SessionRow({
   const videoCount = session.videoCount ?? 0;
   const common = useTranslations('common');
   const catalog = useTranslations();
+  const { configured: mediaConfigured } = useMediaStatus();
   const locale = useLocale();
   const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
@@ -190,7 +192,7 @@ export default function SessionRow({
           <SessionRecordList records={session.records} toysById={toysById} unit={unit} />
         </div>
       )}
-      {selected && (
+      {selected && mediaConfigured && (
         <div className="relative mt-3 sm:order-6 sm:col-span-4 sm:mt-1">
           <SessionMediaStrip sessionId={session.id} expectedCount={photoCount + videoCount} />
         </div>

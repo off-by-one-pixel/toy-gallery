@@ -2,11 +2,12 @@ import { Image as ImageIcon, LogOut, Settings, Trophy, type LucideIcon } from 'l
 import { useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
 
-import { fetchMediaStatus, rebuildRecords, refreshAllSessionMedia } from '@/api';
+import { rebuildRecords, refreshAllSessionMedia } from '@/api';
 import { queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import type { ActionMenuItem } from '@/components/ActionDropdownMenu';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { useApiMutation, useApiQuery } from '@/hooks/useApi';
+import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
+import { useApiMutation } from '@/hooks/useApi';
 
 export type AppMenuContext = Readonly<{
   mediaConfigured: boolean;
@@ -60,7 +61,7 @@ export function useAppMenuItems(): ActionMenuItem[] {
   const t = useTranslations() as unknown as AppMenuTranslator;
   const { navigate } = useNavigation();
   const { username, logout } = useAuth();
-  const { data: status } = useApiQuery({ key: queryKeys.media.status, fn: fetchMediaStatus });
+  const { configured } = useMediaStatus();
 
   const refreshMedia = useApiMutation({
     fn: refreshAllSessionMedia,
@@ -74,7 +75,7 @@ export function useAppMenuItems(): ActionMenuItem[] {
     invalidates: sessionDataKeys,
   });
 
-  const ctx: AppMenuContext = { mediaConfigured: status?.configured ?? false, username: username ?? null };
+  const ctx: AppMenuContext = { mediaConfigured: configured, username: username ?? null };
   const run: Record<AppMenuActionId, () => void> = {
     settings: () => navigate('/settings'),
     'refresh-media': () => void refreshMedia.run(),
