@@ -1,10 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useGirth } from '@/features/preferences/GirthProvider';
-import { displayGirth } from '@/features/preferences/girth';
-import { formatValue, type Unit } from '@/features/preferences/units';
+import { type Unit } from '@/features/preferences/units';
 import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import { recordDisplay } from '@/features/sessions/records';
 import { toyTooltip } from '@/features/sessions/session';
@@ -17,9 +16,10 @@ type Props = Readonly<{
 }>;
 
 export default function SessionRecordList({ records, toysById, unit }: Props) {
-  const t = useTranslations('session');
+  const t = useTranslations();
   const { girth } = useGirth();
-  const ctx = { t: t as unknown as (key: string) => string, girth };
+  const locale = useLocale();
+  const ctx = { t: t as unknown as (key: string) => string, girth, unit, locale };
 
   const listed = records.flatMap((record) => {
     const display = recordDisplay(record.key);
@@ -27,9 +27,9 @@ export default function SessionRecordList({ records, toysById, unit }: Props) {
     const toy = toysById.get(record.toy);
     return [
       {
-        key: record.key,
+        key: `${record.key}-${record.toy}`,
         label: display.label(ctx),
-        value: display.peak === 'circumference' ? displayGirth(record.value, girth) : record.value,
+        value: display.value(record.value, ctx),
         toyName: toy ? toyTooltip(toy) : undefined,
       },
     ];
@@ -44,8 +44,8 @@ export default function SessionRecordList({ records, toysById, unit }: Props) {
           <RecordTrophy label={item.label} />
           <span className="font-medium text-foreground">{item.label}</span>
           <span className="font-semibold tabular-nums text-foreground">
-            {formatValue(item.value, unit)}
-            <span className="ml-1 text-caption font-medium text-muted">{unit.id}</span>
+            {item.value.text}
+            {item.value.suffix && <span className="ml-1 text-caption font-medium text-muted">{item.value.suffix}</span>}
           </span>
           {item.toyName && <span className="min-w-0 truncate text-muted">{item.toyName}</span>}
         </li>

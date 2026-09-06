@@ -35,6 +35,26 @@ describe('SessionRecordList', () => {
     expect(items[1].textContent).toContain('180');
   });
 
+  it('renders toy records with their own value formatting', () => {
+    renderList([record('toy-time', 90), record('toy-level', 2)]);
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0].textContent).toContain(en.session.records.time);
+    expect(items[0].textContent).toContain('1h 30m');
+    expect(items[0].textContent).not.toContain('mm');
+    expect(items[1].textContent).toContain(en.session.records.level);
+    expect(items[1].textContent).toContain(en.involvement.FULLY_INSERTED);
+    expect(items[1].textContent).toContain('Acme Steel M');
+  });
+
+  it('keeps one row per toy for the same record key', () => {
+    renderList(
+      [record('toy-time', 30, 1), record('toy-time', 90, 2)],
+      [makeToy({ id: 1, name: 'One' }), makeToy({ id: 2, name: 'Two' })],
+    );
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+
   it('skips records the frontend does not know about', () => {
     renderList([record('pr-width', 240), record('pr-future', 5)]);
     expect(screen.getAllByRole('listitem')).toHaveLength(1);

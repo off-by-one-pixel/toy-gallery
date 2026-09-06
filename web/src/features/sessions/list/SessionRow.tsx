@@ -61,6 +61,7 @@ export default function SessionRow({
   const photoCount = session.photoCount ?? 0;
   const videoCount = session.videoCount ?? 0;
   const common = useTranslations('common');
+  const catalog = useTranslations();
   const locale = useLocale();
   const { girth } = useGirth();
   const whenT = (key: 'today' | 'yesterday') => t(key);
@@ -77,7 +78,7 @@ export default function SessionRow({
     ? formatElapsedSeconds(Math.max(0, secondsBetween(session.startedAt, now.toISOString())), locale)
     : formatElapsed(totalMinutes, locale);
 
-  const recordCtx = { t: t as unknown as (key: string) => string, girth };
+  const recordCtx = { t: catalog as unknown as (key: string) => string, girth, unit, locale };
   const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);
   const peakRecordLabel = (peak: RecordPeak) => {
     const record = session.records.find((r) => recordDisplay(r.key)?.peak === peak);
