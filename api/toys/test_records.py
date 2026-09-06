@@ -1,4 +1,14 @@
-from . import models, records
+from toys.records.session import record_session, resync_records, session_record
+from toys.records.toy import toy_record
+
+from . import models
+from .records import (
+    SESSION_RECORD_DEFINITIONS,
+    TOY_RECORD_DEFINITIONS,
+    DuplicateRecordKey,
+    RecordCheckResult,
+    ToyRecordCheckCtx,
+)
 from .testutils import SessionApiTestBase
 from .testutils import utc as _utc
 
@@ -11,26 +21,309 @@ class RecordsTestBase(SessionApiTestBase):
 
 
 class RecordRegistryTests(RecordsTestBase):
-    def test_duplicate_key_registration_raises(self):
-        with self.assertRaises(records.DuplicateRecordKey):
-            records.record("pr-width")(lambda ctx: None)
+    def test_duplicate_session_key_registration_raises(self):
+        with self.assertRaises(DuplicateRecordKey):
+            session_record("pr-width")(lambda ctx: None)
+
+    def test_duplicate_toy_key_registration_raises(self):
+        with self.assertRaises(DuplicateRecordKey):
+            toy_record("toy-time")(lambda ctx: None)
+
+    def test_key_must_be_unique_across_both_registries(self):
+        with self.assertRaises(DuplicateRecordKey):
+            session_record("toy-time")(lambda ctx: None)
+        with self.assertRaises(DuplicateRecordKey):
+            toy_record("pr-width")(lambda ctx: None)
 
     def test_seed_definitions_are_registered(self):
-        self.assertIn("pr-width", records.RECORD_DEFINITIONS)
-        self.assertIn("pr-depth", records.RECORD_DEFINITIONS)
+        self.assertIn("pr-width", SESSION_RECORD_DEFINITIONS)
+        self.assertIn("pr-depth", SESSION_RECORD_DEFINITIONS)
+        self.assertIn("toy-time", TOY_RECORD_DEFINITIONS)
+        self.assertIn("toy-level", TOY_RECORD_DEFINITIONS)
+
+
+class ToyRecordCheckTests(RecordsTestBase):
+    def _entry(self, session, toy):
+        return session.entries.get(toy_id=toy)
+
+    def _check(self, key, sessions, entry):
+        ctx = ToyRecordCheckCtx(sessions=list(sessions), entry=entry)
+        return TOY_RECORD_DEFINITIONS[key](ctx)
+
+    def test_first_use_sets_the_time_record(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        entry = self._entry(session, toy)
+
+        result = self._check("toy-time", [], entry)
+
+        self.assertIsInstance(result, RecordCheckResult)
+        self.assertEqual(result.entry, entry)
+        self.assertEqual(result.value, 30.0)
+
+    def test_longer_use_beats_the_prior_best(self):
+        toy = self._create_toy("A")
+        prior = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        candidate = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 45}]
+        )
+
+        result = self._check("toy-time", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 45.0)
+
+    def test_equal_or_shorter_use_is_not_a_record(self):
+        toy = self._create_toy("A")
+        prior = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        equal = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        shorter = self._make_session(
+            _utc("2026-06-03T10:00:00"), [{"toy": toy, "duration_minutes": 20}]
+        )
+
+        self.assertIsNone(self._check("toy-time", [prior], self._entry(equal, toy)))
+        self.assertIsNone(self._check("toy-time", [prior], self._entry(shorter, toy)))
+
+    def test_entry_without_duration_never_records_time(self):
+        toy = self._create_toy("A")
+        session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+
+        self.assertIsNone(self._check("toy-time", [], self._entry(session, toy)))
+
+    def test_prior_entries_without_duration_are_ignored_in_the_baseline(self):
+        toy = self._create_toy("A")
+        prior = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        candidate = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 25}]
+        )
+
+        result = self._check("toy-time", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 25.0)
+
+    def test_other_toys_in_baseline_sessions_are_ignored(self):
+        toy = self._create_toy("A")
+        other = self._create_toy("B")
+        prior = self._make_session(
+            _utc("2026-06-01T10:00:00"),
+            [{"toy": toy, "duration_minutes": 10}, {"toy": other, "duration_minutes": 90}],
+        )
+        candidate = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 20}]
+        )
+
+        result = self._check("toy-time", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 20.0)
+
+    def test_first_use_sets_the_level_record(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "USED"}]
+        )
+
+        result = self._check("toy-level", [], self._entry(session, toy))
+
+        self.assertEqual(result.value, 0.0)
+
+    def test_level_up_beats_the_prior_best(self):
+        toy = self._create_toy("A")
+        prior = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "USED"}]
+        )
+        candidate = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "involvement": "FULLY_INSERTED"}]
+        )
+
+        result = self._check("toy-level", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 2.0)
+
+    def test_same_or_lower_level_is_not_a_record(self):
+        toy = self._create_toy("A")
+        prior = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "FULLY_INSERTED"}]
+        )
+        same = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "involvement": "FULLY_INSERTED"}]
+        )
+        lower = self._make_session(
+            _utc("2026-06-03T10:00:00"), [{"toy": toy, "involvement": "INSERTED"}]
+        )
+
+        self.assertIsNone(self._check("toy-level", [prior], self._entry(same, toy)))
+        self.assertIsNone(self._check("toy-level", [prior], self._entry(lower, toy)))
+
+    def test_level_ranks_map_the_involvement_order(self):
+        toy = self._create_toy("A")
+        inserted = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "INSERTED"}]
+        )
+
+        result = self._check("toy-level", [], self._entry(inserted, toy))
+
+        self.assertEqual(result.value, 1.0)
+
+
+class ToyRecordDriverTests(RecordsTestBase):
+    def test_recording_a_session_sets_toy_records_with_the_toy_fk(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+
+        record_session(session)
+
+        time_rows = self._rows("toy-time")
+        level_rows = self._rows("toy-level")
+        self.assertEqual(len(time_rows), 1)
+        self.assertEqual(len(level_rows), 1)
+        self.assertEqual(time_rows[0].toy_id, toy)
+        self.assertEqual(time_rows[0].session_id, session.id)
+        self.assertEqual(time_rows[0].toy_entry, session.entries.get())
+        self.assertEqual(time_rows[0].value, 30.0)
+        self.assertEqual(level_rows[0].toy_id, toy)
+        self.assertEqual(level_rows[0].value, 2.0)
+
+    def test_session_records_keep_a_null_toy(self):
+        toy = self._create_toy("A", circumference=220.0, insertable_length=170)
+        session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+
+        record_session(session)
+
+        self.assertIsNone(self._rows("pr-width")[0].toy_id)
+        self.assertIsNone(self._rows("pr-depth")[0].toy_id)
+        self.assertEqual(self._rows("toy-level")[0].toy_id, toy)
+
+    def test_each_toy_in_a_session_gets_its_own_rows(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"),
+            [{"toy": toy_a, "duration_minutes": 10}, {"toy": toy_b, "duration_minutes": 90}],
+        )
+
+        record_session(session)
+
+        time_rows = self._rows("toy-time")
+        self.assertEqual({(r.toy_id, r.value) for r in time_rows}, {(toy_a, 10.0), (toy_b, 90.0)})
+        for row in time_rows:
+            self.assertEqual(row.toy_entry.toy_id, row.toy_id)
+
+    def test_beating_the_toy_record_keeps_history_per_toy(self):
+        toy_a = self._create_toy("A")
+        toy_b = self._create_toy("B")
+        first = self._make_session(
+            _utc("2026-06-01T10:00:00"),
+            [{"toy": toy_a, "duration_minutes": 30}, {"toy": toy_b, "duration_minutes": 60}],
+        )
+        record_session(first)
+
+        second = self._make_session(
+            _utc("2026-06-02T10:00:00"),
+            [{"toy": toy_a, "duration_minutes": 45}, {"toy": toy_b, "duration_minutes": 50}],
+        )
+        record_session(second)
+
+        rows = [(r.session_id, r.toy_id, r.value) for r in self._rows("toy-time")]
+        self.assertEqual(
+            rows, [(first.id, toy_a, 30.0), (first.id, toy_b, 60.0), (second.id, toy_a, 45.0)]
+        )
+
+    def test_no_level_row_without_a_level_up(self):
+        toy = self._create_toy("A")
+        first = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "FULLY_INSERTED"}]
+        )
+        record_session(first)
+
+        second = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "involvement": "FULLY_INSERTED"}]
+        )
+        record_session(second)
+
+        level_rows = self._rows("toy-level")
+        self.assertEqual(len(level_rows), 1)
+        self.assertEqual(level_rows[0].session_id, first.id)
+
+    def test_recording_the_same_session_twice_is_idempotent_for_toy_records(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+
+        record_session(session)
+        record_session(session)
+
+        self.assertEqual(len(self._rows("toy-time")), 1)
+        self.assertEqual(len(self._rows("toy-level")), 1)
+
+    def test_reevaluation_replaces_the_row_for_the_same_session_key_and_toy(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        record_session(session)
+
+        entry = session.entries.get()
+        entry.duration_minutes = 40
+        entry.save()
+        record_session(session)
+
+        time_rows = self._rows("toy-time")
+        self.assertEqual(len(time_rows), 1)
+        self.assertEqual(time_rows[0].value, 40.0)
+
+    def test_reevaluation_removes_the_row_when_the_entry_no_longer_qualifies(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        record_session(session)
+        self.assertEqual(len(self._rows("toy-time")), 1)
+
+        entry = session.entries.get()
+        entry.duration_minutes = None
+        entry.save()
+        record_session(session)
+
+        self.assertEqual(len(self._rows("toy-time")), 0)
+        self.assertEqual(len(self._rows("toy-level")), 1)
+
+    def test_backdated_session_uses_only_the_toy_sessions_before_it(self):
+        toy = self._create_toy("A")
+        later = self._make_session(
+            _utc("2026-06-05T10:00:00"), [{"toy": toy, "duration_minutes": 45}]
+        )
+        record_session(later)
+
+        backdated = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 60}]
+        )
+        record_session(backdated)
+
+        rows = [(r.session_id, r.value) for r in self._rows("toy-time")]
+        self.assertEqual(rows, [(later.id, 45.0), (backdated.id, 60.0)])
 
 
 class RecordSessionTests(RecordsTestBase):
     def test_session_without_qualifying_entries_creates_no_rows(self):
         session = self._make_session(_utc("2026-06-01T10:00:00"))
-        records.record_session(session)
+        record_session(session)
         self.assertEqual(models.PersonalRecord.objects.count(), 0)
 
     def test_qualifying_session_sets_width_and_depth(self):
         toy = self._create_toy("A", circumference=220.0, insertable_length=170)
         session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
 
-        records.record_session(session)
+        record_session(session)
 
         width = self._rows("pr-width")
         depth = self._rows("pr-depth")
@@ -48,8 +341,8 @@ class RecordSessionTests(RecordsTestBase):
         toy = self._create_toy("A")
         session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
 
-        records.record_session(session)
-        records.record_session(session)
+        record_session(session)
+        record_session(session)
 
         self.assertEqual(len(self._rows("pr-width")), 1)
         self.assertEqual(len(self._rows("pr-depth")), 1)
@@ -57,10 +350,10 @@ class RecordSessionTests(RecordsTestBase):
     def test_equal_value_does_not_create_a_new_row(self):
         toy = self._create_toy("A")
         first = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
-        records.record_session(first)
+        record_session(first)
 
         second = self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": toy}])
-        records.record_session(second)
+        record_session(second)
 
         self.assertEqual(len(self._rows("pr-width")), 1)
         self.assertEqual(len(self._rows("pr-depth")), 1)
@@ -68,11 +361,11 @@ class RecordSessionTests(RecordsTestBase):
     def test_bigger_value_creates_a_new_row_and_keeps_history(self):
         toy_a = self._create_toy("A", circumference=220.0, insertable_length=170)
         first = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy_a}])
-        records.record_session(first)
+        record_session(first)
 
         toy_b = self._create_toy("B", circumference=240.0, insertable_length=190)
         second = self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": toy_b}])
-        records.record_session(second)
+        record_session(second)
 
         width = self._rows("pr-width")
         self.assertEqual(len(width), 2)
@@ -88,42 +381,49 @@ class RecordSessionTests(RecordsTestBase):
 
 
 class RecordGatingTests(RecordsTestBase):
-    def test_used_entries_set_no_records(self):
+    def test_used_entries_set_no_session_records_but_do_set_toy_records(self):
         toy = self._create_toy("A")
         session = self._make_session(
             _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "USED"}]
         )
-        records.record_session(session)
-        self.assertEqual(models.PersonalRecord.objects.count(), 0)
+        record_session(session)
+        self.assertEqual(len(self._rows("pr-width")), 0)
+        self.assertEqual(len(self._rows("pr-depth")), 0)
+
+        level_rows = self._rows("toy-level")
+        self.assertEqual(len(level_rows), 1)
+        self.assertEqual(level_rows[0].toy_id, toy)
+        self.assertEqual(level_rows[0].value, 0.0)
 
     def test_inserted_sets_width_but_not_depth(self):
         toy = self._create_toy("A")
         session = self._make_session(
             _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "INSERTED"}]
         )
-        records.record_session(session)
+        record_session(session)
         self.assertEqual(len(self._rows("pr-width")), 1)
         self.assertEqual(len(self._rows("pr-depth")), 0)
 
-    def test_toys_without_dimensions_are_skipped(self):
+    def test_toys_without_dimensions_set_no_session_records(self):
         toy = self._create_toy("A", circumference=None, insertable_length=None)
         session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
-        records.record_session(session)
-        self.assertEqual(models.PersonalRecord.objects.count(), 0)
+        record_session(session)
+        self.assertEqual(len(self._rows("pr-width")), 0)
+        self.assertEqual(len(self._rows("pr-depth")), 0)
 
     def test_equal_value_on_one_key_still_evaluates_the_others(self):
         toy = self._create_toy("A")
         session = self._make_session(
             _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "INSERTED"}]
         )
-        records.record_session(session)
+        record_session(session)
         self.assertEqual(len(self._rows("pr-width")), 1)
         self.assertEqual(len(self._rows("pr-depth")), 0)
 
         entry = session.entries.get()
         entry.involvement = "FULLY_INSERTED"
         entry.save()
-        records.record_session(session)
+        record_session(session)
 
         self.assertEqual(len(self._rows("pr-width")), 1)
         self.assertEqual(len(self._rows("pr-depth")), 1)
@@ -133,13 +433,13 @@ class RecordGatingTests(RecordsTestBase):
         session = self._make_session(
             _utc("2026-06-01T10:00:00"), [{"toy": toy, "involvement": "INSERTED"}]
         )
-        records.record_session(session)
+        record_session(session)
         self.assertEqual(len(self._rows("pr-width")), 1)
 
         entry = session.entries.get()
         entry.involvement = "USED"
         entry.save()
-        records.record_session(session)
+        record_session(session)
 
         self.assertEqual(len(self._rows("pr-width")), 0)
 
@@ -153,7 +453,7 @@ class RecordGatingTests(RecordsTestBase):
                 {"toy": toy_inserted, "involvement": "INSERTED"},
             ],
         )
-        records.record_session(session)
+        record_session(session)
 
         width = self._rows("pr-width")
         self.assertEqual(len(width), 1)
@@ -162,18 +462,18 @@ class RecordGatingTests(RecordsTestBase):
     def test_deleting_the_record_holder_leaves_the_older_row_standing(self):
         toy_a = self._create_toy("A", circumference=220.0, insertable_length=170)
         first = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy_a}])
-        records.record_session(first)
+        record_session(first)
 
         toy_b = self._create_toy("B", circumference=240.0, insertable_length=190)
         second = self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": toy_b}])
-        records.record_session(second)
+        record_session(second)
         self.assertEqual(len(self._rows("pr-width")), 2)
 
         second.delete()
         self.assertEqual(len(self._rows("pr-width")), 1)
 
         third = self._make_session(_utc("2026-06-03T10:00:00"), [{"toy": toy_a}])
-        records.record_session(third)
+        record_session(third)
 
         width = self._rows("pr-width")
         self.assertEqual(len(width), 1)
@@ -200,12 +500,13 @@ class RecordApiTests(RecordsTestBase):
         data = self._post_session([{"toy": toy, "involvement": "FULLY_INSERTED"}])
 
         recs = self._records_by_key(data)
-        self.assertEqual(set(recs), {"pr-width", "pr-depth"})
+        self.assertEqual(set(recs), {"pr-width", "pr-depth", "toy-level"})
         self.assertEqual(recs["pr-width"]["toy"], toy)
         self.assertEqual(recs["pr-width"]["value"], 220.0)
         self.assertIsNotNone(recs["pr-width"]["achieved_at"])
         self.assertEqual(recs["pr-depth"]["value"], 170.0)
-        self.assertEqual(models.PersonalRecord.objects.filter(session_id=data["id"]).count(), 2)
+        self.assertEqual(recs["toy-level"]["toy"], toy)
+        self.assertEqual(models.PersonalRecord.objects.filter(session_id=data["id"]).count(), 3)
 
     def test_session_below_the_record_gets_no_records(self):
         toy_a = self._create_toy("A", circumference=240.0, insertable_length=190)
@@ -215,7 +516,7 @@ class RecordApiTests(RecordsTestBase):
         data = self._post_session(
             [{"toy": toy_b, "involvement": "FULLY_INSERTED"}], "2026-06-02T10:00:00Z"
         )
-        self.assertEqual(data["records"], [])
+        self.assertEqual(set(self._records_by_key(data)), {"toy-level"})
 
     def test_backdated_session_is_evaluated_against_earlier_sessions_only(self):
         toy_big = self._create_toy("Big", circumference=240.0, insertable_length=190)
@@ -231,8 +532,8 @@ class RecordApiTests(RecordsTestBase):
         recs = self._records_by_key(backdated)
         self.assertEqual(recs["pr-width"]["value"], 220.0)
         self.assertEqual(recs["pr-depth"]["value"], 170.0)
-        self.assertEqual(models.PersonalRecord.objects.filter(session_id=later["id"]).count(), 2)
-        self.assertEqual(models.PersonalRecord.objects.count(), 4)
+        self.assertEqual(models.PersonalRecord.objects.filter(session_id=later["id"]).count(), 3)
+        self.assertEqual(models.PersonalRecord.objects.count(), 6)
 
     def test_list_and_detail_embed_records_on_the_owning_session(self):
         toy_a = self._create_toy("A", circumference=220.0, insertable_length=170)
@@ -267,12 +568,12 @@ class RecordApiTests(RecordsTestBase):
         recs = self._records_by_key(response.data)
         self.assertEqual(recs["pr-width"]["toy"], toy_b)
         self.assertEqual(recs["pr-width"]["value"], 240.0)
-        self.assertEqual(models.PersonalRecord.objects.filter(session_id=data["id"]).count(), 2)
+        self.assertEqual(models.PersonalRecord.objects.filter(session_id=data["id"]).count(), 3)
 
     def test_update_that_disqualifies_removes_the_rows(self):
         toy = self._create_toy("A", circumference=220.0, insertable_length=170)
         data = self._post_session([{"toy": toy, "involvement": "FULLY_INSERTED"}])
-        self.assertEqual(models.PersonalRecord.objects.count(), 2)
+        self.assertEqual(models.PersonalRecord.objects.count(), 3)
 
         response = self.client.put(
             f"/toys/sessions/{data['id']}/",
@@ -280,8 +581,11 @@ class RecordApiTests(RecordsTestBase):
             format="json",
         )
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(response.data["records"], [])
-        self.assertEqual(models.PersonalRecord.objects.count(), 0)
+        recs = self._records_by_key(response.data)
+        self.assertEqual(set(recs), {"toy-level"})
+        self.assertEqual(recs["toy-level"]["value"], 0.0)
+        self.assertEqual(len(self._rows("pr-width")), 0)
+        self.assertEqual(len(self._rows("pr-depth")), 0)
 
     def test_start_time_only_patch_keeps_the_records(self):
         toy = self._create_toy("A", circumference=220.0, insertable_length=170)
@@ -293,7 +597,9 @@ class RecordApiTests(RecordsTestBase):
             format="json",
         )
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(set(self._records_by_key(response.data)), {"pr-width", "pr-depth"})
+        self.assertEqual(
+            set(self._records_by_key(response.data)), {"pr-width", "pr-depth", "toy-level"}
+        )
 
     def test_reads_do_not_evaluate(self):
         toy = self._create_toy("A", circumference=240.0, insertable_length=190)
@@ -317,7 +623,7 @@ class ResyncTests(RecordsTestBase):
         second = self._make_session(_utc("2026-06-02T10:00:00"), [{"toy": toy_b}])
         self._make_session(_utc("2026-06-03T10:00:00"), [{"toy": toy_c}])
 
-        records.resync_records()
+        resync_records()
 
         width = self._rows("pr-width")
         self.assertEqual(
@@ -337,7 +643,7 @@ class ResyncTests(RecordsTestBase):
             key="pr-width", session=session, toy_entry=session.entries.get(), value=999.0
         )
 
-        records.resync_records()
+        resync_records()
 
         width = self._rows("pr-width")
         self.assertEqual(len(width), 1)
@@ -345,13 +651,13 @@ class ResyncTests(RecordsTestBase):
         self.assertEqual(len(self._rows("pr-depth")), 1)
 
     def test_resync_is_idempotent_and_safe_on_empty_data(self):
-        records.resync_records()
+        resync_records()
         self.assertEqual(models.PersonalRecord.objects.count(), 0)
 
         toy = self._create_toy("A")
         self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
-        records.resync_records()
-        records.resync_records()
+        resync_records()
+        resync_records()
 
         self.assertEqual(len(self._rows("pr-width")), 1)
         self.assertEqual(len(self._rows("pr-depth")), 1)
@@ -365,5 +671,7 @@ class ResyncTests(RecordsTestBase):
         response = self.client.post("/toys/sessions/rebuild-records/")
 
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(response.data, {"records": 4})
-        self.assertEqual(models.PersonalRecord.objects.count(), 4)
+        self.assertEqual(response.data, {"records": 6})
+        self.assertEqual(models.PersonalRecord.objects.count(), 6)
+        self.assertEqual(len(self._rows("pr-width")), 2)
+        self.assertEqual(len(self._rows("toy-level")), 2)
