@@ -13,22 +13,36 @@ from toys.records import (
 )
 
 
+def _is_equal_result(record_a, record_b):
+    return bool(record_a and record_b and record_a.value == record_b.value)
+
+
+def _get_session_record(ctx: SessionRecordCheckCtx):
+    records = {}
+    for r in ctx.session.records.all():  # pyright: ignore[reportAttributeAccessIssue]
+        toy_id = r.toy_id
+        if toy_id:
+            records.setdefault(toy_id, {})[r.key] = r
+    return records
+
+
 def _calculate_toys_records(ctx: SessionRecordCheckCtx):  # pyright: ignore[reportUnusedFunction]
+    toy_records = _get_session_record(ctx)
     for t in ctx.session.entries.all():
         toy_ctx = ToyRecordCheckCtx(
             sessions=[
-                s for s in ctx.sessions if any(e.toy_id == t.toy.id for e in s.entries.all())
+                s for s in ctx.sessions if any(e.toy_id == t.toy_id for e in s.entries.all())
             ],
             entry=t,
         )
-        toy_records = t.toy.records.filter(session=ctx.session).all()
         for key, check in TOY_RECORD_DEFINITIONS.items():
-            for tr in toy_records:
-                if tr.key == key:
-                    _delete_record(tr)
             result = check(toy_ctx)
-            if result:
-                _save_record(key, result)
+            existing_result = toy_records.get(t.toy_id, {}).get(key)
+            if not _is_equal_result(existing_result, result):
+                if existing_result:
+                    _delete_record(existing_result)
+                if result:
+                    _save_record(key, result)
 
 
 def _get_sessions_value(sessions, accessor) -> list[int]:
@@ -63,9 +77,9 @@ def toy_time(ctx: ToyRecordCheckCtx) -> RecordCheckResult | None:
 
 @toy_record("toy-level")
 def toy_level(ctx: ToyRecordCheckCtx) -> RecordCheckResult | None:
-    toy = ctx.entry.toy
-
     def accessor(s: Session) -> int | None:
-        return ToySessionEntry.INVOLVEMENT_VALUE[s.entries.filter(toy=toy).get().involvement]
+        return ToySessionEntry.INVOLVEMENT_VALUE[
+            s.entries.filter(toy=ctx.entry.toy).get().involvement
+        ]
 
     return _pr_field(ctx, accessor)
