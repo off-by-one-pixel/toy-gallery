@@ -38,6 +38,7 @@ export interface Navigation {
   param: (key: string) => string | null;
   navigate: (href: string) => void;
   replace: (href: string) => void;
+  backOr: (fallback: string) => void;
   updateParams: (update: Update, options?: WriteOptions) => void;
 }
 
@@ -62,6 +63,10 @@ export function useNavigation(): Navigation {
       param: (key: string) => searchParams.get(key),
       navigate: (href: string) => router.push(href),
       replace: (href: string) => router.replace(href),
+      backOr: (fallback: string) => {
+        if (window.history.length > 1) router.back();
+        else router.replace(fallback);
+      },
       updateParams,
     }),
     [pathname, searchParams, router, updateParams],

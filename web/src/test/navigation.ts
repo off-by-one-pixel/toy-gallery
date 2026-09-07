@@ -9,6 +9,7 @@ export const navState = {
 
 export const navigateMock = vi.fn();
 export const replaceMock = vi.fn();
+export const backOrMock = vi.fn();
 export const updateParamsMock = vi.fn((update: Update, _options?: WriteOptions) => {
   const next = new URLSearchParams(navState.search);
   for (const [key, value] of Object.entries(update)) {
@@ -23,6 +24,7 @@ export const resetNavigation = (): void => {
   navState.search = '';
   navigateMock.mockClear();
   replaceMock.mockClear();
+  backOrMock.mockClear();
   updateParamsMock.mockClear();
 };
 
@@ -32,5 +34,6 @@ export const testNavigation = (): Navigation => ({
   param: (key: string) => new URLSearchParams(navState.search).get(key),
   navigate: navigateMock,
   replace: replaceMock,
+  backOr: backOrMock,
   updateParams: updateParamsMock,
 });

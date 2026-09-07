@@ -29,7 +29,7 @@ vi.mock('@/features/toys/useToys', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
-import { replaceMock, resetNavigation } from '@/test/navigation';
+import { resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionForm from '@/features/sessions/form/SessionForm';
@@ -38,8 +38,11 @@ globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS
 
 const liveSession = (startedAt: string) => makeSession({ id: 5, startedAt, isLive: true });
 
+const onDone = vi.fn();
+
 describe('SessionForm live sessions', () => {
   beforeEach(() => {
+    onDone.mockClear();
     vi.clearAllMocks();
     resetNavigation();
     localStorage.clear();
@@ -50,7 +53,7 @@ describe('SessionForm live sessions', () => {
   it('saves a start-time-only change for a live session without toys', async () => {
     sessionsState.current.session = liveSession('2026-08-22T08:00:00Z');
     sessionsState.current.saveSession.mockResolvedValue(liveSession('2026-08-22T07:00:00Z'));
-    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} />));
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
 
     const save = await screen.findByRole('button', { name: en.session.live.updateButton });
     expect(screen.getByText(en.session.live.badge)).toBeTruthy();
@@ -71,12 +74,12 @@ describe('SessionForm live sessions', () => {
         payload: expect.objectContaining({ entries: [] }),
       }),
     );
-    await settle(() => expect(replaceMock).toHaveBeenCalledWith('/sessions'));
+    await settle(() => expect(onDone).toHaveBeenCalled());
   });
 
   it('keeps save disabled for a finished session without toys', async () => {
     sessionsState.current.session = { ...liveSession('2026-08-22T08:00:00Z'), isLive: false };
-    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} />));
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
 
     const save = await screen.findByRole('button', { name: en.session.save });
     expect(save.hasAttribute('disabled')).toBe(true);
