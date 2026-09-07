@@ -195,9 +195,9 @@ describe('SessionList', () => {
       en.session.records.width.circumference,
       en.session.records.level,
       en.session.records.time,
-    ].join('\n');
+    ].join(', ');
     expect(multiplier.closest('[aria-label]')?.getAttribute('aria-label')).toBe(overlayLabel);
-    expect(multiplier.closest('[title]')?.getAttribute('title')).toBe(overlayLabel);
+    expect(multiplier.closest('[data-slot="tooltip-trigger"]')).toBeTruthy();
   });
 
   it('publishes the server count to the top bar, not the loaded page size', () => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { Tooltip } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
@@ -36,34 +37,48 @@ export default function MiniToy({ entry, toy, heightRatio, recordLabels = [] }: 
   const editorToy = toyShapeToEditor(toy.shape);
   const isUsed = entry.involvement === Involvement.USED;
   return (
-    <div className="relative flex w-20 flex-col items-center gap-1.5 text-center" title={toyTooltip(toy)}>
-      {recordLabels.length > 0 && (
-        <RecordTrophy
-          label={recordLabels.join('\n')}
-          count={recordLabels.length}
-          className="absolute -top-1 right-1 z-10"
+    <Tooltip.Root delay={600}>
+      <Tooltip.Trigger className="relative flex w-20 flex-col items-center gap-1.5 text-center">
+        {recordLabels.length > 0 && (
+          <RecordTrophy
+            label={recordLabels.join(', ')}
+            count={recordLabels.length}
+            className="absolute -top-1 right-1 z-10"
+          />
+        )}
+        <ToyThumbnail
+          toy={editorToy}
+          fillColor={isUsed ? 'transparent' : toy.color}
+          strokeColor={isUsed ? 'var(--muted)' : undefined}
+          borderWidth={1}
+          scaleFactor={0.18}
+          heightRatio={heightRatio}
+          background="none"
+          insetTop={0}
+          insetBottom={0}
+          filter={STATE_FILTER[entry.involvement]}
+          className="h-14 w-full"
         />
-      )}
-      <ToyThumbnail
-        toy={editorToy}
-        fillColor={isUsed ? 'transparent' : toy.color}
-        strokeColor={isUsed ? 'var(--muted)' : undefined}
-        borderWidth={1}
-        scaleFactor={0.18}
-        heightRatio={heightRatio}
-        background="none"
-        insetTop={0}
-        insetBottom={0}
-        filter={STATE_FILTER[entry.involvement]}
-        className="h-14 w-full"
-      />
-      <div className="max-w-20 truncate text-sm text-foreground">
-        {toy.name}
-        {toy.size && <span className="text-muted"> {toy.size}</span>}
-      </div>
-      {entry.durationMinutes != null && (
-        <div className="text-xs tabular-nums text-muted">{formatElapsed(entry.durationMinutes, locale)}</div>
-      )}
-    </div>
+        <div className="max-w-20 truncate text-sm text-foreground">
+          {toy.name}
+          {toy.size && <span className="text-muted"> {toy.size}</span>}
+        </div>
+        {entry.durationMinutes != null && (
+          <div className="text-xs tabular-nums text-muted">{formatElapsed(entry.durationMinutes, locale)}</div>
+        )}
+      </Tooltip.Trigger>
+      <Tooltip.Content showArrow>
+        <div className="flex flex-col gap-0.5">
+          <div className="font-medium">{toyTooltip(toy)}</div>
+          {recordLabels.length > 0 && <div className="my-0.5 h-px bg-current opacity-20" />}
+          {recordLabels.map((recordLabel) => (
+            <div key={recordLabel} className="flex items-center gap-1.5">
+              <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+              {recordLabel}
+            </div>
+          ))}
+        </div>
+      </Tooltip.Content>
+    </Tooltip.Root>
   );
 }
