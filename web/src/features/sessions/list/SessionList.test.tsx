@@ -191,6 +191,7 @@ describe('SessionList', () => {
       ],
     });
     const multiplier = screen.getByText('×3');
+    expect(screen.queryByLabelText(en.session.records.plugged)).toBeNull();
     const overlayLabel = [
       en.session.records.width.circumference,
       en.session.records.level,
@@ -198,6 +199,24 @@ describe('SessionList', () => {
     ].join(', ');
     expect(multiplier.closest('[aria-label]')?.getAttribute('aria-label')).toBe(overlayLabel);
     expect(multiplier.closest('[data-slot="tooltip-trigger"]')).toBeTruthy();
+  });
+
+  it('marks the total time with a trophy when the session holds the plugged record', () => {
+    const steel = makeToy({ id: 1, name: 'Steel' });
+    renderList({
+      toysById: toysById([steel]),
+      toys: [steel],
+      sessions: [
+        {
+          ...session(1),
+          totalToyDurationMinutes: 45,
+          entries: [{ toy: 1, involvement: 'FULLY_INSERTED' }],
+          records: [{ key: 'pr-time', toy: null, value: 45, achievedAt: '2026-06-01T21:00:00' }],
+        } as unknown as Session,
+      ],
+    });
+    expect(screen.getAllByLabelText(en.session.records.plugged)).toHaveLength(2);
+    expect(screen.getAllByText('45m').length).toBeGreaterThanOrEqual(1);
   });
 
   it('publishes the server count to the top bar, not the loaded page size', () => {

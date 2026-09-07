@@ -3,7 +3,7 @@ import { displayGirth, type Girth } from '@/features/preferences/girth';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { formatElapsed } from '@/lib/duration';
 
-export type RecordPeak = 'length' | 'circumference';
+export type RecordPeak = 'length' | 'circumference' | 'duration';
 
 export type RecordDisplayContext = Readonly<{
   t: (key: string) => string;
@@ -27,6 +27,10 @@ const dimension = (mm: number, ctx: RecordDisplayContext): RecordValue => ({
   suffix: ctx.unit.id,
 });
 
+const elapsed = (value: number, ctx: RecordDisplayContext): RecordValue => ({
+  text: formatElapsed(value, ctx.locale),
+});
+
 export const SESSION_RECORDS = {
   'pr-width': {
     peak: 'circumference',
@@ -38,9 +42,18 @@ export const SESSION_RECORDS = {
     label: (ctx) => ctx.t('session.records.depth'),
     value: dimension,
   },
+  'pr-time': {
+    peak: 'duration',
+    label: (ctx) => ctx.t('session.records.plugged'),
+    value: elapsed,
+  },
+  'pr-duration': {
+    label: (ctx) => ctx.t('session.records.session'),
+    value: elapsed,
+  },
   'toy-time': {
     label: (ctx) => ctx.t('session.records.time'),
-    value: (value, ctx) => ({ text: formatElapsed(value, ctx.locale) }),
+    value: elapsed,
   },
   'toy-level': {
     label: (ctx) => ctx.t('session.records.level'),

@@ -10,7 +10,7 @@ import { makeToy } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
 
-const record = (key: string, value: number, toy = 1): SessionRecord =>
+const record = (key: string, value: number, toy: number | null = 1): SessionRecord =>
   ({ key, toy, value, achievedAt: '2026-06-01T21:00:00' }) as SessionRecord;
 
 const renderList = (
@@ -45,6 +45,17 @@ describe('SessionRecordList', () => {
     expect(items[1].textContent).toContain(en.session.records.level);
     expect(items[1].textContent).toContain(en.involvement.FULLY_INSERTED);
     expect(items[1].textContent).toContain('Acme Steel M');
+  });
+
+  it('renders session-wide records without a toy name', () => {
+    renderList([record('pr-time', 45, null), record('pr-duration', 120, null)]);
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0].textContent).toContain(en.session.records.plugged);
+    expect(items[0].textContent).toContain('45m');
+    expect(items[0].textContent).not.toContain('Acme');
+    expect(items[1].textContent).toContain(en.session.records.session);
+    expect(items[1].textContent).toContain('2h 0m');
   });
 
   it('keeps one row per toy for the same record key', () => {

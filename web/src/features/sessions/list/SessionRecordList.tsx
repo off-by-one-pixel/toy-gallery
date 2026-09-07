@@ -24,7 +24,7 @@ export default function SessionRecordList({ records, toysById, unit }: Props) {
   const listed = records.flatMap((record) => {
     const display = recordDisplay(record.key);
     if (!display) return [];
-    const toy = toysById.get(record.toy);
+    const toy = record.toy == null ? undefined : toysById.get(record.toy);
     return [
       {
         key: `${record.key}-${record.toy}`,
