@@ -34,8 +34,8 @@ class SessionApiTestBase(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         return response.data["id"]
 
-    def _make_session(self, started_at, entries=()):
-        session = models.Session.objects.create(started_at=started_at)
+    def _make_session(self, started_at, entries=(), ended_at=None):
+        session = models.Session.objects.create(started_at=started_at, ended_at=ended_at)
         for entry in entries:
             models.ToySessionEntry.objects.create(
                 session=session,

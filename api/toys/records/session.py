@@ -37,6 +37,15 @@ def _pr_field(
         return RecordCheckResult(ctx.session, current_session[0], None, current_session[1])
 
 
+def _pr_sessions_field(ctx: SessionRecordCheckCtx, accessor: Callable[[Session], float | None]):
+    current = accessor(ctx.session)
+    if current:
+        prev = [accessor(s) for s in ctx.sessions]
+        prev_filtered = [r for r in prev if r]
+        if not prev_filtered or current > max(prev_filtered):
+            return RecordCheckResult(ctx.session, None, None, current)
+
+
 def _delete_all_records() -> None:
     PersonalRecord.objects.all().delete()
 
@@ -95,3 +104,13 @@ def pr_depth(ctx: SessionRecordCheckCtx) -> RecordCheckResult | None:
     return _pr_field(
         ctx, SessionDimensions.peak_length_with_entry, lambda t: t.toy.insertable_length
     )
+
+
+@session_record("pr-time")
+def pr_time(ctx: SessionRecordCheckCtx) -> RecordCheckResult | None:
+    return _pr_sessions_field(ctx, SessionDimensions.total_toy_duration)
+
+
+@session_record("pr-duration")
+def pr_duration(ctx: SessionRecordCheckCtx) -> RecordCheckResult | None:
+    return _pr_sessions_field(ctx, SessionDimensions.total_session_duration)

@@ -13,13 +13,22 @@ const ctx = (overrides: Partial<RecordDisplayContext> = {}): RecordDisplayContex
 
 describe('SESSION_RECORDS', () => {
   it('defines a display for every seed record key', () => {
-    expect(Object.keys(SESSION_RECORDS).sort()).toEqual(['pr-depth', 'pr-width', 'toy-level', 'toy-time']);
+    expect(Object.keys(SESSION_RECORDS).sort()).toEqual([
+      'pr-depth',
+      'pr-duration',
+      'pr-time',
+      'pr-width',
+      'toy-level',
+      'toy-time',
+    ]);
   });
 
-  it('maps only the dimension records to a peak row', () => {
+  it('maps the session records to their peak rows', () => {
     expect(SESSION_RECORDS['pr-width'].peak).toBe('circumference');
     expect(SESSION_RECORDS['pr-depth'].peak).toBe('length');
     expect(recordDisplay('toy-time')?.peak).toBeUndefined();
+    expect(SESSION_RECORDS['pr-time'].peak).toBe('duration');
+    expect(recordDisplay('pr-duration')?.peak).toBeUndefined();
     expect(recordDisplay('toy-level')?.peak).toBeUndefined();
   });
 
@@ -28,6 +37,8 @@ describe('SESSION_RECORDS', () => {
     expect(SESSION_RECORDS['pr-width'].label(ctx({ girth: 'diameter' }))).toBe('session.records.width.diameter');
     expect(SESSION_RECORDS['pr-depth'].label(ctx())).toBe('session.records.depth');
     expect(SESSION_RECORDS['toy-time'].label(ctx())).toBe('session.records.time');
+    expect(SESSION_RECORDS['pr-time'].label(ctx())).toBe('session.records.plugged');
+    expect(SESSION_RECORDS['pr-duration'].label(ctx())).toBe('session.records.session');
     expect(SESSION_RECORDS['toy-level'].label(ctx())).toBe('session.records.level');
   });
 
@@ -46,6 +57,8 @@ describe('SESSION_RECORDS', () => {
 
   it('formats time records as elapsed duration without a unit suffix', () => {
     expect(SESSION_RECORDS['toy-time'].value(90, ctx())).toEqual({ text: '1h 30m' });
+    expect(SESSION_RECORDS['pr-time'].value(45, ctx())).toEqual({ text: '45m' });
+    expect(SESSION_RECORDS['pr-duration'].value(120, ctx())).toEqual({ text: '2h 0m' });
   });
 
   it('formats level records as the involvement label', () => {
@@ -59,6 +72,7 @@ describe('recordDisplay', () => {
   it('resolves known keys and rejects unknown ones', () => {
     expect(recordDisplay('pr-depth')).toBe(SESSION_RECORDS['pr-depth']);
     expect(recordDisplay('toy-time')).toBe(SESSION_RECORDS['toy-time']);
+    expect(recordDisplay('pr-duration')).toBe(SESSION_RECORDS['pr-duration']);
     expect(recordDisplay('pr-future')).toBeUndefined();
   });
 });

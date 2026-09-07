@@ -20,6 +20,7 @@ import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
+import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
 import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 
@@ -189,6 +190,12 @@ function SessionRow({
                 }
               >
                 {timeValue}
+                {!session.isLive && peakRecordLabel('duration') && (
+                  <RecordTrophy
+                    label={peakRecordLabel('duration') as string}
+                    className="relative -top-0.5 ml-1.5 align-middle"
+                  />
+                )}
               </span>
             </div>
           )}

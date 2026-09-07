@@ -206,6 +206,8 @@
         "diameter": "Diameter PR"
       },
       "depth": "Depth PR",
+      "plugged": "Plugged time PR",
+      "session": "Session duration PR",
       "time": "Time PR",
       "level": "Level PR"
     }
