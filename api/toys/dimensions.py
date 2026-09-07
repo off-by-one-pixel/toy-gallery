@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -70,3 +71,8 @@ class SessionDimensions:
     def total_toy_duration(cls, session: models.Session) -> int | None:
         durations = [e.duration_minutes for e in session.entries.all() if e.duration_minutes]
         return sum(durations) if durations else None
+
+    @classmethod
+    def total_session_duration(cls, session: models.Session) -> int | None:
+        if session.started_at and session.ended_at:
+            return int((session.ended_at - session.started_at) / timedelta(minutes=1))

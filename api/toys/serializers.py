@@ -115,7 +115,9 @@ class ToySessionEntrySerializer(serializers.ModelSerializer):
 
 
 class PersonalRecordSerializer(serializers.ModelSerializer):
-    toy = serializers.IntegerField(source="toy_entry.toy_id", read_only=True)
+    toy = serializers.IntegerField(
+        source="toy_entry.toy_id", read_only=True, allow_null=True, default=None
+    )
 
     class Meta:
         model = models.PersonalRecord

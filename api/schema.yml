@@ -896,6 +896,7 @@ components:
         toy:
           type: integer
           readOnly: true
+          nullable: true
         achieved_at:
           type: string
           format: date-time

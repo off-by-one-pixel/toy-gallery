@@ -11,7 +11,7 @@ class DuplicateRecordKey(Exception):
 @dataclass(frozen=True)
 class RecordCheckResult:
     session: Session
-    entry: ToySessionEntry
+    entry: ToySessionEntry | None
     toy: Toy | None
     value: float
 

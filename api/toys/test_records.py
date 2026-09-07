@@ -38,6 +38,8 @@ class RecordRegistryTests(RecordsTestBase):
     def test_seed_definitions_are_registered(self):
         self.assertIn("pr-width", SESSION_RECORD_DEFINITIONS)
         self.assertIn("pr-depth", SESSION_RECORD_DEFINITIONS)
+        self.assertIn("pr-time", SESSION_RECORD_DEFINITIONS)
+        self.assertIn("pr-duration", SESSION_RECORD_DEFINITIONS)
         self.assertIn("toy-time", TOY_RECORD_DEFINITIONS)
         self.assertIn("toy-level", TOY_RECORD_DEFINITIONS)
 
@@ -170,6 +172,136 @@ class ToyRecordCheckTests(RecordsTestBase):
         result = self._check("toy-level", [], self._entry(inserted, toy))
 
         self.assertEqual(result.value, 1.0)
+
+
+class SessionTimeRecordTests(RecordsTestBase):
+    def test_longer_total_beats_the_prior_best_and_keeps_history(self):
+        toy = self._create_toy("A")
+        first = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 45}]
+        )
+        record_session(first)
+
+        second = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 60}]
+        )
+        record_session(second)
+
+        rows = [(r.session_id, r.value) for r in self._rows("pr-time")]
+        self.assertEqual(rows, [(first.id, 45.0), (second.id, 60.0)])
+
+    def test_equal_or_smaller_total_is_not_a_record(self):
+        toy = self._create_toy("A")
+        first = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 45}]
+        )
+        record_session(first)
+
+        equal = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 45}]
+        )
+        record_session(equal)
+        smaller = self._make_session(
+            _utc("2026-06-03T10:00:00"),
+            [
+                {"toy": toy, "duration_minutes": 20},
+                {"toy": self._create_toy("B"), "duration_minutes": 20},
+            ],
+        )
+        record_session(smaller)
+
+        rows = self._rows("pr-time")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].session_id, first.id)
+
+    def test_sessions_without_durations_never_record_time(self):
+        toy = self._create_toy("A")
+        session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        record_session(session)
+        self.assertEqual(len(self._rows("pr-time")), 0)
+
+    def test_prior_sessions_without_durations_are_ignored_in_the_baseline(self):
+        toy = self._create_toy("A")
+        prior = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        record_session(prior)
+        candidate = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 10}]
+        )
+        record_session(candidate)
+
+        rows = self._rows("pr-time")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].session_id, candidate.id)
+
+
+class SessionDurationRecordTests(RecordsTestBase):
+    def test_ended_session_sets_the_duration_record(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy}], ended_at=_utc("2026-06-01T11:30:00")
+        )
+
+        record_session(session)
+
+        rows = self._rows("pr-duration")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].value, 90.0)
+        self.assertEqual(rows[0].session_id, session.id)
+        self.assertIsNone(rows[0].toy_entry)
+        self.assertIsNone(rows[0].toy_id)
+
+    def test_longer_session_beats_the_prior_best_and_keeps_history(self):
+        toy = self._create_toy("A")
+        first = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy}], ended_at=_utc("2026-06-01T11:00:00")
+        )
+        record_session(first)
+        second = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy}], ended_at=_utc("2026-06-02T12:00:00")
+        )
+        record_session(second)
+
+        rows = [(r.session_id, r.value) for r in self._rows("pr-duration")]
+        self.assertEqual(rows, [(first.id, 60.0), (second.id, 120.0)])
+
+    def test_equal_or_shorter_session_is_not_a_record(self):
+        toy = self._create_toy("A")
+        first = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy}], ended_at=_utc("2026-06-01T11:00:00")
+        )
+        record_session(first)
+        equal = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy}], ended_at=_utc("2026-06-02T11:00:00")
+        )
+        record_session(equal)
+        shorter = self._make_session(
+            _utc("2026-06-03T10:00:00"), [{"toy": toy}], ended_at=_utc("2026-06-03T10:30:00")
+        )
+        record_session(shorter)
+
+        rows = self._rows("pr-duration")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].session_id, first.id)
+
+    def test_open_sessions_never_record_a_duration(self):
+        toy = self._create_toy("A")
+        session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        record_session(session)
+        self.assertEqual(len(self._rows("pr-duration")), 0)
+
+    def test_ending_a_session_records_its_duration_on_reevaluation(self):
+        toy = self._create_toy("A")
+        session = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
+        record_session(session)
+        self.assertEqual(len(self._rows("pr-duration")), 0)
+
+        session.ended_at = _utc("2026-06-01T10:45:00")
+        session.save()
+        record_session(session)
+
+        rows = self._rows("pr-duration")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].value, 45.0)
 
 
 class ToyRecordDriverTests(RecordsTestBase):
@@ -540,6 +672,22 @@ class RecordApiTests(RecordsTestBase):
         self.assertEqual(recs["pr-depth"]["value"], 170.0)
         self.assertEqual(recs["toy-level"]["toy"], toy)
         self.assertEqual(models.PersonalRecord.objects.filter(session_id=data["id"]).count(), 3)
+
+    def test_post_with_durations_embeds_the_plugged_time_record(self):
+        toy = self._create_toy("A", circumference=220.0, insertable_length=170)
+        data = self._post_session(
+            [{"toy": toy, "involvement": "FULLY_INSERTED", "duration_minutes": 45}]
+        )
+
+        recs = self._records_by_key(data)
+        self.assertIn("pr-time", recs)
+        self.assertEqual(recs["pr-time"]["value"], 45.0)
+        self.assertIsNone(recs["pr-time"]["toy"])
+
+        listed = self.client.get("/toys/sessions/")
+        self.assertEqual(listed.status_code, 200, listed.content)
+        row = next(r for r in listed.data["results"] if r["id"] == data["id"])
+        self.assertIn("pr-time", self._records_by_key(row))
 
     def test_session_below_the_record_gets_no_records(self):
         toy_a = self._create_toy("A", circumference=240.0, insertable_length=190)
