@@ -20,6 +20,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "coverage>=7.13.5",
+    "django-silk>=5.5.2",
     "django-types>=0.23.0",
     "ruff>=0.7.0",
 ]
