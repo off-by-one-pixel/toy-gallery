@@ -173,6 +173,33 @@ describe('SessionList', () => {
     expect(rows[1]?.className).not.toContain('border-amber-500');
   });
 
+  it('shows a multiplier on the toy trophy when a toy holds several records', () => {
+    const steel = makeToy({ id: 1, name: 'Steel' });
+    renderList({
+      toysById: toysById([steel]),
+      toys: [steel],
+      sessions: [
+        {
+          ...session(1),
+          entries: [{ toy: 1, involvement: 'FULLY_INSERTED' }],
+          records: [
+            { key: 'pr-width', toy: 1, value: 240, achievedAt: '2026-06-01T21:00:00' },
+            { key: 'toy-level', toy: 1, value: 2, achievedAt: '2026-06-01T21:00:00' },
+            { key: 'toy-time', toy: 1, value: 90, achievedAt: '2026-06-01T21:00:00' },
+          ],
+        } as unknown as Session,
+      ],
+    });
+    const multiplier = screen.getByText('×3');
+    const overlayLabel = [
+      en.session.records.width.circumference,
+      en.session.records.level,
+      en.session.records.time,
+    ].join('\n');
+    expect(multiplier.closest('[aria-label]')?.getAttribute('aria-label')).toBe(overlayLabel);
+    expect(multiplier.closest('[title]')?.getAttribute('title')).toBe(overlayLabel);
+  });
+
   it('publishes the server count to the top bar, not the loaded page size', () => {
     renderList({ sessions: [session(1)], sessionCount: 41 });
     expect(setSubtitleMock).toHaveBeenCalledWith(`41 ${en.session.recorded}`);
