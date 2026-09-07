@@ -14,9 +14,9 @@ export interface AttributeSuggestionsSource {
   invalidateSuggestions: () => void;
 }
 
-export function useAttributeSuggestions(): AttributeSuggestionsSource {
+export function useAttributeSuggestions(enabled: boolean): AttributeSuggestionsSource {
   const queryClient = useQueryClient();
-  const { data } = useApiQuery({ key: queryKeys.toys.attributeSuggestions, fn: fetchAttributeSuggestions });
+  const { data } = useApiQuery({ key: queryKeys.toys.attributeSuggestions, fn: fetchAttributeSuggestions, enabled });
   const suggestions = useMemo(() => (data ? toAttributeSuggestions(data) : NO_SUGGESTIONS), [data]);
   return {
     keySuggestions: suggestions.keys,
