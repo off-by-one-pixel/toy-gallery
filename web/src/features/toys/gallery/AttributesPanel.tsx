@@ -8,8 +8,18 @@ import { useAttributesEditor } from '@/features/toys/gallery/useAttributesEditor
 import type { Toy } from '@/api/types';
 
 export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
-  const { rows, saveState, keySuggestions, valuesFor, updateKey, updateValue, removeRow, addRow, commitChanges } =
-    useAttributesEditor(toy);
+  const {
+    rows,
+    saveState,
+    keySuggestions,
+    valuesFor,
+    beginEditing,
+    updateKey,
+    updateValue,
+    removeRow,
+    addRow,
+    commitChanges,
+  } = useAttributesEditor(toy);
   const listId = useId();
   const keyListId = `${listId}-keys`;
   const blurOnEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -18,7 +28,7 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
   const t = useTranslations('attributes');
 
   return (
-    <div>
+    <div onFocus={beginEditing}>
       <ul className="flex flex-col gap-1">
         {rows.map((row) => (
           <li key={row.rowId} className="group grid grid-cols-[1.3fr_1fr_auto] items-center gap-2">

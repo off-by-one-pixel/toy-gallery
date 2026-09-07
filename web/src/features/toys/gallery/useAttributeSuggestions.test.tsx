@@ -14,8 +14,8 @@ import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import { settle } from '@/test/wait';
 import { useAttributeSuggestions } from '@/features/toys/gallery/useAttributeSuggestions';
 
-const renderSuggestions = (client: QueryClient = createTestQueryClient()) =>
-  renderHook(() => useAttributeSuggestions(), {
+const renderSuggestions = (client: QueryClient = createTestQueryClient(), enabled = true) =>
+  renderHook(() => useAttributeSuggestions(enabled), {
     wrapper: ({ children }) => <QueryWrapper client={client}>{children}</QueryWrapper>,
   });
 
@@ -33,6 +33,11 @@ describe('useAttributeSuggestions', () => {
     await settle(() => expect(result.current.keySuggestions).toEqual(['Base', 'Material']));
     expect(result.current.valuesFor('material')).toEqual(['Glass', 'Silicone']);
     expect(result.current.valuesFor('unknown')).toEqual([]);
+  });
+
+  it('does not fetch until enabled', async () => {
+    renderSuggestions(createTestQueryClient(), false);
+    await settle(() => expect(fetchAttributeSuggestions).not.toHaveBeenCalled());
   });
 
   it('starts empty while loading', () => {

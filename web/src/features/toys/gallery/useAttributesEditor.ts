@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
 import { useAttributeSuggestions } from '@/features/toys/gallery/useAttributeSuggestions';
@@ -12,6 +12,7 @@ export interface AttributesEditor {
   saveState: AttributeSaveState;
   keySuggestions: readonly string[];
   valuesFor: (key: string) => readonly string[];
+  beginEditing: () => void;
   updateKey: (rowId: number, key: string) => void;
   updateValue: (rowId: number, value: string) => void;
   removeRow: (rowId: number) => void;
@@ -31,7 +32,9 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
   const rowsRef = useRef(rows);
   const savedRef = useRef<Record<string, string>>(initial);
   const { updateToy } = useToys();
-  const { keySuggestions, valuesFor, invalidateSuggestions } = useAttributeSuggestions();
+  const [editing, setEditing] = useState(false);
+  const beginEditing = useCallback(() => setEditing(true), []);
+  const { keySuggestions, valuesFor, invalidateSuggestions } = useAttributeSuggestions(editing);
 
   const inFlight = useRef(false);
   const pending = useRef(false);
@@ -110,6 +113,7 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
     saveState,
     keySuggestions,
     valuesFor,
+    beginEditing,
     updateKey: (rowId, key) => mutateRow(rowId, (r) => ({ ...r, key })),
     updateValue: (rowId, value) => mutateRow(rowId, (r) => ({ ...r, value })),
     removeRow: (rowId) => {

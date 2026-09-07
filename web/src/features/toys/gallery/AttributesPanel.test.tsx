@@ -9,6 +9,7 @@ const editorState = vi.hoisted(() => ({
     saveState: 'idle',
     keySuggestions: ['Firmness', 'Material'],
     valuesFor: vi.fn(() => ['Glass', 'Silicone']),
+    beginEditing: vi.fn(),
     updateKey: vi.fn(),
     updateValue: vi.fn(),
     removeRow: vi.fn(),
@@ -29,6 +30,13 @@ import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
 describe('AttributesPanel autocomplete', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('starts loading suggestions on first focus inside the panel', () => {
+    render(withAppProviders(<AttributesPanel toy={makeToy({ id: 1 })} />));
+    expect(editorState.current.beginEditing).not.toHaveBeenCalled();
+    screen.getByPlaceholderText(en.attributes.keyPlaceholder).focus();
+    expect(editorState.current.beginEditing).toHaveBeenCalled();
   });
 
   it('offers the key suggestions through a shared datalist', () => {
