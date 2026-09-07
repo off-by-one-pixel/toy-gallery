@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 import { useGirth } from '@/features/preferences/GirthProvider';
@@ -12,16 +12,25 @@ import { useUnit } from '@/features/preferences/UnitProvider';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { displayGirth } from '@/features/preferences/girth';
 import { cycleSort, type Sort } from '@/lib/sort';
+import { TOY_PROPERTIES, type ToyPropertyContext } from '@/features/toys/properties';
 import { TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
 import ToyDetails from '@/features/toys/gallery/ToyDetails';
+import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 
 // Action buttons are absolute-positioned over the row on hover — they don't
 // claim a grid column, so the brand/name column has more room and the grid
 // layout doesn't change between hover states.
 const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr]';
+const EXTRA_GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr_1fr]';
+
+type ExtraColumn = Readonly<{
+  column: SortColumn;
+  label: string;
+  valueFor: (toy: Toy) => string | null;
+}>;
 
 // SortHeader buttons need `inline-flex` at the breakpoint so the chevron
 // stays inline; plain cells can use `block`.
@@ -38,29 +47,53 @@ type Props = Readonly<{
 
 export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy, onDelete }: Props) {
   const { unit } = useUnit();
+  const { girth } = useGirth();
+  const locale = useLocale();
+  const t = useTranslations();
   const { sort, setSort } = useSortOf(TOY_SORT);
   const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
 
+  const propertyCtx: ToyPropertyContext = { t: t as unknown as ToyPropertyContext['t'], girth, unit, locale };
+  const activeProperty = sort ? TOY_PROPERTIES[sort.column] : null;
+  const extra: ExtraColumn | null =
+    sort && activeProperty && !activeProperty.onCard
+      ? {
+          column: sort.column,
+          label: activeProperty.label(propertyCtx),
+          valueFor: (toy) => activeProperty.format(toy, propertyCtx),
+        }
+      : null;
+
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
-      <ListHeader sort={sort} onSort={handleSort} />
-      {toys.map((toy) => (
-        <ToyRow
-          key={toy.id}
-          toy={toy}
-          unit={unit}
-          open={openToyId === toy.id}
-          onToggle={() => onToggleOpen(toy.id)}
-          onEdit={() => onEdit(toy)}
-          onCopy={() => onCopy(toy)}
-          onDelete={() => onDelete(toy)}
-        />
-      ))}
-    </div>
+    <>
+      <div className="mb-3 hidden items-center justify-end sm:flex">
+        <ToySortControl />
+      </div>
+      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+        <ListHeader sort={sort} onSort={handleSort} extra={extra} />
+        {toys.map((toy) => (
+          <ToyRow
+            key={toy.id}
+            toy={toy}
+            unit={unit}
+            extra={extra}
+            open={openToyId === toy.id}
+            onToggle={() => onToggleOpen(toy.id)}
+            onEdit={() => onEdit(toy)}
+            onCopy={() => onCopy(toy)}
+            onDelete={() => onDelete(toy)}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 
-function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (column: SortColumn) => void }>) {
+function ListHeader({
+  sort,
+  onSort,
+  extra,
+}: Readonly<{ sort: Sort | null; onSort: (column: SortColumn) => void; extra: ExtraColumn | null }>) {
   const t = useTranslations('toy.columns');
   const common = useTranslations('common');
   const { girth } = useGirth();
@@ -68,7 +101,7 @@ function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (col
     <div
       className={
         `grid items-center gap-x-3 border-b border-border bg-surface-secondary px-4 py-2.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-text-tertiary min-[640px]:gap-x-3.5 min-[640px]:px-5 min-[640px]:text-caption min-[640px]:tracking-[0.08em] ` +
-        GRID_COLS
+        (extra ? EXTRA_GRID_COLS : GRID_COLS)
       }
     >
       <span />
@@ -90,6 +123,7 @@ function ListHeader({ sort, onSort }: Readonly<{ sort: Sort | null; onSort: (col
         onSort={onSort}
         align="right"
       />
+      {extra && <SortHeader label={extra.label} column={extra.column} sort={sort} onSort={onSort} align="right" />}
     </div>
   );
 }
@@ -133,7 +167,7 @@ function SortHeader({
         size={8}
         strokeWidth={2.5}
         className={
-          'transition-transform ' + (active ? 'opacity-100 ' : 'opacity-40 ') + (dir === 'desc' ? 'rotate-180' : '')
+          'transition-transform ' + (active ? 'opacity-100 ' : 'opacity-40 ') + (dir === 'asc' ? 'rotate-180' : '')
         }
       />
     </button>
@@ -143,6 +177,7 @@ function SortHeader({
 function ToyRow({
   toy,
   unit,
+  extra,
   open,
   onToggle,
   onEdit,
@@ -151,6 +186,7 @@ function ToyRow({
 }: Readonly<{
   toy: Toy;
   unit: Unit;
+  extra: ExtraColumn | null;
   open: boolean;
   onToggle: () => void;
   onEdit: () => void;
@@ -177,7 +213,7 @@ function ToyRow({
         }}
         className={
           `group relative grid cursor-pointer items-center gap-x-3 border-b border-border px-4 py-2.5 transition-colors hover:bg-surface-secondary min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
-          GRID_COLS +
+          (extra ? EXTRA_GRID_COLS : GRID_COLS) +
           (open ? ' bg-accent-soft/50' : '')
         }
       >
@@ -192,6 +228,7 @@ function ToyRow({
         </div>
         <Metric value={toy.insertableLength} unit={unit} />
         <Metric value={displayGirth(toy.circumference, girth)} unit={unit} />
+        {extra && <ExtraMetric value={extra.valueFor(toy)} />}
         <div
           ref={actionsRef}
           className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-surface/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
@@ -262,6 +299,14 @@ function Metric({
           <span className="ml-1.5 text-caption font-medium text-muted">{unit.id}</span>
         </>
       )}
+    </div>
+  );
+}
+
+function ExtraMetric({ value }: Readonly<{ value: string | null }>) {
+  return (
+    <div className="text-right text-[15px] font-semibold tracking-tight text-foreground tabular-nums">
+      {value ?? <span className="font-normal text-text-subtle">—</span>}
     </div>
   );
 }
