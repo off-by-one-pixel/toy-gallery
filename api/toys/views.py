@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.db import IntegrityError, transaction
-from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Sum, When
+from django.db.models import Case, Count, Exists, F, Max, OuterRef, Prefetch, Q, Sum, When
 from django.db.models.deletion import ProtectedError
 from django.db.models.functions import Coalesce, ExtractHour
 from django.utils import timezone
@@ -15,11 +15,11 @@ from rest_framework.views import APIView
 
 from . import export as export_mod
 from . import media, models, serializers, stats
-from .records import session
+from .records.session import resync_records
 
 
 class ToyViewSet(viewsets.ModelViewSet):
-    queryset = models.Toy.objects.annotate(
+    queryset = models.Toy.objects.prefetch_related("shape__sections").annotate(
         usage_count=Count("toysessionentry"),
         total_duration_minutes=Coalesce(Sum("toysessionentry__duration_minutes"), 0),
         max_duration_minutes=Coalesce(Max("toysessionentry__duration_minutes"), 0),
@@ -216,9 +216,11 @@ def _store_media_counts(counts):
     list=extend_schema(parameters=[serializers.SessionListQuerySerializer]),
 )
 class SessionViewSet(viewsets.ModelViewSet):
-    queryset = models.Session.objects.prefetch_related("entries", "entries__toy").order_by(
-        "-is_live", "-started_at", "-id"
-    )
+    queryset = models.Session.objects.prefetch_related(
+        "entries",
+        "entries__toy",
+        Prefetch("records", queryset=models.PersonalRecord.objects.select_related("toy_entry")),
+    ).order_by("-is_live", "-started_at", "-id")
     serializer_class = serializers.SessionSerializer
     pagination_class = SessionPagination
 
@@ -259,7 +261,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=serializers.LiveSessionResponseSerializer)
     @action(detail=False, methods=["get"], url_path="live")
     def live(self, request):
-        live = models.Session.objects.filter(is_live=True).first()
+        live = self.queryset.filter(is_live=True).first()
         session = serializers.SessionSerializer(live).data if live else None
         return Response({"session": session})
 
@@ -332,7 +334,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["post"], url_path="rebuild-records")
     def rebuild_records(self, _):
-        session.resync_records()
+        resync_records()
         return Response({"records": models.PersonalRecord.objects.count()})
 
 

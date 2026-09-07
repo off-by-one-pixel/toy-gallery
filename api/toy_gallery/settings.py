@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import importlib.util
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -82,6 +84,16 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+SILK_ENABLED = (
+    DEBUG
+    and "test" not in sys.argv
+    and os.environ.get("DJANGO_SETTINGS_MODULE", "toy_gallery.settings") == "toy_gallery.settings"
+    and importlib.util.find_spec("silk") is not None
+)
+if SILK_ENABLED:
+    INSTALLED_APPS += ["silk"]
+    MIDDLEWARE.append("silk.middleware.SilkyMiddleware")
 
 ROOT_URLCONF = "toy_gallery.urls"
 

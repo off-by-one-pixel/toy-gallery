@@ -86,3 +86,6 @@ urlpatterns = [
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
     re_path(r"^.*$", spa_index),
 ]
+
+if settings.SILK_ENABLED:
+    urlpatterns.insert(-1, path("silk/", include("silk.urls", namespace="silk")))
