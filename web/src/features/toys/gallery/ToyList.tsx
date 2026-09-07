@@ -3,8 +3,7 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { formatDuration } from '@/lib/duration';
+import { useTranslations } from 'next-intl';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 import { useGirth } from '@/features/preferences/GirthProvider';
@@ -15,11 +14,9 @@ import { displayGirth } from '@/features/preferences/girth';
 import { cycleSort, type Sort } from '@/lib/sort';
 import { TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
 import { formatValue, type Unit } from '@/features/preferences/units';
-import { SectionShape, type Toy } from '@/api/types';
-import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
+import { type Toy } from '@/api/types';
+import ToyDetails from '@/features/toys/gallery/ToyDetails';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
-
-const DEFAULT_FILL = '#c7e4ee';
 
 // Action buttons are absolute-positioned over the row on hover — they don't
 // claim a grid column, so the brand/name column has more room and the grid
@@ -270,100 +267,11 @@ function Metric({
 }
 
 function ExpandedPanel({ toy }: Readonly<{ toy: Toy }>) {
-  const { unit } = useUnit();
-  const t = useTranslations();
-  const locale = useLocale();
-  const topShapeLabel = t(`shape.${toy.shape.topSectionShape ?? SectionShape.FLAT}`);
   return (
-    <div className="border-b border-border bg-surface-secondary px-4 py-3.5 text-xs min-[640px]:px-5">
-      <dl className="grid grid-cols-[90px_1fr] gap-x-3.5 gap-y-2">
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
-          {t('common.totalLength')}
-        </dt>
-        <dd className="text-foreground tabular-nums">
-          {toy.totalLength == null ? (
-            <span className="font-normal text-text-subtle">—</span>
-          ) : (
-            <>
-              {formatValue(toy.totalLength, unit)}
-              <span className="ml-1 text-caption font-medium text-muted">{unit.id}</span>
-            </>
-          )}
-        </dd>
-
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">{t('toy.timesUsed')}</dt>
-        <dd className="text-foreground tabular-nums">{toy.usageCount ?? 0}</dd>
-
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
-          {t('toy.timeUsedLabel')}
-        </dt>
-        <dd className="text-foreground tabular-nums">
-          {t('toy.timeUsedWithMax', {
-            total: formatDuration(toy.totalDurationMinutes ?? 0, locale),
-            max: formatDuration(toy.maxDurationMinutes ?? 0, locale),
-          })}
-        </dd>
-
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
-          {t('toy.columns.topShape')}
-        </dt>
-        <dd className="text-foreground">{topShapeLabel}</dd>
-
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">{t('common.color')}</dt>
-        <dd className="inline-flex items-center gap-2 text-foreground">
-          <span
-            aria-hidden
-            className="inline-block h-3.5 w-3.5 rounded-sm border border-black/15"
-            style={{ background: toy.color || DEFAULT_FILL }}
-          />
-          <span className="font-mono text-caption text-muted">{toy.color || '—'}</span>
-        </dd>
-
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
-          {t('toy.columns.sections')}
-        </dt>
-        <dd>
-          <div className="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-3 gap-y-0.5 font-mono text-caption text-foreground tabular-nums">
-            {toy.shape.sections.map((s, idx) => (
-              <SectionLine key={s.id} n={idx + 1} d={s.diameter} h={s.height} c={s.circumference ?? null} />
-            ))}
-            <span className="text-text-tertiary">+</span>
-            <span className="italic text-muted col-span-4">{t('toy.topCap', { shape: topShapeLabel })}</span>
-          </div>
-        </dd>
-
-        <dt className="text-caption font-semibold uppercase tracking-wider text-text-tertiary">
-          {t('attributes.heading')}
-        </dt>
-        <dd>
-          <AttributesPanel toy={toy} />
-        </dd>
-      </dl>
+    <div className="border-b border-border bg-surface-secondary px-4 py-3.5 min-[640px]:px-5">
+      <div className="flex max-w-100 flex-col gap-1">
+        <ToyDetails toy={toy} active />
+      </div>
     </div>
-  );
-}
-
-function SectionLine({ n, d, h, c }: Readonly<{ n: number; d: number; h: number; c: number | null }>) {
-  const t = useTranslations('toy');
-  const { girth } = useGirth();
-  const girthValue = displayGirth(c, girth);
-  return (
-    <>
-      <span className="text-text-tertiary">#{n}</span>
-      <span className="whitespace-nowrap">{Math.round(d)} mm</span>
-      <span className="text-text-tertiary">×</span>
-      <span className="whitespace-nowrap">{Math.round(h)} mm</span>
-      <span className="text-muted">
-        {girthValue != null ? (
-          <>
-            <span className="whitespace-nowrap">{Math.round(girthValue)} mm</span>{' '}
-            <span className="sm:hidden">{t(`girthShort.${girth}`)}</span>
-            <span className="hidden sm:inline">{t(`girthInline.${girth}`)}</span>
-          </>
-        ) : (
-          ''
-        )}
-      </span>
-    </>
   );
 }

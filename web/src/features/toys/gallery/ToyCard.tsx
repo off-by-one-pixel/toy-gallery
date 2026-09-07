@@ -1,9 +1,8 @@
 'use client';
 
 import { memo, useRef } from 'react';
-import Link from 'next/link';
 import { Chip } from '@heroui/react';
-import { ArrowRight } from 'lucide-react';
+import {} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useGirth } from '@/features/preferences/GirthProvider';
 import { displayGirth } from '@/features/preferences/girth';
@@ -13,10 +12,9 @@ import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
 import { useSortOf } from '@/hooks/useSortOf';
 import { TOY_SORT } from '@/features/toys/toySort';
-import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
+import ToyDetails from '@/features/toys/gallery/ToyDetails';
 import { cardSortValue } from '@/features/toys/gallery/cardSortValue';
 import type { ToyPropertyContext } from '@/features/toys/properties';
-import { formatDuration } from '@/lib/duration';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 import GhostCompareOverlay from '@/features/toys/gallery/ghost/GhostCompareOverlay';
 import {
@@ -56,7 +54,6 @@ function ToyCard({
   const { unit } = useUnit();
   const { girth } = useGirth();
   const common = useTranslations('common');
-  const tToy = useTranslations('toy');
   const locale = useLocale();
   const detailsRef = useRef<HTMLDivElement>(null);
   const { sort } = useSortOf(TOY_SORT);
@@ -169,24 +166,7 @@ function ToyCard({
             : 'invisible -translate-y-2 border-transparent opacity-0 pointer-events-none')
         }
       >
-        <AttrRow
-          label={common('totalLength')}
-          value={toy.totalLength == null ? '—' : `${formatValue(toy.totalLength, unit)} ${unit.id}`}
-        />
-        <AttrRow
-          label={tToy('timesUsed')}
-          value={`${toy.usageCount ?? 0}`}
-          href={(toy.usageCount ?? 0) > 0 ? `/sessions?toys=${toy.id}` : undefined}
-          hrefLabel={tToy('viewSessions')}
-        />
-        <AttrRow
-          label={tToy('timeUsedLabel')}
-          value={tToy('timeUsedWithMax', {
-            total: formatDuration(toy.totalDurationMinutes ?? 0, locale),
-            max: formatDuration(toy.maxDurationMinutes ?? 0, locale),
-          })}
-        />
-        <AttributesPanel toy={toy} />
+        <ToyDetails toy={toy} active={detailsOpen} />
       </div>
 
       <div
@@ -238,32 +218,6 @@ function Metric({
         </div>
       )}
       <div className="mt-0.5 text-caption uppercase tracking-wider text-text-tertiary">{label}</div>
-    </div>
-  );
-}
-
-function AttrRow({
-  label,
-  value,
-  href,
-  hrefLabel,
-}: Readonly<{ label: string; value: string; href?: string; hrefLabel?: string }>) {
-  return (
-    <div className="grid grid-cols-[1.3fr_1fr_auto] items-center gap-2">
-      <span className="py-0.5 text-xs text-foreground">{label}</span>
-      {href === undefined ? (
-        <span className="py-0.5 text-xs tabular-nums text-foreground">{value}</span>
-      ) : (
-        <Link
-          href={href}
-          aria-label={hrefLabel}
-          className="inline-flex items-center gap-1 py-0.5 text-xs font-medium tabular-nums text-accent transition-colors hover:text-accent-hover"
-        >
-          {value}
-          <ArrowRight size={11} strokeWidth={2.2} />
-        </Link>
-      )}
-      <span aria-hidden className="w-3" />
     </div>
   );
 }

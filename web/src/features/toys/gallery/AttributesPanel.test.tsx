@@ -32,8 +32,13 @@ describe('AttributesPanel autocomplete', () => {
     vi.clearAllMocks();
   });
 
-  it('starts loading suggestions on first focus inside the panel', () => {
-    render(withAppProviders(<AttributesPanel toy={makeToy({ id: 1 })} />));
+  it('starts loading suggestions when the panel becomes active', () => {
+    render(withAppProviders(<AttributesPanel toy={makeToy({ id: 1 })} active />));
+    expect(editorState.current.beginEditing).toHaveBeenCalled();
+  });
+
+  it('waits for focus when the panel is not active yet', () => {
+    render(withAppProviders(<AttributesPanel toy={makeToy({ id: 1 })} active={false} />));
     expect(editorState.current.beginEditing).not.toHaveBeenCalled();
     screen.getByPlaceholderText(en.attributes.keyPlaceholder).focus();
     expect(editorState.current.beginEditing).toHaveBeenCalled();

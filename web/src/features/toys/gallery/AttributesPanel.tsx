@@ -1,13 +1,13 @@
 'use client';
 
-import { useId } from 'react';
+import { useEffect, useId } from 'react';
 import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useAttributesEditor } from '@/features/toys/gallery/useAttributesEditor';
 import type { Toy } from '@/api/types';
 
-export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
+export default function AttributesPanel({ toy, active = true }: Readonly<{ toy: Toy; active?: boolean }>) {
   const {
     rows,
     saveState,
@@ -20,6 +20,9 @@ export default function AttributesPanel({ toy }: Readonly<{ toy: Toy }>) {
     addRow,
     commitChanges,
   } = useAttributesEditor(toy);
+  useEffect(() => {
+    if (active) beginEditing();
+  }, [active, beginEditing]);
   const listId = useId();
   const keyListId = `${listId}-keys`;
   const blurOnEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
