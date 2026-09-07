@@ -47,6 +47,19 @@ STATIC_ROOT = BASE_DIR / "staticfiles"  # noqa: F405
 WHITENOISE_ROOT = BASE_DIR / "frontend"  # noqa: F405
 WHITENOISE_INDEX_FILE = True
 MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405
+MIDDLEWARE.insert(2, "django.middleware.gzip.GZipMiddleware")  # noqa: F405
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
+
+
+def _immutable_asset(path: str, url: str) -> bool:
+    return "/_next/static/" in url
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = _immutable_asset
 
 # `_MIGRATION_GATE_DB_OVERRIDE` is set internally by the migration safety
 # gate (toys/migration_gate/) when it spawns a subprocess against a candidate

@@ -54,6 +54,7 @@ WORKDIR /app
 COPY --from=python_deps /app/.venv /app/.venv
 COPY api/ /app/
 COPY --from=frontend /workspace/web/build /app/frontend
+RUN python -m whitenoise.compress /app/frontend
 COPY docker/ /app/docker/
 RUN chmod +x /app/docker/entrypoint.sh \
  && mkdir -p /data
