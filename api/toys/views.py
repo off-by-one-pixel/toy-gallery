@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from . import export as export_mod
 from . import media, models, serializers, stats
-from .records import session
+from .records.session import resync_records
 
 
 class ToyViewSet(viewsets.ModelViewSet):
@@ -334,7 +334,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["post"], url_path="rebuild-records")
     def rebuild_records(self, _):
-        session.resync_records()
+        resync_records()
         return Response({"records": models.PersonalRecord.objects.count()})
 
 
