@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import Link from 'next/link';
 import { Chip } from '@heroui/react';
 import { ArrowRight } from 'lucide-react';
@@ -32,7 +32,7 @@ type Props = Readonly<{
   toy: Toy;
   heightRatio: number;
   detailsOpen: boolean;
-  onToggleDetails: () => void;
+  onToggleOpen: (id: number) => void;
   onEdit: (toy: Toy) => void;
   onCopy: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
@@ -41,11 +41,11 @@ type Props = Readonly<{
   maxHeightMm?: number;
 }>;
 
-export default function ToyCard({
+function ToyCard({
   toy,
   heightRatio,
   detailsOpen,
-  onToggleDetails,
+  onToggleOpen,
   onEdit,
   onCopy,
   onDelete,
@@ -68,7 +68,7 @@ export default function ToyCard({
 
   const handleClick = (e: React.MouseEvent) => {
     if (detailsRef.current?.contains(e.target as Node)) return;
-    onToggleDetails();
+    onToggleOpen(toy.id);
   };
 
   return (
@@ -87,7 +87,7 @@ export default function ToyCard({
         if (detailsRef.current?.contains(e.target as Node)) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onToggleDetails();
+          onToggleOpen(toy.id);
         }
       }}
     >
@@ -163,10 +163,10 @@ export default function ToyCard({
       <div
         ref={detailsRef}
         className={
-          'absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl bg-surface px-4 pb-3.5 pt-4 shadow-md transition-all duration-200 ' +
+          'absolute left-0 right-0 top-[calc(100%-14px)] z-20 flex flex-col gap-1 overflow-hidden rounded-b-2xl border-2 border-t-0 bg-surface px-4 pb-3.5 pt-4 shadow-md transition-[visibility,opacity,transform,border-color] duration-200 ' +
           (detailsOpen
-            ? 'visible translate-y-0 opacity-100 border-2 border-t-0 border-accent'
-            : 'invisible -translate-y-2 opacity-0 pointer-events-none')
+            ? 'visible translate-y-0 border-accent opacity-100'
+            : 'invisible -translate-y-2 border-transparent opacity-0 pointer-events-none')
         }
       >
         <AttrRow
@@ -189,15 +189,18 @@ export default function ToyCard({
         <AttributesPanel toy={toy} />
       </div>
 
-      {detailsOpen && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-30 rounded-t-2xl border-2 border-b-0 border-accent"
-        />
-      )}
+      <div
+        aria-hidden
+        className={
+          'pointer-events-none absolute inset-0 z-30 rounded-t-2xl border-2 border-b-0 border-accent transition-opacity duration-200 ' +
+          (detailsOpen ? 'opacity-100' : 'opacity-0')
+        }
+      />
     </div>
   );
 }
+
+export default memo(ToyCard);
 
 const DELTA_TEXT_SIZES = ['text-xs', 'text-xs', 'text-[10px]', 'text-[9px]'] as const;
 

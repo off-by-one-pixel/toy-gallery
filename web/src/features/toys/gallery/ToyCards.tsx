@@ -74,7 +74,7 @@ export default function ToyCards({
               toy={item.toy}
               heightRatio={heightRatioFor(silhouetteHeight(item.toy), maxHeightMm)}
               detailsOpen={openToyId === item.toy.id}
-              onToggleDetails={() => onToggleOpen(item.toy.id)}
+              onToggleOpen={onToggleOpen}
               onEdit={onEdit}
               onCopy={onCopy}
               onDelete={onDelete}
