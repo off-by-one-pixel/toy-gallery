@@ -24,6 +24,7 @@ PROD_SETTINGS = DJANGO_SETTINGS_MODULE=toy_gallery.settings_docker_local
 
 be-prod:
 	cd web && pnpm build
+	cd api && uv run python -m whitenoise.compress ../web/build
 	cd api && $(PROD_SETTINGS) uv run python manage.py migrate --noinput
 	cd api && $(PROD_SETTINGS) uv run python manage.py collectstatic --noinput
 	cd api && $(PROD_SETTINGS) uv run gunicorn toy_gallery.wsgi:application --bind 0.0.0.0:8000
