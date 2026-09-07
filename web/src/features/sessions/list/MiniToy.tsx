@@ -38,7 +38,11 @@ export default function MiniToy({ entry, toy, heightRatio, recordLabels = [] }: 
   return (
     <div className="relative flex w-20 flex-col items-center gap-1.5 text-center" title={toyTooltip(toy)}>
       {recordLabels.length > 0 && (
-        <RecordTrophy label={recordLabels.join(', ')} className="absolute -top-1 right-1 z-10" />
+        <RecordTrophy
+          label={recordLabels.join('\n')}
+          count={recordLabels.length}
+          className="absolute -top-1 right-1 z-10"
+        />
       )}
       <ToyThumbnail
         toy={editorToy}
