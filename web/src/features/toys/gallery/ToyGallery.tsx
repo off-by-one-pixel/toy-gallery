@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -42,7 +42,7 @@ const ToyGallery = () => {
   useSetTopBarSubtitle(isLoading ? null : t('toy.items', { count: toys.length }));
   const [query, setQuery] = useState('');
   const [openCardId, setOpenCardId] = useState<number | null>(null);
-  const toggleOpen = (id: number) => setOpenCardId((current) => (current === id ? null : id));
+  const toggleOpen = useCallback((id: number) => setOpenCardId((current) => (current === id ? null : id)), []);
   const { view, setView } = useViewMode();
   const { sort } = useSortOf(TOY_SORT);
   const sortedToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, sort, query]);
@@ -59,7 +59,7 @@ const ToyGallery = () => {
   const startLiveAction = useStartLiveAction();
 
   const [pendingDelete, setPendingDelete] = useState<Toy | null>(null);
-  const handleDelete = (toy: Toy) => setPendingDelete(toy);
+  const handleDelete = useCallback((toy: Toy) => setPendingDelete(toy), []);
   const confirmDelete = async () => {
     if (!pendingDelete) return;
     await removeToy(pendingDelete.id);
@@ -70,12 +70,12 @@ const ToyGallery = () => {
     toyModal.close();
   };
 
-  const handleEdit = (toy: Toy) => toyModal.openEdit(toy.id);
-  const handleCopy = (toy: Toy) => toyModal.openCopy(toy.id);
+  const handleEdit = useCallback((toy: Toy) => toyModal.openEdit(toy.id), [toyModal]);
+  const handleCopy = useCallback((toy: Toy) => toyModal.openCopy(toy.id), [toyModal]);
 
   const { ghosts, canAddGhost, saveGhost, removeGhost, clearGhosts } = useGhosts();
   const [ghostModal, setGhostModal] = useState<GhostTarget | null>(null);
-  const handleGhost = (toy: Toy) => setGhostModal({ kind: 'new', source: toy });
+  const handleGhost = useCallback((toy: Toy) => setGhostModal({ kind: 'new', source: toy }), []);
   const handleEditGhost = (ghost: GhostToy) => setGhostModal({ kind: 'edit', ghost });
   const handleGhostSave = (dims: GhostDimensions) => {
     if (ghostModal) saveGhost(ghostModal, dims);
