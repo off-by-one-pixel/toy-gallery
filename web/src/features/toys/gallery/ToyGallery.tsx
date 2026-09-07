@@ -32,7 +32,7 @@ import ViewToggle from '@/features/preferences/ViewToggle';
 type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
 const ToyGallery = () => {
-  const { replace } = useNavigation();
+  const { navigate } = useNavigation();
   const toyModal = useToyModalNav();
   const wizard = useToyEditorWizardNav();
   const t = useTranslations();
@@ -90,7 +90,7 @@ const ToyGallery = () => {
       icon: CalendarClock,
       variant: 'outline',
       iconStrokeWidth: 1.8,
-      onPress: () => replace('/sessions/new'),
+      onPress: () => navigate('/sessions/new'),
     },
     { key: 'new-toy', label: t('toy.new'), icon: Plus, variant: 'primary', onPress: toyModal.openNew },
   ];

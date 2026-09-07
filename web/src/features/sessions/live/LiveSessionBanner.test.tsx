@@ -23,7 +23,7 @@ vi.mock('@/features/sessions/live/useLiveSession', async (importOriginal) => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
-import { replaceMock, resetNavigation } from '@/test/navigation';
+import { navigateMock, resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
@@ -53,7 +53,7 @@ describe('LiveSessionBanner', () => {
 
     vi.useRealTimers();
     fireEvent.click(screen.getByRole('button', { name: en.session.live.openButton }));
-    expect(replaceMock).toHaveBeenCalledWith('/sessions/edit?id=5');
+    expect(navigateMock).toHaveBeenCalledWith('/sessions/edit?id=5');
   });
 
   it('ticks the elapsed time forward', () => {

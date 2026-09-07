@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useNavigation } from '@/hooks/useNavigation';
 
 import { Involvement } from '@/api/types';
 
@@ -32,16 +31,17 @@ const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: (key: string)
 
 const datetimeLocalNow = () => datetimeLocalValue(new Date());
 
-export default function SessionForm({ mode }: Readonly<{ mode: SessionFormMode }>) {
+type Props = Readonly<{ mode: SessionFormMode; onDone: () => void }>;
+
+export default function SessionForm({ mode, onDone }: Props) {
   return (
     <SortProvider config={SESSION_FORM_TOY_SORT}>
-      <SessionFormContent mode={mode} />
+      <SessionFormContent mode={mode} onDone={onDone} />
     </SortProvider>
   );
 }
 
-function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
-  const { replace } = useNavigation();
+function SessionFormContent({ mode, onDone }: Props) {
   const t = useTranslations('session');
   const common = useTranslations('common');
   const [startedAt, setStartedAt] = useState(datetimeLocalNow);
@@ -129,7 +129,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         })),
       },
     });
-    if (saved) replace('/sessions');
+    if (saved) onDone();
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
@@ -141,7 +141,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
         <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
           <button
             type="button"
-            onClick={() => replace('/sessions')}
+            onClick={onDone}
             className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-muted transition-colors hover:bg-surface-tertiary/60 hover:text-foreground"
           >
             <ArrowLeft size={14} strokeWidth={2} />
@@ -265,7 +265,7 @@ function SessionFormContent({ mode }: Readonly<{ mode: SessionFormMode }>) {
             {t('toysSelected', { count: selectedCount })}
           </div>
           <div className="flex-1" />
-          <Button variant="outline" size="sm" onPress={() => replace('/sessions')}>
+          <Button variant="outline" size="sm" onPress={onDone}>
             {common('cancel')}
           </Button>
           <Button

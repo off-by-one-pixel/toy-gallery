@@ -35,7 +35,7 @@ export default function SessionList() {
 }
 
 function SessionListContent() {
-  const { replace } = useNavigation();
+  const { navigate } = useNavigation();
   const { unit } = useUnit();
   const data = useSessions();
   const filterArgs = {
@@ -59,7 +59,7 @@ function SessionListContent() {
 
   const startLiveAction = useStartLiveAction(addStartedSession);
 
-  const editSession = useCallback((id: number) => replace(`/sessions/edit?id=${id}`), [replace]);
+  const editSession = useCallback((id: number) => navigate(`/sessions/edit?id=${id}`), [navigate]);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const removeSession = useCallback((id: number) => setPendingDeleteId(id), []);
   const toggleSelect = useCallback((id: number) => setSelectedId((cur) => (cur === id ? null : id)), []);
@@ -96,7 +96,7 @@ function SessionListContent() {
       label: t('newButton'),
       icon: Plus,
       variant: 'primary',
-      onPress: () => replace('/sessions/new'),
+      onPress: () => navigate('/sessions/new'),
     },
   ];
 
