@@ -265,6 +265,39 @@ class ToyRecordDriverTests(RecordsTestBase):
         self.assertEqual(len(self._rows("toy-time")), 1)
         self.assertEqual(len(self._rows("toy-level")), 1)
 
+    def test_rerecording_an_unchanged_session_keeps_the_original_rows(self):
+        toy = self._create_toy("A")
+        session = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        record_session(session)
+        before = {(r.key, r.id, r.achieved_at) for r in models.PersonalRecord.objects.all()}
+
+        record_session(session)
+
+        after = {(r.key, r.id, r.achieved_at) for r in models.PersonalRecord.objects.all()}
+        self.assertEqual(before, after)
+
+    def test_editing_an_older_session_keeps_the_newest_row_as_the_standing_record(self):
+        toy = self._create_toy("A")
+        older = self._make_session(
+            _utc("2026-06-01T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+        record_session(older)
+        newer = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 45}]
+        )
+        record_session(newer)
+
+        entry = older.entries.get()
+        entry.involvement = "INSERTED"
+        entry.save()
+        record_session(older)
+
+        time_rows = models.PersonalRecord.objects.filter(key="toy-time").order_by("-achieved_at")
+        self.assertEqual([r.value for r in time_rows], [45.0, 30.0])
+        self.assertEqual(time_rows[0].session_id, newer.id)
+
     def test_reevaluation_replaces_the_row_for_the_same_session_key_and_toy(self):
         toy = self._create_toy("A")
         session = self._make_session(
