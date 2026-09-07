@@ -2,7 +2,6 @@
 
 import { memo, useRef } from 'react';
 import { Chip } from '@heroui/react';
-import {} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useGirth } from '@/features/preferences/GirthProvider';
 import { displayGirth } from '@/features/preferences/girth';
