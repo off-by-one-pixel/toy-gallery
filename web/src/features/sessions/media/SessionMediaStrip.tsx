@@ -1,11 +1,18 @@
 'use client';
 
 import { useEffect } from 'react';
-import { ExternalLink, Play } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ExternalLink, Heart, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
+import { setMediaLiked } from '@/api';
+import { queryKeys } from '@/api/queryKeys';
+import type { SessionMedia, SessionMediaItem } from '@/api/types';
+import { useApiMutation } from '@/hooks/useApi';
 
 import { useMediaLightboxNav } from '@/features/sessions/media/useMediaLightboxNav';
 import { usePrivacy } from '@/features/preferences/PrivacyProvider';
+import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
 import { useSessionMedia } from '@/features/sessions/media/useSessionMedia';
 import MediaLightbox from '@/features/sessions/media/MediaLightbox';
 import SensitiveContent from '@/features/preferences/SensitiveContent';
@@ -18,6 +25,23 @@ export default function SessionMediaStrip({ sessionId, expectedCount }: Props) {
   const { openIndex, open, close } = useMediaLightboxNav(sessionId);
 
   const { configured, media, isPending, isError } = useSessionMedia(sessionId);
+  const { likesConfigured } = useMediaStatus();
+  const queryClient = useQueryClient();
+  const like = useApiMutation<{ assetId: string; liked: boolean }>({
+    fn: ({ assetId, liked }) => setMediaLiked(assetId, liked),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: queryKeys.media.session(sessionId) }),
+  });
+  const toggleLike = (item: SessionMediaItem) => {
+    queryClient.setQueryData<SessionMedia>(
+      queryKeys.media.session(sessionId),
+      (prev) =>
+        prev && {
+          ...prev,
+          items: prev.items.map((i) => (i.id === item.id ? { ...i, liked: !i.liked } : i)),
+        },
+    );
+    void like.run({ assetId: item.id, liked: !item.liked });
+  };
 
   useEffect(() => {
     if (hideSensitive && openIndex !== null) close({ replace: true });
@@ -59,20 +83,32 @@ export default function SessionMediaStrip({ sessionId, expectedCount }: Props) {
         <SensitiveContent>
           <div className="flex flex-wrap gap-2">
             {items.map((item, i) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-label={t('openLabel')}
-                onClick={() => open(i)}
-                className="relative h-16 w-16 overflow-hidden rounded-lg border border-border transition-transform hover:scale-105"
-              >
-                <img src={item.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
-                {item.kind === 'video' && (
-                  <span className="absolute inset-0 grid place-items-center bg-black/25">
-                    <Play size={18} className="fill-white text-white drop-shadow" />
-                  </span>
+              <div key={item.id} className="relative">
+                <button
+                  type="button"
+                  aria-label={t('openLabel')}
+                  onClick={() => open(i)}
+                  className="relative h-16 w-16 overflow-hidden rounded-lg border border-border transition-transform hover:scale-105"
+                >
+                  <img src={item.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  {item.kind === 'video' && (
+                    <span className="absolute inset-0 grid place-items-center bg-black/25">
+                      <Play size={18} className="fill-white text-white drop-shadow" />
+                    </span>
+                  )}
+                </button>
+                {likesConfigured && (
+                  <button
+                    type="button"
+                    aria-label={item.liked ? t('unlikeLabel') : t('likeLabel')}
+                    aria-pressed={item.liked}
+                    onClick={() => toggleLike(item)}
+                    className="absolute right-0.5 top-0.5 z-10 grid h-6 w-6 place-items-center rounded-full bg-black/35 text-white transition-colors hover:bg-black/55"
+                  >
+                    <Heart size={13} strokeWidth={2.2} className={item.liked ? 'fill-rose-500 text-rose-500' : ''} />
+                  </button>
                 )}
-              </button>
+              </div>
             ))}
           </div>
         </SensitiveContent>

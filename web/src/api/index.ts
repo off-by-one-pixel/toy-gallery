@@ -4,6 +4,7 @@ import {
   toysSessionsCreate,
   toysSessionsDestroy,
   toysSessionsMediaStatusRetrieve,
+  toysSessionsMediaLikeCreate,
   toysSessionsMediaRetrieve,
   toysSessionsRebuildRecordsCreate,
   toysSessionsRefreshMediaCreate,
@@ -200,13 +201,13 @@ export const fetchLiveSession = async (): Promise<Session | null> => {
   return data.session ? snakeToCamel<Session>(data.session) : null;
 };
 
-export type MediaStatus = Readonly<{ configured: boolean }>;
+export type MediaStatus = Readonly<{ configured: boolean; likesConfigured: boolean }>;
 
 export type MediaRefreshSummary = Readonly<{ configured: boolean; sessionsWithMedia: number }>;
 
 export const fetchMediaStatus = async (): Promise<MediaStatus> => {
   const { data } = await toysSessionsMediaStatusRetrieve();
-  return { configured: data.configured };
+  return { configured: data.configured, likesConfigured: data.likes_configured };
 };
 
 export const refreshAllSessionMedia = async (): Promise<MediaRefreshSummary> => {
@@ -226,6 +227,11 @@ export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia
     shareUrl: data.share_url,
     items: data.items.map((i) => snakeToCamel<SessionMediaItem>(i)),
   };
+};
+
+export const setMediaLiked = async (assetId: string, liked: boolean): Promise<boolean> => {
+  const { data } = await toysSessionsMediaLikeCreate({ asset_id: assetId, liked });
+  return data.liked;
 };
 
 export const browserTimeZone = (): string => {

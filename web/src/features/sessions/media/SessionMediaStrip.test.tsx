@@ -26,6 +26,10 @@ vi.mock('@/features/sessions/media/useSessionMedia', () => ({
   useSessionMedia: () => mediaState.current,
 }));
 
+vi.mock('@/features/sessions/media/useMediaStatus', () => ({
+  useMediaStatus: () => ({ configured: true, likesConfigured: true }),
+}));
+
 vi.mock('@/features/sessions/media/MediaLightbox', async () => {
   const { default: en } = await import('@/i18n/catalogs/en.json');
   return {
@@ -35,7 +39,13 @@ vi.mock('@/features/sessions/media/MediaLightbox', async () => {
   };
 });
 
+vi.mock('@/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api')>()),
+  setMediaLiked: vi.fn().mockResolvedValue(true),
+}));
+
 import en from '@/i18n/catalogs/en.json';
+import { setMediaLiked } from '@/api';
 import type { SessionMedia } from '@/api/types';
 import { withAppProviders } from '@/test/render';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
@@ -63,6 +73,7 @@ const image = {
   takenAt: '2026-06-01T20:10:00',
   thumbnailUrl: 'https://immich/thumb1',
   fullUrl: 'https://immich/full1',
+  liked: false,
 } as const;
 
 const video = {
@@ -71,6 +82,7 @@ const video = {
   takenAt: '2026-06-01T20:20:00',
   thumbnailUrl: 'https://immich/thumb2',
   fullUrl: 'https://immich/full2',
+  liked: true,
 } as const;
 
 const setMedia = (value: SessionMedia) => {
@@ -172,5 +184,28 @@ describe('SessionMediaStrip', () => {
     renderStrip();
     fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
     await settle(() => expect(lightboxState.current.close).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('SessionMediaStrip likes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mediaState.current = { configured: true, media: undefined, isPending: true, isError: false };
+  });
+
+  it('marks liked items and toggles through the API', async () => {
+    setMedia(media([image, video]));
+    renderStrip(2);
+
+    const likeButton = screen.getByRole('button', { name: en.session.media.likeLabel });
+    const unlikeButton = screen.getByRole('button', { name: en.session.media.unlikeLabel });
+    expect(likeButton.getAttribute('aria-pressed')).toBe('false');
+    expect(unlikeButton.getAttribute('aria-pressed')).toBe('true');
+
+    fireEvent.click(likeButton);
+    await settle(() => expect(setMediaLiked).toHaveBeenCalledWith('a1', true));
+
+    fireEvent.click(unlikeButton);
+    await settle(() => expect(setMediaLiked).toHaveBeenCalledWith('a2', false));
   });
 });

@@ -35,11 +35,11 @@ const renderMedia = (client: QueryClient = createTestQueryClient()) =>
 describe('useSessionMedia', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true, likesConfigured: true });
   });
 
   it('does not fetch media while the provider is not configured', async () => {
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false, likesConfigured: false });
     const { result } = renderMedia();
     await settle(() => expect(fetchMediaStatus).toHaveBeenCalled());
     expect(result.current.configured).toBe(false);
