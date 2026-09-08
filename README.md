@@ -78,7 +78,7 @@ Your media never leaves your photo library. The app doesn't upload, copy, or sto
 
 To turn it on, set `IMMICH_URL` and `IMMICH_API_KEY` from the table below. Video playback quality follows your Immich transcoding settings.
 
-You can also like individual photos and videos right from a session. Liked media is collected into an Immich album of your choice: create the album in Immich, then set `IMMICH_LIKED_ALBUM_ID` to its id (the UUID in the album's URL). The album is the source of truth — unliking removes the item from it, and anything you add to the album elsewhere shows up as liked here. Without the variable, the heart buttons simply don't appear.
+You can also like individual photos and videos right from a session. Liked media is collected into an Immich album of your choice: create the album in Immich, then set `IMMICH_LIKED_ALBUM_ID` to its id (the UUID in the album's URL). Without the variable, the heart buttons simply don't appear.
 
 ## Configuration
 
