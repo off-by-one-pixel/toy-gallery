@@ -24,13 +24,15 @@ vi.mock('@/features/sessions/useSessions', () => ({
   useSessions: () => sessionsState.current,
 }));
 
+const toysState = vi.hoisted(() => ({ current: [] as unknown[] }));
+
 vi.mock('@/features/toys/useToys', () => ({
-  useToys: () => ({ toys: [], isLoading: false, error: null }),
+  useToys: () => ({ toys: toysState.current, isLoading: false, error: null }),
 }));
 
 import en from '@/i18n/catalogs/en.json';
 import { resetNavigation } from '@/test/navigation';
-import { makeSession } from '@/test/fixtures';
+import { makeSession, makeToy } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionForm from '@/features/sessions/form/SessionForm';
 
@@ -48,6 +50,7 @@ describe('SessionForm live sessions', () => {
     localStorage.clear();
     sessionsState.current.session = null;
     sessionsState.current.isSavingSession = false;
+    toysState.current = [];
   });
 
   it('saves a start-time-only change for a live session without toys', async () => {
@@ -85,5 +88,41 @@ describe('SessionForm live sessions', () => {
     expect(save.hasAttribute('disabled')).toBe(true);
     fireEvent.click(save);
     expect(sessionsState.current.saveSession).not.toHaveBeenCalled();
+  });
+});
+
+describe('SessionForm toy ordering', () => {
+  beforeEach(() => {
+    onDone.mockClear();
+    vi.clearAllMocks();
+    resetNavigation();
+    localStorage.clear();
+    sessionsState.current.session = null;
+    toysState.current = [
+      makeToy({ id: 1, name: 'Alpha' }),
+      makeToy({ id: 2, name: 'Beta' }),
+      makeToy({ id: 3, name: 'Gamma' }),
+    ];
+  });
+
+  const renderedToyNames = () => screen.getAllByText(/^(Alpha|Beta|Gamma)$/).map((el) => el.textContent);
+
+  it('pins the session toys to the top and keeps order stable while selecting', async () => {
+    sessionsState.current.session = makeSession({
+      id: 5,
+      startedAt: '2026-06-01T20:00:00',
+      entries: [{ toy: 3, involvement: 'FULLY_INSERTED', durationMinutes: null }],
+    } as never);
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
+
+    await settle(() => expect(renderedToyNames()).toEqual(['Gamma', 'Alpha', 'Beta']));
+
+    fireEvent.click(screen.getAllByRole('button', { name: en.involvement.USED })[1]);
+    await settle(() => expect(renderedToyNames()).toEqual(['Gamma', 'Alpha', 'Beta']));
+  });
+
+  it('keeps the plain sort order for new sessions', async () => {
+    render(withAppProviders(<SessionForm mode={{ kind: 'new' }} onDone={onDone} />));
+    await settle(() => expect(renderedToyNames()).toEqual(['Alpha', 'Beta', 'Gamma']));
   });
 });
