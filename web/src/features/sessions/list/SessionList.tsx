@@ -130,7 +130,7 @@ function SessionListContent() {
         <SessionFilterChips {...filterArgs} />
       </PageToolbar>
 
-      <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] right-5 z-30 flex flex-col items-end gap-2.5 sm:hidden">
         {selectedActions && <ActionFabs actions={selectedActions} />}
         <ActionFabs actions={newActions} />
       </div>

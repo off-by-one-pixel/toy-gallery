@@ -22,7 +22,10 @@ export default function BottomSheet({ open, onClose, label, children }: Props) {
       className="sm:hidden"
     >
       <Drawer.Content placement="bottom">
-        <Drawer.Dialog aria-label={label} className="max-h-[80dvh] w-full rounded-t-2xl px-2 pt-2 pb-5">
+        <Drawer.Dialog
+          aria-label={label}
+          className="max-h-[80dvh] w-full rounded-t-2xl px-2 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
+        >
           <Drawer.Handle />
           <BottomSheetContext.Provider value={true}>{children}</BottomSheetContext.Provider>
         </Drawer.Dialog>

@@ -32,6 +32,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
+  viewportFit: 'cover',
 };
 
 const BROWSER_CHROME = Object.fromEntries(Object.entries(THEMES).map(([name, def]) => [name, def.browserChrome]));

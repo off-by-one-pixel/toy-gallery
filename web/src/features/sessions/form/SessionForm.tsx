@@ -276,7 +276,7 @@ function SessionFormContent({ mode, onDone }: Props) {
         </section>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 shadow-[0_-4px_16px_rgba(17,24,39,.06)] backdrop-blur-sm">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(17,24,39,.06)] backdrop-blur-sm">
         <div className="mx-auto flex max-w-300 items-center gap-3 px-6 py-3.5">
           <div className="text-sm text-foreground">
             <span className="font-semibold text-accent">{selectedCount}</span>{' '}
