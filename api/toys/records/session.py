@@ -53,7 +53,10 @@ def _delete_all_records() -> None:
 def resync_records() -> None:
     _delete_all_records()
     sessions = (
-        Session.objects.order_by("-started_at").prefetch_related("entries", "entries__toy").all()
+        Session.objects.order_by("-started_at")
+        .filter(is_live=False)
+        .prefetch_related("entries", "entries__toy")
+        .all()
     )
 
     for i, s in enumerate(sessions[::-1]):
@@ -84,8 +87,10 @@ def _calculate_sessions_records(ctx: SessionRecordCheckCtx) -> None:
 
 
 def record_session(session: Session) -> None:
+    if session.is_live:
+        return None
     sessions = (
-        Session.objects.filter(started_at__lt=session.started_at)
+        Session.objects.filter(started_at__lt=session.started_at, is_live=False)
         .prefetch_related("entries", "entries__toy")
         .all()
     )
