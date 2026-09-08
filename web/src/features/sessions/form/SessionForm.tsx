@@ -12,6 +12,7 @@ import { SortProvider } from '@/providers/SortProvider';
 import { useSortOf } from '@/hooks/useSortOf';
 import { datetimeLocalValue } from '@/lib/dates';
 import { minutesBetween } from '@/lib/duration';
+import { useNow } from '@/hooks/useNow';
 import { filterToys } from '@/features/toys/search';
 import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
 import { useSessions } from '@/features/sessions/useSessions';
@@ -87,7 +88,14 @@ function SessionFormContent({ mode, onDone }: Props) {
     ];
   }, [toys, query, sort, initialToyIds]);
   const selectedCount = selections.size;
-  const sessionSpan = startedAt && endedAt ? minutesBetween(startedAt, endedAt) : null;
+  const liveOpen = loadedSession?.isLive === true && endedAt === '';
+  const now = useNow(60_000, liveOpen);
+  const sessionSpan =
+    startedAt && endedAt
+      ? minutesBetween(startedAt, endedAt)
+      : liveOpen && startedAt
+        ? minutesBetween(startedAt, datetimeLocalValue(now))
+        : null;
   const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
 
   const handlePick = (toyId: number, next: Involvement | null) => {
@@ -116,7 +124,7 @@ function SessionFormContent({ mode, onDone }: Props) {
   };
 
   const isLive = loadedSession?.isLive === true;
-  const liveUpdateMode = isLive && endedAt === '';
+  const liveUpdateMode = liveOpen;
   const liveStartOnly = liveUpdateMode && selectedCount === 0;
   const startDirty = loadedSession == null || startedAt !== datetimeLocalValue(new Date(loadedSession.startedAt));
   const canSave = selectedCount > 0 || (liveStartOnly && startDirty);
@@ -255,6 +263,7 @@ function SessionFormContent({ mode, onDone }: Props) {
                   duration={selections.get(toy.id)?.durationMinutes ?? null}
                   onChange={(next) => handlePick(toy.id, next)}
                   wholeSessionMinutes={wholeSessionMinutes}
+                  wholeSessionIsLive={liveOpen}
                   onAddDuration={(minutes) =>
                     changeDuration(toy.id, (selections.get(toy.id)?.durationMinutes ?? 0) + minutes)
                   }
