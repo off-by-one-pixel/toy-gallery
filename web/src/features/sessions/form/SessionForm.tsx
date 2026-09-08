@@ -48,6 +48,7 @@ function SessionFormContent({ mode, onDone }: Props) {
   const [endedAt, setEndedAt] = useState('');
   const [query, setQuery] = useState('');
   const [selections, setSelections] = useState<Map<number, ToySelection>>(() => new Map());
+  const [initialToyIds, setInitialToyIds] = useState<ReadonlySet<number>>(() => new Set());
 
   const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
 
@@ -70,13 +71,21 @@ function SessionFormContent({ mode, onDone }: Props) {
         ]),
       ),
     );
+    setInitialToyIds(new Set(loadedSession.entries.map((e) => e.toy)));
   }, [loadedSession]);
 
   const isLoading = toysPending || detail.isSessionLoading;
   const errorMessage = toysError ?? detail.sessionError;
 
   const { sort } = useSortOf(SESSION_FORM_TOY_SORT);
-  const filteredToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, query, sort]);
+  const filteredToys = useMemo(() => {
+    const sorted = sortToys(filterToys(toys, query), sort);
+    if (initialToyIds.size === 0) return sorted;
+    return [
+      ...sorted.filter((toy) => initialToyIds.has(toy.id)),
+      ...sorted.filter((toy) => !initialToyIds.has(toy.id)),
+    ];
+  }, [toys, query, sort, initialToyIds]);
   const selectedCount = selections.size;
   const sessionSpan = startedAt && endedAt ? minutesBetween(startedAt, endedAt) : null;
   const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
