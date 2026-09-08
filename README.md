@@ -78,6 +78,8 @@ Your media never leaves your photo library. The app doesn't upload, copy, or sto
 
 To turn it on, set `IMMICH_URL` and `IMMICH_API_KEY` from the table below. Video playback quality follows your Immich transcoding settings.
 
+You can also like individual photos and videos right from a session. Liked media is collected into an Immich album of your choice: create the album in Immich, then set `IMMICH_LIKED_ALBUM_ID` to its id (the UUID in the album's URL). The album is the source of truth — unliking removes the item from it, and anything you add to the album elsewhere shows up as liked here. Without the variable, the heart buttons simply don't appear.
+
 ## Configuration
 
 All optional. Set only what you need.
@@ -97,5 +99,6 @@ All optional. Set only what you need.
 | `IMMICH_URL`       | unset              | Base URL of your Immich server. Set together with `IMMICH_API_KEY` to show session photos and videos.               |
 | `IMMICH_API_KEY`   | unset              | Immich API key used to find session media and create expiring share links. Needs only the `asset.read`, `sharedLink.read`, `sharedLink.create`, and `sharedLink.delete` permissions. |
 | `IMMICH_PUBLIC_URL`| `IMMICH_URL`       | Immich URL as reachable from your browser, if it differs from the server-side one.                                  |
+| `IMMICH_LIKED_ALBUM_ID` | unset         | Id of an existing Immich album that collects liked session media. Liking needs the API key to also have the `album.read` and `albumAsset.create`/`albumAsset.delete` permissions. |
 | `SESSION_MEDIA_WINDOW_MINUTES` | `60`   | How far around a session's start time (both ways) to look for media.                                                |
 | `SESSION_MEDIA_LINK_MINUTES` | `30`     | How long the short-lived Immich share links stay valid.                                                             |
