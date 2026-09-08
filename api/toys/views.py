@@ -290,7 +290,36 @@ class SessionViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=serializers.MediaStatusSerializer)
     @action(detail=False, methods=["get"], url_path="media-status")
     def media_status(self, request):
-        return Response({"configured": media.get_provider().is_configured()})
+        provider = media.get_provider()
+        return Response(
+            {
+                "configured": provider.is_configured(),
+                "likes_configured": provider.likes_configured(),
+            }
+        )
+
+    @extend_schema(
+        request=serializers.MediaLikeRequestSerializer,
+        responses=serializers.MediaLikeResponseSerializer,
+    )
+    @action(detail=False, methods=["post"], url_path="media-like")
+    def media_like(self, request):
+        body = serializers.MediaLikeRequestSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        result = media.get_provider().set_media_liked(
+            body.validated_data["asset_id"], body.validated_data["liked"]
+        )
+        if not result.configured:
+            return Response(
+                {"detail": "Media provider is not configured."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not result.authoritative:
+            return Response(
+                {"detail": "Media provider is unavailable."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        return Response({"liked": result.liked})
 
     @extend_schema(request=None, responses=serializers.RefreshMediaResponseSerializer)
     @action(detail=False, methods=["post"], url_path="refresh-media")

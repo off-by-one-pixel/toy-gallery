@@ -313,6 +313,7 @@ class SessionMediaItemSerializer(serializers.Serializer):
     taken_at = serializers.CharField(allow_null=True)
     thumbnail_url = serializers.CharField()
     full_url = serializers.CharField()
+    liked = serializers.BooleanField()
 
 
 class SessionMediaResponseSerializer(serializers.Serializer):
@@ -323,6 +324,16 @@ class SessionMediaResponseSerializer(serializers.Serializer):
 
 class MediaStatusSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
+    likes_configured = serializers.BooleanField()
+
+
+class MediaLikeRequestSerializer(serializers.Serializer):
+    asset_id = serializers.CharField()
+    liked = serializers.BooleanField()
+
+
+class MediaLikeResponseSerializer(serializers.Serializer):
+    liked = serializers.BooleanField()
 
 
 class AttributeSuggestionSerializer(serializers.Serializer):

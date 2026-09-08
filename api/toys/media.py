@@ -33,6 +33,13 @@ class MediaRefreshResult:
     counts: dict[int, MediaCounts]
 
 
+@dataclass(frozen=True)
+class MediaLikeResult:
+    configured: bool
+    authoritative: bool
+    liked: bool
+
+
 class SessionMediaProvider(ABC):
     @abstractmethod
     def is_configured(self) -> bool: ...
@@ -46,6 +53,12 @@ class SessionMediaProvider(ABC):
     def refresh_all_media(
         self, sessions: list[tuple[int, datetime, datetime | None]]
     ) -> MediaRefreshResult: ...
+
+    @abstractmethod
+    def set_media_liked(self, asset_id: str, liked: bool) -> MediaLikeResult: ...
+
+    @abstractmethod
+    def likes_configured(self) -> bool: ...
 
 
 def get_provider() -> SessionMediaProvider:

@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from .media import (
     MediaCounts,
+    MediaLikeResult,
     MediaRefreshResult,
     SessionMediaProvider,
     SessionMediaResult,
@@ -199,6 +200,24 @@ class ImmichClient:
             if link.description.startswith(prefix):
                 self._delete_link(link.id)
 
+    def album_asset_ids(self, album_id: str) -> set[str]:
+        ids: set[str] = set()
+        page = 1
+        while page and page <= MAX_SEARCH_PAGES:
+            body = {"albumIds": [album_id], "size": SEARCH_PAGE_SIZE, "page": page}
+            data = self._request("POST", "/search/metadata", json=body)
+            chunk = (data or {}).get("assets", {})
+            ids.update(a.get("id") for a in chunk.get("items", []) if a.get("id"))
+            next_page = chunk.get("nextPage")
+            page = int(next_page) if next_page else None
+        return ids
+
+    def add_album_assets(self, album_id: str, asset_ids: list[str]) -> None:
+        self._request("PUT", f"/albums/{album_id}/assets", json={"ids": asset_ids})
+
+    def remove_album_assets(self, album_id: str, asset_ids: list[str]) -> None:
+        self._request("DELETE", f"/albums/{album_id}/assets", json={"ids": asset_ids})
+
     def share_url(self, key: str) -> str:
         return f"{self.public_url}/share/{key}"
 
@@ -257,6 +276,8 @@ UNCONFIGURED_REFRESH = MediaRefreshResult(configured=False, authoritative=False,
 DEGRADED_REFRESH = MediaRefreshResult(configured=True, authoritative=False, counts={})
 UNCONFIGURED_MEDIA = SessionMediaResult(configured=False, authoritative=False, items=[])
 DEGRADED_MEDIA = SessionMediaResult(configured=True, authoritative=False, items=[])
+UNCONFIGURED_LIKE = MediaLikeResult(configured=False, authoritative=False, liked=False)
+DEGRADED_LIKE = MediaLikeResult(configured=True, authoritative=False, liked=False)
 
 
 class ImmichMediaProvider(SessionMediaProvider):
@@ -265,6 +286,9 @@ class ImmichMediaProvider(SessionMediaProvider):
 
     def is_configured(self) -> bool:
         return self.client.is_configured()
+
+    def likes_configured(self) -> bool:
+        return self.client.is_configured() and bool(settings.IMMICH_LIKED_ALBUM_ID)
 
     @_media_operation(UNCONFIGURED_REFRESH, DEGRADED_REFRESH)
     def refresh_all_media(
@@ -315,7 +339,8 @@ class ImmichMediaProvider(SessionMediaProvider):
             self.client.clear_session_links(session_id)
             return SessionMediaResult(configured=True, authoritative=True, items=[])
         key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
-        items = [self._media_item(asset, key) for asset in assets]
+        liked_ids = self._liked_asset_ids()
+        items = [self._media_item(asset, key, liked_ids) for asset in assets]
         return SessionMediaResult(
             configured=True,
             authoritative=True,
@@ -323,7 +348,7 @@ class ImmichMediaProvider(SessionMediaProvider):
             share_url=self.client.share_url(key),
         )
 
-    def _media_item(self, asset: MediaAsset, key: str) -> dict:
+    def _media_item(self, asset: MediaAsset, key: str, liked_ids: set[str]) -> dict:
         thumbnail_url, full_url = self.client.asset_urls(asset, key)
         return {
             "id": asset.id,
@@ -331,4 +356,22 @@ class ImmichMediaProvider(SessionMediaProvider):
             "taken_at": asset.taken_at,
             "thumbnail_url": thumbnail_url,
             "full_url": full_url,
+            "liked": asset.id in liked_ids,
         }
+
+    def _liked_asset_ids(self) -> set[str]:
+        album_id = settings.IMMICH_LIKED_ALBUM_ID
+        if not album_id:
+            return set()
+        return self.client.album_asset_ids(album_id)
+
+    @_media_operation(UNCONFIGURED_LIKE, DEGRADED_LIKE)
+    def set_media_liked(self, asset_id: str, liked: bool) -> MediaLikeResult:
+        album_id = settings.IMMICH_LIKED_ALBUM_ID
+        if not album_id:
+            return UNCONFIGURED_LIKE
+        if liked:
+            self.client.add_album_assets(album_id, [asset_id])
+        else:
+            self.client.remove_album_assets(album_id, [asset_id])
+        return MediaLikeResult(configured=True, authoritative=True, liked=liked)
