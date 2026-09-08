@@ -1,33 +1,14 @@
 // @vitest-environment happy-dom
 
 import { fireEvent, render, screen } from '@testing-library/react';
-import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const lightboxState = vi.hoisted(() => ({
-  current: { openIndex: null as number | null, open: vi.fn(), close: vi.fn() },
+const stripState = vi.hoisted(() => ({
+  current: {} as Record<string, unknown>,
 }));
 
-vi.mock('@/features/sessions/media/useMediaLightboxNav', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/features/sessions/media/useMediaLightboxNav')>()),
-  useMediaLightboxNav: () => lightboxState.current,
-}));
-
-const mediaState = vi.hoisted(() => ({
-  current: { configured: true, media: undefined, isPending: true, isError: false } as {
-    configured: boolean;
-    media: unknown;
-    isPending: boolean;
-    isError: boolean;
-  },
-}));
-
-vi.mock('@/features/sessions/media/useSessionMedia', () => ({
-  useSessionMedia: () => mediaState.current,
-}));
-
-vi.mock('@/features/sessions/media/useMediaStatus', () => ({
-  useMediaStatus: () => ({ configured: true, likesConfigured: true }),
+vi.mock('@/features/sessions/media/useMediaStrip', () => ({
+  useMediaStrip: () => stripState.current,
 }));
 
 vi.mock('@/features/sessions/media/MediaLightbox', async () => {
@@ -39,173 +20,104 @@ vi.mock('@/features/sessions/media/MediaLightbox', async () => {
   };
 });
 
-vi.mock('@/api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/api')>()),
-  setMediaLiked: vi.fn().mockResolvedValue(true),
-}));
-
 import en from '@/i18n/catalogs/en.json';
-import { setMediaLiked } from '@/api';
-import type { SessionMedia } from '@/api/types';
+import type { SessionMediaItem } from '@/api/types';
 import { withAppProviders } from '@/test/render';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-globalThis.ResizeObserver ??= ResizeObserverStub as never;
-window.HTMLMediaElement.prototype.play = () => Promise.resolve();
-window.HTMLMediaElement.prototype.pause = () => {};
-
-const media = (items: SessionMedia['items'], overrides: Partial<Omit<SessionMedia, 'items'>> = {}): SessionMedia => ({
-  configured: true,
-  shareUrl: null,
-  ...overrides,
-  items,
-});
-
-const image = {
+const image: SessionMediaItem = {
   id: 'a1',
   kind: 'image',
   takenAt: '2026-06-01T20:10:00',
   thumbnailUrl: 'https://immich/thumb1',
   fullUrl: 'https://immich/full1',
   liked: false,
-} as const;
+};
 
-const video = {
+const video: SessionMediaItem = {
   id: 'a2',
   kind: 'video',
   takenAt: '2026-06-01T20:20:00',
   thumbnailUrl: 'https://immich/thumb2',
   fullUrl: 'https://immich/full2',
   liked: true,
-} as const;
-
-const setMedia = (value: SessionMedia) => {
-  mediaState.current = { configured: true, media: value, isPending: false, isError: false };
 };
 
-const renderStrip = (expectedCount = 1) =>
-  render(withAppProviders(<SessionMediaStrip sessionId={1} expectedCount={expectedCount} />));
+const state = (overrides: Record<string, unknown> = {}) => ({
+  hidden: false,
+  items: [] as SessionMediaItem[],
+  shareUrl: null,
+  showSkeleton: false,
+  skeletonCount: 0,
+  showError: false,
+  showEmpty: false,
+  likesConfigured: true,
+  toggleLike: vi.fn(),
+  openIndex: null,
+  open: vi.fn(),
+  close: vi.fn(),
+  ...overrides,
+});
+
+const renderStrip = (overrides: Record<string, unknown> = {}) => {
+  const value = state(overrides);
+  stripState.current = value;
+  render(withAppProviders(<SessionMediaStrip sessionId={1} expectedCount={1} />));
+  return value;
+};
 
 describe('SessionMediaStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
-    lightboxState.current = { openIndex: null, open: vi.fn(), close: vi.fn() };
-    mediaState.current = { configured: true, media: undefined, isPending: true, isError: false };
   });
 
-  it('renders nothing when the media provider is not configured', () => {
-    mediaState.current = { configured: false, media: undefined, isPending: true, isError: false };
-    const { container } = renderStrip();
+  it('renders nothing when hidden', () => {
+    stripState.current = state({ hidden: true });
+    const { container } = render(withAppProviders(<SessionMediaStrip sessionId={1} expectedCount={0} />));
     expect(container.innerHTML).toBe('');
   });
 
-  it('renders nothing when the server reports media unconfigured', () => {
-    setMedia(media([], { configured: false }));
-    const { container } = renderStrip();
-    expect(container.innerHTML).toBe('');
+  it('shows skeleton placeholders while loading', () => {
+    renderStrip({ showSkeleton: true, skeletonCount: 3 });
+    expect(document.querySelectorAll('.animate-pulse')).toHaveLength(3);
   });
 
-  it('shows placeholders matching the expected count while loading', () => {
-    const { container } = renderStrip(2);
-    expect(screen.getByText(en.session.media.heading)).toBeTruthy();
-    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(2);
-    expect(screen.queryByText(en.session.media.empty)).toBeNull();
-  });
-
-  it('shows the empty message without placeholders when no media is expected', () => {
-    const { container } = renderStrip(0);
+  it('shows the error and empty messages from state', () => {
+    renderStrip({ showError: true, showEmpty: true });
+    expect(screen.getByText(en.session.media.loadError)).toBeTruthy();
     expect(screen.getByText(en.session.media.empty)).toBeTruthy();
-    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(0);
   });
 
   it('links to the external photo library when a share url is present', () => {
-    setMedia(media([image], { shareUrl: 'https://photos.example/share/K' }));
-    renderStrip();
+    renderStrip({ shareUrl: 'https://photos.example/share/K' });
     const link = screen.getByRole('link', { name: en.session.media.openExternal });
     expect(link.getAttribute('href')).toBe('https://photos.example/share/K');
   });
 
-  it('hides the external link when there is no share url', () => {
-    setMedia(media([image]));
-    renderStrip();
-    expect(screen.getAllByRole('button', { name: en.session.media.openLabel })).toHaveLength(1);
-    expect(screen.queryByRole('link')).toBeNull();
+  it('opens the lightbox for the clicked item', () => {
+    const value = renderStrip({ items: [image, video] });
+    fireEvent.click(screen.getAllByRole('button', { name: en.session.media.openLabel })[1]);
+    expect(value.open).toHaveBeenCalledWith(1);
   });
 
-  it('shows the empty message when the window has no media', () => {
-    setMedia(media([]));
-    renderStrip();
-    expect(screen.getByText(en.session.media.empty)).toBeTruthy();
-    expect(screen.getByText(en.session.media.heading)).toBeTruthy();
-  });
-
-  it('shows the error message when loading fails', () => {
-    mediaState.current = { configured: true, media: undefined, isPending: false, isError: true };
-    renderStrip();
-    expect(screen.getByText(en.session.media.loadError)).toBeTruthy();
-  });
-
-  it('opens the lightbox for the clicked thumbnail', () => {
-    setMedia(media([image, video]));
-    renderStrip();
-    const thumbs = screen.getAllByRole('button', { name: en.session.media.openLabel });
-    expect(thumbs).toHaveLength(2);
-    expect(thumbs[0].querySelector('img')?.getAttribute('src')).toBe(image.thumbnailUrl);
-
-    fireEvent.click(thumbs[1]);
-    expect(lightboxState.current.open).toHaveBeenCalledWith(1);
-  });
-
-  it('shows the lightbox when the nav reports an open index', () => {
-    lightboxState.current.openIndex = 1;
-    setMedia(media([image, video]));
-    renderStrip();
-    expect(screen.getByRole('button', { name: en.session.media.closeLabel })).toBeTruthy();
-  });
-
-  it('keeps the lightbox closed for an out-of-range index', () => {
-    lightboxState.current.openIndex = 5;
-    setMedia(media([image]));
-    renderStrip();
-    expect(screen.getAllByRole('button', { name: en.session.media.openLabel })).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: en.session.media.closeLabel })).toBeNull();
-  });
-
-  it('closes through the lightbox nav', async () => {
-    lightboxState.current.openIndex = 0;
-    setMedia(media([image]));
-    renderStrip();
-    fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
-    await settle(() => expect(lightboxState.current.close).toHaveBeenCalledTimes(1));
-  });
-});
-
-describe('SessionMediaStrip likes', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mediaState.current = { configured: true, media: undefined, isPending: true, isError: false };
-  });
-
-  it('marks liked items and toggles through the API', async () => {
-    setMedia(media([image, video]));
-    renderStrip(2);
-
+  it('marks liked items and toggles through the state handler', () => {
+    const value = renderStrip({ items: [image, video] });
     const likeButton = screen.getByRole('button', { name: en.session.media.likeLabel });
     const unlikeButton = screen.getByRole('button', { name: en.session.media.unlikeLabel });
     expect(likeButton.getAttribute('aria-pressed')).toBe('false');
     expect(unlikeButton.getAttribute('aria-pressed')).toBe('true');
-
     fireEvent.click(likeButton);
-    await settle(() => expect(setMediaLiked).toHaveBeenCalledWith('a1', true));
+    expect(value.toggleLike).toHaveBeenCalledWith(image);
+  });
 
-    fireEvent.click(unlikeButton);
-    await settle(() => expect(setMediaLiked).toHaveBeenCalledWith('a2', false));
+  it('hides the hearts when likes are not configured', () => {
+    renderStrip({ items: [image], likesConfigured: false });
+    expect(screen.queryByRole('button', { name: en.session.media.likeLabel })).toBeNull();
+  });
+
+  it('mounts the lightbox at the open index and closes through state', () => {
+    const value = renderStrip({ items: [image, video], openIndex: 0 });
+    fireEvent.click(screen.getByRole('button', { name: en.session.media.closeLabel }));
+    expect(value.close).toHaveBeenCalled();
   });
 });

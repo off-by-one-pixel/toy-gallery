@@ -19,7 +19,7 @@ import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
-import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
+import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
 import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
 import { recordDisplay, type RecordPeak } from '@/features/sessions/records';

@@ -44,8 +44,8 @@ vi.mock('@/features/sessions/list/useToyUsage', () => ({
   useToyUsage: () => new Map([[1, 9]]),
 }));
 
-vi.mock('@/features/sessions/media/useSessionMedia', () => ({
-  useSessionMedia: () => ({ configured: false, media: undefined, isPending: true, isError: false }),
+vi.mock('@/features/sessions/media/useMediaStrip', () => ({
+  useMediaStatus: () => ({ configured: false, likesConfigured: false }),
 }));
 
 const { setSubtitleMock } = vi.hoisted(() => ({ setSubtitleMock: vi.fn() }));
