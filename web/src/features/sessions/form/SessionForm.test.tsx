@@ -80,6 +80,25 @@ describe('SessionForm live sessions', () => {
     await settle(() => expect(onDone).toHaveBeenCalled());
   });
 
+  it('offers a start-to-now quick set for toy time on a live session', async () => {
+    toysState.current = [makeToy({ id: 1, name: 'Alpha' })];
+    sessionsState.current.session = makeSession({
+      id: 5,
+      startedAt: '2026-06-01T20:00:00',
+      isLive: true,
+      entries: [{ toy: 1, involvement: 'FULLY_INSERTED', durationMinutes: null }],
+    } as never);
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
+
+    const soFar = await settle(() =>
+      screen.getByRole('button', { name: new RegExp(`^${en.session.duration.soFar} ·`) }),
+    );
+    expect(screen.queryByRole('button', { name: new RegExp(`^${en.session.duration.wholeSession} ·`) })).toBeNull();
+
+    fireEvent.click(soFar);
+    await settle(() => expect(screen.getByRole('button', { name: en.session.duration.clearLabel })).toBeTruthy());
+  });
+
   it('keeps save disabled for a finished session without toys', async () => {
     sessionsState.current.session = { ...liveSession('2026-08-22T08:00:00Z'), isLive: false };
     render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));

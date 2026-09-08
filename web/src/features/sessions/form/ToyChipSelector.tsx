@@ -5,7 +5,7 @@ import { Check, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
-import { DURATION_INCREMENTS_MINUTES, formatDuration } from '@/lib/duration';
+import { DURATION_INCREMENTS_MINUTES, formatElapsed } from '@/lib/duration';
 import { Involvement, type Toy } from '@/api/types';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
@@ -14,6 +14,7 @@ type Props = Readonly<{
   state: Involvement | null;
   duration: number | null;
   wholeSessionMinutes: number | null;
+  wholeSessionIsLive?: boolean;
   onChange: (next: Involvement | null) => void;
   onAddDuration: (minutes: number) => void;
   onSetDuration: (minutes: number) => void;
@@ -52,6 +53,7 @@ export default function ToyChipSelector({
   state,
   duration,
   wholeSessionMinutes,
+  wholeSessionIsLive = false,
   onChange,
   onAddDuration,
   onSetDuration,
@@ -83,6 +85,28 @@ export default function ToyChipSelector({
       }
     >
       <ToyThumbnail toy={editorToy} fillColor={toy.color} className="h-35 border-b border-border">
+        {state && duration != null && (
+          <div key={duration} className="pill-flash absolute left-2.5 top-2.5 z-10 rounded-full">
+            <Chip size="sm" className="border border-accent bg-surface shadow-sm">
+              <Chip.Label>
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-sm font-semibold tabular-nums">{formatElapsed(duration, locale)}</span>
+                  <button
+                    type="button"
+                    aria-label={tDuration('clearLabel')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClearDuration();
+                    }}
+                    className="-my-1 -mr-1 grid h-6 w-6 place-items-center rounded-full text-muted transition-colors hover:text-foreground"
+                  >
+                    <X size={11} strokeWidth={2.5} />
+                  </button>
+                </span>
+              </Chip.Label>
+            </Chip>
+          </div>
+        )}
         {state && (
           <div
             className={
@@ -131,26 +155,8 @@ export default function ToyChipSelector({
 
         {state && (
           <div className="mt-2.5">
-            <div className="flex h-5 items-center justify-between">
+            <div className="flex h-5 items-center">
               <span className="text-caption font-medium uppercase tracking-wider text-muted">{tDuration('label')}</span>
-              <span className="flex items-center gap-1">
-                <span className="text-xs font-semibold tabular-nums text-foreground">
-                  {duration != null ? formatDuration(duration, locale) : '—'}
-                </span>
-                {duration != null && (
-                  <button
-                    type="button"
-                    aria-label={tDuration('clearLabel')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClearDuration();
-                    }}
-                    className="-my-2 -mr-1.5 grid h-9 w-9 place-items-center rounded-full text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
-                  >
-                    <X size={14} strokeWidth={2.5} />
-                  </button>
-                )}
-              </span>
             </div>
             {wholeSessionMinutes != null && (
               <button
@@ -161,7 +167,8 @@ export default function ToyChipSelector({
                 }}
                 className="mt-1.5 h-8 w-full rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
               >
-                {tDuration('wholeSession')} · {formatDuration(wholeSessionMinutes, locale)}
+                {tDuration(wholeSessionIsLive ? 'soFar' : 'wholeSession')} ·{' '}
+                {formatElapsed(wholeSessionMinutes, locale)}
               </button>
             )}
             <div className="mt-1.5 grid grid-cols-4 gap-1">
@@ -175,7 +182,7 @@ export default function ToyChipSelector({
                   }}
                   className="h-8 rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
                 >
-                  +{formatDuration(minutes, locale)}
+                  +{formatElapsed(minutes, locale)}
                 </button>
               ))}
             </div>
