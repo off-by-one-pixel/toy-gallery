@@ -76,7 +76,6 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <p className="mt-5 text-center text-meta text-muted">{t('inviteOnly')}</p>
         </div>
       </section>
     </div>
