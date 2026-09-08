@@ -304,6 +304,65 @@ class SessionDurationRecordTests(RecordsTestBase):
         self.assertEqual(rows[0].value, 45.0)
 
 
+class LiveSessionRecordTests(RecordsTestBase):
+    def _live_session(self, toy, duration=30):
+        session = models.Session.objects.create(
+            started_at=_utc("2026-06-01T10:00:00"), is_live=True
+        )
+        models.ToySessionEntry.objects.create(
+            session=session, toy_id=toy, involvement="FULLY_INSERTED", duration_minutes=duration
+        )
+        return session
+
+    def test_live_sessions_are_not_evaluated(self):
+        toy = self._create_toy("A", circumference=220.0, insertable_length=170)
+        session = self._live_session(toy)
+
+        record_session(session)
+
+        self.assertEqual(models.PersonalRecord.objects.count(), 0)
+
+    def test_updating_a_live_session_creates_no_records(self):
+        toy = self._create_toy("A", circumference=220.0, insertable_length=170)
+        session = self._live_session(toy)
+
+        response = self.client.patch(
+            f"/toys/sessions/{session.id}/", {"started_at": "2026-06-01T09:00:00Z"}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["records"], [])
+        self.assertEqual(models.PersonalRecord.objects.count(), 0)
+
+    def test_ending_a_live_session_evaluates_all_records(self):
+        toy = self._create_toy("A", circumference=220.0, insertable_length=170)
+        session = self._live_session(toy, duration=45)
+
+        response = self.client.patch(
+            f"/toys/sessions/{session.id}/", {"ended_at": "2026-06-01T11:30:00Z"}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        keys = {r["key"] for r in response.data["records"]}
+        self.assertEqual(
+            keys, {"pr-width", "pr-depth", "pr-time", "pr-duration", "toy-time", "toy-level"}
+        )
+
+    def test_live_sessions_are_excluded_from_other_baselines(self):
+        toy = self._create_toy("A")
+        self._live_session(toy, duration=90)
+        ended = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+
+        record_session(ended)
+
+        rows = self._rows("toy-time")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].session_id, ended.id)
+        self.assertEqual(rows[0].value, 30.0)
+
+
 class ToyRecordDriverTests(RecordsTestBase):
     def test_recording_a_session_sets_toy_records_with_the_toy_fk(self):
         toy = self._create_toy("A")
@@ -842,6 +901,23 @@ class ResyncTests(RecordsTestBase):
 
         self.assertEqual(len(self._rows("pr-width")), 1)
         self.assertEqual(len(self._rows("pr-depth")), 1)
+
+    def test_resync_skips_live_sessions(self):
+        toy = self._create_toy("A")
+        live = models.Session.objects.create(started_at=_utc("2026-06-01T10:00:00"), is_live=True)
+        models.ToySessionEntry.objects.create(
+            session=live, toy_id=toy, involvement="FULLY_INSERTED", duration_minutes=90
+        )
+        ended = self._make_session(
+            _utc("2026-06-02T10:00:00"), [{"toy": toy, "duration_minutes": 30}]
+        )
+
+        resync_records()
+
+        self.assertEqual(models.PersonalRecord.objects.filter(session=live).count(), 0)
+        time_rows = self._rows("toy-time")
+        self.assertEqual(len(time_rows), 1)
+        self.assertEqual(time_rows[0].session_id, ended.id)
 
     def test_rebuild_endpoint_resyncs_and_reports_the_row_count(self):
         toy_a = self._create_toy("A", circumference=220.0, insertable_length=170)
