@@ -50,7 +50,7 @@ describe('useAppMenuItems', () => {
     vi.clearAllMocks();
     resetNavigation();
     localStorage.clear();
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true, likesConfigured: true });
   });
 
   it('lists the registry items in order with resolved labels', async () => {
@@ -72,7 +72,7 @@ describe('useAppMenuItems', () => {
   });
 
   it('omits refresh-media when media is not configured', async () => {
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false, likesConfigured: false });
     const { result } = renderItems();
     await settle();
     expect(result.current.map((entry) => entry.id)).toEqual(['settings', 'rebuild-records', 'logout']);

@@ -182,7 +182,9 @@
       "openExternal": "Open in photo library",
       "refreshButton": "Refresh media for all sessions",
       "refreshButtonLabel": "Refresh media",
-      "refreshedToast": "Media found for {count, plural, one {# session} other {# sessions}}"
+      "refreshedToast": "Media found for {count, plural, one {# session} other {# sessions}}",
+      "likeLabel": "Like",
+      "unlikeLabel": "Unlike"
     },
     "filters": {
       "buttonLabel": "Filter",

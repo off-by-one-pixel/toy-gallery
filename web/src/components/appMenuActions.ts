@@ -6,7 +6,7 @@ import { rebuildRecords, refreshAllSessionMedia } from '@/api';
 import { queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import type { ActionMenuItem } from '@/components/ActionDropdownMenu';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { useMediaStatus } from '@/features/sessions/media/useMediaStatus';
+import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
 import { useApiMutation } from '@/hooks/useApi';
 
 export type AppMenuContext = Readonly<{

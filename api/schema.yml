@@ -271,6 +271,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/LiveSessionResponse'
           description: ''
+  /toys/sessions/media-like/:
+    post:
+      operationId: toys_sessions_media_like_create
+      tags:
+      - toys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaLikeRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MediaLikeRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaLikeRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaLikeResponse'
+          description: ''
   /toys/sessions/media-status/:
     get:
       operationId: toys_sessions_media_status_retrieve
@@ -787,13 +813,34 @@ components:
           nullable: true
       required:
       - session
+    MediaLikeRequestRequest:
+      type: object
+      properties:
+        asset_id:
+          type: string
+          minLength: 1
+        liked:
+          type: boolean
+      required:
+      - asset_id
+      - liked
+    MediaLikeResponse:
+      type: object
+      properties:
+        liked:
+          type: boolean
+      required:
+      - liked
     MediaStatus:
       type: object
       properties:
         configured:
           type: boolean
+        likes_configured:
+          type: boolean
       required:
       - configured
+      - likes_configured
     PaginatedSessionList:
       type: object
       required:
@@ -1013,10 +1060,13 @@ components:
           type: string
         full_url:
           type: string
+        liked:
+          type: boolean
       required:
       - full_url
       - id
       - kind
+      - liked
       - taken_at
       - thumbnail_url
     SessionMediaKindEnum:
