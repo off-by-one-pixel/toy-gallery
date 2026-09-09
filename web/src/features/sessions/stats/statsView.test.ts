@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { localDateKey } from '@/lib/dates';
+import { localDateKey, MS_PER_DAY } from '@/lib/dates';
 import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 import {
   METRIC_COUNT,
@@ -98,6 +98,23 @@ describe('buildCalendarView', () => {
     const groups = [group(localDateKey(TODAY), { [METRIC_TOTAL_DURATION]: 95 })];
     const view = buildCalendarView(def, groups, ctx(), { today: TODAY, windowDays: 2 });
     expect(view.legendMaxLabel).toBe('1h 35m');
+  });
+
+  it('sums the window into the header total for time-per-day', () => {
+    const def = SESSION_STATS.find((candidate): candidate is CalendarStatDef => candidate.key === 'time-per-day');
+    if (!def) return;
+    const yesterday = localDateKey(new Date(TODAY.getTime() - MS_PER_DAY));
+    const groups = [
+      group(localDateKey(TODAY), { [METRIC_TOTAL_DURATION]: 95 }),
+      group(yesterday, { [METRIC_TOTAL_DURATION]: 30 }),
+    ];
+    const view = buildCalendarView(def, groups, ctx(), { today: TODAY, windowDays: 2 });
+    expect(view.summary).toBe('2h 5m');
+  });
+
+  it('keeps the header total empty without a summary or data', () => {
+    const view = buildCalendarView(lengthDef, [], ctx(), { today: TODAY, windowDays: 2 });
+    expect(view.summary).toBeNull();
   });
 
   it('formats legend labels in the requested unit', () => {

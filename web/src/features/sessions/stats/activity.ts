@@ -59,6 +59,7 @@ export type ActivityCell = Readonly<{
  *  unit labels included. */
 export type DimensionView = Readonly<{
   title: string;
+  summary: string | null;
   cells: ActivityCell[];
   startDate: Date;
   endDate: Date;
