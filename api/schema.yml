@@ -836,11 +836,8 @@ components:
       properties:
         configured:
           type: boolean
-        likes_configured:
-          type: boolean
       required:
       - configured
-      - likes_configured
     PaginatedSessionList:
       type: object
       required:

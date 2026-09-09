@@ -57,9 +57,6 @@ class SessionMediaProvider(ABC):
     @abstractmethod
     def set_media_liked(self, asset_id: str, liked: bool) -> MediaLikeResult: ...
 
-    @abstractmethod
-    def likes_configured(self) -> bool: ...
-
 
 def get_provider() -> SessionMediaProvider:
     from .immich import ImmichMediaProvider

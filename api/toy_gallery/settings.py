@@ -71,7 +71,6 @@ MIGRATION_ARCHIVE_RETAIN = 5
 IMMICH_URL = os.environ.get("IMMICH_URL", "").rstrip("/")
 IMMICH_PUBLIC_URL = os.environ.get("IMMICH_PUBLIC_URL", "").rstrip("/") or IMMICH_URL
 IMMICH_API_KEY = os.environ.get("IMMICH_API_KEY", "")
-IMMICH_LIKED_ALBUM_ID = os.environ.get("IMMICH_LIKED_ALBUM_ID", "")
 SESSION_MEDIA_WINDOW_MINUTES = int(os.environ.get("SESSION_MEDIA_WINDOW_MINUTES", "60"))
 SESSION_MEDIA_LINK_MINUTES = int(os.environ.get("SESSION_MEDIA_LINK_MINUTES", "30"))
 

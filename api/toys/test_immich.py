@@ -141,29 +141,15 @@ class MediaIndicatorTests(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=user)
 
-    @override_settings(
-        IMMICH_URL="https://immich", IMMICH_API_KEY="k", IMMICH_LIKED_ALBUM_ID="alb1"
-    )
-    def test_media_status_reports_likes_configured(self):
-        response = self.client.get("/toys/sessions/media-status/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {"configured": True, "likes_configured": True})
-
-    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k", IMMICH_LIKED_ALBUM_ID="")
-    def test_media_status_reports_likes_unconfigured_without_album(self):
-        response = self.client.get("/toys/sessions/media-status/")
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.data["likes_configured"])
-
     def test_media_status_reports_configured(self):
         response = self.client.get("/toys/sessions/media-status/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {"configured": True, "likes_configured": False})
+        self.assertEqual(response.data, {"configured": True})
 
     def test_media_status_reports_unconfigured(self):
         with override_settings(IMMICH_URL="", IMMICH_API_KEY=""):
             response = self.client.get("/toys/sessions/media-status/")
-        self.assertEqual(response.data, {"configured": False, "likes_configured": False})
+        self.assertEqual(response.data, {"configured": False})
 
     def test_session_serializer_exposes_counts(self):
         flagged = models.Session.objects.create(
@@ -389,51 +375,32 @@ class MediaLikeTests(TestCase):
         response = self._like()
         self.assertEqual(response.status_code, 400)
 
-    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k", IMMICH_LIKED_ALBUM_ID="")
-    def test_missing_album_id_returns_400(self):
-        response = self._like()
-        self.assertEqual(response.status_code, 400)
-
-    @override_settings(
-        IMMICH_URL="https://immich", IMMICH_API_KEY="k", IMMICH_LIKED_ALBUM_ID="alb1"
-    )
-    @mock.patch("toys.immich.ImmichClient.add_album_assets")
-    def test_like_adds_to_the_configured_album(self, add_mock):
+    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
+    @mock.patch("toys.immich.requests.request")
+    def test_like_marks_the_asset_as_favorite(self, request_mock):
+        request_mock.return_value = _response(json_data={})
         response = self._like()
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.data, {"liked": True})
-        add_mock.assert_called_once_with("alb1", ["a1"])
+        self.assertIn("/assets/a1", request_mock.call_args.args[1])
+        self.assertEqual(request_mock.call_args.kwargs["json"], {"isFavorite": True})
 
-    @override_settings(
-        IMMICH_URL="https://immich", IMMICH_API_KEY="k", IMMICH_LIKED_ALBUM_ID="alb1"
-    )
-    @mock.patch("toys.immich.ImmichClient.remove_album_assets")
-    def test_unlike_removes_from_the_configured_album(self, remove_mock):
+    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
+    @mock.patch("toys.immich.requests.request")
+    def test_unlike_clears_the_favorite(self, request_mock):
+        request_mock.return_value = _response(json_data={})
         response = self._like(liked=False)
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.data, {"liked": False})
-        remove_mock.assert_called_once_with("alb1", ["a1"])
+        self.assertEqual(request_mock.call_args.kwargs["json"], {"isFavorite": False})
 
-    @override_settings(
-        IMMICH_URL="https://immich", IMMICH_API_KEY="k", IMMICH_LIKED_ALBUM_ID="alb1"
+    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
+    @mock.patch(
+        "toys.immich.ImmichClient.set_asset_favorite", side_effect=immich.ImmichError("boom")
     )
-    @mock.patch("toys.immich.ImmichClient.add_album_assets", side_effect=immich.ImmichError("boom"))
-    def test_upstream_failure_returns_502(self, add_mock):
+    def test_upstream_failure_returns_502(self, set_mock):
         response = self._like()
         self.assertEqual(response.status_code, 502)
-
-
-class AlbumAssetIdsTests(TestCase):
-    @override_settings(IMMICH_URL="https://immich", IMMICH_API_KEY="k")
-    @mock.patch("toys.immich.requests.request")
-    def test_reads_album_membership_through_metadata_search(self, request_mock):
-        request_mock.return_value = _response(
-            json_data={"assets": {"items": [{"id": "a1"}, {"id": "a2"}], "nextPage": None}}
-        )
-        ids = immich.ImmichClient().album_asset_ids("alb1")
-        self.assertEqual(ids, {"a1", "a2"})
-        body = request_mock.call_args.kwargs["json"]
-        self.assertEqual(body["albumIds"], ["alb1"])
 
 
 class LikedAssetsInMediaTests(TestCase):
@@ -444,18 +411,16 @@ class LikedAssetsInMediaTests(TestCase):
         self.session = models.Session.objects.create(started_at="2026-06-01T20:00:00Z")
 
     @override_settings(
-        IMMICH_URL="https://immich",
-        IMMICH_PUBLIC_URL="https://immich",
-        IMMICH_API_KEY="k",
-        IMMICH_LIKED_ALBUM_ID="alb1",
+        IMMICH_URL="https://immich", IMMICH_PUBLIC_URL="https://immich", IMMICH_API_KEY="k"
     )
-    @mock.patch("toys.immich.ImmichClient.album_asset_ids", return_value={"a2"})
     @mock.patch("toys.immich.ImmichClient.ensure_shared_link", return_value="KEY")
     @mock.patch("toys.immich.ImmichClient.search_assets")
-    def test_items_carry_album_membership_as_liked(self, search_mock, *_mocks):
+    def test_items_carry_the_favorite_flag_as_liked(self, search_mock, *_mocks):
         search_mock.return_value = [
             immich.MediaAsset(id="a1", kind="image", taken_at="2026-06-01T20:10:00", instant=None),
-            immich.MediaAsset(id="a2", kind="image", taken_at="2026-06-01T20:11:00", instant=None),
+            immich.MediaAsset(
+                id="a2", kind="image", taken_at="2026-06-01T20:11:00", instant=None, liked=True
+            ),
         ]
         response = self.client.get(f"/toys/sessions/{self.session.id}/media/")
         self.assertEqual(response.status_code, 200)

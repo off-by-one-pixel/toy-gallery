@@ -324,7 +324,6 @@ class SessionMediaResponseSerializer(serializers.Serializer):
 
 class MediaStatusSerializer(serializers.Serializer):
     configured = serializers.BooleanField()
-    likes_configured = serializers.BooleanField()
 
 
 class MediaLikeRequestSerializer(serializers.Serializer):
