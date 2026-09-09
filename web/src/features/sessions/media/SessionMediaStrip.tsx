@@ -58,17 +58,15 @@ export default function SessionMediaStrip({ sessionId, expectedCount }: Props) {
                     </span>
                   )}
                 </button>
-                {state.likesConfigured && (
-                  <button
-                    type="button"
-                    aria-label={item.liked ? t('unlikeLabel') : t('likeLabel')}
-                    aria-pressed={item.liked}
-                    onClick={() => state.toggleLike(item)}
-                    className="absolute right-0.5 top-0.5 z-10 grid h-6 w-6 place-items-center rounded-full bg-black/35 text-white transition-colors hover:bg-black/55"
-                  >
-                    <Heart size={13} strokeWidth={2.2} className={item.liked ? 'fill-rose-500 text-rose-500' : ''} />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  aria-label={item.liked ? t('unlikeLabel') : t('likeLabel')}
+                  aria-pressed={item.liked}
+                  onClick={() => state.toggleLike(item)}
+                  className="absolute right-0.5 top-0.5 z-10 grid h-6 w-6 place-items-center rounded-full bg-black/35 text-white transition-colors hover:bg-black/55"
+                >
+                  <Heart size={13} strokeWidth={2.2} className={item.liked ? 'fill-rose-500 text-rose-500' : ''} />
+                </button>
               </div>
             ))}
           </div>

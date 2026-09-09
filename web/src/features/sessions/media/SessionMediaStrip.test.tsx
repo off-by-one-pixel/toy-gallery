@@ -51,7 +51,6 @@ const state = (overrides: Record<string, unknown> = {}) => ({
   skeletonCount: 0,
   showError: false,
   showEmpty: false,
-  likesConfigured: true,
   toggleLike: vi.fn(),
   openIndex: null,
   open: vi.fn(),
@@ -108,11 +107,6 @@ describe('SessionMediaStrip', () => {
     expect(unlikeButton.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(likeButton);
     expect(value.toggleLike).toHaveBeenCalledWith(image);
-  });
-
-  it('hides the hearts when likes are not configured', () => {
-    renderStrip({ items: [image], likesConfigured: false });
-    expect(screen.queryByRole('button', { name: en.session.media.likeLabel })).toBeNull();
   });
 
   it('mounts the lightbox at the open index and closes through state', () => {

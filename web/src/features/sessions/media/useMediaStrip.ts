@@ -10,13 +10,13 @@ import { usePrivacy } from '@/features/preferences/PrivacyProvider';
 import { useMediaLightboxNav } from '@/features/sessions/media/useMediaLightboxNav';
 import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 
-export function useMediaStatus(): Readonly<{ configured: boolean; likesConfigured: boolean }> {
+export function useMediaStatus(): Readonly<{ configured: boolean }> {
   const { data } = useApiQuery({
     key: queryKeys.media.status,
     fn: fetchMediaStatus,
     staleTime: 300_000,
   });
-  return { configured: data?.configured === true, likesConfigured: data?.likesConfigured === true };
+  return { configured: data?.configured === true };
 }
 
 export type MediaStripState = Readonly<{
@@ -27,7 +27,6 @@ export type MediaStripState = Readonly<{
   skeletonCount: number;
   showError: boolean;
   showEmpty: boolean;
-  likesConfigured: boolean;
   toggleLike: (item: SessionMediaItem) => void;
   openIndex: number | null;
   open: (index: number) => void;
@@ -37,7 +36,7 @@ export type MediaStripState = Readonly<{
 export function useMediaStrip(sessionId: number, expectedCount: number): MediaStripState {
   const { hideSensitive } = usePrivacy();
   const { openIndex, open, close } = useMediaLightboxNav(sessionId);
-  const { configured, likesConfigured } = useMediaStatus();
+  const { configured } = useMediaStatus();
   const queryClient = useQueryClient();
 
   const {
@@ -84,7 +83,6 @@ export function useMediaStrip(sessionId: number, expectedCount: number): MediaSt
     skeletonCount: expectedCount,
     showError: isError,
     showEmpty: isPending ? expectedCount === 0 : media != null && items.length === 0,
-    likesConfigured,
     toggleLike,
     openIndex: openIndex !== null && openIndex < items.length ? openIndex : null,
     open,
