@@ -55,11 +55,11 @@ describe('useMediaStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(setMediaLiked).mockResolvedValue(true);
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true, likesConfigured: true });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: true });
   });
 
   it('hides and does not fetch media while the provider is not configured', async () => {
-    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false, likesConfigured: false });
+    vi.mocked(fetchMediaStatus).mockResolvedValue({ configured: false });
     const { result } = renderStrip();
     await settle(() => expect(fetchMediaStatus).toHaveBeenCalled());
     expect(result.current.hidden).toBe(true);

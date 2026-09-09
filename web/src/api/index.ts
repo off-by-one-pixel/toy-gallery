@@ -201,13 +201,13 @@ export const fetchLiveSession = async (): Promise<Session | null> => {
   return data.session ? snakeToCamel<Session>(data.session) : null;
 };
 
-export type MediaStatus = Readonly<{ configured: boolean; likesConfigured: boolean }>;
+export type MediaStatus = Readonly<{ configured: boolean }>;
 
 export type MediaRefreshSummary = Readonly<{ configured: boolean; sessionsWithMedia: number }>;
 
 export const fetchMediaStatus = async (): Promise<MediaStatus> => {
   const { data } = await toysSessionsMediaStatusRetrieve();
-  return { configured: data.configured, likesConfigured: data.likes_configured };
+  return { configured: data.configured };
 };
 
 export const refreshAllSessionMedia = async (): Promise<MediaRefreshSummary> => {

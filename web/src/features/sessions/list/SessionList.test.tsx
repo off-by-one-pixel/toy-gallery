@@ -45,7 +45,7 @@ vi.mock('@/features/sessions/list/useToyUsage', () => ({
 }));
 
 vi.mock('@/features/sessions/media/useMediaStrip', () => ({
-  useMediaStatus: () => ({ configured: false, likesConfigured: false }),
+  useMediaStatus: () => ({ configured: false }),
 }));
 
 const { setSubtitleMock } = vi.hoisted(() => ({ setSubtitleMock: vi.fn() }));

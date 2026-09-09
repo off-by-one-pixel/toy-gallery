@@ -290,13 +290,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=serializers.MediaStatusSerializer)
     @action(detail=False, methods=["get"], url_path="media-status")
     def media_status(self, request):
-        provider = media.get_provider()
-        return Response(
-            {
-                "configured": provider.is_configured(),
-                "likes_configured": provider.likes_configured(),
-            }
-        )
+        return Response({"configured": media.get_provider().is_configured()})
 
     @extend_schema(
         request=serializers.MediaLikeRequestSerializer,
