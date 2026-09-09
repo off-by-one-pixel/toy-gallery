@@ -33,6 +33,7 @@ export type CalendarStatDef = Readonly<{
   title: (ctx: StatContext) => string;
   value?: (raw: number | null, ctx: StatContext) => number | null;
   formatLegend?: (value: number, ctx: StatContext) => string;
+  summary?: (total: number, ctx: StatContext) => string;
 }>;
 
 export type FrequencyStatDef = Readonly<{
@@ -127,8 +128,10 @@ export function buildCalendarView(
 
   const hasData = range.max > 0;
   const formatLegend = def.formatLegend ?? ((value: number) => `${formatValue(value, ctx.unit)} ${ctx.unit.id}`);
+  const total = [...byDate.values()].reduce((sum: number, v) => sum + (v ?? 0), 0);
   return {
     title: def.title(ctx),
+    summary: def.summary && hasData ? def.summary(total, ctx) : null,
     cells,
     startDate,
     endDate: today,

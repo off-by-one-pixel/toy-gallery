@@ -50,6 +50,7 @@ export const SESSION_STATS: readonly StatDef[] = [
     gamma: ACTIVITY_PALETTE.durationGamma,
     title: (ctx) => ctx.t('session.timePerDayTitle'),
     formatLegend: (value, ctx) => formatDuration(Math.round(value), ctx.locale),
+    summary: (total, ctx) => formatDuration(Math.round(total), ctx.locale),
   },
   {
     kind: 'frequency',

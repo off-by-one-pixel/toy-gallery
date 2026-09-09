@@ -34,7 +34,10 @@ function StatView({ item }: Readonly<{ item: StatViewItem }>) {
 function DimensionHeatmap({ view }: Readonly<{ view: DimensionView }>) {
   return (
     <div>
-      <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">{view.title}</h3>
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-muted">{view.title}</h3>
+        {view.summary && <span className="text-xs font-semibold tabular-nums text-foreground">{view.summary}</span>}
+      </div>
       <div>
         <CalendarHeatmap
           startDate={view.startDate}
