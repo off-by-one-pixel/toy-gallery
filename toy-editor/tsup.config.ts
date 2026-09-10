@@ -3,8 +3,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
-  sourcemap: true,
+  format: ["esm"],
   clean: true,
   treeshake: true,
   target: "es2022",
