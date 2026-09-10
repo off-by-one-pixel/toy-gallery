@@ -16,7 +16,7 @@ import {
   deriveQueries,
   type FrequencyStatDef,
   type StatContext,
-  startFor,
+  rangeFor,
 } from '@/features/sessions/stats/statsView';
 import type { StatsGroup } from '@/api/types';
 
@@ -228,11 +228,14 @@ describe('deriveQueries', () => {
   });
 });
 
-describe('startFor', () => {
-  it('maps year windows to the activity window start and filter windows to the filter', () => {
-    expect(startFor('year', 'all')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(startFor('filter', 'all')).toBeUndefined();
-    expect(startFor('filter', 'week')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+describe('rangeFor', () => {
+  it('defaults year windows to the activity window and bounds every window by the period', () => {
+    expect(rangeFor('year', { kind: 'all' }).start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(rangeFor('year', { kind: 'all' }).end).toBeUndefined();
+    expect(rangeFor('filter', { kind: 'all' })).toEqual({});
+    const week = { start: '2026-06-08', end: '2026-06-14' };
+    expect(rangeFor('year', { kind: 'week', anchor: '2026-06-08' })).toEqual(week);
+    expect(rangeFor('filter', { kind: 'week', anchor: '2026-06-08' })).toEqual(week);
   });
 });
 

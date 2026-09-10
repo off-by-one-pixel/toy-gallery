@@ -83,7 +83,7 @@ vi.mock('@/features/sessions/stats/SessionStats', () => ({
 import en from '@/i18n/catalogs/en.json';
 import { resetNavigation } from '@/test/navigation';
 import type { Session, Toy } from '@/api/types';
-import { parseSessionFilters, toysById } from '@/features/sessions/session';
+import { currentPeriod, parseSessionFilters, stepPeriod, toysById } from '@/features/sessions/session';
 import { makeSession, makeToy } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionList from '@/features/sessions/list/SessionList';
@@ -109,8 +109,8 @@ const listData = (overrides: Record<string, unknown> = {}) => ({
   loadMore: vi.fn(),
   prependSession: vi.fn(),
   reload: vi.fn(),
-  filter: 'all',
-  setFilter: vi.fn(),
+  period: { kind: 'all' },
+  setPeriod: vi.fn(),
   toys: [] as Toy[],
   sessionFilters: emptyFilters(),
   setSessionFilters: vi.fn(),
@@ -244,10 +244,18 @@ describe('SessionList', () => {
     expect(data.prependSession).toHaveBeenCalledWith(session(9));
   });
 
-  it('switches the filter window', () => {
+  it('switches the period granularity', () => {
     const data = renderList();
     fireEvent.click(screen.getByText(en.session.filter.week));
-    expect(data.setFilter).toHaveBeenCalledWith('week');
+    expect(data.setPeriod).toHaveBeenCalledWith(currentPeriod('week'));
+  });
+
+  it('steps the period backwards through the stepper', () => {
+    const period = currentPeriod('week');
+    const data = renderList({ period });
+    fireEvent.click(screen.getByRole('button', { name: en.session.period.previous }));
+    expect(data.setPeriod).toHaveBeenCalledWith(stepPeriod(period, -1));
+    expect(screen.getByRole('button', { name: en.session.period.next })).toHaveProperty('disabled', true);
   });
 
   it('toggles toy and flag filters through the popover', async () => {

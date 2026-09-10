@@ -2,6 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import {
   activeFilterCount,
+  ALL_PERIOD,
+  canStepForward,
+  currentPeriod,
+  parsePeriodParam,
+  periodKey,
+  periodLabel,
+  periodRange,
+  periodUrlParam,
+  stepPeriod,
   parseSessionFilters,
   parseTimeWindowParam,
   setTimeWindowFilter,
@@ -226,5 +235,66 @@ describe('session flag filter registry', () => {
     expect(sessionFiltersKey(filters)).toBe('1|mr|');
     expect(sessionFilterWireParams(filters)).toEqual({ has_media: true, has_pr: true });
     expect(sessionFilterWireParams(NO_SESSION_FILTERS)).toEqual({});
+  });
+});
+
+describe('periods', () => {
+  const now = new Date(2026, 8, 9);
+
+  it('anchors the current week to monday and the current month to the first', () => {
+    expect(currentPeriod('all', now)).toEqual(ALL_PERIOD);
+    expect(currentPeriod('week', now)).toEqual({ kind: 'week', anchor: '2026-09-07' });
+    expect(currentPeriod('month', now)).toEqual({ kind: 'month', anchor: '2026-09-01' });
+    expect(currentPeriod('week', new Date(2026, 8, 13))).toEqual({ kind: 'week', anchor: '2026-09-07' });
+  });
+
+  it('steps backwards and clamps forward stepping at the current period', () => {
+    const week = currentPeriod('week', now);
+    expect(stepPeriod(week, -1, now)).toEqual({ kind: 'week', anchor: '2026-08-31' });
+    expect(stepPeriod(week, 1, now)).toBe(week);
+    expect(canStepForward(week, now)).toBe(false);
+    expect(canStepForward(stepPeriod(week, -1, now), now)).toBe(true);
+    expect(stepPeriod({ kind: 'month', anchor: '2026-01-01' }, -1, now)).toEqual({
+      kind: 'month',
+      anchor: '2025-12-01',
+    });
+    expect(stepPeriod(ALL_PERIOD, -1, now)).toBe(ALL_PERIOD);
+  });
+
+  it('produces an inclusive last-day range per period', () => {
+    expect(periodRange(ALL_PERIOD)).toEqual({});
+    expect(periodRange({ kind: 'week', anchor: '2026-09-07' })).toEqual({ start: '2026-09-07', end: '2026-09-13' });
+    expect(periodRange({ kind: 'month', anchor: '2025-12-01' })).toEqual({ start: '2025-12-01', end: '2025-12-31' });
+  });
+
+  it('round-trips periods through the url param', () => {
+    expect(periodUrlParam(ALL_PERIOD)).toBeNull();
+    expect(periodUrlParam({ kind: 'week', anchor: '2026-09-07' })).toBe('w2026-09-07');
+    expect(periodUrlParam({ kind: 'month', anchor: '2026-05-01' })).toBe('m2026-05');
+    expect(parsePeriodParam('w2026-09-07', now)).toEqual({ kind: 'week', anchor: '2026-09-07' });
+    expect(parsePeriodParam('m2026-05', now)).toEqual({ kind: 'month', anchor: '2026-05-01' });
+  });
+
+  it('normalizes off-anchor params and clamps future ones to the current period', () => {
+    expect(parsePeriodParam('w2026-09-02', now)).toEqual({ kind: 'week', anchor: '2026-08-31' });
+    expect(parsePeriodParam('w2026-09-14', now)).toEqual({ kind: 'week', anchor: '2026-09-07' });
+    expect(parsePeriodParam('m2026-12', now)).toEqual({ kind: 'month', anchor: '2026-09-01' });
+    expect(parsePeriodParam('garbage', now)).toEqual(ALL_PERIOD);
+    expect(parsePeriodParam(null, now)).toEqual(ALL_PERIOD);
+  });
+
+  it('labels months by name and weeks by day range', () => {
+    expect(periodLabel({ kind: 'month', anchor: '2026-09-01' }, 'en-US', now)).toBe('September');
+    expect(periodLabel({ kind: 'month', anchor: '2025-11-01' }, 'en-US', now)).toBe('November 2025');
+    expect(periodLabel({ kind: 'week', anchor: '2026-09-07' }, 'en-US', now)).toBe('Sep 7 \u2013 13');
+    expect(periodLabel({ kind: 'week', anchor: '2026-09-28' }, 'en-US', now)).toBe('Sep 28 \u2013 Oct 4');
+    expect(periodLabel({ kind: 'week', anchor: '2025-12-29' }, 'en-US', now)).toBe('Dec 29 \u2013 Jan 4, 2025');
+    expect(periodLabel(ALL_PERIOD, 'en-US', now)).toBe('');
+  });
+
+  it('builds distinct cache keys per period', () => {
+    expect(periodKey(ALL_PERIOD)).toBe('all');
+    expect(periodKey({ kind: 'week', anchor: '2026-09-07' })).toBe('week:2026-09-07');
+    expect(periodKey({ kind: 'month', anchor: '2026-09-01' })).toBe('month:2026-09-01');
   });
 });

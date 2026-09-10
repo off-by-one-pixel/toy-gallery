@@ -10,7 +10,7 @@ vi.mock('@/api', async (importOriginal) => ({
 }));
 
 import { fetchSessionStats } from '@/api';
-import { filterStartDate } from '@/features/sessions/session';
+import { type Period } from '@/features/sessions/session';
 import { withAppProviders } from '@/test/render';
 import { useToyUsage } from '@/features/sessions/list/useToyUsage';
 
@@ -26,19 +26,19 @@ describe('useToyUsage', () => {
       { key: '1', values: { count: 9 } },
       { key: '2', values: { count: 3 } },
     ]);
-    const { result } = renderHook(() => useToyUsage('week'), { wrapper });
+    const { result } = renderHook(() => useToyUsage({ kind: 'week', anchor: '2026-06-08' } as Period), { wrapper });
     await settle(() => expect(result.current.get(1)).toBe(9));
     expect(result.current.get(2)).toBe(3);
     expect(vi.mocked(fetchSessionStats).mock.calls[0].slice(0, 3)).toEqual([
       'toy',
       ['count'],
-      { start: filterStartDate('week') },
+      { start: '2026-06-08', end: '2026-06-14' },
     ]);
   });
 
   it('returns an empty map before data arrives', () => {
     vi.mocked(fetchSessionStats).mockImplementation(() => new Promise(() => undefined));
-    const { result } = renderHook(() => useToyUsage('all'), { wrapper });
+    const { result } = renderHook(() => useToyUsage({ kind: 'all' } as Period), { wrapper });
     expect(result.current.size).toBe(0);
   });
 });

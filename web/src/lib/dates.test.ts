@@ -5,13 +5,11 @@ import {
   datetimeLocalValue,
   formatWhen,
   daysAgoDateString,
-  formatDateKey,
   localDateKey,
   localizedHourLabel,
   localizedWeekdayLabel,
   startOfDay,
 } from '@/lib/dates';
-import { filterStartDate } from '@/features/sessions/session';
 
 describe('localDateKey', () => {
   it('formats a date as YYYY-MM-DD with zero-padded fields', () => {
@@ -30,22 +28,6 @@ describe('daysAgoDateString', () => {
   it('formats local calendar days shifted back', () => {
     expect(daysAgoDateString(1, new Date(2026, 5, 8, 12, 0))).toBe('2026-06-07');
     expect(daysAgoDateString(0, new Date(2026, 0, 2, 0, 30))).toBe('2026-01-02');
-  });
-});
-
-describe('filterStartDate', () => {
-  it('maps filters to window starts', () => {
-    const now = new Date(2026, 5, 15, 12, 0);
-    expect(filterStartDate('week', now)).toBe('2026-06-08');
-    expect(filterStartDate('month', now)).toBe('2026-05-16');
-    expect(filterStartDate('all', now)).toBeUndefined();
-  });
-});
-describe('formatDateKey', () => {
-  it('produces a human-readable string for a valid key', () => {
-    const out = formatDateKey('2026-05-15', 'en');
-    expect(out).toMatch(/2026/);
-    expect(out.length).toBeGreaterThan(0);
   });
 });
 

@@ -9,21 +9,21 @@ import { useGirth } from '@/features/preferences/GirthProvider';
 import { useUnit } from '@/features/preferences/UnitProvider';
 import { fetchSessionStats } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
-import { type FilterKey, type SessionFilters, sessionFiltersKey } from '@/features/sessions/session';
+import { type Period, periodKey, type SessionFilters, sessionFiltersKey } from '@/features/sessions/session';
 import { SESSION_STATS } from '@/features/sessions/stats/statsConfig';
 import {
   buildStatViews,
   deriveQueries,
   type StatContext,
   type StatDef,
-  startFor,
+  rangeFor,
 } from '@/features/sessions/stats/statsView';
 import type { StatsGroup } from '@/api/types';
 import ActivityTracker from '@/features/sessions/stats/ActivityTracker';
 
-type Props = Readonly<{ filter: FilterKey; sessionFilters: SessionFilters; defs?: readonly StatDef[] }>;
+type Props = Readonly<{ period: Period; sessionFilters: SessionFilters; defs?: readonly StatDef[] }>;
 
-function SessionStats({ filter, sessionFilters, defs = SESSION_STATS }: Props) {
+function SessionStats({ period, sessionFilters, defs = SESSION_STATS }: Props) {
   const { unit } = useUnit();
   const { girth } = useGirth();
   const locale = useLocale();
@@ -34,10 +34,11 @@ function SessionStats({ filter, sessionFilters, defs = SESSION_STATS }: Props) {
 
   const { results, yearReady, error } = useQueries({
     queries: queries.map((query) => {
-      const start = startFor(query.window, filter);
+      const range = rangeFor(query.window, period);
+      const rangeId = query.window === 'year' && period.kind === 'all' ? 'year' : periodKey(period);
       return {
-        queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, start, sessionFiltersKey(sessionFilters)),
-        queryFn: () => fetchSessionStats(query.groupBy, query.metrics, { start, filters: sessionFilters }),
+        queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, rangeId, sessionFiltersKey(sessionFilters)),
+        queryFn: () => fetchSessionStats(query.groupBy, query.metrics, { ...range, filters: sessionFilters }),
         placeholderData: keepPreviousData,
       };
     }),

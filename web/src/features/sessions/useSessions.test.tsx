@@ -32,7 +32,7 @@ import {
   type SessionPage,
 } from '@/api';
 import type { Session } from '@/api/types';
-import { filterStartDate } from '@/features/sessions/session';
+import { currentPeriod, periodRange } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import { makeSession, makeToy } from '@/test/fixtures';
 import { navState, resetNavigation } from '@/test/navigation';
@@ -97,14 +97,17 @@ describe('useSessions', () => {
     expect(sessionQueries.map((q) => q.page)).toContain(2);
   });
 
-  it('refetches with the filter window start and resets to the first page', async () => {
-    const { result } = renderSessions();
+  it('refetches with the selected period window and resets to the first page', async () => {
+    const { result, rerender } = renderSessions();
     await settle(() => expect(result.current.sessions).toHaveLength(2));
 
-    act(() => result.current.setFilter('week'));
+    const week = currentPeriod('week');
+    act(() => result.current.setPeriod(week));
+    rerender();
     await settle(() => {
       const last = sessionQueries[sessionQueries.length - 1];
-      expect(last.start).toBe(filterStartDate('week'));
+      expect(last.start).toBe(periodRange(week).start);
+      expect(last.end).toBe(periodRange(week).end);
       expect(last.page).toBe(1);
     });
   });

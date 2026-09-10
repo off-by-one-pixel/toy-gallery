@@ -1,34 +1,110 @@
-import { daysAgoDateString } from '@/lib/dates';
 import { Involvement, type Session, type SessionEntry, type Toy } from '@/api/types';
-
-// -------- Filter --------
 
 export type FilterKey = 'all' | 'week' | 'month';
 
-export type FilterOption = Readonly<{
-  key: FilterKey;
-  /** Number of days the filter accepts. `null` means no upper bound. */
-  days: number | null;
-  /** Whether this filter has a short-label variant for narrow viewports. */
-  hasShortLabel: boolean;
-}>;
+export const FILTERS: readonly FilterKey[] = ['all', 'month', 'week'];
 
-export const FILTERS: readonly FilterOption[] = [
-  { key: 'all', days: null, hasShortLabel: false },
-  { key: 'week', days: 7, hasShortLabel: true },
-  { key: 'month', days: 30, hasShortLabel: true },
-];
-
-/** Filter sessions by recency. Pass `now` for deterministic tests. */
 export function mergeSessions(existing: readonly Session[], incoming: readonly Session[]): Session[] {
   const seen = new Set(existing.map((s) => s.id));
   return [...existing, ...incoming.filter((s) => !seen.has(s.id))];
 }
 
-export function filterStartDate(filter: FilterKey, now: Date = new Date()): string | undefined {
-  const days = FILTERS.find((f) => f.key === filter)?.days;
-  if (days == null) return undefined;
-  return daysAgoDateString(days, now);
+export type Period = Readonly<{ kind: 'all' }> | Readonly<{ kind: 'week' | 'month'; anchor: string }>;
+
+export const ALL_PERIOD: Period = { kind: 'all' };
+
+const dateKey = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const parseAnchor = (key: string): Date => {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d ?? 1);
+};
+
+const startOfWeek = (d: Date): Date => {
+  const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+  return monday;
+};
+
+const anchorFor = (kind: 'week' | 'month', d: Date): string =>
+  kind === 'week' ? dateKey(startOfWeek(d)) : dateKey(new Date(d.getFullYear(), d.getMonth(), 1));
+
+export function currentPeriod(kind: FilterKey, now: Date = new Date()): Period {
+  if (kind === 'all') return ALL_PERIOD;
+  return { kind, anchor: anchorFor(kind, now) };
+}
+
+const shiftAnchor = (period: Period, step: number): Date => {
+  if (period.kind === 'all') return new Date();
+  const anchor = parseAnchor(period.anchor);
+  if (period.kind === 'week') anchor.setDate(anchor.getDate() + step * 7);
+  else anchor.setMonth(anchor.getMonth() + step);
+  return anchor;
+};
+
+export function canStepForward(period: Period, now: Date = new Date()): boolean {
+  if (period.kind === 'all') return false;
+  return period.anchor < anchorFor(period.kind, now);
+}
+
+export function stepPeriod(period: Period, step: 1 | -1, now: Date = new Date()): Period {
+  if (period.kind === 'all') return period;
+  if (step === 1 && !canStepForward(period, now)) return period;
+  return { kind: period.kind, anchor: dateKey(shiftAnchor(period, step)) };
+}
+
+const lastDay = (period: Period): Date => {
+  const day = shiftAnchor(period, 1);
+  day.setDate(day.getDate() - 1);
+  return day;
+};
+
+export function periodRange(period: Period): Readonly<{ start?: string; end?: string }> {
+  if (period.kind === 'all') return {};
+  return { start: period.anchor, end: dateKey(lastDay(period)) };
+}
+
+export function periodUrlParam(period: Period): string | null {
+  if (period.kind === 'all') return null;
+  return period.kind === 'week' ? `w${period.anchor}` : `m${period.anchor.slice(0, 7)}`;
+}
+
+export function parsePeriodParam(raw: string | null, now: Date = new Date()): Period {
+  if (raw && /^w\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const period: Period = { kind: 'week', anchor: anchorFor('week', parseAnchor(raw.slice(1))) };
+    return canStepForward(period, now) || period.anchor === anchorFor('week', now)
+      ? period
+      : currentPeriod('week', now);
+  }
+  if (raw && /^m\d{4}-\d{2}$/.test(raw)) {
+    const period: Period = { kind: 'month', anchor: `${raw.slice(1)}-01` };
+    return canStepForward(period, now) || period.anchor === anchorFor('month', now)
+      ? period
+      : currentPeriod('month', now);
+  }
+  return ALL_PERIOD;
+}
+
+export function periodLabel(period: Period, locale: string, now: Date = new Date()): string {
+  if (period.kind === 'all') return '';
+  const start = parseAnchor(period.anchor);
+  const sameYear = start.getFullYear() === now.getFullYear();
+  if (period.kind === 'month') {
+    return start.toLocaleDateString(locale, { month: 'long', year: sameYear ? undefined : 'numeric' });
+  }
+  const end = lastDay(period);
+  const day = (d: Date, withMonth: boolean) =>
+    d.toLocaleDateString(locale, { day: 'numeric', month: withMonth ? 'short' : undefined });
+  const range =
+    start.getMonth() === end.getMonth()
+      ? `${day(start, true)} \u2013 ${end.getDate()}`
+      : `${day(start, true)} \u2013 ${day(end, true)}`;
+  return sameYear ? range : `${range}, ${start.getFullYear()}`;
+}
+
+export function periodKey(period: Period): string {
+  return period.kind === 'all' ? 'all' : `${period.kind}:${period.anchor}`;
 }
 
 // -------- Entry sort --------

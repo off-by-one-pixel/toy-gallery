@@ -8,7 +8,7 @@ import { filterToys } from '@/features/toys/search';
 import {
   activeFilterCount,
   activeFlagKeys,
-  type FilterKey,
+  type Period,
   NO_SESSION_FILTERS,
   SESSION_FLAG_FILTERS,
   SESSION_FLAG_KEYS,
@@ -63,7 +63,7 @@ export type SessionFiltersState = Readonly<{
 export type SessionFiltersArgs = Readonly<{
   toys: readonly Toy[];
   toysById: ReadonlyMap<number, Toy>;
-  filter: FilterKey;
+  period: Period;
   filters: SessionFilters;
   onChange: (next: SessionFilters) => void;
 }>;
@@ -71,11 +71,11 @@ export type SessionFiltersArgs = Readonly<{
 export function useSessionFilters({
   toys,
   toysById,
-  filter,
+  period,
   filters,
   onChange,
 }: SessionFiltersArgs): SessionFiltersState {
-  const usageByToy = useToyUsage(filter);
+  const usageByToy = useToyUsage(period);
   const [query, setQuery] = useState('');
   const [toysExpanded, setToysExpanded] = useState(false);
 

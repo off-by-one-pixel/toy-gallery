@@ -25,7 +25,7 @@ const renderFilters = (filters: SessionFilters = NO_SESSION_FILTERS, onChange = 
   onChange,
   ...renderHook(
     ({ current }: { current: SessionFilters }) =>
-      useSessionFilters({ toys, toysById, filter: 'all', filters: current, onChange }),
+      useSessionFilters({ toys, toysById, period: { kind: 'all' }, filters: current, onChange }),
     { initialProps: { current: filters } },
   ),
 });
@@ -60,7 +60,7 @@ describe('useSessionFilters', () => {
       useSessionFilters({
         toys: many,
         toysById: new Map(many.map((toy) => [toy.id, toy])),
-        filter: 'all',
+        period: { kind: 'all' },
         filters: NO_SESSION_FILTERS,
         onChange: vi.fn(),
       }),
@@ -80,7 +80,7 @@ describe('useSessionFilters', () => {
       useSessionFilters({
         toys: many,
         toysById: new Map(many.map((toy) => [toy.id, toy])),
-        filter: 'all',
+        period: { kind: 'all' },
         filters: NO_SESSION_FILTERS,
         onChange: vi.fn(),
       }),

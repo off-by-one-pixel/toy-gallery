@@ -129,11 +129,8 @@
     "filter": {
       "ariaLabel": "Date range",
       "all": "All",
-      "allShort": "All",
-      "week": "This week",
-      "weekShort": "Week",
-      "month": "This month",
-      "monthShort": "Month"
+      "month": "Month",
+      "week": "Week"
     },
     "peakLength": "max len",
     "peakGirth": {
@@ -213,6 +210,11 @@
       "session": "Session duration PR",
       "time": "Time PR",
       "level": "Level PR"
+    },
+    "period": {
+      "previous": "Previous period",
+      "next": "Next period",
+      "current": "Jump to current"
     }
   },
   "template": {

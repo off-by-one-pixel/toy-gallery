@@ -15,7 +15,7 @@ export default function EmptyState({ anyExist, filterLabel }: Props) {
     return (
       <div className="rounded-xl border border-dashed border-border-secondary bg-surface py-12 text-center text-sm text-muted">
         {`${t('emptyFilteredPrefix')} `}
-        <span className="font-medium text-foreground">{filterLabel.toLowerCase()}</span>
+        <span className="font-medium text-foreground">{filterLabel}</span>
         {'.'}
       </div>
     );
