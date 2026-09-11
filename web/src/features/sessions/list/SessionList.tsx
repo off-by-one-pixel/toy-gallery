@@ -3,14 +3,14 @@
 import { useCallback, useRef, useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
 
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import { SortProvider } from '@/providers/SortProvider';
 import { useUnit } from '@/features/preferences/UnitProvider';
-import { activeFilterCount, FILTERS, type FilterKey } from '@/features/sessions/session';
+import { activeFilterCount, currentPeriod, FILTERS, type FilterKey, periodLabel } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session } from '@/api/types';
 import { ActionFabs, type ActionDef } from '@/components/ActionButtons';
@@ -21,6 +21,7 @@ import { useSetTopBarSubtitle } from '@/components/TopBarProvider';
 import EmptyState from '@/features/sessions/list/EmptyState';
 import SessionFilterChips from '@/features/sessions/list/filter/SessionFilterChips';
 import SessionFilterControl from '@/features/sessions/list/filter/SessionFilterControl';
+import PeriodStepper from '@/features/sessions/list/PeriodStepper';
 import SessionRow from '@/features/sessions/list/SessionRow';
 import SessionSortControl from '@/features/sessions/list/SessionSortControl';
 import SessionStats from '@/features/sessions/stats/SessionStats';
@@ -41,11 +42,12 @@ function SessionListContent() {
   const filterArgs = {
     toys: data.toys,
     toysById: data.toysById,
-    filter: data.filter,
+    period: data.period,
     filters: data.sessionFilters,
     onChange: data.setSessionFilters,
   };
   const t = useTranslations('session');
+  const locale = useLocale();
   const common = useTranslations('common');
   useSetTopBarSubtitle(data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -102,12 +104,9 @@ function SessionListContent() {
 
   useInfiniteScroll(sentinelRef, data.loadMore, data.hasMore && !data.isLoading && !data.isLoadingMore);
 
-  const filterLongLabel = (key: FilterKey) => t(`filter.${key}`);
-  const filterShortLabel = (key: FilterKey) => t(`filter.${key}Short`);
-  const filterItems: SwitcherItem<FilterKey>[] = FILTERS.map((f) => ({
-    key: f.key,
-    label: filterLongLabel(f.key),
-    shortLabel: f.hasShortLabel ? filterShortLabel(f.key) : undefined,
+  const filterItems: SwitcherItem<FilterKey>[] = FILTERS.map((key) => ({
+    key,
+    label: t(`filter.${key}`),
   }));
 
   return (
@@ -117,8 +116,8 @@ function SessionListContent() {
           <>
             <Switcher
               items={filterItems}
-              value={data.filter}
-              onChange={data.setFilter}
+              value={data.period.kind}
+              onChange={(kind) => data.setPeriod(currentPeriod(kind))}
               ariaLabel={t('filter.ariaLabel')}
             />
             <SessionFilterControl {...filterArgs} />
@@ -127,6 +126,11 @@ function SessionListContent() {
         menuExtrasEnd={<SessionSortControl />}
         actions={newActions}
       >
+        {data.period.kind !== 'all' && (
+          <div className="flex justify-center pb-2.5">
+            <PeriodStepper period={data.period} onChange={data.setPeriod} />
+          </div>
+        )}
         <SessionFilterChips {...filterArgs} />
       </PageToolbar>
 
@@ -141,7 +145,7 @@ function SessionListContent() {
             <Alert.Description>{data.error}</Alert.Description>
           </Alert>
         )}
-        <SessionStats filter={data.filter} sessionFilters={data.sessionFilters} />
+        <SessionStats period={data.period} sessionFilters={data.sessionFilters} />
         <div className="mt-4 mb-3 hidden justify-end sm:flex">
           <SessionSortControl />
         </div>
@@ -172,8 +176,8 @@ function SessionListContent() {
     if (data.sessions.length === 0) {
       return (
         <EmptyState
-          anyExist={data.sessionCount > 0 || data.filter !== 'all' || activeFilterCount(data.sessionFilters) > 0}
-          filterLabel={filterLongLabel(data.filter)}
+          anyExist={data.sessionCount > 0 || data.period.kind !== 'all' || activeFilterCount(data.sessionFilters) > 0}
+          filterLabel={data.period.kind === 'all' ? t('filter.all').toLowerCase() : periodLabel(data.period, locale)}
         />
       );
     }

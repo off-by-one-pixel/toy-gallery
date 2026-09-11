@@ -8,7 +8,7 @@ import {
 } from '@/features/sessions/stats/activity';
 import { daysAgoDateString, formatDateKey, localDateKey, MS_PER_DAY, startOfDay } from '@/lib/dates';
 import type { Girth } from '@/features/preferences/girth';
-import { type FilterKey, filterStartDate } from '@/features/sessions/session';
+import { type Period, periodRange } from '@/features/sessions/session';
 import type { StatsGroup } from '@/api/types';
 import { formatValue, type Unit } from '@/features/preferences/units';
 
@@ -77,8 +77,10 @@ export const deriveQueries = (defs: readonly StatDef[]): StatQuery[] => {
   return [...queries.values()];
 };
 
-export const startFor = (window: StatWindow, filter: FilterKey): string | undefined =>
-  window === 'year' ? daysAgoDateString(ACTIVITY_WINDOW_DAYS - 1) : filterStartDate(filter);
+export const rangeFor = (window: StatWindow, period: Period): Readonly<{ start?: string; end?: string }> => {
+  if (period.kind !== 'all') return periodRange(period);
+  return window === 'year' ? { start: daysAgoDateString(ACTIVITY_WINDOW_DAYS - 1) } : {};
+};
 
 export type FrequencyView = Readonly<{
   title: string;

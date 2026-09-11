@@ -240,7 +240,7 @@ class SessionViewSet(viewsets.ModelViewSet):
             window &= Q(started_at__lt=upper)
         window &= _session_filter_q(params)
         if window:
-            queryset = queryset.filter(window | Q(is_live=True))
+            queryset = queryset.filter(window)
         ordering = params.get("ordering")
         if ordering:
             queryset = _apply_session_ordering(queryset, ordering)

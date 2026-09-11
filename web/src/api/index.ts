@@ -149,6 +149,7 @@ export const fetchSessions = async (
   opts: Readonly<{
     page?: number;
     start?: string;
+    end?: string;
     ordering?: string;
     filters?: SessionFilters;
   }> = {},
@@ -157,6 +158,7 @@ export const fetchSessions = async (
   const { data } = await toysSessionsList({
     page: opts.page,
     start: opts.start,
+    end: opts.end,
     ordering: opts.ordering as ToysSessionsListParams['ordering'],
     toys: filters.toyIds.length ? [...filters.toyIds] : undefined,
     ...sessionFilterWireParams(filters),

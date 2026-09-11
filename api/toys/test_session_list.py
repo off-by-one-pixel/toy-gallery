@@ -80,21 +80,27 @@ class SessionListTests(SessionListTestBase):
             [s["id"] for s in circumference["results"]], [s_small.id, s_big.id, s_used.id]
         )
 
-    def test_live_session_is_first_regardless_of_window_and_ordering(self):
+    def test_live_session_is_first_regardless_of_ordering(self):
         toy = self._create_toy("L2")
-        recent = self._make_session(
-            _utc("2026-06-08T10:00:00"), [{"toy": toy, "duration_minutes": 10}]
-        )
+        self._make_session(_utc("2026-06-08T10:00:00"), [{"toy": toy, "duration_minutes": 10}])
         live = models.Session.objects.create(started_at=_utc("2026-01-01T10:00:00"), is_live=True)
-
-        windowed = self._get(start="2026-06-08")
-        self.assertEqual([s["id"] for s in windowed["results"]], [live.id, recent.id])
 
         by_duration = self._get(ordering="duration")
         self.assertEqual(by_duration["results"][0]["id"], live.id)
 
         by_date_asc = self._get(ordering="started_at")
         self.assertEqual(by_date_asc["results"][0]["id"], live.id)
+
+    def test_live_session_outside_the_window_is_hidden(self):
+        toy = self._create_toy("L3")
+        recent = self._make_session(_utc("2026-06-08T10:00:00"), [{"toy": toy}])
+        live = models.Session.objects.create(started_at=_utc("2026-01-01T10:00:00"), is_live=True)
+
+        windowed = self._get(start="2026-06-08")
+        self.assertEqual([s["id"] for s in windowed["results"]], [recent.id])
+
+        matching = self._get(start="2026-01-01", end="2026-01-01")
+        self.assertEqual([s["id"] for s in matching["results"]], [live.id])
 
     def test_invalid_parameters_return_400(self):
         cases = [
@@ -167,12 +173,12 @@ class SessionFilterTests(SessionListTestBase):
         data = self._get(has_media="true")
         self.assertEqual([s["id"] for s in data["results"]], [with_video.id, with_photos.id])
 
-    def test_live_session_bypasses_filters(self):
+    def test_live_session_not_matching_the_filters_is_hidden(self):
         toy_a = self._create_toy("A")
-        live = models.Session.objects.create(started_at=_utc("2026-06-05T08:00:00"), is_live=True)
+        models.Session.objects.create(started_at=_utc("2026-06-05T08:00:00"), is_live=True)
         self._make_session(_utc("2026-06-01T08:00:00"), [{"toy": toy_a}])
         data = self._get(toys=[toy_a], has_media="true")
-        self.assertEqual(data["results"][0]["id"], live.id)
+        self.assertEqual(data["results"], [])
 
     def test_accepts_comma_separated_toys_wire_format(self):
         toy_a = self._create_toy("A")
@@ -236,15 +242,15 @@ class SessionHasPrFilterTests(SessionListTestBase):
         self.assertEqual(data["count"], 1)
         self.assertEqual(data["results"][0]["id"], holder_a.id)
 
-    def test_live_session_is_listed_despite_the_filter(self):
+    def test_live_session_without_a_record_is_hidden_by_the_pr_filter(self):
         toy = self._create_toy("A")
         holder = self._make_session(_utc("2026-06-01T10:00:00"), [{"toy": toy}])
         self._give_record(holder)
-        live = models.Session.objects.create(started_at=_utc("2026-06-03T10:00:00"), is_live=True)
+        models.Session.objects.create(started_at=_utc("2026-06-03T10:00:00"), is_live=True)
 
         data = self._get(has_pr="true")
 
-        self.assertEqual({r["id"] for r in data["results"]}, {holder.id, live.id})
+        self.assertEqual({r["id"] for r in data["results"]}, {holder.id})
 
 
 class SessionTimeWindowFilterTests(SessionListTestBase):
@@ -302,9 +308,9 @@ class SessionTimeWindowFilterTests(SessionListTestBase):
         self.assertEqual(self.client.get(URL, {"time_from": 22, "time_to": 0}).status_code, 400)
         self.assertEqual(self.client.get(URL, {"time_from": 24, "time_to": 2}).status_code, 400)
 
-    def test_live_session_is_listed_despite_the_time_window(self):
+    def test_live_session_outside_the_time_window_is_hidden(self):
         live = self._session("2026-06-01T08:00:00")
         live.is_live = True
         live.save(update_fields=["is_live"])
-        data = self._get(time_from=18, time_to=20)
-        self.assertEqual([s["id"] for s in data["results"]], [live.id])
+        self.assertEqual(self._get(time_from=18, time_to=20)["results"], [])
+        self.assertEqual([s["id"] for s in self._get(time_from=7, time_to=9)["results"]], [live.id])

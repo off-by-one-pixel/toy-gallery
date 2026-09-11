@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
@@ -21,8 +21,10 @@ import {
 import { invalidateSessionData, queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import { sessionListKey, sessionListQuery } from '@/features/sessions/list/sessionQuery';
 import {
-  type FilterKey,
   mergeSessions,
+  parsePeriodParam,
+  type Period,
+  periodUrlParam,
   parseSessionFilters,
   type SessionFilters,
   sessionFiltersUrlParams,
@@ -65,8 +67,8 @@ export type SessionsData = Readonly<{
   prependSession: (session: Session) => void;
   reload: () => void;
 
-  filter: FilterKey;
-  setFilter: (next: FilterKey) => void;
+  period: Period;
+  setPeriod: (next: Period) => void;
 
   toys: Toy[];
   sessionFilters: SessionFilters;
@@ -91,7 +93,10 @@ export function useSessions(options: SessionsOptions = {}): SessionsData {
     initialData: options.sessionInitial,
   });
   const { searchParams, updateParams } = useNavigation();
-  const [filter, setFilter] = useState<FilterKey>('all');
+  const period = useMemo<Period>(() => parsePeriodParam(searchParams.get('period')), [searchParams]);
+  const setPeriod = (next: Period) => {
+    updateParams({ period: periodUrlParam(next) }, { replace: true });
+  };
   const sessionFilters = useMemo<SessionFilters>(
     () => parseSessionFilters((name) => searchParams.get(name)),
     [searchParams],
@@ -103,7 +108,7 @@ export function useSessions(options: SessionsOptions = {}): SessionsData {
   const queryClient = useQueryClient();
   const reportError = useReportError();
 
-  const queryState = { filter, sort, filters: sessionFilters };
+  const queryState = { period, sort, filters: sessionFilters };
   const listKey = sessionListKey(queryState);
 
   const list = useApiInfiniteQuery({
@@ -177,8 +182,8 @@ export function useSessions(options: SessionsOptions = {}): SessionsData {
     loadMore,
     prependSession,
     reload,
-    filter,
-    setFilter,
+    period,
+    setPeriod,
     toys: loadedToys,
     sessionFilters,
     setSessionFilters,
