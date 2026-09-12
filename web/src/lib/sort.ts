@@ -4,6 +4,7 @@ export type Sort<C extends string = string> = Readonly<{ column: C; direction: S
 export interface SortConfig<C extends string = string> {
   readonly storageKey: string;
   readonly columns: readonly C[];
+  readonly extraColumnPrefix?: string;
 }
 
 export const cycleSort = <C extends string>(current: Sort<C> | null, column: C): Sort<C> =>
@@ -12,7 +13,9 @@ export const cycleSort = <C extends string>(current: Sort<C> | null, column: C):
     : { column, direction: current?.direction ?? 'asc' };
 
 export const isColumnOf = <C extends string>(config: SortConfig<C>, value: unknown): value is C =>
-  typeof value === 'string' && (config.columns as readonly string[]).includes(value);
+  typeof value === 'string' &&
+  ((config.columns as readonly string[]).includes(value) ||
+    (config.extraColumnPrefix !== undefined && value.startsWith(config.extraColumnPrefix)));
 
 export const narrowSort = <C extends string>(config: SortConfig<C>, sort: Sort | null): Sort<C> | null =>
   sort && isColumnOf(config, sort.column) ? (sort as Sort<C>) : null;

@@ -1,5 +1,5 @@
 import type { Shape, Toy } from '@/api/types';
-import { TOY_PROPERTIES } from '@/features/toys/properties';
+import { TOY_PROPERTIES, type ToyPropertyKey } from '@/features/toys/properties';
 import type { ToySort, ToySortColumn } from '@/features/toys/toySort';
 import { diameterToCircumference, formatForInput, parseToMm, toMm, Unit } from '@/features/preferences/units';
 import { displayGirth, storedGirth, type Girth } from '@/features/preferences/girth';
@@ -73,7 +73,7 @@ const GHOST_SORT_VALUES: Partial<Record<ToySortColumn, (ghost: GhostToy) => numb
 
 const itemSortValue = (item: GalleryItem, sort: ToySort): number | string =>
   item.kind === 'toy'
-    ? TOY_PROPERTIES[sort.column].sortValue(item.toy)
+    ? TOY_PROPERTIES[sort.column as ToyPropertyKey].sortValue(item.toy)
     : (GHOST_SORT_VALUES[sort.column] as (ghost: GhostToy) => number)(item.ghost);
 
 export const mergeGalleryItems = (

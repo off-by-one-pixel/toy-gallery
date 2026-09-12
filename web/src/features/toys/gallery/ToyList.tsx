@@ -12,17 +12,14 @@ import { useUnit } from '@/features/preferences/UnitProvider';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { displayGirth } from '@/features/preferences/girth';
 import { cycleSort, type Sort } from '@/lib/sort';
-import { TOY_PROPERTIES, type ToyPropertyContext } from '@/features/toys/properties';
-import { TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
+import { TOY_PROPERTIES, type ToyPropertyContext, type ToyPropertyKey } from '@/features/toys/properties';
+import { attrKeyOf, TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
 import ToyDetails from '@/features/toys/gallery/ToyDetails';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 
-// Action buttons are absolute-positioned over the row on hover — they don't
-// claim a grid column, so the brand/name column has more room and the grid
-// layout doesn't change between hover states.
 const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr]';
 const EXTRA_GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr_1fr]';
 
@@ -32,8 +29,16 @@ type ExtraColumn = Readonly<{
   valueFor: (toy: Toy) => string | null;
 }>;
 
-// SortHeader buttons need `inline-flex` at the breakpoint so the chevron
-// stays inline; plain cells can use `block`.
+const extraColumnFor = (column: SortColumn, ctx: ToyPropertyContext): ExtraColumn | null => {
+  const attrKey = attrKeyOf(column);
+  if (attrKey !== null) {
+    return { column, label: attrKey, valueFor: (toy) => toy.customAttributes?.[attrKey] ?? null };
+  }
+  const property = TOY_PROPERTIES[column as ToyPropertyKey];
+  if (property.onCard) return null;
+  return { column, label: property.label(ctx), valueFor: (toy) => property.format(toy, ctx) };
+};
+
 const HIDDEN_SIZE = 'hidden min-[640px]:block';
 
 type Props = Readonly<{
@@ -54,20 +59,12 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy,
   const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
 
   const propertyCtx: ToyPropertyContext = { t: t as unknown as ToyPropertyContext['t'], girth, unit, locale };
-  const activeProperty = sort ? TOY_PROPERTIES[sort.column] : null;
-  const extra: ExtraColumn | null =
-    sort && activeProperty && !activeProperty.onCard
-      ? {
-          column: sort.column,
-          label: activeProperty.label(propertyCtx),
-          valueFor: (toy) => activeProperty.format(toy, propertyCtx),
-        }
-      : null;
+  const extra: ExtraColumn | null = sort ? extraColumnFor(sort.column, propertyCtx) : null;
 
   return (
     <>
       <div className="mb-3 hidden items-center justify-end sm:flex">
-        <ToySortControl />
+        <ToySortControl toys={toys} />
       </div>
       <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
         <ListHeader sort={sort} onSort={handleSort} extra={extra} />

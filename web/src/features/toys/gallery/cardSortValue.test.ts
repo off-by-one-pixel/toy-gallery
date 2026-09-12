@@ -30,6 +30,15 @@ describe('cardSortValue', () => {
     expect(cardSortValue(null, toy(), ctx)).toBeNull();
   });
 
+  it('labels an attribute sort with the raw key and value', () => {
+    const withAttr = toy({ customAttributes: { material: 'wood' } });
+    expect(cardSortValue({ column: 'attr:material', direction: 'asc' }, withAttr, ctx)).toEqual({
+      label: 'material',
+      value: 'wood',
+    });
+    expect(cardSortValue({ column: 'attr:material', direction: 'asc' }, toy(), ctx)).toBeNull();
+  });
+
   it('returns nothing for properties already shown on the card', () => {
     for (const column of ['name', 'insertable', 'circumference'] as const) {
       expect(cardSortValue({ column, direction: 'asc' }, toy(), ctx)).toBeNull();
