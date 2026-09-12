@@ -152,7 +152,7 @@ const ToyGallery = () => {
           </div>
         }
         menuExtrasStart={<ViewToggle view={view} onChange={setView} />}
-        menuExtrasEnd={<ToySortControl />}
+        menuExtrasEnd={<ToySortControl toys={toys} />}
         inlineExtras={<ViewToggle view={view} onChange={setView} />}
         actions={newActions}
         growStart

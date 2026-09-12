@@ -99,11 +99,9 @@ describe('mergeGalleryItems', () => {
     expect(items.map(itemLabel)).toEqual(['Small', 'ghost-2', 'Mid', 'Big', 'ghost-1']);
   });
 
-  it('appends ghosts for unmapped sort columns and null sort', () => {
+  it('appends ghosts for unmapped sort columns', () => {
     const byName = mergeGalleryItems(toys, [ghost(1, 140, 165)], { column: 'name', direction: 'asc' });
     expect(itemLabel(byName.at(-1)!)).toBe('ghost-1');
-    const unsorted = mergeGalleryItems(toys, [ghost(1, 140, 165)], null);
-    expect(itemLabel(unsorted.at(-1)!)).toBe('ghost-1');
   });
 });
 

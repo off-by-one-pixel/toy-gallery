@@ -310,7 +310,6 @@
   "sort": {
     "ascending": "Sort ascending",
     "descending": "Sort descending",
-    "label": "Sort",
     "column": {
       "name": "Brand / Model",
       "popularity": "Times used",

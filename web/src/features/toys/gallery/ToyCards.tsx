@@ -63,7 +63,7 @@ export default function ToyCards({
           </button>
         )}
         <div className="hidden sm:block">
-          <ToySortControl />
+          <ToySortControl toys={toys} />
         </div>
       </div>
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
