@@ -9,8 +9,8 @@ describe('sessionOrderingParam', () => {
     expect(sessionOrderingParam({ column: 'duration', direction: 'desc' })).toBe('-duration');
   });
 
-  it('returns undefined for no sort', () => {
-    expect(sessionOrderingParam(null)).toBeUndefined();
+  it('defaults to newest first', () => {
+    expect(sessionOrderingParam(SESSION_SORT.defaultSort)).toBe('-started_at');
   });
 });
 

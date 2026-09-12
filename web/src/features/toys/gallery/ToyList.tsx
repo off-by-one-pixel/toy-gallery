@@ -90,7 +90,7 @@ function ListHeader({
   sort,
   onSort,
   extra,
-}: Readonly<{ sort: Sort | null; onSort: (column: SortColumn) => void; extra: ExtraColumn | null }>) {
+}: Readonly<{ sort: Sort; onSort: (column: SortColumn) => void; extra: ExtraColumn | null }>) {
   const t = useTranslations('toy.columns');
   const common = useTranslations('common');
   const { girth } = useGirth();
@@ -137,12 +137,12 @@ function SortHeader({
   label: string;
   shortLabel?: string;
   column: SortColumn;
-  sort: Sort | null;
+  sort: Sort;
   onSort: (column: SortColumn) => void;
   align?: 'right';
   className?: string;
 }>) {
-  const active = sort?.column === column;
+  const active = sort.column === column;
   const dir = active ? sort.direction : null;
   return (
     <button

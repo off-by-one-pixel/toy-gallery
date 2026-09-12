@@ -16,11 +16,6 @@ import { isColumnOf } from '@/lib/sort';
 const toy = (id: number, overrides: Partial<Toy> = {}): Toy => makeToy({ id, name: `t${id}`, ...overrides });
 
 describe('sortToys', () => {
-  it('returns input untouched without a sort', () => {
-    const toys = [toy(2), toy(1)];
-    expect(sortToys(toys, null)).toBe(toys);
-  });
-
   it('sorts by name ascending and descending', () => {
     const toys = [toy(1, { name: 'zeta' }), toy(2, { name: 'alpha' })];
     expect(sortToys(toys, { column: 'name', direction: 'asc' }).map((t) => t.id)).toEqual([2, 1]);

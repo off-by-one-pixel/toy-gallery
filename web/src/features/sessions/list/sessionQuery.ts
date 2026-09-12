@@ -10,7 +10,7 @@ import { sessionOrderingParam, type SessionSort } from '@/features/sessions/sess
 
 export type SessionListQueryState = Readonly<{
   period: Period;
-  sort: SessionSort | null;
+  sort: SessionSort;
   filters: SessionFilters;
 }>;
 

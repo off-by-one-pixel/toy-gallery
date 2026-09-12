@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import { sessionListKey, sessionListQuery, type SessionListQueryState } from '@/features/sessions/list/sessionQuery';
 import { ALL_PERIOD, parseSessionFilters, periodRange, type Period } from '@/features/sessions/session';
-import { sessionOrderingParam } from '@/features/sessions/sessionSort';
+import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
 
 const filters = (params: Record<string, string> = {}) => parseSessionFilters((name) => params[name] ?? null);
 
 const state = (overrides: Partial<SessionListQueryState> = {}): SessionListQueryState => ({
   period: ALL_PERIOD,
-  sort: null,
+  sort: SESSION_SORT.defaultSort,
   filters: filters(),
   ...overrides,
 });
@@ -26,10 +26,10 @@ describe('sessionListQuery', () => {
     });
   });
 
-  it('leaves window and ordering unset for the default state', () => {
+  it('leaves the window unset and orders newest first for the default state', () => {
     const query = sessionListQuery(state(), 1);
     expect(query.start).toBeUndefined();
-    expect(query.ordering).toBeUndefined();
+    expect(query.ordering).toBe('-started_at');
   });
 });
 

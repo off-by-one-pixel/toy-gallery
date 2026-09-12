@@ -4,8 +4,7 @@ import { attrKeyOf, type ToySort } from '@/features/toys/toySort';
 
 export type CardSortValue = Readonly<{ label: string; value: string }>;
 
-export function cardSortValue(sort: ToySort | null, toy: Toy, ctx: ToyPropertyContext): CardSortValue | null {
-  if (!sort) return null;
+export function cardSortValue(sort: ToySort, toy: Toy, ctx: ToyPropertyContext): CardSortValue | null {
   const attrKey = attrKeyOf(sort.column);
   if (attrKey !== null) {
     const value = toy.customAttributes?.[attrKey];

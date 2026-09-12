@@ -15,6 +15,7 @@ export const attrKeyOf = (column: string): string | null =>
 export const TOY_SORT: SortConfig<ToySortColumn> = {
   storageKey: 'gallery.sort',
   columns: Object.keys(TOY_PROPERTIES) as ToySortColumn[],
+  defaultSort: { column: 'name', direction: 'asc' },
   extraColumnPrefix: ATTR_COLUMN_PREFIX,
 };
 
@@ -59,8 +60,7 @@ const sortByAttribute = (toys: Toy[], key: string, mul: number): Toy[] => {
   });
 };
 
-export const sortToys = (toys: Toy[], sort: ToySort | null): Toy[] => {
-  if (!sort) return toys;
+export const sortToys = (toys: Toy[], sort: ToySort): Toy[] => {
   const mul = sort.direction === 'asc' ? 1 : -1;
   const attrKey = attrKeyOf(sort.column);
   if (attrKey !== null) return sortByAttribute(toys, attrKey, mul);

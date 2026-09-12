@@ -7,9 +7,9 @@ export type SessionSort = Sort<SessionSortColumn>;
 export const SESSION_SORT: SortConfig<SessionSortColumn> = {
   storageKey: 'sessions.sort',
   columns: SESSION_SORT_COLUMNS,
+  defaultSort: { column: 'started_at', direction: 'desc' },
 };
 
-export function sessionOrderingParam(sort: SessionSort | null): string | undefined {
-  if (!sort) return undefined;
+export function sessionOrderingParam(sort: SessionSort): string {
   return sort.direction === 'desc' ? `-${sort.column}` : sort.column;
 }

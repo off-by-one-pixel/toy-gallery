@@ -79,10 +79,10 @@ const itemSortValue = (item: GalleryItem, sort: ToySort): number | string =>
 export const mergeGalleryItems = (
   sortedToys: readonly Toy[],
   ghosts: readonly GhostToy[],
-  sort: ToySort | null,
+  sort: ToySort,
 ): GalleryItem[] => {
   const items: GalleryItem[] = sortedToys.map((toy) => ({ kind: 'toy', toy }));
-  if (!sort || !GHOST_SORT_VALUES[sort.column]) {
+  if (!GHOST_SORT_VALUES[sort.column]) {
     return [...items, ...ghosts.map((ghost): GalleryItem => ({ kind: 'ghost', ghost }))];
   }
   const mul = sort.direction === 'asc' ? 1 : -1;
