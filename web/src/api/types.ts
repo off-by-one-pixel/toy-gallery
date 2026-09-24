@@ -3,6 +3,7 @@ import { InvolvementEnum, SectionShapeEnum } from '@/api/generated/schemas';
 export type { AttributeSuggestion } from '@/api/generated/schemas';
 import type {
   PersonalRecord as ApiPersonalRecord,
+  ToyRecord as ApiToyRecord,
   Session as ApiSession,
   SessionMediaItem as ApiSessionMediaItem,
   SessionMediaResponse as ApiSessionMediaResponse,
@@ -35,6 +36,7 @@ export const SectionShape = SectionShapeEnum;
 export type Section = SnakeToCamel<ApiSection>;
 export type Shape = SnakeToCamel<ApiShape>;
 export type Toy = SnakeToCamel<ApiToy>;
+export type ToyRecord = SnakeToCamel<ApiToyRecord>;
 export type ToyPayload = SnakeToCamel<ApiToyRequest>;
 
 export type Involvement = InvolvementEnum;

@@ -19,7 +19,15 @@ from .records.session import resync_records
 
 
 class ToyViewSet(viewsets.ModelViewSet):
-    queryset = models.Toy.objects.prefetch_related("shape__sections").annotate(
+    queryset = models.Toy.objects.prefetch_related(
+        "shape__sections",
+        Prefetch(
+            "records",
+            queryset=models.PersonalRecord.objects.order_by(
+                "key", "-session__started_at", "-id"
+            ).select_related("session"),
+        ),
+    ).annotate(
         usage_count=Count("toysessionentry"),
         total_duration_minutes=Coalesce(Sum("toysessionentry__duration_minutes"), 0),
         max_duration_minutes=Coalesce(Max("toysessionentry__duration_minutes"), 0),

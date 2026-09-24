@@ -60,8 +60,6 @@
     },
     "timesUsed": "Times used",
     "timeUsed": "Plugged time",
-    "timeUsedLabel": "Plugged time (max)",
-    "timeUsedWithMax": "{total} ({max})",
     "topCap": "{shape} cap",
     "viewSessions": "View sessions",
     "ghost": {

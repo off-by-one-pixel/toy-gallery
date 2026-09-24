@@ -56,8 +56,17 @@ class ToyShapeSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ToyRecordSerializer(serializers.ModelSerializer):
+    achieved_at = serializers.DateTimeField(source="session.started_at", read_only=True)
+
+    class Meta:
+        model = models.PersonalRecord
+        fields = ["key", "value", "achieved_at"]
+
+
 class ToySerializer(serializers.ModelSerializer):
     shape = ToyShapeSerializer()
+    records = ToyRecordSerializer(many=True, read_only=True)
     custom_attributes = serializers.DictField(
         child=serializers.CharField(allow_blank=True),
         required=False,
@@ -87,6 +96,7 @@ class ToySerializer(serializers.ModelSerializer):
             "usage_count",
             "total_duration_minutes",
             "max_duration_minutes",
+            "records",
         ]
 
     def create(self, validated_data):
@@ -118,6 +128,7 @@ class PersonalRecordSerializer(serializers.ModelSerializer):
     toy = serializers.IntegerField(
         source="toy_entry.toy_id", read_only=True, allow_null=True, default=None
     )
+    achieved_at = serializers.DateTimeField(source="session.started_at", read_only=True)
 
     class Meta:
         model = models.PersonalRecord

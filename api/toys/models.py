@@ -118,4 +118,3 @@ class PersonalRecord(models.Model):
     toy = models.ForeignKey(Toy, on_delete=models.CASCADE, related_name="records", null=True)
     toy_entry = models.ForeignKey(ToySessionEntry, on_delete=models.CASCADE, null=True)
     value = models.FloatField()
-    achieved_at = models.DateTimeField(auto_now_add=True)

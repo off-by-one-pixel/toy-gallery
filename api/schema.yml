@@ -1244,15 +1244,51 @@ components:
         max_duration_minutes:
           type: integer
           readOnly: true
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToyRecord'
+          readOnly: true
       required:
       - brand
       - id
       - max_duration_minutes
       - name
+      - records
       - shape
       - size
       - total_duration_minutes
       - usage_count
+    ToyRecord:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 16
+        value:
+          type: number
+          format: double
+        achieved_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - achieved_at
+      - key
+      - value
+    ToyRecordRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 1
+          maxLength: 16
+        value:
+          type: number
+          format: double
+      required:
+      - key
+      - value
     ToyRequest:
       type: object
       properties:

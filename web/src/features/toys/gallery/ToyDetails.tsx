@@ -9,6 +9,7 @@ import { useUnit } from '@/features/preferences/UnitProvider';
 import { formatValue } from '@/features/preferences/units';
 import type { Toy } from '@/api/types';
 import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
+import ToyRecordList from '@/features/toys/gallery/ToyRecordList';
 
 export default function ToyDetails({ toy, active }: Readonly<{ toy: Toy; active: boolean }>) {
   const { unit } = useUnit();
@@ -18,6 +19,7 @@ export default function ToyDetails({ toy, active }: Readonly<{ toy: Toy; active:
 
   return (
     <>
+      <ToyRecordList records={toy.records} />
       <AttrRow
         label={common('totalLength')}
         value={toy.totalLength == null ? '—' : `${formatValue(toy.totalLength, unit)} ${unit.id}`}
@@ -28,13 +30,7 @@ export default function ToyDetails({ toy, active }: Readonly<{ toy: Toy; active:
         href={(toy.usageCount ?? 0) > 0 ? `/sessions?toys=${toy.id}` : undefined}
         hrefLabel={tToy('viewSessions')}
       />
-      <AttrRow
-        label={tToy('timeUsedLabel')}
-        value={tToy('timeUsedWithMax', {
-          total: formatDuration(toy.totalDurationMinutes ?? 0, locale),
-          max: formatDuration(toy.maxDurationMinutes ?? 0, locale),
-        })}
-      />
+      <AttrRow label={tToy('timeUsed')} value={formatDuration(toy.totalDurationMinutes ?? 0, locale)} />
       <AttributesPanel toy={toy} active={active} />
     </>
   );
