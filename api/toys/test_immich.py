@@ -77,6 +77,7 @@ class ImmichClientTests(TestCase):
         body = request_mock.call_args.kwargs["json"]
         self.assertIn("takenAfter", body)
         self.assertIn("takenBefore", body)
+        self.assertEqual(body["visibility"], "timeline")
 
     @mock.patch("toys.immich.requests.request")
     def test_ensure_shared_link_reuses_matching_unexpired_link(self, request_mock):
