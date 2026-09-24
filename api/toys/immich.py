@@ -131,6 +131,7 @@ class ImmichClient:
             body = {
                 "takenAfter": start.isoformat(),
                 "takenBefore": end.isoformat(),
+                "visibility": "timeline",
                 "size": SEARCH_PAGE_SIZE,
                 "page": page,
             }
