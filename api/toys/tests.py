@@ -1062,6 +1062,8 @@ class SessionTests(TestCase):
         response = self.client.delete(f"/toys/toys/{self.toy_a}/")
         self.assertEqual(response.status_code, 204)
         self.assertFalse(models.Toy.objects.filter(pk=self.toy_a).exists())
+        self.assertEqual(models.Shape.objects.count(), 1)
+        self.assertTrue(models.Shape.objects.filter(toy=self.toy_b).exists())
 
 
 class ChangePasswordTests(TestCase):
