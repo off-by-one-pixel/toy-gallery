@@ -48,7 +48,8 @@ class ToyViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         toy = self.get_object()
         try:
-            toy.delete()
+            with transaction.atomic():
+                toy.shape.delete()
         except ProtectedError:
             count = models.ToySessionEntry.objects.filter(toy=toy).count()
             return Response(
@@ -116,10 +117,6 @@ class ToyViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             sessions_deleted = models.Session.objects.count()
             toys_deleted = models.Toy.objects.count()
-            # Sessions first — ToySessionEntry.toy is on_delete=PROTECT.
-            # Then toys, then shapes — Toy.shape is a OneToOneField that
-            # cascades from Shape to Toy, not the other way, so shapes are
-            # left orphaned by toy deletion and we wipe them explicitly.
             models.Session.objects.all().delete()
             models.Toy.objects.all().delete()
             models.Shape.objects.all().delete()

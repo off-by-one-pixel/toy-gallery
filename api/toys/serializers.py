@@ -41,10 +41,6 @@ class ToyShapeSerializer(serializers.ModelSerializer):
         return shape
 
     def update(self, instance, validated_data):
-        # Sections are wholesale-replaced rather than reconciled by id —
-        # the editor doesn't track stable section ids on the client (the
-        # SVG editor uses its own row keys), and a full replace lets the
-        # client send the rendered list verbatim.
         sections_data = validated_data.pop("sections", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -99,11 +95,12 @@ class ToySerializer(serializers.ModelSerializer):
             "records",
         ]
 
+    @transaction.atomic
     def create(self, validated_data):
         shape_data = validated_data.pop("shape")
         shape_serializer = self.fields["shape"]
         shape_serializer.initial_data = shape_data
-        shape_serializer.is_valid()
+        shape_serializer.is_valid(raise_exception=True)
         shape = shape_serializer.save()
         return models.Toy.objects.create(**validated_data, shape=shape)
 
