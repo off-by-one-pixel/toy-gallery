@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+
 import { Alert } from '@heroui/react';
 
 import AppModal from '@/components/AppModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useTranslations } from 'next-intl';
 import { ToyEditor } from 'toy-editor';
 import type { StyleOption } from 'toy-editor';
@@ -11,6 +14,7 @@ import type { WizardDialog, WizardStage, WizardStep } from '@/features/toys/edit
 import { templateJsonToEditor } from '@/features/toys/converters/templateJson';
 import type { ToyEditMode } from '@/features/toys/editor/toyEditForm';
 import { useUnit } from '@/features/preferences/UnitProvider';
+import { useBeforeUnloadWarning } from '@/hooks/useBeforeUnloadWarning';
 import NewToyTemplateStep from '@/features/toys/template/NewToyTemplateStep';
 import Header from '@/features/toys/editor/Header';
 import IdentificationGroup from '@/features/toys/editor/IdentificationGroup';
@@ -44,9 +48,15 @@ export default function ToyEditModal({
   const t = useTranslations('toy');
   const { unit } = useUnit();
   const form = useToyEditForm(mode);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
 
-  // Edit / copy modes always sit in the editor stage — the picker
-  // doesn't apply, so we ignore an inbound `stage` other than 'editor'.
+  useBeforeUnloadWarning(form.dirty);
+
+  const requestClose = () => {
+    if (form.dirty) setConfirmingDiscard(true);
+    else onClose();
+  };
+
   const effectiveStage: WizardStage = mode.kind === 'new' ? stage : 'editor';
 
   const goToEditor = (next: typeof NEW_TOY_MM) => {
@@ -69,13 +79,18 @@ export default function ToyEditModal({
 
   return (
     <>
-      <AppModal label={t('editorDialogLabel')} onClose={onClose} size="full" className="flex flex-col overflow-hidden">
+      <AppModal
+        label={t('editorDialogLabel')}
+        onClose={requestClose}
+        size="full"
+        className="flex flex-col overflow-hidden"
+      >
         <Header
           mode={mode}
           effectiveStage={effectiveStage}
           saving={form.saving}
-          onBack={effectiveStage === 'template' && step === 'size' ? () => onStepChange('template') : onClose}
-          onClose={onClose}
+          onBack={effectiveStage === 'template' && step === 'size' ? () => onStepChange('template') : requestClose}
+          onClose={requestClose}
           onSave={() => form.save(mode, onSaved)}
           onOpenExport={() => onDialogChange('export')}
           onOpenImport={() => onDialogChange('import')}
@@ -112,6 +127,16 @@ export default function ToyEditModal({
         onClose={() => onDialogChange(null)}
         onImport={handleJsonImport}
       />
+      {confirmingDiscard && (
+        <ConfirmModal
+          onClose={() => setConfirmingDiscard(false)}
+          title={t('discardConfirmTitle')}
+          body={t('discardConfirmBody')}
+          confirmLabel={t('discard')}
+          confirmVariant="danger"
+          onConfirm={onClose}
+        />
+      )}
     </>
   );
 }

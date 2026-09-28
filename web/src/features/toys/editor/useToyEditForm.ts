@@ -6,11 +6,12 @@ import type { Toy as EditorToy } from 'toy-editor';
 
 import { useToys } from '@/features/toys/useToys';
 import type { EditorState } from '@/features/toys/converters/editor';
-import { editorToTemplateJson } from '@/features/toys/converters/editor';
+import { editorStateFromToy, editorToTemplateJson, isEditorStateEqual } from '@/features/toys/converters/editor';
 import { toyToEditor } from '@/features/toys/converters/toy';
 import {
   identityReducer,
   initialIdentity,
+  isIdentityEqual,
   type ToyEditMode,
   type ToyIdentity,
   validateAndBuildPayload,
@@ -21,8 +22,6 @@ export type ToyEditForm = Readonly<{
   identity: ToyIdentity;
   setIdentityField: (field: keyof ToyIdentity, value: string) => void;
 
-  /** Seed for the editor on first hydrate: the source toy on edit/copy
-   *  or the last template / blank / imported toy the user picked. */
   initialToy: EditorToy | null;
   setPickedInitial: (next: EditorToy) => void;
 
@@ -30,21 +29,17 @@ export type ToyEditForm = Readonly<{
   hydrate: (toy: EditorToy) => void;
   exportText: string;
 
+  dirty: boolean;
   saving: boolean;
   error: string | null;
-  /** Validates + assembles + POSTs / PATCHes. Calls `onSuccess`
-   *  exactly once on a 2xx response. */
   save: (mode: ToyEditMode, onSuccess: () => void) => Promise<void>;
 }>;
 
-/** Facade for the toy edit modal. Wraps the identity reducer, the
- *  toy-editor store reads, the picked-initial transient state, and
- *  the save flow into one object so children take a single `form`
- *  prop instead of a dozen. */
 export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
   const source = mode.kind === 'new' ? null : mode.toy;
 
-  const [identity, dispatch] = useReducer(identityReducer, source, (s) => initialIdentity(s, DEFAULT_FILL));
+  const seedIdentity = useMemo(() => initialIdentity(source, DEFAULT_FILL), [source]);
+  const [identity, dispatch] = useReducer(identityReducer, seedIdentity);
   const setIdentityField = useCallback((field: keyof ToyIdentity, value: string) => dispatch({ field, value }), []);
 
   const sourceInitial = useMemo<EditorToy | null>(() => (source ? toyToEditor(source) : null), [source]);
@@ -70,11 +65,13 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
 
   const exportText = useMemo(
     () => editorToTemplateJson(editorState),
-    // editorState is rebuilt every render; the underlying store fields
-    // are the real dependency set.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm],
   );
+
+  const identityDirty = !isIdentityEqual(identity, seedIdentity);
+  const editorDirty = initialToy !== null && !isEditorStateEqual(editorState, editorStateFromToy(initialToy));
+  const dirty = identityDirty || editorDirty;
 
   const [error, setError] = useState<string | null>(null);
   const { saveToy, isSavingToy } = useToys({ saveErrorSink: setError });
@@ -105,6 +102,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
     editorState,
     hydrate,
     exportText,
+    dirty,
     saving: isSavingToy,
     error,
     save,

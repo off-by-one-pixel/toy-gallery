@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import type { ToySection } from 'toy-editor';
 
 import { SectionShape } from '@/api/types';
-import { editorToPayload, editorToTemplateJson, type EditorState } from '@/features/toys/converters/editor';
+import {
+  editorStateFromToy,
+  editorToPayload,
+  editorToTemplateJson,
+  isEditorStateEqual,
+  type EditorState,
+} from '@/features/toys/converters/editor';
 
 const sections: ToySection[] = [
   { id: 10, diameter: 40, height: 50, topCurveAngle: 90 },
@@ -129,5 +135,70 @@ describe('editorToTemplateJson', () => {
     );
     expect(parsed.shape.sections[0].color).toBe('#ff8800');
     expect(parsed.shape.sections[1]).not.toHaveProperty('color');
+  });
+});
+
+describe('editorStateFromToy', () => {
+  it('defaults missing reference dimensions to null', () => {
+    const state = editorStateFromToy({ sections, topShape: SectionShape.EGG, bottomShape: SectionShape.FLAT });
+    expect(state).toEqual({
+      sections,
+      topShape: SectionShape.EGG,
+      bottomShape: SectionShape.FLAT,
+      insertableLengthMm: null,
+      knownTotalMm: null,
+      knownSizeMm: null,
+    });
+  });
+});
+
+describe('isEditorStateEqual', () => {
+  it('is true for a hydrated copy of the same toy', () => {
+    const hydrated: EditorState = {
+      ...baseState,
+      sections: sections.map((s) => ({ ...s, touched: { diameter: true, height: true } })),
+    };
+    expect(isEditorStateEqual(baseState, hydrated)).toBe(true);
+  });
+
+  it('treats an explicit default curve angle as unchanged', () => {
+    const explicit: EditorState = {
+      ...baseState,
+      sections: [sections[0], { ...sections[1], topCurveAngle: 0, bottomCurveAngle: 180 }],
+    };
+    expect(isEditorStateEqual(baseState, explicit)).toBe(true);
+  });
+
+  it('ignores section ids', () => {
+    const renumbered: EditorState = { ...baseState, sections: sections.map((s, i) => ({ ...s, id: i })) };
+    expect(isEditorStateEqual(baseState, renumbered)).toBe(true);
+  });
+
+  it('is false when a section dimension changes', () => {
+    const grown: EditorState = { ...baseState, sections: [sections[0], { ...sections[1], height: 71 }] };
+    expect(isEditorStateEqual(baseState, grown)).toBe(false);
+  });
+
+  it('is false when a section is added or removed', () => {
+    expect(isEditorStateEqual(baseState, { ...baseState, sections: [sections[0]] })).toBe(false);
+  });
+
+  it('is false when sections are reordered', () => {
+    expect(isEditorStateEqual(baseState, { ...baseState, sections: [...sections].reverse() })).toBe(false);
+  });
+
+  it('is false when a cap shape or reference dimension changes', () => {
+    expect(isEditorStateEqual(baseState, { ...baseState, topShape: SectionShape.CONE })).toBe(false);
+    expect(isEditorStateEqual(baseState, { ...baseState, bottomShape: SectionShape.EGG })).toBe(false);
+    expect(isEditorStateEqual(baseState, { ...baseState, insertableLengthMm: null })).toBe(false);
+    expect(isEditorStateEqual(baseState, { ...baseState, knownTotalMm: 131 })).toBe(false);
+    expect(isEditorStateEqual(baseState, { ...baseState, knownSizeMm: 41 })).toBe(false);
+  });
+
+  it('is false when a section color or curve angle changes', () => {
+    const recolored: EditorState = { ...baseState, sections: [{ ...sections[0], color: '#ff0000' }, sections[1]] };
+    const curved: EditorState = { ...baseState, sections: [{ ...sections[0], topCurveAngle: 45 }, sections[1]] };
+    expect(isEditorStateEqual(baseState, recolored)).toBe(false);
+    expect(isEditorStateEqual(baseState, curved)).toBe(false);
   });
 });
