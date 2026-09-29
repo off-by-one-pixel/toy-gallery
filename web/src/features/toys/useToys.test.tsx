@@ -80,13 +80,19 @@ describe('useToys', () => {
     expect(saveErrorSink).toHaveBeenCalledWith('boom');
   });
 
-  it('updates a toy with partial changes', async () => {
-    vi.mocked(patchToy).mockResolvedValue(makeToy({ id: 3 }));
-    const { result } = renderToys();
+  it('updates a toy with partial changes and writes it back into the cached list', async () => {
+    const patched = makeToy({ id: 3, customAttributes: { a: '1' } });
+    vi.mocked(fetchToys).mockResolvedValue([makeToy({ id: 1 }), makeToy({ id: 3 })]);
+    vi.mocked(patchToy).mockResolvedValue(patched);
+    const client = createTestQueryClient();
+    const { result } = renderToys(client);
+    await settle(() => expect(result.current.toys).toHaveLength(2));
     await act(async () => {
       await result.current.updateToy({ toyId: 3, changes: { customAttributes: { a: '1' } } });
     });
     expect(vi.mocked(patchToy).mock.calls[0].slice(0, 2)).toEqual([3, { customAttributes: { a: '1' } }]);
+    expect(client.getQueryData(['toys'])).toEqual([makeToy({ id: 1 }), patched]);
+    await settle(() => expect(result.current.toys[1]).toEqual(patched));
   });
 
   it('removes a toy and refreshes the collection', async () => {
