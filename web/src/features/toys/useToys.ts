@@ -42,6 +42,10 @@ export function useToys(options: ToysOptions = {}): Toys {
 
   const update = useApiMutation({
     fn: ({ toyId, changes }: UpdateToyArgs) => patchToy(toyId, changes),
+    onSuccess: (updated) =>
+      queryClient.setQueryData<Toy[]>(queryKeys.toys.all, (toys) =>
+        toys?.map((t) => (t.id === updated.id ? updated : t)),
+      ),
   });
 
   const removal = useApiMutation({ fn: deleteToy, onSettled: invalidateToys });
