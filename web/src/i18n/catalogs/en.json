@@ -45,6 +45,9 @@
       "diameter": "dia."
     },
     "deleteConfirm": "Delete {brand} {name}?",
+    "discardConfirmTitle": "Discard unsaved changes?",
+    "discardConfirmBody": "Your edits to this toy will be lost.",
+    "discard": "Discard",
     "editorDialogLabel": "Toy editor",
     "new": "New Toy",
     "columns": {

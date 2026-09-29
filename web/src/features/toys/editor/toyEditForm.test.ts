@@ -6,6 +6,7 @@ import type { EditorState } from '@/features/toys/converters/editor';
 import {
   identityReducer,
   initialIdentity,
+  isIdentityEqual,
   type ToyEditMode,
   type ToyIdentity,
   validateAndBuildPayload,
@@ -81,6 +82,21 @@ describe('identityReducer', () => {
     const before = { ...start };
     identityReducer(start, { field: 'size', value: 'L' });
     expect(start).toEqual(before);
+  });
+});
+
+describe('isIdentityEqual', () => {
+  const base: ToyIdentity = { brand: 'Acme', name: 'Cone', size: 'M', color: '#c4b5fd' };
+
+  it('is true for identical fields', () => {
+    expect(isIdentityEqual(base, { ...base })).toBe(true);
+  });
+
+  it('is false when any field differs', () => {
+    expect(isIdentityEqual(base, { ...base, brand: 'Other' })).toBe(false);
+    expect(isIdentityEqual(base, { ...base, name: 'Other' })).toBe(false);
+    expect(isIdentityEqual(base, { ...base, size: 'L' })).toBe(false);
+    expect(isIdentityEqual(base, { ...base, color: '#000000' })).toBe(false);
   });
 });
 
