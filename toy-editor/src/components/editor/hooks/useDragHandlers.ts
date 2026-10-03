@@ -43,7 +43,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const onPointerUp = useCallback(
     (e: ReactPointerEvent<SVGElement>) => {
       const drag = dragRef.current;
-      if (!drag || drag.pointerId !== e.pointerId) return;
+      if (drag?.pointerId !== e.pointerId) return;
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
@@ -72,7 +72,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const onDiameterPointerMove = useCallback(
     (e: ReactPointerEvent<SVGCircleElement>) => {
       const drag = dragRef.current;
-      if (!drag || drag.kind !== "diameter" || drag.pointerId !== e.pointerId) return;
+      if (drag?.kind !== "diameter" || drag.pointerId !== e.pointerId) return;
       const local = localFromClient(e.currentTarget, e.clientX, e.clientY);
       if (!local) return;
       const desiredBorderX = local.x - drag.offsetPx;
@@ -112,7 +112,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const onBoundaryPointerMove = useCallback(
     (e: ReactPointerEvent<SVGRectElement>) => {
       const drag = dragRef.current;
-      if (!drag || drag.kind !== "boundary" || drag.pointerId !== e.pointerId) return;
+      if (drag?.kind !== "boundary" || drag.pointerId !== e.pointerId) return;
       const local = localFromClient(e.currentTarget, e.clientX, e.clientY);
       if (!local) return;
       const desiredBorderY = local.y - drag.offsetPx;
@@ -160,7 +160,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const onBottomPointerMove = useCallback(
     (e: ReactPointerEvent<SVGRectElement>) => {
       const drag = dragRef.current;
-      if (!drag || drag.kind !== "bottom" || drag.pointerId !== e.pointerId) return;
+      if (drag?.kind !== "bottom" || drag.pointerId !== e.pointerId) return;
       const local = localFromClient(e.currentTarget, e.clientX, e.clientY);
       if (!local) return;
       const desiredBorderY = local.y - drag.offsetPx;
