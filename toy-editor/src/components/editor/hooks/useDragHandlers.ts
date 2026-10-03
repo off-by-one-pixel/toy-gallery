@@ -28,23 +28,6 @@ export type DragHandlers = {
   onPointerUp: (e: ReactPointerEvent<SVGElement>) => void;
 };
 
-/** Encapsulates the three pointer-drag interactions on the canvas:
- *
- *  - **diameter**: drag the small handle on a section's bottom-right
- *    corner; the section border (not the cursor) tracks toward the
- *    pointer, snapping to the known size guide if enabled.
- *  - **boundary**: drag a band between two sections; redistributes
- *    height between the two adjacent sections via setBoundaryDelta,
- *    snapping to insertable / total guides if enabled.
- *  - **bottom**: drag the band at the bottom of the silhouette; grows
- *    or shrinks the last section's height. Freezes the silhouette
- *    scale on pointer-down (so the silhouette doesn't autoscale during
- *    the drag) and unfreezes on pointer-up.
- *
- *  All handlers preserve the cursor → border offset captured at
- *  pointer-down so snapping triggers on the section's resulting
- *  position rather than on the raw cursor location.
- */
 export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const setDiameter = useToyStore((s) => s.setDiameter);
   const setHeight = useToyStore((s) => s.setHeight);
@@ -61,18 +44,14 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
     (e: ReactPointerEvent<SVGElement>) => {
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
-      try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
-      } catch {
-        // capture may have been lost — ignore
       }
       if (drag.kind === "bottom") unfreezeScale();
       dragRef.current = null;
     },
     [unfreezeScale],
   );
-
-  // ── diameter drag ──────────────────────────────────────────────────
 
   const onDiameterPointerDown = useCallback(
     (
@@ -106,8 +85,6 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
     },
     [silhouetteCenter, silhouetteScale, snapEnabled, knownSizeMm, setDiameter],
   );
-
-  // ── boundary drag ──────────────────────────────────────────────────
 
   const onBoundaryPointerDown = useCallback(
     (
@@ -154,8 +131,6 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
     },
     [silhouetteY, silhouetteScale, snapEnabled, insertableMm, knownTotalMm, setBoundaryDelta],
   );
-
-  // ── bottom drag ────────────────────────────────────────────────────
 
   const onBottomPointerDown = useCallback(
     (

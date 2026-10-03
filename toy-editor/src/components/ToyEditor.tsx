@@ -13,23 +13,9 @@ type Props = {
   style?: Partial<StyleOption>;
   onChange?: (toy: Toy) => void;
   ref?: RefObject<SVGSVGElement | null>;
-  /**
-   * Optional seed state. When the identity of this object changes (e.g.
-   * the caller opens the editor for a different toy), the store is reset
-   * to match. Pass a stable reference to avoid clobbering user edits.
-   */
   initialToy?: Toy;
-  /**
-   * Rendered at the top of the editor, above the Known Measurements row.
-   * Wrappers can use this for app-specific identification fields
-   * (brand / model / color).
-   */
   leadingSlot?: ReactNode;
-  /** Display unit for numeric inputs. Storage is always canonical
-   *  (mm-equivalent). */
   unit: Unit;
-  /** Preset colors offered by the per-section color picker. When omitted
-   *  or empty, the section color controls are hidden entirely. */
   palette?: readonly PaletteColor[];
 };
 

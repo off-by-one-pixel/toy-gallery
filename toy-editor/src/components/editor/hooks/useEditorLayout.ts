@@ -13,12 +13,8 @@ import {
 } from "../layout";
 
 export type EditorLayout = {
-  /** Attach to the `<svg>` root so the hook can observe its size. */
   ref: React.RefObject<SVGSVGElement | null>;
-  /** Last-observed pixel size of the SVG element. */
   size: { w: number; h: number };
-  /** mm → px scale used for the silhouette. Frozen during a bottom drag,
-   *  otherwise tracks the live fit. */
   silhouetteScale: number;
   silhouetteX: number;
   silhouetteY: number;
@@ -30,19 +26,11 @@ export type EditorLayout = {
   sectionMeta: SectionMeta[];
   heightLabelX: number;
   diameterLabelX: number;
-  /** True once the SVG has been measured at least once. */
   ready: boolean;
-  /** Freeze the silhouette scale at its current value. Used by the
-   *  bottom-edge drag to prevent autoscale during the drag. */
   freezeScale: () => void;
-  /** Release the freeze; the silhouette goes back to fitting the
-   *  available area. */
   unfreezeScale: () => void;
 };
 
-/** Owns the SVG ref + ResizeObserver + frozen-scale state, and derives
- *  every layout value the editor chrome needs from the toy and the
- *  current container size. */
 export const useEditorLayout = (toy: Toy): EditorLayout => {
   const ref = useRef<SVGSVGElement | null>(null);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
