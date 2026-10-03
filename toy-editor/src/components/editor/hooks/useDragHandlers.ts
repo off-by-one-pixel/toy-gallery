@@ -38,7 +38,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const snapEnabled = useToyStore((s) => s.snapEnabled);
   const dragRef = useRef<DragState | null>(null);
 
-  const { silhouetteScale, silhouetteCenter, silhouetteY, freezeScale, unfreezeScale } = layout;
+  const { silhouetteScale, silhouetteCenter, silhouetteY, freezeFrame, unfreezeFrame } = layout;
 
   const onPointerUp = useCallback(
     (e: ReactPointerEvent<SVGElement>) => {
@@ -47,10 +47,10 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
-      if (drag.kind === "bottom") unfreezeScale();
+      if (drag.kind === "bottom") unfreezeFrame();
       dragRef.current = null;
     },
-    [unfreezeScale],
+    [unfreezeFrame],
   );
 
   const onDiameterPointerDown = useCallback(
@@ -152,9 +152,9 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
         offsetPx,
         lastTopMm,
       };
-      freezeScale();
+      freezeFrame();
     },
-    [silhouetteY, silhouetteScale, freezeScale],
+    [silhouetteY, silhouetteScale, freezeFrame],
   );
 
   const onBottomPointerMove = useCallback(

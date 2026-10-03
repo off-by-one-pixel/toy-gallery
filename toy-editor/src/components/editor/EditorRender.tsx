@@ -1,5 +1,5 @@
 import { useImperativeHandle } from "react";
-import type { RefObject } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { StyleOption, Toy } from "../../toyMachine";
 import Silhouette from "../Silhouette";
 import SvgRoot from "../SvgRoot";
@@ -14,17 +14,30 @@ import SectionLabels from "./SectionLabels";
 import TotalReadout from "./TotalReadout";
 import { useDragHandlers } from "./hooks/useDragHandlers";
 import { useEditorLayout } from "./hooks/useEditorLayout";
+import { useReferenceImageDrag } from "./hooks/useReferenceImageDrag";
+import type { ReferenceImage } from "./referenceImage";
+import { ReferenceImageBackdrop, ReferenceImageResizeHandle } from "./ReferenceImageLayer";
 
 type Props = {
   toy: Toy;
   style: StyleOption;
   ref?: RefObject<SVGSVGElement | null>;
   onSelect?: (id: number) => void;
+  referenceImage: ReferenceImage | null;
+  onReferenceImageChange: Dispatch<SetStateAction<ReferenceImage | null>>;
 };
 
-const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
-  const layout = useEditorLayout(toy);
+const EditorRender = ({
+  toy,
+  style,
+  ref,
+  onSelect,
+  referenceImage,
+  onReferenceImageChange,
+}: Props) => {
+  const layout = useEditorLayout(toy, referenceImage);
   const handlers = useDragHandlers(layout);
+  const imageHandlers = useReferenceImageDrag(layout, referenceImage, onReferenceImageChange);
   const setHoveredSectionId = useEditorUiStore((s) => s.setHoveredSectionId);
   useImperativeHandle(ref, () => layout.ref.current as SVGSVGElement, [layout.ref]);
 
@@ -36,9 +49,15 @@ const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
     >
       {layout.ready && (
         <EditorLayoutProvider value={layout}>
+          {referenceImage && (
+            <ReferenceImageBackdrop image={referenceImage} handlers={imageHandlers} />
+          )}
           <Guides />
 
-          <g transform={`translate(${layout.silhouetteX}, ${layout.silhouetteY})`}>
+          <g
+            className={referenceImage ? "toy-editor-see-through" : undefined}
+            transform={`translate(${layout.silhouetteX}, ${layout.silhouetteY})`}
+          >
             <Silhouette
               sections={toy.sections}
               topShape={toy.topShape}
@@ -56,6 +75,9 @@ const EditorRender = ({ toy, style, ref, onSelect }: Props) => {
           <TotalReadout />
 
           <g className="toy-editor-chrome">
+            {referenceImage && (
+              <ReferenceImageResizeHandle image={referenceImage} handlers={imageHandlers} />
+            )}
             <SectionLabels />
             <DragLayer handlers={handlers} />
             <CurveAngleButtons />

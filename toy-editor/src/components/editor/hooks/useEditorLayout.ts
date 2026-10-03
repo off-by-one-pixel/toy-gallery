@@ -5,12 +5,11 @@ import {
   DIAMETER_LABEL_GAP_PX,
   HEIGHT_LABEL_GAP_PX,
   LABEL_INPUT_W_PX,
-  LABEL_WIDTH_PX,
   RULER_WIDTH_PX,
   type SectionMeta,
-  VPAD_BOTTOM_PX,
-  VPAD_TOP_PX,
 } from "../layout";
+import { availableArea, fitFrame, type Frame } from "../fitFrame";
+import type { ReferenceImage } from "../referenceImage";
 
 export type EditorLayout = {
   ref: React.RefObject<SVGSVGElement | null>;
@@ -27,14 +26,17 @@ export type EditorLayout = {
   heightLabelX: number;
   diameterLabelX: number;
   ready: boolean;
-  freezeScale: () => void;
-  unfreezeScale: () => void;
+  freezeFrame: () => void;
+  unfreezeFrame: () => void;
 };
 
-export const useEditorLayout = (toy: Toy): EditorLayout => {
+export const useEditorLayout = (
+  toy: Toy,
+  referenceImage: ReferenceImage | null,
+): EditorLayout => {
   const ref = useRef<SVGSVGElement | null>(null);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
-  const [frozenScale, setFrozenScale] = useState<number | null>(null);
+  const [frozenFrame, setFrozenFrame] = useState<Frame | null>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -52,17 +54,13 @@ export const useEditorLayout = (toy: Toy): EditorLayout => {
   const totalHeightMm = toy.sections.reduce((a, b) => a + b.height, 0);
   const maxDiameterMm = Math.max(...toy.sections.map((s) => s.diameter), 0);
 
-  const availW = Math.max(20, size.w - RULER_WIDTH_PX - LABEL_WIDTH_PX);
-  const availH = Math.max(20, size.h - VPAD_TOP_PX - VPAD_BOTTOM_PX);
-  const fitScale =
-    totalHeightMm > 0 && maxDiameterMm > 0
-      ? Math.min(availH / totalHeightMm, availW / maxDiameterMm)
-      : 1;
-  const silhouetteScale = frozenScale ?? fitScale;
+  const availW = availableArea(size).w;
+  const frame = frozenFrame ?? fitFrame(size, totalHeightMm, maxDiameterMm, referenceImage);
+  const silhouetteScale = frame.scale;
+  const silhouetteY = frame.silhouetteY;
   const silhouetteW = maxDiameterMm * silhouetteScale;
   const silhouetteH = totalHeightMm * silhouetteScale;
   const silhouetteX = RULER_WIDTH_PX + (availW - silhouetteW) / 2;
-  const silhouetteY = VPAD_TOP_PX;
   const silhouetteCenter = silhouetteX + silhouetteW / 2;
 
   const sectionMeta = useMemo(
@@ -91,10 +89,10 @@ export const useEditorLayout = (toy: Toy): EditorLayout => {
     heightLabelX,
     diameterLabelX,
     ready: size.w > 0 && size.h > 0,
-    freezeScale: useCallback(
-      () => setFrozenScale(silhouetteScale),
-      [silhouetteScale],
+    freezeFrame: useCallback(
+      () => setFrozenFrame({ scale: silhouetteScale, silhouetteY }),
+      [silhouetteScale, silhouetteY],
     ),
-    unfreezeScale: useCallback(() => setFrozenScale(null), []),
+    unfreezeFrame: useCallback(() => setFrozenFrame(null), []),
   };
 };

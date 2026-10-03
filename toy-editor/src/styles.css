@@ -395,6 +395,33 @@
 .toy-editor-handle-diameter:hover { r: 7; }
 .toy-editor-handle-height { cursor: ns-resize; }
 
+.toy-editor-reference {
+  opacity: 0.3;
+  cursor: move;
+}
+.toy-editor-reference-controls {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 1;
+}
+.toy-editor-icon-btn {
+  padding: 6px;
+  color: var(--toy-editor-ink-muted);
+}
+.toy-editor-icon-btn:hover:not(:disabled) { color: var(--toy-editor-ink); }
+.toy-editor-see-through { fill-opacity: 0.55; }
+.toy-editor-reference-border {
+  fill: none;
+  stroke: var(--toy-editor-ink-soft);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.toy-editor-reference-handle { cursor: nwse-resize; }
+.toy-editor-reference-handle:hover { r: 7; }
+
 .toy-editor-handle-boundary {
   fill: rgba(37, 99, 235, 0);
   stroke: rgba(37, 99, 235, 0);

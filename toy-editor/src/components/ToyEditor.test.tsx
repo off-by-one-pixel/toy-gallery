@@ -17,4 +17,11 @@ describe("ToyEditor", () => {
 
     expect(document.querySelector(".toy-editor-svg")).toBeTruthy();
   });
+
+  it("offers an image-only file picker for a reference image", () => {
+    render(<ToyEditor unit={{ id: "mm", factor: 1, decimals: 0 }} />);
+
+    expect(screen.getByRole("button", { name: /add reference image/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/reference image file/i)).toHaveAttribute("accept", "image/*");
+  });
 });

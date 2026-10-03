@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import type { StyleOption, Toy } from "../toyMachine";
 import { Shape, useToyStore } from "../toyMachine";
 import EditorRender from "./editor/EditorRender";
+import { useReferenceImage } from "./editor/hooks/useReferenceImage";
+import ReferenceImageControls from "./editor/ReferenceImageControls";
 import { EditorPaletteContext, type PaletteColor } from "./editor/palette";
 import KnownMeasurements from "./KnownMeasurements";
 import { EditorUnitContext, type Unit } from "./unit";
@@ -38,6 +40,7 @@ const ToyEditor = ({
   const toy = useToyStore();
   const hydrate = useToyStore((s) => s.hydrate);
   const mergedStyle = { ...toy.style, ...style } as StyleOption;
+  const reference = useReferenceImage();
 
   useEffect(() => {
     if (initialToy) hydrate(initialToy);
@@ -62,7 +65,13 @@ const ToyEditor = ({
         <div className="toy-editor-main">
           <KnownMeasurements />
 
-          <section className="toy-editor-canvas">
+          <section
+            className="toy-editor-canvas"
+            onDragOver={reference.onDragOver}
+            onDrop={reference.onDrop}
+          >
+            <ReferenceImageControls reference={reference} />
+
             <div className="toy-editor-cap-row top">
               <ShapeSelect
                 id="toy-editor-top-shape"
@@ -78,6 +87,8 @@ const ToyEditor = ({
                 ref={ref}
                 style={mergedStyle}
                 onSelect={toy.setSelected}
+                referenceImage={reference.image}
+                onReferenceImageChange={reference.setImage}
               />
             </div>
 
