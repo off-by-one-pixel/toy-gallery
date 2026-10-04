@@ -188,6 +188,15 @@ class SessionStatsFilterTests(SessionStatsTestBase):
         groups = self._get(group_by="date", metrics="count", has_media="true")
         self.assertEqual(sum(g["values"]["count"] for g in groups), 1)
 
+    def test_stats_respect_time_window_within_date_range(self):
+        self._make_session(_utc("2026-06-01T18:30:00"))
+        self._make_session(_utc("2026-06-01T12:00:00"))
+        self._make_session(_utc("2026-05-01T18:30:00"))
+        groups = self._get(
+            group_by="date", metrics="count", start="2026-06-01", time_from=18, time_to=20
+        )
+        self.assertEqual(groups, [{"key": "2026-06-01", "values": {"count": 1}}])
+
 
 class StatsHasPrFilterTests(SessionStatsTestBase):
     def test_has_pr_limits_stats_to_record_sessions(self):
