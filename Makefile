@@ -10,7 +10,7 @@ help:
 	@echo "  make test-be   Run backend tests (Django)"
 	@echo "  make test-fe   Run frontend tests (Vitest)"
 	@echo "  make schema    Regenerate the OpenAPI schema (api/schema.yml)"
-	@echo "  make sonar     Sonar-scan the worktree into the toy-gallery-local scratch project (needs SONAR_HOST_URL and SONAR_TOKEN)"
+	@echo "  make sonar     Sonar-scan the worktree into the toy-gallery-local scratch project (needs SONAR_HOST_URL and SONAR_TOKEN in the environment)"
 	@echo "For dev, run 'make be' and 'make fe' in separate terminals."
 
 be:
@@ -47,16 +47,14 @@ schema:
 	cd api && uv run python manage.py spectacular --file schema.yml --validate
 
 sonar:
-	@test -n "$(SONAR_HOST_URL)" || { echo "SONAR_HOST_URL is not set"; exit 1; }
-	@test -n "$(SONAR_TOKEN)" || { echo "SONAR_TOKEN is not set (SonarQube: My Account > Security)"; exit 1; }
+	@test -n "$$SONAR_HOST_URL" || { echo "SONAR_HOST_URL is not set"; exit 1; }
+	@test -n "$$SONAR_TOKEN" || { echo "SONAR_TOKEN is not set (SonarQube: My Account > Security)"; exit 1; }
 	sonar-scanner \
 		-Dsonar.projectKey=toy-gallery-local \
-		-Dsonar.projectName="Toy Gallery (local)" \
-		-Dsonar.host.url=$(SONAR_HOST_URL) \
-		-Dsonar.token=$(SONAR_TOKEN)
+		-Dsonar.projectName="Toy Gallery (local)"
 	@taskId=$$(sed -n 's/^ceTaskId=//p' .scannerwork/report-task.txt); \
 	for i in $$(seq 1 60); do \
-		status=$$(curl -sf -u $(SONAR_TOKEN): "$(SONAR_HOST_URL)/api/ce/task?id=$$taskId" | sed -n 's/.*"status":"\([A-Z_]*\)".*/\1/p'); \
+		status=$$(curl -sf -u "$$SONAR_TOKEN:" "$$SONAR_HOST_URL/api/ce/task?id=$$taskId" | sed -n 's/.*"status":"\([A-Z_]*\)".*/\1/p'); \
 		case $$status in \
 			SUCCESS) echo "analysis processed"; exit 0;; \
 			FAILED|CANCELED) echo "analysis processing $$status"; exit 1;; \
