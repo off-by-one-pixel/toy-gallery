@@ -203,6 +203,17 @@ def _session_filter_q(params):
     return filters
 
 
+def _filter_sessions(queryset, params):
+    queryset = _with_filter_aliases(queryset, params)
+    lower, upper = stats.range_bounds(params.get("start"), params.get("end"), params["tz"])
+    window = _session_filter_q(params)
+    if lower is not None:
+        window &= Q(started_at__gte=lower)
+    if upper is not None:
+        window &= Q(started_at__lt=upper)
+    return queryset.filter(window) if window else queryset
+
+
 def _store_media_counts(counts):
     changed = []
     for session in models.Session.objects.all():
@@ -236,16 +247,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         query = serializers.SessionListQuerySerializer(data=self.request.query_params)
         query.is_valid(raise_exception=True)
         params = query.validated_data
-        queryset = _with_filter_aliases(queryset, params)
-        lower, upper = stats.range_bounds(params.get("start"), params.get("end"), params["tz"])
-        window = Q()
-        if lower is not None:
-            window &= Q(started_at__gte=lower)
-        if upper is not None:
-            window &= Q(started_at__lt=upper)
-        window &= _session_filter_q(params)
-        if window:
-            queryset = queryset.filter(window)
+        queryset = _filter_sessions(queryset, params)
         ordering = params.get("ordering")
         if ordering:
             queryset = _apply_session_ordering(queryset, ordering)
@@ -342,17 +344,9 @@ class SessionViewSet(viewsets.ModelViewSet):
         query = serializers.SessionStatsQuerySerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
         params = query.validated_data
-        lower, upper = stats.range_bounds(params.get("start"), params.get("end"), params["tz"])
-        sessions = _with_filter_aliases(
+        sessions = _filter_sessions(
             models.Session.objects.prefetch_related("entries", "entries__toy"), params
         )
-        if lower is not None:
-            sessions = sessions.filter(started_at__gte=lower)
-        if upper is not None:
-            sessions = sessions.filter(started_at__lt=upper)
-        filters = _session_filter_q(params)
-        if filters:
-            sessions = sessions.filter(filters)
         groups = stats.compute_stats(sessions, params["group_by"], params["metrics"], params["tz"])
         return Response({"groups": groups})
 
