@@ -5,20 +5,15 @@ import {
   DIAMETER_LABEL_GAP_PX,
   HEIGHT_LABEL_GAP_PX,
   LABEL_INPUT_W_PX,
-  LABEL_WIDTH_PX,
   RULER_WIDTH_PX,
   type SectionMeta,
-  VPAD_BOTTOM_PX,
-  VPAD_TOP_PX,
 } from "../layout";
+import { availableArea, fitFrame, type Frame } from "../fitFrame";
+import type { ReferenceImage } from "../referenceImage";
 
 export type EditorLayout = {
-  /** Attach to the `<svg>` root so the hook can observe its size. */
   ref: React.RefObject<SVGSVGElement | null>;
-  /** Last-observed pixel size of the SVG element. */
   size: { w: number; h: number };
-  /** mm → px scale used for the silhouette. Frozen during a bottom drag,
-   *  otherwise tracks the live fit. */
   silhouetteScale: number;
   silhouetteX: number;
   silhouetteY: number;
@@ -30,23 +25,18 @@ export type EditorLayout = {
   sectionMeta: SectionMeta[];
   heightLabelX: number;
   diameterLabelX: number;
-  /** True once the SVG has been measured at least once. */
   ready: boolean;
-  /** Freeze the silhouette scale at its current value. Used by the
-   *  bottom-edge drag to prevent autoscale during the drag. */
-  freezeScale: () => void;
-  /** Release the freeze; the silhouette goes back to fitting the
-   *  available area. */
-  unfreezeScale: () => void;
+  freezeFrame: () => void;
+  unfreezeFrame: () => void;
 };
 
-/** Owns the SVG ref + ResizeObserver + frozen-scale state, and derives
- *  every layout value the editor chrome needs from the toy and the
- *  current container size. */
-export const useEditorLayout = (toy: Toy): EditorLayout => {
+export const useEditorLayout = (
+  toy: Toy,
+  referenceImage: ReferenceImage | null,
+): EditorLayout => {
   const ref = useRef<SVGSVGElement | null>(null);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
-  const [frozenScale, setFrozenScale] = useState<number | null>(null);
+  const [frozenFrame, setFrozenFrame] = useState<Frame | null>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -64,17 +54,13 @@ export const useEditorLayout = (toy: Toy): EditorLayout => {
   const totalHeightMm = toy.sections.reduce((a, b) => a + b.height, 0);
   const maxDiameterMm = Math.max(...toy.sections.map((s) => s.diameter), 0);
 
-  const availW = Math.max(20, size.w - RULER_WIDTH_PX - LABEL_WIDTH_PX);
-  const availH = Math.max(20, size.h - VPAD_TOP_PX - VPAD_BOTTOM_PX);
-  const fitScale =
-    totalHeightMm > 0 && maxDiameterMm > 0
-      ? Math.min(availH / totalHeightMm, availW / maxDiameterMm)
-      : 1;
-  const silhouetteScale = frozenScale ?? fitScale;
+  const availW = availableArea(size).w;
+  const frame = frozenFrame ?? fitFrame(size, totalHeightMm, maxDiameterMm, referenceImage);
+  const silhouetteScale = frame.scale;
+  const silhouetteY = frame.silhouetteY;
   const silhouetteW = maxDiameterMm * silhouetteScale;
   const silhouetteH = totalHeightMm * silhouetteScale;
   const silhouetteX = RULER_WIDTH_PX + (availW - silhouetteW) / 2;
-  const silhouetteY = VPAD_TOP_PX;
   const silhouetteCenter = silhouetteX + silhouetteW / 2;
 
   const sectionMeta = useMemo(
@@ -103,10 +89,10 @@ export const useEditorLayout = (toy: Toy): EditorLayout => {
     heightLabelX,
     diameterLabelX,
     ready: size.w > 0 && size.h > 0,
-    freezeScale: useCallback(
-      () => setFrozenScale(silhouetteScale),
-      [silhouetteScale],
+    freezeFrame: useCallback(
+      () => setFrozenFrame({ scale: silhouetteScale, silhouetteY }),
+      [silhouetteScale, silhouetteY],
     ),
-    unfreezeScale: useCallback(() => setFrozenScale(null), []),
+    unfreezeFrame: useCallback(() => setFrozenFrame(null), []),
   };
 };

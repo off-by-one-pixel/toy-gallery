@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import type { StyleOption, Toy } from "../toyMachine";
 import { Shape, useToyStore } from "../toyMachine";
 import EditorRender from "./editor/EditorRender";
+import { useReferenceImage } from "./editor/hooks/useReferenceImage";
+import ReferenceImageControls from "./editor/ReferenceImageControls";
 import { EditorPaletteContext, type PaletteColor } from "./editor/palette";
 import KnownMeasurements from "./KnownMeasurements";
 import { EditorUnitContext, type Unit } from "./unit";
@@ -13,23 +15,9 @@ type Props = {
   style?: Partial<StyleOption>;
   onChange?: (toy: Toy) => void;
   ref?: RefObject<SVGSVGElement | null>;
-  /**
-   * Optional seed state. When the identity of this object changes (e.g.
-   * the caller opens the editor for a different toy), the store is reset
-   * to match. Pass a stable reference to avoid clobbering user edits.
-   */
   initialToy?: Toy;
-  /**
-   * Rendered at the top of the editor, above the Known Measurements row.
-   * Wrappers can use this for app-specific identification fields
-   * (brand / model / color).
-   */
   leadingSlot?: ReactNode;
-  /** Display unit for numeric inputs. Storage is always canonical
-   *  (mm-equivalent). */
   unit: Unit;
-  /** Preset colors offered by the per-section color picker. When omitted
-   *  or empty, the section color controls are hidden entirely. */
   palette?: readonly PaletteColor[];
 };
 
@@ -52,6 +40,7 @@ const ToyEditor = ({
   const toy = useToyStore();
   const hydrate = useToyStore((s) => s.hydrate);
   const mergedStyle = { ...toy.style, ...style } as StyleOption;
+  const reference = useReferenceImage();
 
   useEffect(() => {
     if (initialToy) hydrate(initialToy);
@@ -76,7 +65,13 @@ const ToyEditor = ({
         <div className="toy-editor-main">
           <KnownMeasurements />
 
-          <section className="toy-editor-canvas">
+          <section
+            className="toy-editor-canvas"
+            onDragOver={reference.onDragOver}
+            onDrop={reference.onDrop}
+          >
+            <ReferenceImageControls reference={reference} />
+
             <div className="toy-editor-cap-row top">
               <ShapeSelect
                 id="toy-editor-top-shape"
@@ -92,6 +87,8 @@ const ToyEditor = ({
                 ref={ref}
                 style={mergedStyle}
                 onSelect={toy.setSelected}
+                referenceImage={reference.image}
+                onReferenceImageChange={reference.setImage}
               />
             </div>
 
