@@ -236,7 +236,7 @@ describe('session flag filter registry', () => {
   it('builds cache keys and wire params from active flags', () => {
     const filters = { ...NO_SESSION_FILTERS, toyIds: [1], hasMedia: true, hasPr: true };
     expect(sessionFiltersKey(filters)).toBe('1|mr|');
-    expect(sessionFilterWireParams(filters)).toEqual({ has_media: true, has_pr: true });
+    expect(sessionFilterWireParams(filters)).toEqual({ toys: [1], has_media: true, has_pr: true });
     expect(sessionFilterWireParams(NO_SESSION_FILTERS)).toEqual({});
   });
 });

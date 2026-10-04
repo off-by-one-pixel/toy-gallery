@@ -214,7 +214,10 @@ export const sessionFiltersUrlParams = (filters: SessionFilters): Record<string,
 
 export const sessionFilterWireParams = (
   filters: SessionFilters,
-): Partial<Record<SessionFlagFilterDef['wireParam'], boolean> & { time_from: number; time_to: number }> => ({
+): Partial<
+  Record<SessionFlagFilterDef['wireParam'], boolean> & { toys: number[]; time_from: number; time_to: number }
+> => ({
+  ...(filters.toyIds.length > 0 ? { toys: [...filters.toyIds] } : {}),
   ...Object.fromEntries(activeFlagKeys(filters).map((key) => [SESSION_FLAG_FILTERS[key].wireParam, true])),
   ...(filters.timeWindow ? { time_from: filters.timeWindow.from, time_to: filters.timeWindow.to } : {}),
 });

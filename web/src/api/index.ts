@@ -149,7 +149,6 @@ export const fetchSessions = async (
     start: opts.start,
     end: opts.end,
     ordering: opts.ordering as ToysSessionsListParams['ordering'],
-    toys: filters.toyIds.length ? [...filters.toyIds] : undefined,
     ...sessionFilterWireParams(filters),
     tz: browserTimeZone(),
   });
@@ -248,7 +247,6 @@ export const fetchSessionStats = async (
     metrics: metrics.join(','),
     start: opts.start,
     end: opts.end,
-    toys: filters.toyIds.length ? [...filters.toyIds] : undefined,
     ...sessionFilterWireParams(filters),
     tz: browserTimeZone(),
   });
