@@ -9,6 +9,9 @@
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
   ],
+  "containerEnv": {
+    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"
+  },
   "remoteEnv": {
     "TZ": "America/Toronto",
     "MANAGE_PY_PATH": "/workspace/api/manage.py"
