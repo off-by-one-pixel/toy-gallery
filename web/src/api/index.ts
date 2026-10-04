@@ -48,18 +48,11 @@ import {
   type ToyPayload,
 } from '@/api/types';
 
-// ---------- Token endpoints ----------
-
 export const login = async (username: string, password: string): Promise<TokenPair> => {
   const { data } = await toysTokenCreate({ username, password });
   return { access: data.access, refresh: data.refresh };
 };
 
-/**
- * POST /toys/token/refresh/ via bare fetch — deliberately bypasses the
- * generated SDK so the call itself can't re-enter the mutator's 401
- * retry loop.
- */
 export const refreshTokens = async (refresh: string): Promise<TokenPair> => {
   const response = await fetch(new URL('/toys/token/refresh/', API_CONFIG.baseUrl), {
     method: 'POST',
@@ -79,8 +72,6 @@ export const refreshTokens = async (refresh: string): Promise<TokenPair> => {
 export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
   await toysChangePasswordCreate({ current_password: currentPassword, new_password: newPassword });
 };
-
-// ---------- Toy CRUD ----------
 
 export const fetchToys = async (): Promise<Toy[]> => {
   const { data } = await toysToysList();
@@ -140,8 +131,6 @@ export const deleteCollection = async (): Promise<{
   const { data } = await toysToysDeleteAllDestroy();
   return data;
 };
-
-// ---------- Sessions ----------
 
 export type SessionPage = Readonly<{ sessions: Session[]; count: number; hasMore: boolean }>;
 

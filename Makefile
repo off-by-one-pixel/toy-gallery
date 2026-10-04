@@ -16,10 +16,6 @@ help:
 be:
 	cd api && uv run $(if $(wildcard .env),--env-file=../.env,) python manage.py runserver 0.0.0.0:8000
 
-# Mirrors the Docker entrypoint: builds the Next.js export, runs the same
-# migrate + collectstatic + gunicorn sequence under settings_docker_local
-# (a thin override of settings_docker pointing WhiteNoise at the live
-# build and using the dev sqlite DB).
 PROD_SETTINGS = DJANGO_SETTINGS_MODULE=toy_gallery.settings_docker_local
 
 be-prod:
