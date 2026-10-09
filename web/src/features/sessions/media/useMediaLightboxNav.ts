@@ -2,7 +2,7 @@
 
 import { parseIntParam, type Update, useNavigation } from '@/hooks/useNavigation';
 
-const KEY = 'media';
+const KEY = 'lightbox';
 
 export const mediaLightboxUpdates = {
   open: (sessionId: number, index: number): Update => ({ [KEY]: `${sessionId}:${index}` }),

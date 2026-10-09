@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, type Ref } from 'react';
 import { Image as ImageIcon, Pencil, Trash2, Video } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -44,6 +44,7 @@ type Props = Readonly<{
   unit: Unit;
   selected: boolean;
   flash?: boolean;
+  ref?: Ref<HTMLDivElement>;
   onToggleSelect: (id: number) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -55,6 +56,7 @@ function SessionRow({
   unit,
   selected,
   flash = false,
+  ref,
   onToggleSelect,
   onEdit,
   onDelete,
@@ -104,6 +106,7 @@ function SessionRow({
 
   return (
     <div
+      ref={ref}
       className={
         'group relative rounded-xl border bg-surface px-5 py-4 shadow-sm transition-shadow hover:shadow-md sm:grid sm:grid-cols-[180px_1fr_auto_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-5 ' +
         [tone.border, selected && tone.ring, flash && 'row-flash'].filter(Boolean).join(' ')

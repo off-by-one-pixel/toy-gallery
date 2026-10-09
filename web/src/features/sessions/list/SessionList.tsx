@@ -24,6 +24,7 @@ import SessionFilterControl from '@/features/sessions/list/filter/SessionFilterC
 import PeriodStepper from '@/features/sessions/list/PeriodStepper';
 import SessionRow from '@/features/sessions/list/SessionRow';
 import SessionSortControl from '@/features/sessions/list/SessionSortControl';
+import { useSessionSelectionNav } from '@/features/sessions/list/useSessionSelectionNav';
 import SessionStats from '@/features/sessions/stats/SessionStats';
 import { useSessions } from '@/features/sessions/useSessions';
 
@@ -51,7 +52,12 @@ function SessionListContent() {
   const common = useTranslations('common');
   useSetTopBarSubtitle(data.isLoading ? null : `${data.sessionCount} ${t('recorded')}`);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const {
+    selectedId,
+    selectedRowRef,
+    toggle: toggleSelect,
+    clear: clearSelection,
+  } = useSessionSelectionNav(data.sessions.map((session) => session.id));
   const [flashId, setFlashId] = useState<number | null>(null);
 
   const addStartedSession = (session: Session) => {
@@ -64,11 +70,10 @@ function SessionListContent() {
   const editSession = useCallback((id: number) => navigate(`/sessions/edit?id=${id}`), [navigate]);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const removeSession = useCallback((id: number) => setPendingDeleteId(id), []);
-  const toggleSelect = useCallback((id: number) => setSelectedId((cur) => (cur === id ? null : id)), []);
   const confirmRemove = async () => {
     if (pendingDeleteId === null) return;
     await data.removeSession(pendingDeleteId);
-    setSelectedId(null);
+    clearSelection();
     setPendingDeleteId(null);
   };
 
@@ -191,6 +196,7 @@ function SessionListContent() {
             unit={unit}
             selected={selectedId === session.id}
             flash={flashId === session.id}
+            ref={selectedId === session.id ? selectedRowRef : undefined}
             onToggleSelect={toggleSelect}
             onEdit={editSession}
             onDelete={removeSession}

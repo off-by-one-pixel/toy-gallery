@@ -81,7 +81,7 @@ vi.mock('@/features/sessions/stats/SessionStats', () => ({
 }));
 
 import en from '@/i18n/catalogs/en.json';
-import { resetNavigation } from '@/test/navigation';
+import { navState, resetNavigation, updateParamsMock } from '@/test/navigation';
 import type { Session, Toy } from '@/api/types';
 import { currentPeriod, parseSessionFilters, stepPeriod, toysById } from '@/features/sessions/session';
 import { makeSession, makeToy } from '@/test/fixtures';
@@ -292,21 +292,36 @@ describe('SessionList', () => {
     expect(data.loadMore).toHaveBeenCalledTimes(1);
   });
 
-  it('toggles row selection through the overlay button', () => {
+  it('expands and scrolls to the row selected by the URL, then toggles selection through the overlay button', () => {
+    const scrollIntoView = vi.spyOn(HTMLElement.prototype, 'scrollIntoView');
+    navState.search = 'id=2';
     renderList();
     const toggles = screen.getAllByRole('button', { name: en.session.detailsToggleLabel });
-    const row = toggles[0].parentElement as HTMLElement;
+    const rows = toggles.map((toggle) => toggle.parentElement as HTMLElement);
+
+    expect(rows[1].className).toContain('ring-accent');
+    expect(toggles[1].getAttribute('aria-expanded')).toBe('true');
+    expect(rows[0].className).not.toContain('ring-accent');
+    expect(scrollIntoView.mock.contexts).toEqual([rows[1]]);
 
     fireEvent.click(toggles[0]);
-    expect(row.className).toContain('ring-accent');
-    expect(toggles[0].getAttribute('aria-expanded')).toBe('true');
+    expect(updateParamsMock).toHaveBeenLastCalledWith({ id: '1' }, { replace: true });
 
-    fireEvent.click(toggles[0]);
-    expect(row.className).not.toContain('ring-accent');
-    expect(toggles[0].getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(toggles[1]);
+    expect(updateParamsMock).toHaveBeenLastCalledWith({ id: null }, { replace: true });
+    scrollIntoView.mockRestore();
   });
 
-  it('deletes a session through the confirmation modal', async () => {
+  it('shows no selection actions for a URL session that is not loaded', () => {
+    navState.search = 'id=9';
+    renderList();
+    for (const toggle of screen.getAllByRole('button', { name: en.session.detailsToggleLabel })) {
+      expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    }
+    expect(screen.getAllByRole('button', { name: en.common.delete })).toHaveLength(2);
+  });
+
+  it('deletes a session through the confirmation modal and clears the selection', async () => {
     const removeSession = vi.fn().mockResolvedValue(undefined);
     renderList({ removeSession });
 
@@ -317,6 +332,7 @@ describe('SessionList', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: en.common.delete }));
     await settle(() => expect(removeSession).toHaveBeenCalledWith(1));
     await settle(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(updateParamsMock).toHaveBeenCalledWith({ id: null }, { replace: true });
   });
 
   it('keeps the session when the confirmation is cancelled', async () => {
