@@ -33,6 +33,7 @@ vi.mock('@/features/toys/useToys', () => ({
 import en from '@/i18n/catalogs/en.json';
 import { resetNavigation } from '@/test/navigation';
 import { makeSession, makeToy } from '@/test/fixtures';
+import { formatElapsed } from '@/lib/duration';
 import { withAppProviders } from '@/test/render';
 import SessionForm from '@/features/sessions/form/SessionForm';
 
@@ -101,6 +102,41 @@ describe('SessionForm live sessions', () => {
 
     fireEvent.click(soFar);
     await settle(() => expect(screen.getByRole('button', { name: en.session.duration.clearLabel })).toBeTruthy());
+  });
+
+  it('offers the whole session span as toy time on a finished session', async () => {
+    toysState.current = [makeToy({ id: 1, name: 'Alpha' })];
+    sessionsState.current.session = makeSession({
+      id: 5,
+      startedAt: '2026-06-01T20:00:00',
+      endedAt: '2026-06-01T21:30:00',
+      entries: [{ toy: 1, involvement: 'FULLY_INSERTED', durationMinutes: null }],
+    } as never);
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
+
+    const wholeSession = await settle(() =>
+      screen.getByRole('button', { name: `${en.session.duration.wholeSession} · ${formatElapsed(90, 'en')}` }),
+    );
+    expect(screen.queryByRole('button', { name: new RegExp(`^${en.session.duration.soFar} ·`) })).toBeNull();
+    fireEvent.click(wholeSession);
+    await settle(() => expect(screen.getByRole('button', { name: en.session.duration.clearLabel })).toBeTruthy());
+  });
+
+  it('offers no session span as toy time on an open-ended finished session', async () => {
+    toysState.current = [makeToy({ id: 1, name: 'Alpha' })];
+    sessionsState.current.session = makeSession({
+      id: 5,
+      startedAt: '2026-06-01T20:00:00',
+      entries: [{ toy: 1, involvement: 'FULLY_INSERTED', durationMinutes: null }],
+    } as never);
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
+
+    await settle(() => expect(screen.getByText('Alpha')).toBeTruthy());
+    expect(
+      screen.queryByRole('button', {
+        name: new RegExp(`^(${en.session.duration.wholeSession}|${en.session.duration.soFar}) ·`),
+      }),
+    ).toBeNull();
   });
 
   it('keeps save disabled for a finished session without toys', async () => {

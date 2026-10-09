@@ -90,12 +90,8 @@ function SessionFormContent({ mode, onDone, onSaved }: Props) {
   const selectedCount = selections.size;
   const liveOpen = loadedSession?.isLive === true && endedAt === '';
   const now = useNow(60_000, liveOpen);
-  const sessionSpan =
-    startedAt && endedAt
-      ? minutesBetween(startedAt, endedAt)
-      : liveOpen && startedAt
-        ? minutesBetween(startedAt, datetimeLocalValue(now))
-        : null;
+  const spanEnd = liveOpen ? datetimeLocalValue(now) : endedAt;
+  const sessionSpan = startedAt && spanEnd ? minutesBetween(startedAt, spanEnd) : null;
   const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
 
   const handlePick = (toyId: number, next: Involvement | null) => {
