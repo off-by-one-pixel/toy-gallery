@@ -2,7 +2,7 @@
 
 help:
 	@echo "Targets:"
-	@echo "  make be        Run Django backend on 0.0.0.0:8000 (Ctrl+C to stop)"
+	@echo "  make be        Apply pending migrations, then run Django backend on 0.0.0.0:8000 (Ctrl+C to stop)"
 	@echo "  make be-prod   Run Django the way it runs in Docker (gunicorn + WhiteNoise serving the bundled SPA)"
 	@echo "  make fe        Run Next.js frontend dev server (Ctrl+C to stop)"
 	@echo "  make migrate   Apply pending Django migrations to the dev database"
@@ -13,7 +13,7 @@ help:
 	@echo "  make sonar     Sonar-scan the worktree into the toy-gallery-local scratch project (needs SONAR_HOST_URL and SONAR_TOKEN in the environment)"
 	@echo "For dev, run 'make be' and 'make fe' in separate terminals."
 
-be:
+be: migrate
 	cd api && uv run $(if $(wildcard .env),--env-file=../.env,) python manage.py runserver 0.0.0.0:8000
 
 PROD_SETTINGS = DJANGO_SETTINGS_MODULE=toy_gallery.settings_docker_local
