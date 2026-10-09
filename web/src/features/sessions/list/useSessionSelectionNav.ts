@@ -13,6 +13,8 @@ const sessionSelectionUpdates = {
   clear: (): Update => ({ [KEY]: null }),
 };
 
+export const selectedSessionHref = (id: number): string => `/sessions?${KEY}=${id}`;
+
 export function useSessionSelectionNav(loadedIds: readonly number[]) {
   const { param, updateParams: update } = useNavigation();
   const requested = parseIntParam(param(KEY));

@@ -5,7 +5,7 @@ import { Alert, Button, Spinner } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { Involvement } from '@/api/types';
+import { Involvement, type Session } from '@/api/types';
 
 type ToySelection = { involvement: Involvement; durationMinutes: number | null };
 import { SortProvider } from '@/providers/SortProvider';
@@ -32,17 +32,17 @@ const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: (key: string)
 
 const datetimeLocalNow = () => datetimeLocalValue(new Date());
 
-type Props = Readonly<{ mode: SessionFormMode; onDone: () => void }>;
+type Props = Readonly<{ mode: SessionFormMode; onDone: () => void; onSaved: (session: Session) => void }>;
 
-export default function SessionForm({ mode, onDone }: Props) {
+export default function SessionForm(props: Props) {
   return (
     <SortProvider config={SESSION_FORM_TOY_SORT}>
-      <SessionFormContent mode={mode} onDone={onDone} />
+      <SessionFormContent {...props} />
     </SortProvider>
   );
 }
 
-function SessionFormContent({ mode, onDone }: Props) {
+function SessionFormContent({ mode, onDone, onSaved }: Props) {
   const t = useTranslations('session');
   const common = useTranslations('common');
   const [startedAt, setStartedAt] = useState(datetimeLocalNow);
@@ -90,12 +90,8 @@ function SessionFormContent({ mode, onDone }: Props) {
   const selectedCount = selections.size;
   const liveOpen = loadedSession?.isLive === true && endedAt === '';
   const now = useNow(60_000, liveOpen);
-  const sessionSpan =
-    startedAt && endedAt
-      ? minutesBetween(startedAt, endedAt)
-      : liveOpen && startedAt
-        ? minutesBetween(startedAt, datetimeLocalValue(now))
-        : null;
+  const spanEnd = liveOpen ? datetimeLocalValue(now) : endedAt;
+  const sessionSpan = startedAt && spanEnd ? minutesBetween(startedAt, spanEnd) : null;
   const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
 
   const handlePick = (toyId: number, next: Involvement | null) => {
@@ -146,7 +142,7 @@ function SessionFormContent({ mode, onDone }: Props) {
         })),
       },
     });
-    if (saved) onDone();
+    if (saved) onSaved(saved);
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
