@@ -11,5 +11,6 @@ export default function SessionEditClient() {
   if (!Number.isFinite(id)) {
     return <main className="mx-auto max-w-300 px-6 py-12 text-center text-sm text-muted">Invalid session id.</main>;
   }
-  return <SessionForm mode={{ kind: 'edit', sessionId: id }} onDone={() => backOr('/sessions')} />;
+  const back = () => backOr('/sessions');
+  return <SessionForm mode={{ kind: 'edit', sessionId: id }} onDone={back} onSaved={back} />;
 }

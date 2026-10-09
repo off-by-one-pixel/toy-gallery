@@ -41,10 +41,12 @@ globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS
 const liveSession = (startedAt: string) => makeSession({ id: 5, startedAt, isLive: true });
 
 const onDone = vi.fn();
+const onSaved = vi.fn();
 
 describe('SessionForm live sessions', () => {
   beforeEach(() => {
     onDone.mockClear();
+    onSaved.mockClear();
     vi.clearAllMocks();
     resetNavigation();
     localStorage.clear();
@@ -54,9 +56,10 @@ describe('SessionForm live sessions', () => {
   });
 
   it('saves a start-time-only change for a live session without toys', async () => {
+    const saved = liveSession('2026-08-22T07:00:00Z');
     sessionsState.current.session = liveSession('2026-08-22T08:00:00Z');
-    sessionsState.current.saveSession.mockResolvedValue(liveSession('2026-08-22T07:00:00Z'));
-    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
+    sessionsState.current.saveSession.mockResolvedValue(saved);
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
 
     const save = await screen.findByRole('button', { name: en.session.live.updateButton });
     expect(screen.getByText(en.session.live.badge)).toBeTruthy();
@@ -77,7 +80,8 @@ describe('SessionForm live sessions', () => {
         payload: expect.objectContaining({ entries: [] }),
       }),
     );
-    await settle(() => expect(onDone).toHaveBeenCalled());
+    await settle(() => expect(onSaved).toHaveBeenCalledWith(saved));
+    expect(onDone).not.toHaveBeenCalled();
   });
 
   it('offers a start-to-now quick set for toy time on a live session', async () => {
@@ -88,7 +92,7 @@ describe('SessionForm live sessions', () => {
       isLive: true,
       entries: [{ toy: 1, involvement: 'FULLY_INSERTED', durationMinutes: null }],
     } as never);
-    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
 
     const soFar = await settle(() =>
       screen.getByRole('button', { name: new RegExp(`^${en.session.duration.soFar} ·`) }),
@@ -101,7 +105,7 @@ describe('SessionForm live sessions', () => {
 
   it('keeps save disabled for a finished session without toys', async () => {
     sessionsState.current.session = { ...liveSession('2026-08-22T08:00:00Z'), isLive: false };
-    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
 
     const save = await screen.findByRole('button', { name: en.session.save });
     expect(save.hasAttribute('disabled')).toBe(true);
@@ -132,7 +136,7 @@ describe('SessionForm toy ordering', () => {
       startedAt: '2026-06-01T20:00:00',
       entries: [{ toy: 3, involvement: 'FULLY_INSERTED', durationMinutes: null }],
     } as never);
-    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} />));
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
 
     await settle(() => expect(renderedToyNames()).toEqual(['Gamma', 'Alpha', 'Beta']));
 
@@ -141,7 +145,7 @@ describe('SessionForm toy ordering', () => {
   });
 
   it('keeps the plain sort order for new sessions', async () => {
-    render(withAppProviders(<SessionForm mode={{ kind: 'new' }} onDone={onDone} />));
+    render(withAppProviders(<SessionForm mode={{ kind: 'new' }} onDone={onDone} onSaved={onSaved} />));
     await settle(() => expect(renderedToyNames()).toEqual(['Alpha', 'Beta', 'Gamma']));
   });
 });

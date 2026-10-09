@@ -10,7 +10,7 @@ vi.mock('@/hooks/useNavigation', async (importOriginal) => {
 });
 
 import { navState, resetNavigation, updateParamsMock } from '@/test/navigation';
-import { useSessionSelectionNav } from '@/features/sessions/list/useSessionSelectionNav';
+import { selectedSessionHref, useSessionSelectionNav } from '@/features/sessions/list/useSessionSelectionNav';
 
 const LOADED = [1, 2];
 
@@ -28,6 +28,14 @@ describe('useSessionSelectionNav', () => {
 
   it('selects the loaded session named by the URL', () => {
     navState.search = 'id=2';
+    const { result } = renderSelection();
+    expect(result.current.selectedId).toBe(2);
+  });
+
+  it('builds a sessions-page link that selects the session', () => {
+    const href = selectedSessionHref(2);
+    expect(href.startsWith('/sessions?')).toBe(true);
+    navState.search = href.split('?')[1];
     const { result } = renderSelection();
     expect(result.current.selectedId).toBe(2);
   });
