@@ -22,6 +22,8 @@ import {
   parseToyIdsParam,
   sortEntriesByInvolvement,
   toggleToyFilter,
+  toyTooltip,
+  toysById,
 } from '@/features/sessions/session';
 import { Involvement, type SessionEntry } from '@/api/types';
 import { makeSession, makeToy } from '@/test/fixtures';
@@ -217,5 +219,33 @@ describe('periods', () => {
     expect(periodKey(ALL_PERIOD)).toBe('all');
     expect(periodKey({ kind: 'week', anchor: '2026-09-07' })).toBe('week:2026-09-07');
     expect(periodKey({ kind: 'month', anchor: '2026-09-01' })).toBe('month:2026-09-01');
+  });
+});
+
+describe('toysById', () => {
+  it('builds a map keyed by toy.id', () => {
+    const t1 = makeToy({ id: 1 });
+    const t2 = makeToy({ id: 2 });
+    const map = toysById([t1, t2]);
+    expect(map.get(1)).toBe(t1);
+    expect(map.get(2)).toBe(t2);
+  });
+
+  it('returns an empty map for an empty input', () => {
+    expect(toysById([]).size).toBe(0);
+  });
+});
+
+describe('toyTooltip', () => {
+  it('joins brand, name, size with single spaces', () => {
+    expect(toyTooltip(makeToy({ brand: 'Acme', name: 'Slim', size: 'M' }))).toBe('Acme Slim M');
+  });
+
+  it('omits empty parts', () => {
+    expect(toyTooltip(makeToy({ brand: 'Acme', name: 'Slim', size: '' }))).toBe('Acme Slim');
+  });
+
+  it('returns an empty string when every part is empty', () => {
+    expect(toyTooltip(makeToy({ brand: '', name: '', size: '' }))).toBe('');
   });
 });
