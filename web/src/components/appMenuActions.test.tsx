@@ -120,6 +120,7 @@ describe('useAppMenuItems', () => {
     await settleAssert(() => expect(rebuildRecords).toHaveBeenCalledTimes(1));
     await settleAssert(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'list'] }));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'stats'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['toys'] });
   });
 
   it('signs the user out, clearing stored credentials', async () => {

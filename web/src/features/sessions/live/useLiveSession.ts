@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { fetchLiveSession, startLiveSession } from '@/api';
-import { queryKeys } from '@/api/queryKeys';
+import { invalidateSessionHistory, queryKeys } from '@/api/queryKeys';
 import { useApiQuery } from '@/hooks/useApi';
 import type { Session } from '@/api/types';
 
@@ -49,7 +49,6 @@ export function useLiveSessionSync(): void {
     }
     if (previousIdRef.current === liveId) return;
     previousIdRef.current = liveId;
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.lists });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.sessions.stats });
+    invalidateSessionHistory(queryClient);
   }, [queryClient, isLoaded, liveId]);
 }
