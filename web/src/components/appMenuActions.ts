@@ -1,4 +1,4 @@
-import { Image as ImageIcon, LogOut, Settings, Trophy, type LucideIcon } from 'lucide-react';
+import { Image as ImageIcon, LogOut, Settings, Trophy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
 
@@ -8,53 +8,6 @@ import type { ActionMenuItem } from '@/components/ActionDropdownMenu';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
 import { useApiMutation } from '@/hooks/useApi';
-import type { Translator } from '@/i18n/translator';
-
-export type AppMenuContext = Readonly<{
-  mediaConfigured: boolean;
-  username: string | null;
-}>;
-
-type AppMenuActionId = 'settings' | 'refresh-media' | 'rebuild-records' | 'logout';
-
-export type AppMenuActionDef = Readonly<{
-  id: AppMenuActionId;
-  icon: LucideIcon;
-  label: (t: Translator) => string;
-  description: (t: Translator, ctx: AppMenuContext) => string;
-  visible?: (ctx: AppMenuContext) => boolean;
-}>;
-
-export const APP_MENU_ACTIONS: readonly AppMenuActionDef[] = [
-  {
-    id: 'settings',
-    icon: Settings,
-    label: (t) => t('collection.menu.settingsLabel'),
-    description: (t) => t('collection.menu.settingsDescription'),
-  },
-  {
-    id: 'refresh-media',
-    icon: ImageIcon,
-    label: (t) => t('session.media.refreshButtonLabel'),
-    description: (t) => t('session.media.refreshButton'),
-    visible: (ctx) => ctx.mediaConfigured,
-  },
-  {
-    id: 'rebuild-records',
-    icon: Trophy,
-    label: (t) => t('settings.data.rebuildLabel'),
-    description: (t) => t('settings.data.rebuildDescription'),
-  },
-  {
-    id: 'logout',
-    icon: LogOut,
-    label: (t) => t('collection.menu.signOutLabel'),
-    description: (t, ctx) =>
-      ctx.username
-        ? t('collection.menu.signOutDescriptionSignedIn', { username: ctx.username })
-        : t('collection.menu.signOutDescriptionAnonymous'),
-  },
-];
 
 export function useAppMenuItems(): ActionMenuItem[] {
   const t = useTranslations();
@@ -74,19 +27,40 @@ export function useAppMenuItems(): ActionMenuItem[] {
     invalidates: sessionDataKeys,
   });
 
-  const ctx: AppMenuContext = { mediaConfigured: configured, username: username ?? null };
-  const run: Record<AppMenuActionId, () => void> = {
-    settings: () => navigate('/settings'),
-    'refresh-media': () => void refreshMedia.run(),
-    'rebuild-records': () => void rebuild.run(),
-    logout,
-  };
-
-  return APP_MENU_ACTIONS.filter((action) => action.visible?.(ctx) ?? true).map((action) => ({
-    id: action.id,
-    icon: action.icon,
-    label: action.label(t),
-    description: action.description(t, ctx),
-    onAction: run[action.id],
-  }));
+  return [
+    {
+      id: 'settings',
+      icon: Settings,
+      label: t('collection.menu.settingsLabel'),
+      description: t('collection.menu.settingsDescription'),
+      onAction: () => navigate('/settings'),
+    },
+    ...(configured
+      ? [
+          {
+            id: 'refresh-media',
+            icon: ImageIcon,
+            label: t('session.media.refreshButtonLabel'),
+            description: t('session.media.refreshButton'),
+            onAction: () => void refreshMedia.run(),
+          },
+        ]
+      : []),
+    {
+      id: 'rebuild-records',
+      icon: Trophy,
+      label: t('settings.data.rebuildLabel'),
+      description: t('settings.data.rebuildDescription'),
+      onAction: () => void rebuild.run(),
+    },
+    {
+      id: 'logout',
+      icon: LogOut,
+      label: t('collection.menu.signOutLabel'),
+      description: username
+        ? t('collection.menu.signOutDescriptionSignedIn', { username })
+        : t('collection.menu.signOutDescriptionAnonymous'),
+      onAction: logout,
+    },
+  ];
 }

@@ -4,12 +4,10 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { createToy, deleteToy, fetchToys, patchToy } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
-import type { Toy } from '@/api/types';
+import type { Toy, ToyPayload } from '@/api/types';
 import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 
 const NO_TOYS: Toy[] = [];
-
-export type ToyPayload = Parameters<typeof createToy>[0];
 
 export type SaveToyArgs = Readonly<{ toyId: number | null; payload: ToyPayload }>;
 
@@ -26,7 +24,6 @@ export interface Toys {
   updateToy: (args: UpdateToyArgs) => Promise<Toy | undefined>;
   removeToy: (id: number) => Promise<unknown>;
   isRemovingToy: boolean;
-  invalidateToys: () => void;
 }
 
 export function useToys(options: ToysOptions = {}): Toys {
@@ -59,6 +56,5 @@ export function useToys(options: ToysOptions = {}): Toys {
     updateToy: update.run,
     removeToy: removal.run,
     isRemovingToy: removal.isPending,
-    invalidateToys,
   };
 }

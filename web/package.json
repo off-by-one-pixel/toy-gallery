@@ -8,7 +8,6 @@
     "dev": "next dev --webpack",
     "prebuild": "npm run codegen",
     "build": "next build",
-    "start": "npx serve@latest ./build -l 3000",
     "pretest": "npm run codegen",
     "test": "vitest run",
     "test:watch": "vitest",

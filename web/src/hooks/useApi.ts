@@ -3,28 +3,21 @@
 import { useCallback } from 'react';
 
 import { Toast } from '@heroui/react';
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryKey,
-  type UseQueryOptions,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryKey, type UseQueryOptions } from '@tanstack/react-query';
 
 import { useTranslations } from 'next-intl';
 
 import { formatError } from '@/api/errors';
 
-export function useReportError(inlineSink?: (message: string) => void): (err: unknown) => void {
+export function useReportError(errorSink?: (message: string) => void): (err: unknown) => void {
   const t = useTranslations('errors');
   return useCallback(
     (err: unknown) => {
       const message = formatError(err, t);
-      if (inlineSink) inlineSink(message);
+      if (errorSink) errorSink(message);
       else Toast.toast.danger(message);
     },
-    [inlineSink, t],
+    [errorSink, t],
   );
 }
 
@@ -35,30 +28,6 @@ export function useApiQuery<T>({ key, fn, ...options }: ApiQueryOptions<T>) {
   const t = useTranslations('errors');
   const { data, isPending, isError, isFetched, error } = useQuery({ queryKey: key, queryFn: fn, ...options });
   return { data, isPending, isError, isFetched, errorMessage: error ? formatError(error, t) : null };
-}
-
-type ApiInfiniteQueryOptions<TPage> = Readonly<{
-  key: QueryKey;
-  fn: (page: number) => Promise<TPage>;
-  getNextPage: (lastPage: TPage, pages: TPage[]) => number | undefined;
-}>;
-
-export function useApiInfiniteQuery<TPage>({ key, fn, getNextPage }: ApiInfiniteQueryOptions<TPage>) {
-  const t = useTranslations('errors');
-  const { data, isPending, hasNextPage, isFetchingNextPage, fetchNextPage, error } = useInfiniteQuery({
-    queryKey: key,
-    queryFn: ({ pageParam }) => fn(pageParam),
-    initialPageParam: 1,
-    getNextPageParam: getNextPage,
-  });
-  return {
-    data,
-    isPending,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    errorMessage: error ? formatError(error, t) : null,
-  };
 }
 
 type ApiMutationOptions<TArgs, TResult> = Readonly<{
@@ -78,8 +47,8 @@ export interface ApiMutation<TArgs, TResult> {
 export function useApiMutation<TArgs = void, TResult = unknown>(
   options: ApiMutationOptions<TArgs, TResult>,
 ): ApiMutation<TArgs, TResult> {
-  const t = useTranslations('errors');
   const queryClient = useQueryClient();
+  const reportError = useReportError(options.errorSink);
   const mutation = useMutation({
     mutationFn: options.fn,
     onSuccess: (result) => {
@@ -90,11 +59,7 @@ export function useApiMutation<TArgs = void, TResult = unknown>(
       for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey });
       options.onSuccess?.(result);
     },
-    onError: (err) => {
-      const message = formatError(err, t);
-      if (options.errorSink) options.errorSink(message);
-      else Toast.toast.danger(message);
-    },
+    onError: reportError,
     onSettled: options.onSettled,
   });
   const { mutateAsync, isPending } = mutation;

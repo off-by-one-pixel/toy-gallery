@@ -19,21 +19,7 @@ export function useMediaStatus(): Readonly<{ configured: boolean }> {
   return { configured: data?.configured === true };
 }
 
-export type MediaStripState = Readonly<{
-  hidden: boolean;
-  items: readonly SessionMediaItem[];
-  shareUrl: string | null;
-  showSkeleton: boolean;
-  skeletonCount: number;
-  showError: boolean;
-  showEmpty: boolean;
-  toggleLike: (item: SessionMediaItem) => void;
-  openIndex: number | null;
-  open: (index: number) => void;
-  close: () => void;
-}>;
-
-export function useMediaStrip(sessionId: number, expectedCount: number): MediaStripState {
+export function useMediaStrip(sessionId: number, expectedCount: number) {
   const { hideSensitive } = usePrivacy();
   const { openIndex, open, close } = useMediaLightboxNav(sessionId);
   const { configured } = useMediaStatus();
