@@ -1,12 +1,5 @@
 {
   "include": ["api"],
-  "exclude": [
-    "**/__pycache__",
-    "**/.venv",
-    "**/node_modules",
-    "web",
-    "toy-editor"
-  ],
   "extraPaths": ["api"],
   "venvPath": "api",
   "venv": ".venv",

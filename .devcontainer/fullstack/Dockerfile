@@ -1,6 +1,5 @@
 FROM python:3.13-slim
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     git \
@@ -11,20 +10,12 @@ RUN apt-get update && apt-get install -y \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Trust GitHub's host key so read-only ~/.ssh mounts don't need to
-# append to a writable known_hosts on first connection.
 RUN mkdir -p /etc/ssh && ssh-keyscan -H github.com >> /etc/ssh/ssh_known_hosts
 
-# Install Node.js 22
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# JRE for the SonarLint VS Code extension. SonarLint requires a JAVA_HOME
-# directory (not just `java` on PATH) — the arch-specific install path
-# is unsuitable on a multi-arch dev container, so symlink it to a stable
-# /usr/lib/jvm/default-java for both the ENV below and the workspace
-# `sonarlint.ls.javaHome` setting to reference.
 RUN apt-get update && apt-get install -y \
     openjdk-21-jre-headless \
     && rm -rf /var/lib/apt/lists/* \
@@ -41,12 +32,8 @@ RUN apt-get update && apt-get install -y unzip \
     && mv /opt/sonar-scanner-${SONAR_SCANNER_VERSION} /opt/sonar-scanner \
     && ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
-# Install uv (Python package manager) and pre-commit (git hook runner).
-# pre-commit is installed globally so `pre-commit install` works regardless
-# of which project venv the shell sits in.
 RUN pip install --no-cache-dir --upgrade pip uv pre-commit
 
-# Create non-root user
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID

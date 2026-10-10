@@ -1,16 +1,16 @@
-# Node.js dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-store/
 .pnpm-debug.log*
+.next/
+next-env.d.ts
+*.tsbuildinfo
+web/src/api/generated/
 
-# Python artifacts
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 *.env
 *.venv
 env/
@@ -23,72 +23,46 @@ venv.bak/
 .ruff_cache/
 .tox/
 
-# VS Code settings
 .vscode/
-
-# Local assistant/tooling files
+.idea/
 .claude/
 CLAUDE.md
 specs/
-
-# OS generated files
 .DS_Store
 Thumbs.db
 
-# Build output
 dist/
 build/
 out/
 *.egg-info/
-
-# Logs
 *.log
 
-# Environment files
-.env
 .env.*
 !.env.example
+*.pem
 
-# Temporary files
 *.tmp
 *.swp
 *.swo
-
-# Coverage reports
-coverage/
-*.cover
-*.coverage
-.coverage
-.coverage.*
-coverage.xml
-htmlcov/
-
-# Test output
-junit.xml
-test-results/
-
-# Misc
-.idea/
 *.bak
 *.orig
 *.rej
 *.sublime-workspace
 *.sublime-project
 
-# Database files
+coverage/
+*.cover
+*.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+junit.xml
+test-results/
+
 *.sqlite
 *.sqlite3
 
-# Next.js
-next-env.d.ts
-
-# Design comps — lives locally, not versioned
 mockups/
-
-# `manage.py collectstatic` output (Django admin/DRF assets, populated by
-# `make be-prod` and the Docker entrypoint).
 api/staticfiles/
-
-# Ad-hoc helper scripts
 scripts/
 .scannerwork/

@@ -1,17 +1,7 @@
-"""Idempotent admin bootstrap for the all-in-one Docker image.
-
-If `INITIAL_USERNAME` and `INITIAL_PASSWORD` are both set and no user with
-that username exists, create an admin with those credentials. Safe to run
-on every container start — does nothing on subsequent runs once the user
-exists.
-"""
-
 import os
 import sys
 from pathlib import Path
 
-# This script lives at <project_root>/docker/init_superuser.py — make the
-# Django project importable when invoked by absolute path.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import django
