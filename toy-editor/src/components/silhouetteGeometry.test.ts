@@ -29,27 +29,25 @@ describe("sectionBodyGeometry", () => {
     expected.forEach((v, i) => expectClose(nums[i], v));
   });
 
-  it("topCurveAngle=180 lifts the top CPs above the rim", () => {
-    const { d } = sectionBodyGeometry({ ...baseSection, topCurveAngle: 180 }, 1, 100, 100);
-    const nums = parseNumbers(d);
-    expectClose(nums[3], -25);
-    expectClose(nums[13], -25);
-  });
-
-  it("topCurveAngle=90 places top CPs horizontally outward at y=0", () => {
-    const { d } = sectionBodyGeometry({ ...baseSection, topCurveAngle: 90 }, 1, 100, 100);
-    const nums = parseNumbers(d);
-    expectClose(nums[2], -25);
-    expectClose(nums[3], 0);
-    expectClose(nums[12], 125);
-    expectClose(nums[13], 0);
-  });
-
-  it("bottomCurveAngle=0 pushes bottom CPs below the rim", () => {
-    const { d } = sectionBodyGeometry({ ...baseSection, bottomCurveAngle: 0 }, 1, 100, 100);
-    const nums = parseNumbers(d);
-    expectClose(nums[5], 75);
-    expectClose(nums[11], 75);
+  it.each<[string, Partial<ToySection>, Record<number, number>]>([
+    [
+      "topCurveAngle=180 lifts the top CPs above the rim",
+      { topCurveAngle: 180 },
+      { 3: -25, 13: -25 },
+    ],
+    [
+      "topCurveAngle=90 places top CPs horizontally outward at y=0",
+      { topCurveAngle: 90 },
+      { 2: -25, 3: 0, 12: 125, 13: 0 },
+    ],
+    [
+      "bottomCurveAngle=0 pushes bottom CPs below the rim",
+      { bottomCurveAngle: 0 },
+      { 5: 75, 11: 75 },
+    ],
+  ])("%s", (_, angles, expected) => {
+    const nums = parseNumbers(sectionBodyGeometry({ ...baseSection, ...angles }, 1, 100, 100).d);
+    for (const [index, value] of Object.entries(expected)) expectClose(nums[Number(index)], value);
   });
 
   it("centers the smaller end against the wider end via diff/diffPrev", () => {

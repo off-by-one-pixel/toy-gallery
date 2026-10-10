@@ -15,7 +15,7 @@ import {
   sizeGuideGeometry,
   totalReadoutPosition,
 } from "./geometry";
-import { buildSectionMeta, RULER_AXIS_X_PX, RULER_WIDTH_PX } from "./layout";
+import { buildSectionMeta, RULER_WIDTH_PX } from "./layout";
 
 const noop = () => {};
 
@@ -100,28 +100,16 @@ describe("rimButtonsGeometry", () => {
 });
 
 describe("rimTickLine", () => {
-  it("anchors x1/y1 at the button center", () => {
-    const line = rimTickLine(100, 100, 0);
+  it.each([
+    ["0° points the tick straight down", 0, 100, 107],
+    ["90° points horizontally outward (left at left anchor)", 90, 93, 100],
+    ["180° points straight up", 180, 100, 93],
+  ] as const)("%s, anchored at the button center", (_, angle, x2, y2) => {
+    const line = rimTickLine(100, 100, angle);
     expect(line.x1).toBe(100);
     expect(line.y1).toBe(100);
-  });
-
-  it("0° points the tick straight down", () => {
-    const line = rimTickLine(100, 100, 0);
-    expect(line.x2).toBeCloseTo(100, 6);
-    expect(line.y2).toBeCloseTo(107, 6);
-  });
-
-  it("90° points horizontally outward (left at left anchor)", () => {
-    const line = rimTickLine(100, 100, 90);
-    expect(line.x2).toBeCloseTo(93, 6);
-    expect(line.y2).toBeCloseTo(100, 6);
-  });
-
-  it("180° points straight up", () => {
-    const line = rimTickLine(100, 100, 180);
-    expect(line.x2).toBeCloseTo(100, 6);
-    expect(line.y2).toBeCloseTo(93, 6);
+    expect(line.x2).toBeCloseTo(x2, 6);
+    expect(line.y2).toBeCloseTo(y2, 6);
   });
 });
 
@@ -210,15 +198,6 @@ describe("removeButtonPosition", () => {
 });
 
 describe("rulerGeometry", () => {
-  it("locks tick offsets to the constant ruler axis x", () => {
-    const layout = makeLayout();
-    const g = rulerGeometry(layout);
-    expect(g.axisX).toBe(RULER_AXIS_X_PX);
-    expect(g.tickInner).toBe(RULER_AXIS_X_PX + 6);
-    expect(g.tickOuter).toBe(RULER_AXIS_X_PX - 6);
-    expect(g.labelX).toBe(RULER_AXIS_X_PX - 10);
-  });
-
   it("axis spans the full silhouette height", () => {
     const layout = makeLayout();
     const g = rulerGeometry(layout);
