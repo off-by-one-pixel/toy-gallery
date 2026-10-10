@@ -29,7 +29,9 @@ describe("rim angle accessors", () => {
 
   it("returns the explicit angle when set", () => {
     expect(sectionTopCurveAngle({ id: 0, diameter: 100, height: 50, topCurveAngle: 90 })).toBe(90);
-    expect(sectionBottomCurveAngle({ id: 0, diameter: 100, height: 50, bottomCurveAngle: 45 })).toBe(45);
+    expect(
+      sectionBottomCurveAngle({ id: 0, diameter: 100, height: 50, bottomCurveAngle: 45 }),
+    ).toBe(45);
   });
 });
 
@@ -45,36 +47,34 @@ describe("nextCurveAngle", () => {
   });
 });
 
-describe("setTopCurveAngle / setBottomCurveAngle", () => {
-  it("updates only the targeted section", () => {
+describe("cycleTopCurveAngle / cycleBottomCurveAngle", () => {
+  it("cycleTopCurveAngle updates only the targeted section", () => {
     useToyStore.setState({
       sections: [
         { id: 0, diameter: 100, height: 50 },
         { id: 1, diameter: 80, height: 30 },
       ],
     });
-    useToyStore.getState().setTopCurveAngle(1, 90);
+    useToyStore.getState().cycleTopCurveAngle(1);
     const after = useToyStore.getState().sections;
     expect(after[0].topCurveAngle).toBeUndefined();
-    expect(after[1].topCurveAngle).toBe(90);
+    expect(after[1].topCurveAngle).toBe(45);
   });
 
-  it("setBottomCurveAngle updates only the targeted section's bottomCurveAngle", () => {
+  it("cycleBottomCurveAngle updates only the targeted section's bottomCurveAngle", () => {
     useToyStore.setState({
       sections: [
         { id: 0, diameter: 100, height: 50 },
         { id: 1, diameter: 80, height: 30 },
       ],
     });
-    useToyStore.getState().setBottomCurveAngle(0, 45);
+    useToyStore.getState().cycleBottomCurveAngle(0);
     const after = useToyStore.getState().sections;
-    expect(after[0].bottomCurveAngle).toBe(45);
+    expect(after[0].bottomCurveAngle).toBe(0);
     expect(after[0].topCurveAngle).toBeUndefined();
     expect(after[1].bottomCurveAngle).toBeUndefined();
   });
-});
 
-describe("cycleTopCurveAngle / cycleBottomCurveAngle", () => {
   it("cycleTopCurveAngle starts from the default and walks the cycle", () => {
     useToyStore.setState({ sections: [{ id: 7, diameter: 100, height: 50 }] });
     const cycle = useToyStore.getState().cycleTopCurveAngle;
@@ -125,12 +125,12 @@ describe("setSectionColor", () => {
     expect(useToyStore.getState().sections[0].color).toBeNull();
   });
 
-  it("survives hydrate and getToy round-trips", () => {
+  it("survives hydrate", () => {
     useToyStore.getState().hydrate({
       sections: [{ id: 1, diameter: 100, height: 50, color: "#00ff00" }],
       topShape: "EGG",
       bottomShape: "FLAT",
     });
-    expect(useToyStore.getState().getToy().sections[0].color).toBe("#00ff00");
+    expect(useToyStore.getState().sections[0].color).toBe("#00ff00");
   });
 });

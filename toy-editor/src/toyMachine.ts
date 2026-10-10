@@ -1,4 +1,3 @@
-import type { RefObject } from "react";
 import { create } from "zustand";
 
 export type StyleOption = {
@@ -48,18 +47,13 @@ export interface Toy {
   sections: ToySection[];
   topShape: Shape;
   bottomShape: Shape;
-  ref?: RefObject<SVGSVGElement | null>;
   insertableLengthMm?: number | null;
   knownTotalMm?: number | null;
   knownSizeMm?: number | null;
-  snapEnabled?: boolean;
 }
 
 interface ToyStore extends Toy {
-  scaleFactor: number;
   nextId: number;
-  style: StyleOption;
-  selectedId: number | null;
 
   insertableLengthMm: number | null;
   knownTotalMm: number | null;
@@ -67,14 +61,8 @@ interface ToyStore extends Toy {
   snapEnabled: boolean;
   showSectionCircumference: boolean;
 
-  getMaxWidth: () => number;
-  getTotalHeight: () => number;
   newSection: () => void;
   removeSection: (id: number) => void;
-  getPreviousDiameter: (id: number) => number;
-  getXOffset: (id: number) => number;
-  getYOffset: (id: number) => number;
-  getToy: () => Toy;
 
   setDiameter: (id: number, diameter: number) => void;
   setHeight: (id: number, height: number) => void;
@@ -85,15 +73,8 @@ interface ToyStore extends Toy {
 
   setTopShape: (shape: Shape) => void;
   setBottomShape: (shape: Shape) => void;
-  setTopCurveAngle: (id: number, angle: CurveAngle) => void;
-  setBottomCurveAngle: (id: number, angle: CurveAngle) => void;
   cycleTopCurveAngle: (id: number) => void;
   cycleBottomCurveAngle: (id: number) => void;
-  moveSection: (id: number, direction: number) => void;
-  reorderSection: (fromId: number, toId: number, position: "before" | "after") => void;
-  setStyle: (style: Partial<StyleOption>) => void;
-  setRef: (ref: RefObject<SVGSVGElement | null>) => void;
-  setSelected: (id: number | null) => void;
 
   setInsertableLength: (mm: number | null) => void;
   setKnownTotal: (mm: number | null) => void;
@@ -115,17 +96,9 @@ const withTouched = (s: ToySection, touched: Partial<ToyTouched>): ToySection =>
 
 export const useToyStore = create<ToyStore>()((set, get) => ({
   sections: [{ id: 0, diameter: 100, height: 50, touched: { ...FRESH_TOUCHED } }],
-  style: {
-    borderWidth: 2,
-    borderColor: "#000",
-    color: "lightblue",
-  },
-  scaleFactor: 1,
   topShape: Shape.CONE,
   bottomShape: Shape.FLAT,
-  ref: undefined,
   nextId: 1,
-  selectedId: null,
 
   insertableLengthMm: null,
   knownTotalMm: null,
@@ -133,17 +106,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   snapEnabled: true,
   showSectionCircumference: false,
 
-  setRef: (r) => set({ ref: r }),
-  setSelected: (id) => set({ selectedId: id }),
-  getMaxWidth: () => {
-    const widths = get().sections.map((r) => r.diameter);
-    return Math.max(...widths, 0);
-  },
-  getTotalHeight: () => {
-    return get()
-      .sections.map((r) => r.height)
-      .reduce((a, b) => a + b, 0);
-  },
   newSection: () => {
     const id = get().nextId;
     set((state) => ({
@@ -157,43 +119,8 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   removeSection: (id) => {
     set((state) => ({
       sections: state.sections.filter((section) => section.id !== id),
-      selectedId: state.selectedId === id ? null : state.selectedId,
     }));
   },
-  getPreviousDiameter: (id) => {
-    const sections = get().sections;
-    const index = sections.findIndex((section) => section.id === id);
-    if (index > 0) return sections[index - 1].diameter;
-    return sections[index]?.diameter ?? 0;
-  },
-  getXOffset: (id) => {
-    const sections = get().sections;
-    const index = sections.findIndex((section) => section.id === id);
-    const maxWidth = get().getMaxWidth();
-    const diameter = sections[index].diameter;
-    if (index > 0) {
-      return (maxWidth - Math.max(diameter, get().getPreviousDiameter(id))) / 2;
-    }
-    return diameter / 2;
-  },
-  getYOffset: (id) => {
-    const sections = get().sections;
-    const index = sections.findIndex((section) => section.id === id);
-    if (index > 0) {
-      return sections.slice(0, index).reduce((sum, s) => sum + s.height, 0);
-    }
-    return 0;
-  },
-  getToy: () => ({
-    sections: get().sections,
-    topShape: get().topShape,
-    bottomShape: get().bottomShape,
-    ref: get().ref,
-    insertableLengthMm: get().insertableLengthMm,
-    knownTotalMm: get().knownTotalMm,
-    knownSizeMm: get().knownSizeMm,
-    snapEnabled: get().snapEnabled,
-  }),
   setDiameter: (id, diameter) => {
     set((state) => ({
       sections: state.sections.map((section) =>
@@ -242,53 +169,24 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   },
   setTopShape: (shape) => set({ topShape: shape }),
   setBottomShape: (shape) => set({ bottomShape: shape }),
-  setTopCurveAngle: (id, angle) => {
-    set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id ? { ...section, topCurveAngle: angle } : section,
-      ),
-    }));
-  },
-  setBottomCurveAngle: (id, angle) => {
-    set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id ? { ...section, bottomCurveAngle: angle } : section,
-      ),
-    }));
-  },
   cycleTopCurveAngle: (id) => {
-    const section = get().sections.find((s) => s.id === id);
-    if (!section) return;
-    get().setTopCurveAngle(id, nextCurveAngle(sectionTopCurveAngle(section)));
+    set((state) => ({
+      sections: state.sections.map((section) =>
+        section.id === id
+          ? { ...section, topCurveAngle: nextCurveAngle(sectionTopCurveAngle(section)) }
+          : section,
+      ),
+    }));
   },
   cycleBottomCurveAngle: (id) => {
-    const section = get().sections.find((s) => s.id === id);
-    if (!section) return;
-    get().setBottomCurveAngle(id, nextCurveAngle(sectionBottomCurveAngle(section)));
+    set((state) => ({
+      sections: state.sections.map((section) =>
+        section.id === id
+          ? { ...section, bottomCurveAngle: nextCurveAngle(sectionBottomCurveAngle(section)) }
+          : section,
+      ),
+    }));
   },
-  moveSection: (id, direction) => {
-    const index = get().sections.findIndex((section) => section.id === id);
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= get().sections.length) return;
-    const newSections = [...get().sections];
-    [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
-    set({ sections: newSections });
-  },
-  reorderSection: (fromId, toId, position) => {
-    set((state) => {
-      if (fromId === toId) return {};
-      const sections = [...state.sections];
-      const fromIdx = sections.findIndex((s) => s.id === fromId);
-      let toIdx = sections.findIndex((s) => s.id === toId);
-      if (fromIdx < 0 || toIdx < 0) return {};
-      const [item] = sections.splice(fromIdx, 1);
-      if (fromIdx < toIdx) toIdx -= 1;
-      const insertIdx = position === "before" ? toIdx : toIdx + 1;
-      sections.splice(insertIdx, 0, item);
-      return { sections };
-    });
-  },
-  setStyle: (style) => set({ style: { ...get().style, ...style } }),
   setInsertableLength: (mm) => set({ insertableLengthMm: mm }),
   setKnownTotal: (mm) => set({ knownTotalMm: mm }),
   setKnownSize: (mm) => set({ knownSizeMm: mm }),
@@ -304,11 +202,10 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
       topShape: toy.topShape,
       bottomShape: toy.bottomShape,
       nextId: maxId + 1,
-      selectedId: null,
       insertableLengthMm: toy.insertableLengthMm ?? null,
       knownTotalMm: toy.knownTotalMm ?? null,
       knownSizeMm: toy.knownSizeMm ?? null,
-      snapEnabled: toy.snapEnabled ?? true,
+      snapEnabled: true,
       showSectionCircumference: toy.sections.some((s) => s.circumference != null),
     });
   },

@@ -7,7 +7,6 @@ type Props = {
   previousDiameter: number;
   totalWidth: number;
   style: StyleOption;
-  onSelect?: (id: number) => void;
   onHover?: (id: number | null) => void;
   interactive?: boolean;
 };
@@ -18,7 +17,6 @@ const Section = ({
   previousDiameter,
   totalWidth,
   style,
-  onSelect,
   onHover,
   interactive = true,
 }: Props) => {
@@ -28,12 +26,8 @@ const Section = ({
     <g
       className={interactive ? "toy-editor-part" : undefined}
       transform={`translate(${x}, 0)`}
-      onClick={onSelect ? () => onSelect(section.id) : undefined}
       onMouseEnter={onHover ? () => onHover(section.id) : undefined}
       onMouseLeave={onHover ? () => onHover(null) : undefined}
-      role={onSelect ? "button" : undefined}
-      tabIndex={onSelect ? 0 : undefined}
-      style={{ cursor: onSelect ? "pointer" : undefined }}
     >
       <path
         d={d}
