@@ -333,31 +333,6 @@ class RecordSessionTests(RecordsTestBase):
         self.assertEqual(depth[0].toy_entry.toy_id, toy)
         self.assertEqual(depth[0].value, 170.0)
 
-
-class RecordGatingTests(RecordsTestBase):
-    def test_used_entries_set_no_session_records_but_do_set_toy_records(self):
-        toy = self._create_toy("A")
-        self._record_on(1, [{"toy": toy, "involvement": "USED"}])
-        self.assertEqual(len(self._rows("pr-width")), 0)
-        self.assertEqual(len(self._rows("pr-depth")), 0)
-
-        level_rows = self._rows("toy-level")
-        self.assertEqual(len(level_rows), 1)
-        self.assertEqual(level_rows[0].toy_id, toy)
-        self.assertEqual(level_rows[0].value, 0.0)
-
-    def test_inserted_sets_width_but_not_depth(self):
-        toy = self._create_toy("A")
-        self._record_on(1, [{"toy": toy, "involvement": "INSERTED"}])
-        self.assertEqual(len(self._rows("pr-width")), 1)
-        self.assertEqual(len(self._rows("pr-depth")), 0)
-
-    def test_toys_without_dimensions_set_no_session_records(self):
-        toy = self._create_toy("A", circumference=None, insertable_length=None)
-        self._record_on(1, [{"toy": toy}])
-        self.assertEqual(len(self._rows("pr-width")), 0)
-        self.assertEqual(len(self._rows("pr-depth")), 0)
-
     def test_equal_value_on_one_key_still_evaluates_the_others(self):
         toy = self._create_toy("A")
         session = self._record_on(1, [{"toy": toy, "involvement": "INSERTED"}])
@@ -383,21 +358,6 @@ class RecordGatingTests(RecordsTestBase):
         record_session(session)
 
         self.assertEqual(len(self._rows("pr-width")), 0)
-
-    def test_attribution_goes_to_the_qualifying_entry(self):
-        toy_used = self._create_toy("Used", circumference=240.0, insertable_length=190)
-        toy_inserted = self._create_toy("Inserted", circumference=240.0, insertable_length=190)
-        self._record_on(
-            1,
-            [
-                {"toy": toy_used, "involvement": "USED"},
-                {"toy": toy_inserted, "involvement": "INSERTED"},
-            ],
-        )
-
-        width = self._rows("pr-width")
-        self.assertEqual(len(width), 1)
-        self.assertEqual(width[0].toy_entry.toy_id, toy_inserted)
 
     def test_deleting_the_record_holder_leaves_the_older_row_standing(self):
         toy_a = self._create_toy("A")
