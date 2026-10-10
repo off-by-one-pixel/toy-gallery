@@ -3,11 +3,7 @@
 import { render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/hooks/useNavigation', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
-  const { testNavigation } = await import('@/test/navigation');
-  return { ...original, useNavigation: () => testNavigation() };
-});
+vi.mock('@/hooks/useNavigation', async () => (await import('@/test/navigation')).navigationModule());
 
 const formProps = vi.hoisted(() => ({
   current: null as null | { onDone: () => void; onSaved: (session: { id: number }) => void },

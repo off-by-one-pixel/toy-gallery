@@ -5,11 +5,7 @@ import { act, renderHook } from '@testing-library/react';
 import { settle as settleAssert } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/hooks/useNavigation', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
-  const { testNavigation } = await import('@/test/navigation');
-  return { ...original, useNavigation: () => testNavigation() };
-});
+vi.mock('@/hooks/useNavigation', async () => (await import('@/test/navigation')).navigationModule());
 
 vi.mock('@/api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api')>()),
@@ -24,15 +20,10 @@ import { fetchMediaStatus, rebuildRecords, refreshAllSessionMedia } from '@/api'
 import { tokenStorage } from '@/api/http';
 import { useAppMenuItems } from '@/components/appMenuActions';
 import { createTestQueryClient } from '@/test/QueryWrapper';
-import { withAppProviders } from '@/test/render';
-
-const makeWrapper = (client: QueryClient) =>
-  function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-    return withAppProviders(children, { client });
-  };
+import { appWrapper } from '@/test/render';
 
 const renderItems = (client: QueryClient = createTestQueryClient()) =>
-  renderHook(() => useAppMenuItems(), { wrapper: makeWrapper(client) });
+  renderHook(() => useAppMenuItems(), { wrapper: appWrapper(client) });
 
 const settle = async () => {
   await settleAssert(() => expect(fetchMediaStatus).toHaveBeenCalled());

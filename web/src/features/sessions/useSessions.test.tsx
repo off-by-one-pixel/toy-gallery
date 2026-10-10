@@ -4,11 +4,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/hooks/useNavigation', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
-  const { testNavigation } = await import('@/test/navigation');
-  return { ...original, useNavigation: () => testNavigation() };
-});
+vi.mock('@/hooks/useNavigation', async () => (await import('@/test/navigation')).navigationModule());
 
 vi.mock('@/api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api')>()),
@@ -38,7 +34,7 @@ import { makeSession, makeToy } from '@/test/fixtures';
 import { navState, resetNavigation } from '@/test/navigation';
 import { settle } from '@/test/wait';
 import { createTestQueryClient } from '@/test/QueryWrapper';
-import { withAppProviders } from '@/test/render';
+import { appWrapper } from '@/test/render';
 import { type SessionPayload, useSaveSession, useSession, useSessions } from '@/features/sessions/useSessions';
 
 const payload: SessionPayload = { startedAt: '2026-08-21T10:00:00Z', endedAt: null, entries: [] };
@@ -53,13 +49,8 @@ type SessionQuery = Parameters<typeof fetchSessions>[0];
 let respondSessions: (query: SessionQuery) => SessionPage;
 const sessionQueries: NonNullable<SessionQuery>[] = [];
 
-const makeWrapper = (client: QueryClient) =>
-  function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-    return withAppProviders(children, { client, sort: SESSION_SORT });
-  };
-
 const renderAppHook = <T,>(hook: () => T, client: QueryClient = createTestQueryClient()) =>
-  renderHook(hook, { wrapper: makeWrapper(client) });
+  renderHook(hook, { wrapper: appWrapper(client, { sort: SESSION_SORT }) });
 
 describe('session hooks', () => {
   beforeEach(() => {

@@ -7,7 +7,8 @@ import en from '@/i18n/catalogs/en.json';
 import type { Toy } from '@/api/types';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
 import { withAppProviders } from '@/test/render';
-import type { GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
+import type { GhostTarget } from '@/features/toys/gallery/ghost/ghosts';
+import { makeGhost } from '@/test/fixtures';
 
 const source = {
   brand: 'Acme',
@@ -17,12 +18,7 @@ const source = {
   insertableLength: 158,
 } as unknown as Toy;
 
-const ghost = {
-  id: 1,
-  sourceName: 'Acme Ember M',
-  circumference: 136,
-  insertableLength: 158,
-} as GhostToy;
+const ghost = makeGhost({ sourceName: 'Acme Ember M', circumference: 136, insertableLength: 158 });
 
 const renderModal = (target: GhostTarget = { kind: 'new', source }) => {
   const onSave = vi.fn();

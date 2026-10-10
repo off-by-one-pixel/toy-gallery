@@ -17,16 +17,11 @@ import { createToy, deleteToy, fetchToys, patchToy } from '@/api';
 import { APIError } from '@/api/types';
 import { makeToy } from '@/test/fixtures';
 import { createTestQueryClient } from '@/test/QueryWrapper';
-import { withAppProviders } from '@/test/render';
+import { appWrapper } from '@/test/render';
 import { useToys } from '@/features/toys/useToys';
 
-const makeWrapper = (client: QueryClient) =>
-  function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-    return withAppProviders(children, { client });
-  };
-
 const renderToys = (client: QueryClient = createTestQueryClient()) =>
-  renderHook(() => useToys(), { wrapper: makeWrapper(client) });
+  renderHook(() => useToys(), { wrapper: appWrapper(client) });
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -74,7 +69,7 @@ describe('useToys', () => {
     vi.mocked(createToy).mockRejectedValue(new APIError('boom', 400, { detail: 'boom' }));
     const saveErrorSink = vi.fn();
     const client = createTestQueryClient();
-    const { result } = renderHook(() => useToys({ saveErrorSink }), { wrapper: makeWrapper(client) });
+    const { result } = renderHook(() => useToys({ saveErrorSink }), { wrapper: appWrapper(client) });
     await act(async () => {
       await expect(result.current.saveToy({ toyId: null, payload: {} as never })).resolves.toBeUndefined();
     });

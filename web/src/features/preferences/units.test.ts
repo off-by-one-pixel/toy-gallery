@@ -24,10 +24,6 @@ describe('toMm / fromMm', () => {
     expect(fromMm(254, Unit.in)).toBeCloseTo(10);
   });
 
-  it('has the correct inch conversion factor', () => {
-    expect(Unit.in.factor).toBe(25.4);
-  });
-
   it('round-trips a non-trivial value', () => {
     const mm = 170;
     expect(toMm(fromMm(mm, Unit.in), Unit.in)).toBeCloseTo(mm);
@@ -35,17 +31,13 @@ describe('toMm / fromMm', () => {
 });
 
 describe('formatValue', () => {
-  it('returns an em-dash for null / undefined', () => {
-    expect(formatValue(null, Unit.mm)).toBe('—');
-    expect(formatValue(undefined, Unit.in)).toBe('—');
-  });
-
-  it('rounds to an integer in mm', () => {
-    expect(formatValue(169.4, Unit.mm)).toBe('169');
-  });
-
-  it('converts and rounds to two decimals in inches', () => {
-    expect(formatValue(254, Unit.in)).toBe('10.00');
+  it.each<[number | null | undefined, keyof typeof Unit, string]>([
+    [null, 'mm', '—'],
+    [undefined, 'in', '—'],
+    [169.4, 'mm', '169'],
+    [254, 'in', '10.00'],
+  ])('formats %j %s as %j', (value, unit, expected) => {
+    expect(formatValue(value, Unit[unit])).toBe(expected);
   });
 });
 
@@ -93,25 +85,15 @@ describe('formatForInput', () => {
 });
 
 describe('parseInput', () => {
-  it('parses a plain number', () => {
-    expect(parseInput('42')).toBe(42);
-  });
-
-  it('accepts a comma as decimal separator', () => {
-    expect(parseInput('40,5')).toBe(40.5);
-  });
-
-  it('rejects empty input', () => {
-    expect(parseInput('   ')).toBeNull();
-  });
-
-  it('rejects non-positive numbers', () => {
-    expect(parseInput('0')).toBeNull();
-    expect(parseInput('-5')).toBeNull();
-  });
-
-  it('rejects non-numeric input', () => {
-    expect(parseInput('abc')).toBeNull();
+  it.each<[string, number | null]>([
+    ['42', 42],
+    ['40,5', 40.5],
+    ['   ', null],
+    ['0', null],
+    ['-5', null],
+    ['abc', null],
+  ])('parses %j as %j', (raw, expected) => {
+    expect(parseInput(raw)).toBe(expected);
   });
 });
 

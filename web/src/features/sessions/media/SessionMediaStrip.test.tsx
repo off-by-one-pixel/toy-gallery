@@ -22,26 +22,13 @@ vi.mock('@/features/sessions/media/MediaLightbox', async () => {
 
 import en from '@/i18n/catalogs/en.json';
 import type { SessionMediaItem } from '@/api/types';
+import { makeMediaItem } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 
-const image: SessionMediaItem = {
-  id: 'a1',
-  kind: 'image',
-  takenAt: '2026-06-01T20:10:00',
-  thumbnailUrl: 'https://immich/thumb1',
-  fullUrl: 'https://immich/full1',
-  liked: false,
-};
+const image = makeMediaItem();
 
-const video: SessionMediaItem = {
-  id: 'a2',
-  kind: 'video',
-  takenAt: '2026-06-01T20:20:00',
-  thumbnailUrl: 'https://immich/thumb2',
-  fullUrl: 'https://immich/full2',
-  liked: true,
-};
+const video = makeMediaItem({ id: 'a2', kind: 'video', liked: true });
 
 const state = (overrides: Record<string, unknown> = {}) => ({
   hidden: false,

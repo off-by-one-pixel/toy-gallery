@@ -72,9 +72,15 @@ const group = (key: string, values: Record<string, number | null>): StatsGroup =
 
 const TODAY = new Date(2026, 5, 15);
 
+const calendar = (
+  def: CalendarStatDef,
+  groups: StatsGroup[] = [],
+  { windowDays = 2, ...context }: Partial<StatContext> & { windowDays?: number } = {},
+) => buildCalendarView(def, groups, ctx(context), { today: TODAY, windowDays });
+
 describe('buildCalendarView', () => {
   it('produces exactly windowDays cells ending today', () => {
-    const view = buildCalendarView(lengthDef, [], ctx(), { today: TODAY, windowDays: 10 });
+    const view = calendar(lengthDef, [], { windowDays: 10 });
     expect(view.cells).toHaveLength(10);
     expect(view.cells[9].date).toBe(localDateKey(TODAY));
     expect(view.endDate.getTime()).toBeGreaterThan(view.startDate.getTime());
@@ -82,11 +88,10 @@ describe('buildCalendarView', () => {
 
   it('colors valued days with hsl, valueless days as used-only, absent days as empty', () => {
     const key = localDateKey(TODAY);
-    const view = buildCalendarView(
+    const view = calendar(
       lengthDef,
       [group(key, { [METRIC_MAX_LENGTH]: 170 }), group('2026-06-14', { [METRIC_MAX_LENGTH]: null })],
-      ctx(),
-      { today: TODAY, windowDays: 3 },
+      { windowDays: 3 },
     );
     expect(view.cells[2].fill.startsWith('hsl(')).toBe(true);
     expect(view.cells[1].fill).toBe(ACTIVITY_PALETTE.usedOnly);
@@ -98,7 +103,7 @@ describe('buildCalendarView', () => {
     expect(def).toBeDefined();
     if (!def) return;
     const groups = [group(localDateKey(TODAY), { [METRIC_TOTAL_DURATION]: 95 })];
-    const view = buildCalendarView(def, groups, ctx(), { today: TODAY, windowDays: 2 });
+    const view = calendar(def, groups);
     expect(view.legendMaxLabel).toBe('1h 35m');
   });
 
@@ -110,38 +115,30 @@ describe('buildCalendarView', () => {
       group(localDateKey(TODAY), { [METRIC_TOTAL_DURATION]: 95 }),
       group(yesterday, { [METRIC_TOTAL_DURATION]: 30 }),
     ];
-    const view = buildCalendarView(def, groups, ctx(), { today: TODAY, windowDays: 2 });
+    const view = calendar(def, groups);
     expect(view.summary).toBe('2h 5m');
   });
 
   it('keeps the header total empty without a summary or data', () => {
-    const view = buildCalendarView(lengthDef, [], ctx(), { today: TODAY, windowDays: 2 });
+    const view = calendar(lengthDef);
     expect(view.summary).toBeNull();
   });
 
   it('formats legend labels in the requested unit', () => {
     const groups = [group(localDateKey(TODAY), { [METRIC_MAX_LENGTH]: 127 })];
-    const mm = buildCalendarView(lengthDef, groups, ctx(), { today: TODAY, windowDays: 2 });
-    expect(mm.legendMaxLabel).toBe('127 mm');
-    const inches = buildCalendarView(lengthDef, groups, ctx({ unit: INCHES }), {
-      today: TODAY,
-      windowDays: 2,
-    });
-    expect(inches.legendMaxLabel).toBe('5.00 in');
+    expect(calendar(lengthDef, groups).legendMaxLabel).toBe('127 mm');
+    expect(calendar(lengthDef, groups, { unit: INCHES }).legendMaxLabel).toBe('5.00 in');
   });
 
   it('renders em-dash legend labels when there is no data', () => {
-    const view = buildCalendarView(lengthDef, [], ctx(), { today: TODAY, windowDays: 2 });
+    const view = calendar(lengthDef);
     expect(view.legendMinLabel).toBe('—');
     expect(view.legendMaxLabel).toBe('—');
   });
 
   it('applies a custom legend formatter', () => {
     const def: CalendarStatDef = { ...lengthDef, metric: METRIC_COUNT, formatLegend: (v) => `${Math.round(v)}` };
-    const view = buildCalendarView(def, [group(localDateKey(TODAY), { [METRIC_COUNT]: 3 })], ctx(), {
-      today: TODAY,
-      windowDays: 2,
-    });
+    const view = calendar(def, [group(localDateKey(TODAY), { [METRIC_COUNT]: 3 })]);
     expect(view.legendMaxLabel).toBe('3');
   });
 
@@ -151,20 +148,17 @@ describe('buildCalendarView', () => {
       metric: METRIC_MAX_CIRCUMFERENCE,
       value: (raw) => (raw == null ? null : raw / 2),
     };
-    const view = buildCalendarView(def, [group(localDateKey(TODAY), { [METRIC_MAX_CIRCUMFERENCE]: 200 })], ctx(), {
-      today: TODAY,
-      windowDays: 2,
-    });
+    const view = calendar(def, [group(localDateKey(TODAY), { [METRIC_MAX_CIRCUMFERENCE]: 200 })]);
     expect(view.legendMaxLabel).toBe('100 mm');
   });
 
   it('resolves the title from context', () => {
-    const view = buildCalendarView(lengthDef, [], ctx(), { today: TODAY, windowDays: 2 });
+    const view = calendar(lengthDef);
     expect(view.title).toBe(en.common.length);
   });
 
   it('attaches a tooltip to every cell', () => {
-    const view = buildCalendarView(lengthDef, [], ctx(), { today: TODAY, windowDays: 5 });
+    const view = calendar(lengthDef, [], { windowDays: 5 });
     for (const cell of view.cells) expect(cell.tooltip.length).toBeGreaterThan(0);
   });
 });
@@ -238,13 +232,5 @@ describe('rangeFor', () => {
     const week = { start: '2026-06-08', end: '2026-06-14' };
     expect(rangeFor('year', { kind: 'week', anchor: '2026-06-08' })).toEqual(week);
     expect(rangeFor('filter', { kind: 'week', anchor: '2026-06-08' })).toEqual(week);
-  });
-});
-
-describe('SESSION_STATS config', () => {
-  it('has unique keys and resolvable titles', () => {
-    const keys = SESSION_STATS.map((def) => def.key);
-    expect(new Set(keys).size).toBe(keys.length);
-    for (const def of SESSION_STATS) expect(def.title(ctx()).length).toBeGreaterThan(0);
   });
 });

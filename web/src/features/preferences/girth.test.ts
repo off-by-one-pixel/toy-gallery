@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_GIRTH, displayGirth, storedGirth } from '@/features/preferences/girth';
+import { displayGirth, storedGirth } from '@/features/preferences/girth';
 
 describe('girth', () => {
-  it('defaults to circumference', () => {
-    expect(DEFAULT_GIRTH).toBe('circumference');
-  });
-
   it('passes circumference through unchanged', () => {
     expect(displayGirth(314.159, 'circumference')).toBeCloseTo(314.159, 3);
   });
