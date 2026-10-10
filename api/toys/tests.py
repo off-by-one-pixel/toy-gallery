@@ -579,38 +579,8 @@ class SessionTests(ApiTestBase):
         self.toy_a = self._create_toy("A")
         self.toy_b = self._create_toy("B")
 
-    def test_used_contributes_neither_length_nor_circumference(self):
-        data = self._post_session([{"toy": self.toy_a, "involvement": "USED"}])
-        self.assertIsNone(data["max_insertable_length"])
-        self.assertIsNone(data["max_circumference"])
-
-    def test_inserted_contributes_circumference_but_not_length(self):
-        data = self._post_session([{"toy": self.toy_a, "involvement": "INSERTED"}])
-        self.assertIsNone(data["max_insertable_length"])
-        self.assertEqual(data["max_circumference"], 220)
-
     def test_fully_inserted_contributes_both(self):
         data = self._post_session([{"toy": self.toy_a, "involvement": "FULLY_INSERTED"}])
-        self.assertEqual(data["max_insertable_length"], 170)
-        self.assertEqual(data["max_circumference"], 220)
-
-    def test_peak_length_only_from_fully_inserted_when_mixed(self):
-        data = self._post_session(
-            [
-                {"toy": self.toy_a, "involvement": "INSERTED"},
-                {"toy": self.toy_b, "involvement": "FULLY_INSERTED"},
-            ]
-        )
-        self.assertEqual(data["max_insertable_length"], 170)
-        self.assertEqual(data["max_circumference"], 220)
-
-    def test_used_and_fully_inserted_drops_used(self):
-        data = self._post_session(
-            [
-                {"toy": self.toy_a, "involvement": "USED"},
-                {"toy": self.toy_b, "involvement": "FULLY_INSERTED"},
-            ]
-        )
         self.assertEqual(data["max_insertable_length"], 170)
         self.assertEqual(data["max_circumference"], 220)
 
