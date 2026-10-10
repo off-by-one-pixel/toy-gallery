@@ -21,7 +21,7 @@ export default function ToyRecordList({ records }: Readonly<{ records: readonly 
   const { girth } = useGirth();
   const { unit } = useUnit();
   const locale = useLocale();
-  const ctx = { t: t as unknown as (key: string) => string, girth, unit, locale };
+  const ctx = { t: t, girth, unit, locale };
 
   const listed = latestToyRecords(records).flatMap((record) => {
     const display = recordDisplay(record.key);

@@ -1,13 +1,9 @@
-import type { MessageKeys, NestedKeyOf, useTranslations } from 'next-intl';
-
 import { APIError } from '@/api/types';
-import type en from '@/i18n/catalogs/en.json';
+import type { MessageKey, Translator } from '@/i18n/translator';
 
-type ErrorMessages = (typeof en)['errors'];
+export type ErrorKey = MessageKey<'errors'>;
 
-export type ErrorKey = MessageKeys<ErrorMessages, NestedKeyOf<ErrorMessages>>;
-
-export type ErrorTranslator = ReturnType<typeof useTranslations<'errors'>>;
+export type ErrorTranslator = Translator<'errors'>;
 
 export class TranslatableError extends Error {
   constructor(

@@ -11,12 +11,13 @@ import type { Girth } from '@/features/preferences/girth';
 import { type Period, periodRange } from '@/features/sessions/session';
 import type { StatsGroup } from '@/api/types';
 import { formatValue, type Unit } from '@/features/preferences/units';
+import type { Translator } from '@/i18n/translator';
 
 export type StatContext = Readonly<{
   unit: Unit;
   girth: Girth;
   locale: string;
-  t: (key: string, values?: Record<string, string | number>) => string;
+  t: Translator;
 }>;
 
 export type StatWindow = 'year' | 'filter';

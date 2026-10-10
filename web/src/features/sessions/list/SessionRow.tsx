@@ -84,7 +84,7 @@ function SessionRow({
     ? formatElapsedSeconds(Math.max(0, secondsBetween(session.startedAt, now.toISOString())), locale)
     : formatElapsed(totalMinutes, locale);
 
-  const recordCtx = { t: catalog as unknown as (key: string) => string, girth, unit, locale };
+  const recordCtx = { t: catalog, girth, unit, locale };
   const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);
   const peakRecordLabel = (peak: RecordPeak) => {
     const record = session.records.find((r) => recordDisplay(r.key)?.peak === peak);

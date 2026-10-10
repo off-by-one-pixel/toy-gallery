@@ -2,11 +2,12 @@ import { Involvement } from '@/api/types';
 import { displayGirth, type Girth } from '@/features/preferences/girth';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { formatElapsed } from '@/lib/duration';
+import type { Translator } from '@/i18n/translator';
 
 export type RecordPeak = 'length' | 'circumference' | 'duration';
 
 export type RecordDisplayContext = Readonly<{
-  t: (key: string) => string;
+  t: Translator;
   girth: Girth;
   unit: Unit;
   locale: string;

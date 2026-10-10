@@ -22,10 +22,11 @@ import LiveBadge from '@/features/sessions/live/LiveBadge';
 import SectionHeading from '@/components/SectionHeading';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
+import type { Translator } from '@/i18n/translator';
 
 export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
 
-const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: (key: string) => string): string => {
+const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: Translator<'session'>): string => {
   if (!isLive) return t('save');
   return liveUpdateMode ? t('live.updateButton') : t('live.endAndSaveButton');
 };
@@ -146,7 +147,7 @@ function SessionFormContent({ mode, onDone, onSaved }: Props) {
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
-  const saveLabel = saveLabelFor(isLive, liveUpdateMode, t as unknown as (key: string) => string);
+  const saveLabel = saveLabelFor(isLive, liveUpdateMode, t);
 
   return (
     <>

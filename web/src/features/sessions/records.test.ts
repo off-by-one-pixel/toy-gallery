@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { recordDisplay, SESSION_RECORDS, type RecordDisplayContext } from '@/features/sessions/records';
 import { Unit } from '@/features/preferences/units';
+import en from '@/i18n/catalogs/en.json';
+import { enTranslator } from '@/test/translator';
 
 const ctx = (overrides: Partial<RecordDisplayContext> = {}): RecordDisplayContext => ({
-  t: (key) => key,
+  t: enTranslator,
   girth: 'circumference',
   unit: Unit.mm,
   locale: 'en',
@@ -33,13 +35,13 @@ describe('SESSION_RECORDS', () => {
   });
 
   it('labels width by the girth preference', () => {
-    expect(SESSION_RECORDS['pr-width'].label(ctx())).toBe('session.records.width.circumference');
-    expect(SESSION_RECORDS['pr-width'].label(ctx({ girth: 'diameter' }))).toBe('session.records.width.diameter');
-    expect(SESSION_RECORDS['pr-depth'].label(ctx())).toBe('session.records.depth');
-    expect(SESSION_RECORDS['toy-time'].label(ctx())).toBe('session.records.time');
-    expect(SESSION_RECORDS['pr-time'].label(ctx())).toBe('session.records.plugged');
-    expect(SESSION_RECORDS['pr-duration'].label(ctx())).toBe('session.records.session');
-    expect(SESSION_RECORDS['toy-level'].label(ctx())).toBe('session.records.level');
+    expect(SESSION_RECORDS['pr-width'].label(ctx())).toBe(en.session.records.width.circumference);
+    expect(SESSION_RECORDS['pr-width'].label(ctx({ girth: 'diameter' }))).toBe(en.session.records.width.diameter);
+    expect(SESSION_RECORDS['pr-depth'].label(ctx())).toBe(en.session.records.depth);
+    expect(SESSION_RECORDS['toy-time'].label(ctx())).toBe(en.session.records.time);
+    expect(SESSION_RECORDS['pr-time'].label(ctx())).toBe(en.session.records.plugged);
+    expect(SESSION_RECORDS['pr-duration'].label(ctx())).toBe(en.session.records.session);
+    expect(SESSION_RECORDS['toy-level'].label(ctx())).toBe(en.session.records.level);
   });
 
   it('formats dimension values in the display unit with a suffix', () => {
@@ -62,9 +64,9 @@ describe('SESSION_RECORDS', () => {
   });
 
   it('formats level records as the involvement label', () => {
-    expect(SESSION_RECORDS['toy-level'].value(0, ctx()).text).toBe('involvement.USED');
-    expect(SESSION_RECORDS['toy-level'].value(1, ctx()).text).toBe('involvement.INSERTED');
-    expect(SESSION_RECORDS['toy-level'].value(2, ctx()).text).toBe('involvement.FULLY_INSERTED');
+    expect(SESSION_RECORDS['toy-level'].value(0, ctx()).text).toBe(en.involvement.USED);
+    expect(SESSION_RECORDS['toy-level'].value(1, ctx()).text).toBe(en.involvement.INSERTED);
+    expect(SESSION_RECORDS['toy-level'].value(2, ctx()).text).toBe(en.involvement.FULLY_INSERTED);
   });
 });
 

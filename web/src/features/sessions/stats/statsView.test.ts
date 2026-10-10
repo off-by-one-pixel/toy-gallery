@@ -19,6 +19,8 @@ import {
   rangeFor,
 } from '@/features/sessions/stats/statsView';
 import type { StatsGroup } from '@/api/types';
+import en from '@/i18n/catalogs/en.json';
+import { enTranslator } from '@/test/translator';
 
 const MM: StatContext['unit'] = { id: 'mm', factor: 1, decimals: 0 };
 const INCHES: StatContext['unit'] = { id: 'in', factor: 25.4, decimals: 2 };
@@ -27,7 +29,7 @@ const ctx = (overrides: Partial<StatContext> = {}): StatContext => ({
   unit: MM,
   girth: 'circumference',
   locale: 'en',
-  t: (key) => key,
+  t: enTranslator,
   ...overrides,
 });
 
@@ -158,7 +160,7 @@ describe('buildCalendarView', () => {
 
   it('resolves the title from context', () => {
     const view = buildCalendarView(lengthDef, [], ctx(), { today: TODAY, windowDays: 2 });
-    expect(view.title).toBe('common.length');
+    expect(view.title).toBe(en.common.length);
   });
 
   it('attaches a tooltip to every cell', () => {

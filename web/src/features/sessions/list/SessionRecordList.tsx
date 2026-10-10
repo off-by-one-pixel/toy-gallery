@@ -19,7 +19,7 @@ export default function SessionRecordList({ records, toysById, unit }: Props) {
   const t = useTranslations();
   const { girth } = useGirth();
   const locale = useLocale();
-  const ctx = { t: t as unknown as (key: string) => string, girth, unit, locale };
+  const ctx = { t: t, girth, unit, locale };
 
   const listed = records.flatMap((record) => {
     const display = recordDisplay(record.key);
