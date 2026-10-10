@@ -2,6 +2,7 @@ import { useToyStore } from "../../toyMachine";
 import { useEditorLayoutCtx } from "./EditorLayoutContext";
 import type { EditorLayout } from "./hooks/useEditorLayout";
 import FloatingInput from "./FloatingInput";
+import { useEditorLabels } from "./labels";
 import {
   diameterRowGeometry,
   heightRowGeometry,
@@ -21,6 +22,7 @@ const SectionLabels = () => {
   const setHeight = useToyStore((s) => s.setHeight);
   const setCircumference = useToyStore((s) => s.setCircumference);
   const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
+  const labels = useEditorLabels();
   const circumferenceX = diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX;
 
   return (
@@ -51,8 +53,8 @@ const SectionLabels = () => {
             key={`c-${meta.section.id}`}
             x={circumferenceX}
             yCenter={sectionInputY(meta, silhouetteScale, silhouetteY)}
-            prefix="C"
-            ariaLabel={`Circumference of section ${meta.index + 1}`}
+            prefix={labels.circumferencePrefix}
+            ariaLabel={labels.sectionCircumference(meta.index + 1)}
             value={meta.section.circumference ?? null}
             touched={meta.section.circumference != null}
             allowEmpty
@@ -72,6 +74,7 @@ type RowProps = {
 };
 
 const HeightRow = ({ meta, layout, x, onChange }: RowProps) => {
+  const labels = useEditorLabels();
   const touched = meta.section.touched?.height ?? true;
   const { yMid, leaderD } = heightRowGeometry(meta, layout, x);
   return (
@@ -83,8 +86,8 @@ const HeightRow = ({ meta, layout, x, onChange }: RowProps) => {
       <FloatingInput
         x={x}
         yCenter={yMid}
-        prefix="H"
-        ariaLabel={`Height of section ${meta.index + 1}`}
+        prefix={labels.heightPrefix}
+        ariaLabel={labels.sectionHeight(meta.index + 1)}
         value={meta.section.height}
         touched={touched}
         onChange={onChange}
@@ -94,6 +97,7 @@ const HeightRow = ({ meta, layout, x, onChange }: RowProps) => {
 };
 
 const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
+  const labels = useEditorLabels();
   const knownSizeMm = useToyStore((s) => s.knownSizeMm);
   const touched = meta.section.touched?.diameter ?? true;
   const { inputY, leaderD } = diameterRowGeometry(meta, layout, x);
@@ -110,7 +114,7 @@ const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
         yCenter={inputY}
         width={LABEL_INPUT_W_PX + (overshoots ? 18 : 0)}
         prefix="Ø"
-        ariaLabel={`Diameter of section ${meta.index + 1}`}
+        ariaLabel={labels.sectionDiameter(meta.index + 1)}
         value={meta.section.diameter}
         touched={touched}
         onChange={onChange}
@@ -118,8 +122,8 @@ const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
           overshoots && (
             <span
               className="toy-editor-floating-warn"
-              title="Section is wider than the known size guide"
-              aria-label="Section exceeds the known size guide"
+              title={labels.sectionTooWide}
+              aria-label={labels.sectionTooWide}
             >
               ⚠
             </span>

@@ -1,4 +1,5 @@
 import type { Toy as EditorToy } from 'toy-editor';
+import { TranslatableError } from '@/api/errors';
 import { SectionShape, type ToyTemplate } from '@/api/types';
 import { circumferenceToDiameter } from '@/features/preferences/units';
 
@@ -7,14 +8,14 @@ export function templateJsonToEditor(text: string): EditorToy {
   try {
     parsed = JSON.parse(text);
   } catch (e) {
-    throw new Error(`Not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+    throw new TranslatableError('templateJson.notJson', { detail: e instanceof Error ? e.message : String(e) });
   }
   if (!parsed || typeof parsed !== 'object') {
-    throw new Error('Expected a JSON object.');
+    throw new TranslatableError('templateJson.notObject');
   }
   const t = parsed as Partial<ToyTemplate>;
   if (!t.shape || !Array.isArray(t.shape.sections) || t.shape.sections.length === 0) {
-    throw new Error('Missing or empty shape.sections.');
+    throw new TranslatableError('templateJson.noSections');
   }
   return {
     sections: t.shape.sections.map((s, idx) => ({

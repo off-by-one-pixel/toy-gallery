@@ -1,4 +1,5 @@
 import { useEditorLayoutCtx } from "./EditorLayoutContext";
+import { useEditorLabels } from "./labels";
 import type { ReferenceImageHandlers } from "./hooks/useReferenceImageDrag";
 import { HANDLE_R_PX } from "./layout";
 import { type ReferenceImage, referenceRect } from "./referenceImage";
@@ -30,6 +31,7 @@ export const ReferenceImageBackdrop = ({ image, handlers }: Props) => {
 
 export const ReferenceImageResizeHandle = ({ image, handlers }: Props) => {
   const layout = useEditorLayoutCtx();
+  const labels = useEditorLabels();
   const { x, y, width, height } = referenceRect(image, layout);
   return (
     <circle
@@ -37,7 +39,7 @@ export const ReferenceImageResizeHandle = ({ image, handlers }: Props) => {
       cx={x + width}
       cy={y + height}
       r={HANDLE_R_PX}
-      aria-label="Resize reference image"
+      aria-label={labels.resizeReferenceImage}
       onPointerDown={handlers.onResizePointerDown}
       onPointerMove={handlers.onPointerMove}
       onPointerUp={handlers.onPointerUp}

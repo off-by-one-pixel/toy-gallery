@@ -14,6 +14,7 @@ vi.mock('@/api', async (importOriginal) => ({
 }));
 
 import { createToy, deleteToy, fetchToys, patchToy } from '@/api';
+import { APIError } from '@/api/types';
 import { makeToy } from '@/test/fixtures';
 import { createTestQueryClient } from '@/test/QueryWrapper';
 import { withAppProviders } from '@/test/render';
@@ -40,7 +41,7 @@ describe('useToys', () => {
   });
 
   it('exposes a formatted load error', async () => {
-    vi.mocked(fetchToys).mockRejectedValue(new Error('boom'));
+    vi.mocked(fetchToys).mockRejectedValue(new APIError('boom', 400, { detail: 'boom' }));
     const { result } = renderToys();
     await settle(() => expect(result.current.error).toBe('boom'));
     expect(result.current.toys).toEqual([]);
@@ -70,7 +71,7 @@ describe('useToys', () => {
   });
 
   it('routes save errors into the provided sink', async () => {
-    vi.mocked(createToy).mockRejectedValue(new Error('boom'));
+    vi.mocked(createToy).mockRejectedValue(new APIError('boom', 400, { detail: 'boom' }));
     const saveErrorSink = vi.fn();
     const client = createTestQueryClient();
     const { result } = renderHook(() => useToys({ saveErrorSink }), { wrapper: makeWrapper(client) });

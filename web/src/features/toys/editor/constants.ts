@@ -1,23 +1,17 @@
-import type { PaletteColor, Toy as EditorToy } from 'toy-editor';
+import type { Toy as EditorToy } from 'toy-editor';
 
 import { SectionShape } from '@/api/types';
 
-/** Default fill applied to a fresh toy when the user hasn't picked
- *  a color yet. */
 export const DEFAULT_FILL = '#c4b5fd';
 
-/** Preset color chips shown in the modal's color picker. */
-export const PRESET_COLORS: readonly PaletteColor[] = [
-  { name: 'Purple', value: '#c4b5fd' },
-  { name: 'Slate', value: '#475569' },
-  { name: 'Blue', value: '#bae6fd' },
-  { name: 'Red', value: '#fca5a5' },
-  { name: 'Green', value: '#bbf7d0' },
-];
+export const PRESET_COLORS = [
+  { key: 'purple', value: '#c4b5fd' },
+  { key: 'slate', value: '#475569' },
+  { key: 'blue', value: '#bae6fd' },
+  { key: 'red', value: '#fca5a5' },
+  { key: 'green', value: '#bbf7d0' },
+] as const;
 
-/** Legacy three-section default toy seeded into the editor when the
- *  user picks "Start blank" in the template wizard. Kept here so the
- *  shape only changes on purpose. */
 export const NEW_TOY_MM: EditorToy = {
   sections: [
     { id: 0, diameter: 90, height: 25, circumference: null },

@@ -7,6 +7,7 @@ import {
 } from "../../toyMachine";
 import { useEditorLayoutCtx } from "./EditorLayoutContext";
 import { useEditorUiStore } from "./editorUiStore";
+import { useEditorLabels } from "./labels";
 import { rimButtonsGeometry, rimTickLine, type RimButtonPos } from "./geometry";
 import { RIM_BUTTON_R_PX } from "./layout";
 
@@ -33,6 +34,7 @@ const CycleButton = ({ cx, cy, angle, ariaLabel, onClick }: ButtonProps) => (
 
 const CurveAngleButtons = () => {
   const layout = useEditorLayoutCtx();
+  const labels = useEditorLabels();
   const bottomShape = useToyStore((s) => s.bottomShape);
   const cycleTop = useToyStore((s) => s.cycleTopCurveAngle);
   const cycleBot = useToyStore((s) => s.cycleBottomCurveAngle);
@@ -56,13 +58,13 @@ const CurveAngleButtons = () => {
       <CycleButton
         {...topPos}
         angle={top}
-        ariaLabel={`Section ${meta.index + 1} top angle (${top}°)`}
+        ariaLabel={labels.sectionTopAngle(meta.index + 1, top)}
         onClick={() => cycleTop(meta.section.id)}
       />
       <CycleButton
         {...botPos}
         angle={bot}
-        ariaLabel={`Section ${meta.index + 1} bottom angle (${bot}°)`}
+        ariaLabel={labels.sectionBottomAngle(meta.index + 1, bot)}
         onClick={() => cycleBot(meta.section.id)}
       />
     </g>

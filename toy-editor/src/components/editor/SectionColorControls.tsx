@@ -2,6 +2,7 @@ import { useToyStore } from "../../toyMachine";
 import { useEditorLayoutCtx } from "./EditorLayoutContext";
 import { useEditorUiStore } from "./editorUiStore";
 import { lastInputRightX } from "./geometry";
+import { useEditorLabels } from "./labels";
 import { useEditorPalette } from "./palette";
 import { LABEL_INPUT_H_PX, type SectionMeta, sectionInputY } from "./layout";
 
@@ -14,6 +15,7 @@ const customPickerValue = (color: string | null | undefined): string =>
 
 const SectionColorControls = () => {
   const palette = useEditorPalette();
+  const labels = useEditorLabels();
   const layout = useEditorLayoutCtx();
   const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
   const setSectionColor = useToyStore((s) => s.setSectionColor);
@@ -52,7 +54,7 @@ const SectionColorControls = () => {
             type="button"
             className={`toy-editor-swatch ${meta.section.color ? "" : "is-auto"}`}
             style={meta.section.color ? { backgroundColor: meta.section.color } : undefined}
-            aria-label={`Color of section ${meta.index + 1}`}
+            aria-label={labels.sectionColor(meta.index + 1)}
             onClick={(e) => {
               e.stopPropagation();
               setOpenId(openId === meta.section.id ? null : meta.section.id);
@@ -80,12 +82,12 @@ const SectionColorControls = () => {
             width={popoverW}
             height={popoverH}
           >
-            <div className="toy-editor-palette" role="listbox" aria-label="Section color">
+            <div className="toy-editor-palette" role="listbox" aria-label={labels.sectionColorPalette}>
               <button
                 type="button"
                 className="toy-editor-palette-chip is-auto"
-                aria-label="Toy color"
-                title="Toy color"
+                aria-label={labels.toyColor}
+                title={labels.toyColor}
                 onClick={() => pick(openMeta.section.id, null)}
               />
               {palette.map((color) => (
@@ -99,10 +101,10 @@ const SectionColorControls = () => {
                   onClick={() => pick(openMeta.section.id, color.value)}
                 />
               ))}
-              <label className="toy-editor-palette-chip is-custom" title="Custom color">
+              <label className="toy-editor-palette-chip is-custom" title={labels.customColor}>
                 <input
                   type="color"
-                  aria-label="Custom color"
+                  aria-label={labels.customColor}
                   value={customPickerValue(openMeta.section.color)}
                   onChange={(e) => setSectionColor(openMeta.section.id, e.target.value)}
                 />

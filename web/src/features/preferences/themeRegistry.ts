@@ -1,10 +1,8 @@
 export const THEMES = {
   light: {
-    label: 'Light',
     browserChrome: '#f3f4f6',
   },
   dark: {
-    label: 'Dark',
     browserChrome: '#35353a',
   },
 } as const;

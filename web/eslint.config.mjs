@@ -8,6 +8,13 @@ const config = [
   ...typescript,
   ...pluginQuery.configs['flat/recommended'],
   {
+    files: ['src/**/*.tsx'],
+    ignores: ['src/**/*.test.tsx'],
+    rules: {
+      'react/jsx-no-literals': ['error', { allowedStrings: ['·', '×', '—', '+', '*'] }],
+    },
+  },
+  {
     rules: {
       '@next/next/no-img-element': 'off',
       '@typescript-eslint/no-unused-vars': [

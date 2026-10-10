@@ -2,6 +2,7 @@ import { useToyStore } from "../../toyMachine";
 import { fmtUnit } from "../../util/fmt";
 import { useEditorUnit } from "../unit";
 import { useEditorLayoutCtx } from "./EditorLayoutContext";
+import { useEditorLabels } from "./labels";
 import { guidesXRange, mmToY, sizeGuideGeometry } from "./geometry";
 
 const Guides = () => {
@@ -10,6 +11,7 @@ const Guides = () => {
   const knownTotalMm = useToyStore((s) => s.knownTotalMm);
   const knownSizeMm = useToyStore((s) => s.knownSizeMm);
   const unit = useEditorUnit();
+  const labels = useEditorLabels();
 
   const xRange = guidesXRange(layout);
 
@@ -19,14 +21,14 @@ const Guides = () => {
         <HorizontalGuide
           {...xRange}
           y={mmToY(insertableMm, layout)}
-          label={`insertable ${fmtUnit(insertableMm, unit)}`}
+          label={labels.insertableGuide(fmtUnit(insertableMm, unit))}
         />
       )}
       {knownTotalMm != null && knownTotalMm >= 0 && (
         <HorizontalGuide
           {...xRange}
           y={mmToY(knownTotalMm, layout)}
-          label={`total ${fmtUnit(knownTotalMm, unit)}`}
+          label={labels.totalGuide(fmtUnit(knownTotalMm, unit))}
         />
       )}
       {knownSizeMm != null && knownSizeMm > 0 && (

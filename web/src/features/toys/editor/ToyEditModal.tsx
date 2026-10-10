@@ -19,7 +19,9 @@ import NewToyTemplateStep from '@/features/toys/template/NewToyTemplateStep';
 import Header from '@/features/toys/editor/Header';
 import IdentificationGroup from '@/features/toys/editor/IdentificationGroup';
 import JsonDialogs from '@/features/toys/editor/JsonDialogs';
-import { NEW_TOY_MM, PRESET_COLORS } from '@/features/toys/editor/constants';
+import { NEW_TOY_MM } from '@/features/toys/editor/constants';
+import { usePresetPalette } from '@/features/toys/editor/usePresetPalette';
+import { useToyEditorLabels } from '@/features/toys/editor/useToyEditorLabels';
 import { useToyEditForm } from '@/features/toys/editor/useToyEditForm';
 
 type Props = Readonly<{
@@ -47,6 +49,8 @@ export default function ToyEditModal({
 }: Props) {
   const t = useTranslations('toy');
   const { unit } = useUnit();
+  const palette = usePresetPalette();
+  const editorLabels = useToyEditorLabels();
   const form = useToyEditForm(mode);
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
 
@@ -115,7 +119,8 @@ export default function ToyEditModal({
               initialToy={form.initialToy ?? NEW_TOY_MM}
               style={style}
               unit={unit}
-              palette={PRESET_COLORS}
+              palette={palette}
+              labels={editorLabels}
               leadingSlot={<IdentificationGroup form={form} />}
             />
           )}

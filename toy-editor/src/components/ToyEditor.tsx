@@ -6,6 +6,7 @@ import EditorRender from "./editor/EditorRender";
 import { useReferenceImage } from "./editor/hooks/useReferenceImage";
 import ReferenceImageControls from "./editor/ReferenceImageControls";
 import { EditorPaletteContext, type PaletteColor } from "./editor/palette";
+import { EditorLabelsContext, type ToyEditorLabels } from "./editor/labels";
 import KnownMeasurements from "./KnownMeasurements";
 import { EditorUnitContext, type Unit } from "./unit";
 
@@ -19,13 +20,14 @@ type Props = {
   leadingSlot?: ReactNode;
   unit: Unit;
   palette?: readonly PaletteColor[];
+  labels: ToyEditorLabels;
 };
 
-const CAP_SHAPES: { id: Shape; label: string; glyph: string }[] = [
-  { id: Shape.FLAT, label: "Flat", glyph: "▬" },
-  { id: Shape.EGG, label: "Egg", glyph: "◒" },
-  { id: Shape.CONE, label: "Cone", glyph: "△" },
-  { id: Shape.SPIKE, label: "Spike", glyph: "▲" },
+const CAP_SHAPES: { id: Shape; glyph: string }[] = [
+  { id: Shape.FLAT, glyph: "▬" },
+  { id: Shape.EGG, glyph: "◒" },
+  { id: Shape.CONE, glyph: "△" },
+  { id: Shape.SPIKE, glyph: "▲" },
 ];
 
 const ToyEditor = ({
@@ -36,6 +38,7 @@ const ToyEditor = ({
   leadingSlot,
   unit,
   palette = NO_PALETTE,
+  labels,
 }: Props) => {
   const toy = useToyStore();
   const hydrate = useToyStore((s) => s.hydrate);
@@ -60,6 +63,7 @@ const ToyEditor = ({
 
   return (
     <EditorUnitContext.Provider value={unit}>
+      <EditorLabelsContext.Provider value={labels}>
       <EditorPaletteContext.Provider value={palette}>
         <div className="toy-editor-root">
         <div className="toy-editor-main">
@@ -75,7 +79,8 @@ const ToyEditor = ({
             <div className="toy-editor-cap-row top">
               <ShapeSelect
                 id="toy-editor-top-shape"
-                label="Top shape"
+                label={labels.topShape}
+                shapeNames={labels.shapes}
                 value={toy.topShape}
                 onChange={toy.setTopShape}
               />
@@ -95,7 +100,8 @@ const ToyEditor = ({
             <div className="toy-editor-cap-row bottom">
               <ShapeSelect
                 id="toy-editor-bottom-shape"
-                label="Bottom shape"
+                label={labels.bottomShape}
+                shapeNames={labels.shapes}
                 value={toy.bottomShape}
                 onChange={toy.setBottomShape}
               />
@@ -107,7 +113,7 @@ const ToyEditor = ({
                 className="toy-editor-btn toy-editor-add"
                 onClick={() => toy.newSection()}
               >
-                + Add section
+                {labels.addSection}
               </button>
             </div>
           </section>
@@ -116,6 +122,7 @@ const ToyEditor = ({
           {leadingSlot && <aside className="toy-editor-side">{leadingSlot}</aside>}
         </div>
       </EditorPaletteContext.Provider>
+      </EditorLabelsContext.Provider>
     </EditorUnitContext.Provider>
   );
 };
@@ -123,11 +130,12 @@ const ToyEditor = ({
 type ShapeSelectProps = {
   id: string;
   label: string;
+  shapeNames: Record<Shape, string>;
   value: Shape;
   onChange: (s: Shape) => void;
 };
 
-const ShapeSelect = ({ id, label, value, onChange }: ShapeSelectProps) => (
+const ShapeSelect = ({ id, label, shapeNames, value, onChange }: ShapeSelectProps) => (
   <select
     id={id}
     aria-label={label}
@@ -135,9 +143,9 @@ const ShapeSelect = ({ id, label, value, onChange }: ShapeSelectProps) => (
     value={value}
     onChange={(e) => onChange(e.target.value as Shape)}
   >
-    {CAP_SHAPES.map(({ id: optId, label: optLabel, glyph }) => (
+    {CAP_SHAPES.map(({ id: optId, glyph }) => (
       <option key={optId} value={optId}>
-        {glyph}  {optLabel}
+        {glyph}  {shapeNames[optId]}
       </option>
     ))}
   </select>

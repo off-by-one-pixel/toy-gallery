@@ -10,7 +10,10 @@ export type ToyIdentity = Readonly<{
 
 export type ToyEditMode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
-export type ValidationResult = Readonly<{ ok: true; payload: ToyPayload }> | Readonly<{ ok: false; error: string }>;
+export type ValidationError = 'identityRequired' | 'sectionsRequired';
+
+export type ValidationResult =
+  Readonly<{ ok: true; payload: ToyPayload }> | Readonly<{ ok: false; error: ValidationError }>;
 
 export type IdentityAction = Readonly<{ field: keyof ToyIdentity; value: string }>;
 
@@ -37,10 +40,10 @@ export function validateAndBuildPayload(
   mode: ToyEditMode,
 ): ValidationResult {
   if (!identity.brand.trim() || !identity.name.trim()) {
-    return { ok: false, error: 'Brand and name are required.' };
+    return { ok: false, error: 'identityRequired' };
   }
   if (editor.sections.length === 0) {
-    return { ok: false, error: 'At least one section is required.' };
+    return { ok: false, error: 'sectionsRequired' };
   }
   const payload = editorToPayload({
     state: editor,

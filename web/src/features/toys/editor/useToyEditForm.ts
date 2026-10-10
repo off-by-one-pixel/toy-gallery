@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useReducer, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useToyStore } from 'toy-editor';
 import type { Toy as EditorToy } from 'toy-editor';
 
@@ -73,6 +74,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
   const editorDirty = initialToy !== null && !isEditorStateEqual(editorState, editorStateFromToy(initialToy));
   const dirty = identityDirty || editorDirty;
 
+  const t = useTranslations('toyEdit.validation');
   const [error, setError] = useState<string | null>(null);
   const { saveToy, isSavingToy } = useToys({ saveErrorSink: setError });
 
@@ -81,7 +83,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
       setError(null);
       const result = validateAndBuildPayload(identity, editorState, saveMode);
       if (!result.ok) {
-        setError(result.error);
+        setError(t(result.error));
         return;
       }
       const saved = await saveToy({
@@ -91,7 +93,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
       if (saved) onSuccess();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [identity, sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm, saveToy],
+    [identity, sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm, saveToy, t],
   );
 
   return {

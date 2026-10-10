@@ -22,6 +22,7 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
   const [copied, setCopied] = useState(false);
   const t = useTranslations('template');
   const common = useTranslations('common');
+  const tErrors = useTranslations('errors');
 
   const isExport = mode === 'export';
 
@@ -41,7 +42,7 @@ export default function TemplateJsonDialog({ mode, initialText = '', onClose, on
       onImport?.(text);
       onClose();
     } catch (e) {
-      setError(formatError(e));
+      setError(formatError(e, tErrors));
     }
   };
 

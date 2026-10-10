@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { formatMm, parseMm } from "../util/fmt";
 import { useToyStore } from "../toyMachine";
+import { useEditorLabels } from "./editor/labels";
 import { useEditorUnit } from "./unit";
 
 const KnownMeasurements = () => {
+  const labels = useEditorLabels();
   const insertable = useToyStore((s) => s.insertableLengthMm);
   const knownTotal = useToyStore((s) => s.knownTotalMm);
   const knownSize = useToyStore((s) => s.knownSizeMm);
@@ -15,23 +17,20 @@ const KnownMeasurements = () => {
   const setSnap = useToyStore((s) => s.setSnapEnabled);
   const setShowSectionCirc = useToyStore((s) => s.setShowSectionCircumference);
 
-  // The Size field is always circumference. Internally `knownSize` is
-  // stored as the canonical diameter (= circumference / π); display
-  // converts back via π.
   const knownCircumferenceMm = knownSize == null ? null : knownSize * Math.PI;
   const handleKnownCircumferenceChange = (mm: number | null) => {
     setKnownSize(mm == null ? null : mm / Math.PI);
   };
 
   return (
-    <section className="toy-editor-known" aria-label="Known measurements">
-      <h3 className="toy-editor-group-title">Known measurements</h3>
+    <section className="toy-editor-known" aria-label={labels.knownMeasurements}>
+      <h3 className="toy-editor-group-title">{labels.knownMeasurements}</h3>
 
       <div className="toy-editor-known-row">
-        <NumberField label="Insertable" mm={insertable} onChangeMm={setInsertable} />
-        <NumberField label="Total" mm={knownTotal} onChangeMm={setKnownTotal} />
+        <NumberField label={labels.insertable} mm={insertable} onChangeMm={setInsertable} />
+        <NumberField label={labels.total} mm={knownTotal} onChangeMm={setKnownTotal} />
         <NumberField
-          label="Circumference"
+          label={labels.circumference}
           mm={knownCircumferenceMm}
           onChangeMm={handleKnownCircumferenceChange}
         />
@@ -42,7 +41,7 @@ const KnownMeasurements = () => {
             checked={snap}
             onChange={(e) => setSnap(e.target.checked)}
           />
-          Snap
+          {labels.snap}
         </label>
         <label className="toy-editor-snap">
           <input
@@ -50,7 +49,7 @@ const KnownMeasurements = () => {
             checked={showSectionCirc}
             onChange={(e) => setShowSectionCirc(e.target.checked)}
           />
-          Section circumferences
+          {labels.sectionCircumferences}
         </label>
       </div>
     </section>

@@ -3,6 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { SectionShape } from '@/api/types';
 import { templateJsonToEditor } from '@/features/toys/converters/templateJson';
 
+const thrownBy = (text: string): unknown => {
+  try {
+    templateJsonToEditor(text);
+  } catch (err) {
+    return err;
+  }
+  return null;
+};
+
 const fullEntry = {
   id: 'slim-cone',
   name: 'Slim cone',
@@ -88,22 +97,25 @@ describe('templateJsonToEditor', () => {
   });
 
   it('throws with a JSON-syntax message on invalid JSON', () => {
-    expect(() => templateJsonToEditor('{ not json')).toThrow(/Not valid JSON/);
+    expect(thrownBy('{ not json')).toMatchObject({
+      key: 'templateJson.notJson',
+      values: { detail: expect.any(String) },
+    });
   });
 
   it('throws when the root is not an object', () => {
-    expect(() => templateJsonToEditor('"a string"')).toThrow(/Expected a JSON object/);
+    expect(thrownBy('"a string"')).toMatchObject({ key: 'templateJson.notObject' });
   });
 
   it('throws when shape.sections is missing', () => {
-    expect(() =>
-      templateJsonToEditor(JSON.stringify({ ...fullEntry, shape: { topSectionShape: SectionShape.CONE } })),
-    ).toThrow(/Missing or empty shape\.sections/);
+    expect(thrownBy(JSON.stringify({ ...fullEntry, shape: { topSectionShape: SectionShape.CONE } }))).toMatchObject({
+      key: 'templateJson.noSections',
+    });
   });
 
   it('throws on an empty sections array', () => {
-    expect(() =>
-      templateJsonToEditor(JSON.stringify({ ...fullEntry, shape: { ...fullEntry.shape, sections: [] } })),
-    ).toThrow(/Missing or empty shape\.sections/);
+    expect(thrownBy(JSON.stringify({ ...fullEntry, shape: { ...fullEntry.shape, sections: [] } }))).toMatchObject({
+      key: 'templateJson.noSections',
+    });
   });
 });

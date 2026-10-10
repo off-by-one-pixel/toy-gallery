@@ -11,6 +11,7 @@ vi.mock('@heroui/react', () => ({
 
 import { Toast } from '@heroui/react';
 
+import { APIError } from '@/api/types';
 import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
 import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 
@@ -72,7 +73,7 @@ describe('useApiMutation', () => {
       () =>
         useApiMutation({
           fn: async () => {
-            throw new Error('boom');
+            throw new APIError('boom', 400, { detail: 'boom' });
           },
           success: () => 'never',
         }),
@@ -93,7 +94,7 @@ describe('useApiMutation', () => {
       () =>
         useApiMutation({
           fn: async () => {
-            throw new Error('boom');
+            throw new APIError('boom', 400, { detail: 'boom' });
           },
           errorSink,
         }),
@@ -145,7 +146,7 @@ describe('useApiQuery', () => {
         useApiQuery({
           key: ['thing'],
           fn: async () => {
-            throw new Error('boom');
+            throw new APIError('boom', 400, { detail: 'boom' });
           },
         }),
       { wrapper: makeWrapper(client) },
