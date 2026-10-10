@@ -1,10 +1,10 @@
-from .testutils import SessionApiTestBase
+from .testutils import ApiTestBase
 from .testutils import utc as _utc
 
 URL = "/toys/sessions/stats/"
 
 
-class SessionStatsTestBase(SessionApiTestBase):
+class SessionStatsTestBase(ApiTestBase):
     def setUp(self):
         super().setUp()
         self.toy_a = self._create_toy("A")
