@@ -39,7 +39,7 @@ describe('templateToEditor', () => {
 
   it('derives insertableLengthMm from the template insertable/total ratio', () => {
     const out = templateToEditor({ template: canonical, totalMm: 260, maxDiameterMm: 40 });
-    expect(out.insertableLengthMm).toBeCloseTo(240); // 260 * (120/130)
+    expect(out.insertableLengthMm).toBeCloseTo(240);
   });
 
   it('stamps target totalMm and maxDiameterMm on the editor toy', () => {

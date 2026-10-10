@@ -9,9 +9,7 @@ type Props = Readonly<
     value: string;
     onChange: (value: string) => void;
     size?: Size;
-    /** Rendered inside the bordered container, before the input. */
     leading?: ReactNode;
-    /** Rendered inside the bordered container, after the input. */
     trailing?: ReactNode;
   }
 >;

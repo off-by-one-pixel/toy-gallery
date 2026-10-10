@@ -80,13 +80,13 @@ describe('templateFormReducer', () => {
       expect(out.selectedId).toBe(TEMPLATE.id);
       expect(out.totalInput).toBe('130');
       expect(out.insertableInput).toBe('120');
-      expect(out.sizeInput).toBe('40'); // sizeMode default is 'diameter'
+      expect(out.sizeInput).toBe('40');
     });
 
     it('seeds sizeInput as circumference when current sizeMode is circumference', () => {
       const seeded: TemplateFormState = { ...initialTemplateFormState, sizeMode: 'circumference' };
       const out = templateFormReducer(seeded, { type: 'select-template', template: TEMPLATE, unit: Unit.mm });
-      expect(out.sizeInput).toBe('126'); // 40 * π rounded to mm precision
+      expect(out.sizeInput).toBe('126');
     });
   });
 
@@ -107,7 +107,7 @@ describe('templateFormReducer', () => {
         unit: Unit.mm,
       });
       expect(out.totalInput).toBe('260');
-      expect(out.insertableInput).toBe('240'); // 260 * (120/130)
+      expect(out.insertableInput).toBe('240');
     });
 
     it('updates only totalInput when no template is selected', () => {
@@ -129,7 +129,7 @@ describe('templateFormReducer', () => {
         unit: Unit.mm,
       });
       expect(out.totalInput).toBe('');
-      expect(out.insertableInput).toBe('120'); // unchanged
+      expect(out.insertableInput).toBe('120');
     });
   });
 
@@ -140,7 +140,7 @@ describe('templateFormReducer', () => {
         { type: 'change-insertable', value: '240', selectedTemplate: TEMPLATE, unit: Unit.mm },
       );
       expect(out.insertableInput).toBe('240');
-      expect(out.totalInput).toBe('260'); // 240 * (130/120)
+      expect(out.totalInput).toBe('260');
     });
   });
 

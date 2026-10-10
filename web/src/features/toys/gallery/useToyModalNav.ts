@@ -14,9 +14,6 @@ const CLEAR: Update = {
   dialog: null,
 };
 
-/** Pure URL-update producers for the toy modal lifecycle. Exported so
- *  unit tests can verify the parameter-key mapping without rendering
- *  the hook. */
 export const toyModalUpdates = {
   openNew: (): Update => ({ ...CLEAR, modal: 'new', stage: 'template', step: 'template' }),
   openEdit: (id: number): Update => ({ ...CLEAR, modal: 'edit', toyId: String(id) }),

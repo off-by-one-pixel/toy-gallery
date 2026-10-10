@@ -53,8 +53,6 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// ---------- refreshTokens (bare fetch, no SDK) ----------
-
 describe('refreshTokens', () => {
   it('returns the new access+refresh pair on a 2xx response', async () => {
     fetchMock.mockResolvedValueOnce(json({ access: 'NEW', refresh: 'R2' }));
@@ -91,8 +89,6 @@ describe('refreshTokens', () => {
   });
 });
 
-// ---------- downloadExport — DOM blob/anchor dance ----------
-
 describe('downloadExport', () => {
   it('builds a JSON blob, triggers a download, and revokes the URL on a timer', async () => {
     vi.useFakeTimers();
@@ -111,17 +107,14 @@ describe('downloadExport', () => {
 
     await downloadExport();
 
-    // The Blob ctor was given the JSON-stringified payload.
     expect(createSpy).toHaveBeenCalledTimes(1);
     const blob = createSpy.mock.calls[0][0];
     expect(blob.type).toBe('application/json');
     await expect(blob.text()).resolves.toBe(JSON.stringify(payload, null, 2));
 
-    // The anchor was clicked and removed.
     expect(clickSpy).toHaveBeenCalledTimes(1);
     expect(document.body.querySelector('a')).toBeNull();
 
-    // revokeObjectURL fires on the 1s timer.
     expect(revokeSpy).not.toHaveBeenCalled();
     vi.advanceTimersByTime(1000);
     expect(revokeSpy).toHaveBeenCalledWith('blob:fake');
@@ -152,8 +145,6 @@ describe('downloadExport', () => {
   });
 });
 
-// ---------- importFromFile ----------
-
 describe('importFromFile', () => {
   it('reads JSON from the file, forwards it to the SDK, and returns the counts verbatim', async () => {
     const envelope = { toys: [{ id: 1 }], sessions: [{ id: 2 }] };
@@ -176,8 +167,6 @@ describe('importFromFile', () => {
   });
 });
 
-// ---------- Smoke wrappers: camelCase ↔ snake_case bridging ----------
-
 describe('createToy', () => {
   it('snake-cases the outgoing payload and camel-cases the SDK response', async () => {
     vi.mocked(toysToysCreate).mockResolvedValue({
@@ -199,8 +188,6 @@ describe('createToy', () => {
       headers: new Headers(),
     } as Awaited<ReturnType<typeof toysToysCreate>>);
 
-    // The function expects ToyPayload (camelCase). Pass the camelCase fields the
-    // adapter is responsible for transforming on the way out.
     const result = await createToy({
       brand: 'B',
       name: 'N',
