@@ -1,11 +1,3 @@
-"""Unit tests for the migration safety gate.
-
-End-to-end Docker-based verification of the full deploy flow lives outside
-this file (see docs/migration-safety-plan.md, Verification). Tests here
-exercise the gate's orchestration, the SQLite CandidatePipeline, and the
-smoke-test command in isolation, using temporary data directories.
-"""
-
 from __future__ import annotations
 
 import sqlite3
@@ -28,6 +20,7 @@ from toys.migration_gate import (
 )
 from toys.migration_gate.archive_store import ArchiveStore
 from toys.migration_gate.sqlite import candidate_db_path
+from toys.models import Shape, ShapeSection, Toy
 
 # ---------- Test helpers ----------
 
@@ -245,9 +238,6 @@ class GateDowngradeRefusalTests(TestCase):
         recorder.record_unapplied("nonexistent_app", "9999_fake_migration")
 
 
-# ---------- Smoke test ----------
-
-
 class SmokeTestLayersTests(TestCase):
     def test_passes_on_clean_db(self):
         out = StringIO()
@@ -257,6 +247,16 @@ class SmokeTestLayersTests(TestCase):
         self.assertIn("layer 2 (referential) ok", output)
         self.assertIn("layer 3 (invariants) ok", output)
         self.assertIn("layer 4 (api) skipped", output)
+
+    def test_invariants_accept_section_circumferences_without_a_toy_circumference(self):
+        shape = Shape.objects.create()
+        ShapeSection.objects.create(
+            shape=shape, order=0, diameter=70, height=30, circumference=220.0
+        )
+        Toy.objects.create(brand="Acme", name="Demo", size="M", shape=shape)
+        out = StringIO()
+        call_command("migration_smoke_test", stdout=out)
+        self.assertIn("layer 3 (invariants) ok", out.getvalue())
 
     @mock.patch("toys.management.commands.migration_smoke_test.run_invariants")
     def test_layer_3_failure_propagates(self, mock_run_invariants):
