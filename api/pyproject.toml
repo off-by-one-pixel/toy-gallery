@@ -26,20 +26,10 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-# Django auto-generates these; not worth linting.
 extend-exclude = ["toys/migrations"]
 
 [tool.ruff.lint]
-# Start with the high-signal rule families. Expand later if desired.
-#   F  = pyflakes (unused imports, undefined names, etc.)
-#   E  = pycodestyle errors
-#   W  = pycodestyle warnings
-#   I  = isort (import ordering)
-#   B  = bugbear (likely-bug patterns)
-#   UP = pyupgrade (use modern syntax for the target version)
 select = ["F", "E", "W", "I", "B", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
-# Django settings inheritance idiomatically uses `from .settings import *`.
-# F403/F405 flag the star import; we accept it here.
 "toy_gallery/settings_*.py" = ["F403", "F405"]

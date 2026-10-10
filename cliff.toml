@@ -1,9 +1,4 @@
-# git-cliff configuration. Drives auto-generated release notes for the
-# release workflow (.github/workflows/release.yml). Groups commits between
-# tags by Conventional Commits type.
-
 [changelog]
-# Header is stripped via --strip header so the release body starts cleanly.
 header = ""
 body = """
 {% for group, commits in commits | group_by(attribute="group") %}

@@ -1,16 +1,9 @@
-# Build context is the repo root, shared by both Dockerfiles:
-#   - web/Dockerfile (FE-only static server)
-#   - Dockerfile                    (all-in-one Django + bundled FE export)
-
-# Node / Next.js outputs
 **/node_modules
 **/.next
 **/out
 web/build
 web/src/api/generated
 
-# Python / Django local state (the all-in-one image installs deps fresh
-# from pyproject.toml + uv.lock, so the local venv and dev DB are noise).
 api/.venv
 api/db.sqlite3
 api/staticfiles
@@ -19,17 +12,14 @@ api/**/*.pyc
 
 toy-editor/dist
 
-# VCS / editor
 .git
 .gitignore
 .vscode
 .devcontainer
 
-# Env and secrets
 **/.env
 **/.env.*
 !**/.env.example
 
-# Logs and OS cruft
 **/*-debug.log*
 .DS_Store
