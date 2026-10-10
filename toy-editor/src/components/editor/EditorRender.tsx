@@ -1,5 +1,4 @@
-import { useImperativeHandle } from "react";
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type { StyleOption, Toy } from "../../toyMachine";
 import Silhouette from "../Silhouette";
 import SvgRoot from "../SvgRoot";
@@ -21,25 +20,15 @@ import { ReferenceImageBackdrop, ReferenceImageResizeHandle } from "./ReferenceI
 type Props = {
   toy: Toy;
   style: StyleOption;
-  ref?: RefObject<SVGSVGElement | null>;
-  onSelect?: (id: number) => void;
   referenceImage: ReferenceImage | null;
   onReferenceImageChange: Dispatch<SetStateAction<ReferenceImage | null>>;
 };
 
-const EditorRender = ({
-  toy,
-  style,
-  ref,
-  onSelect,
-  referenceImage,
-  onReferenceImageChange,
-}: Props) => {
+const EditorRender = ({ toy, style, referenceImage, onReferenceImageChange }: Props) => {
   const layout = useEditorLayout(toy, referenceImage);
   const handlers = useDragHandlers(layout);
   const imageHandlers = useReferenceImageDrag(layout, referenceImage, onReferenceImageChange);
   const setHoveredSectionId = useEditorUiStore((s) => s.setHoveredSectionId);
-  useImperativeHandle(ref, () => layout.ref.current as SVGSVGElement, [layout.ref]);
 
   return (
     <SvgRoot
@@ -65,7 +54,6 @@ const EditorRender = ({
               scaleFactor={layout.silhouetteScale}
               maxDiameter={layout.silhouetteW}
               style={style}
-              onSelect={onSelect}
               onHover={setHoveredSectionId}
               interactive
             />

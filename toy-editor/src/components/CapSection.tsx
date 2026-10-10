@@ -6,15 +6,10 @@ type Props = {
   shape: Shape;
   orientation: Orientation;
   scaleFactor: number;
-  /** Diameter of the section above. Used for bottom caps so the top edge
-   *  aligns with the previous section. Ignored for top caps. */
   previousDiameter?: number;
   totalWidth: number;
   style: StyleOption;
-  onSelect?: (id: number) => void;
   interactive?: boolean;
-  /** True when the adjacent body edge will be stroked by the neighboring
-   *  section, so we skip re-stroking it here. */
   hasAdjacent?: boolean;
 };
 
@@ -26,7 +21,6 @@ const CapSection = ({
   previousDiameter = 0,
   totalWidth,
   style,
-  onSelect,
   interactive = true,
   hasAdjacent = false,
 }: Props) => {
@@ -41,14 +35,7 @@ const CapSection = ({
   );
 
   return (
-    <g
-      className={interactive ? "toy-editor-part" : undefined}
-      transform={`translate(${x}, 0)`}
-      onClick={onSelect ? () => onSelect(section.id) : undefined}
-      role={onSelect ? "button" : undefined}
-      tabIndex={onSelect ? 0 : undefined}
-      style={{ cursor: onSelect ? "pointer" : undefined }}
-    >
+    <g className={interactive ? "toy-editor-part" : undefined} transform={`translate(${x}, 0)`}>
       <path
         d={d}
         fill={section.color || style.color}

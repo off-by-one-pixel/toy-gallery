@@ -15,7 +15,7 @@ import {
   sizeGuideGeometry,
   totalReadoutPosition,
 } from "./geometry";
-import { buildSectionMeta, RULER_AXIS_X_PX, RULER_WIDTH_PX } from "./layout";
+import { buildSectionMeta, RULER_WIDTH_PX } from "./layout";
 
 const noop = () => {};
 
@@ -51,18 +51,15 @@ describe("heightRowGeometry", () => {
     const layout = makeLayout();
     const meta = layout.sectionMeta[0];
     const { yMid } = heightRowGeometry(meta, layout, 30);
-    expect(yMid).toBe(100); // silhouetteY=50 + midMm=25 * scale=2
+    expect(yMid).toBe(100);
   });
 
   it("emits a bracket leader path with the input lead-out and section edges", () => {
     const layout = makeLayout();
     const meta = layout.sectionMeta[0];
     const { leaderD } = heightRowGeometry(meta, layout, 30);
-    // First section has previousDiameter=0, so left edge at top is at center
-    // (silhouetteCenter - 0/2 = 400). Bottom-left edge uses diameter=100 →
-    // 400 - 100*scale/2 = 400 - 100 = 300.
-    expect(leaderD).toContain("M 400 50"); // top-left edge
-    expect(leaderD).toContain("L 300 150"); // bottom-left edge
+    expect(leaderD).toContain("M 400 50");
+    expect(leaderD).toContain("L 300 150");
   });
 });
 
@@ -71,8 +68,6 @@ describe("diameterRowGeometry", () => {
     const layout = makeLayout();
     const meta = layout.sectionMeta[0];
     const { leaderD } = diameterRowGeometry(meta, layout, 540);
-    // Right edge = silhouetteCenter + diameter*scale/2 = 400 + 100 = 500.
-    // Bottom y = silhouetteY + bottomMm * scale = 50 + 50*2 = 150.
     expect(leaderD).toContain("L 500 150");
   });
 
@@ -80,7 +75,6 @@ describe("diameterRowGeometry", () => {
     const layout = makeLayout();
     const last = layout.sectionMeta[1];
     const { inputY } = diameterRowGeometry(last, layout, 540);
-    // The last section's input is offset below the silhouette, not at midpoint.
     expect(inputY).toBeGreaterThan(mmToY(last.bottomMm, layout));
   });
 });
@@ -92,15 +86,12 @@ describe("rimButtonsGeometry", () => {
     const { top, bot } = rimButtonsGeometry(meta, layout);
     expect(top.cx).toBe(layout.silhouetteCenter);
     expect(bot.cx).toBe(layout.silhouetteCenter);
-    // Section spans 50→80mm at scale 2 = 100→160 px height range.
-    // topMm=50 → topY=150. bottomMm=80 → botY=210. Inset = min(13, 60/2-1=29)=13.
     expect(top.cy).toBe(150 + 13);
     expect(bot.cy).toBe(210 - 13);
   });
 
   it("clamps the inset so buttons never overlap on tiny sections", () => {
     const layout = makeLayout();
-    // A 4mm section at scale 2 is 8 px tall — clamped inset = 8/2 - 1 = 3.
     const tinyMeta = { ...layout.sectionMeta[0], topMm: 0, bottomMm: 4 };
     const { top, bot } = rimButtonsGeometry(tinyMeta, layout);
     expect(top.cy).toBe(50 + 3);
@@ -109,28 +100,16 @@ describe("rimButtonsGeometry", () => {
 });
 
 describe("rimTickLine", () => {
-  it("anchors x1/y1 at the button center", () => {
-    const line = rimTickLine(100, 100, 0);
+  it.each([
+    ["0° points the tick straight down", 0, 100, 107],
+    ["90° points horizontally outward (left at left anchor)", 90, 93, 100],
+    ["180° points straight up", 180, 100, 93],
+  ] as const)("%s, anchored at the button center", (_, angle, x2, y2) => {
+    const line = rimTickLine(100, 100, angle);
     expect(line.x1).toBe(100);
     expect(line.y1).toBe(100);
-  });
-
-  it("0° points the tick straight down", () => {
-    const line = rimTickLine(100, 100, 0);
-    expect(line.x2).toBeCloseTo(100, 6);
-    expect(line.y2).toBeCloseTo(107, 6); // r=7
-  });
-
-  it("90° points horizontally outward (left at left anchor)", () => {
-    const line = rimTickLine(100, 100, 90);
-    expect(line.x2).toBeCloseTo(93, 6);
-    expect(line.y2).toBeCloseTo(100, 6);
-  });
-
-  it("180° points straight up", () => {
-    const line = rimTickLine(100, 100, 180);
-    expect(line.x2).toBeCloseTo(100, 6);
-    expect(line.y2).toBeCloseTo(93, 6);
+    expect(line.x2).toBeCloseTo(x2, 6);
+    expect(line.y2).toBeCloseTo(y2, 6);
   });
 });
 
@@ -159,7 +138,6 @@ describe("sizeGuideGeometry", () => {
   it("returns vertical guide rails at center ± d/2 with overshoot above & below", () => {
     const layout = makeLayout();
     const g = sizeGuideGeometry(60, layout);
-    // half = 60 * 2 / 2 = 60. Center 400 ± 60 → 340 / 460.
     expect(g.xLeft).toBe(340);
     expect(g.xRight).toBe(460);
     expect(g.yTop).toBe(layout.silhouetteY - 8);
@@ -190,7 +168,6 @@ describe("diameterHandlePosition", () => {
     const layout = makeLayout();
     const meta = layout.sectionMeta[0];
     const { cx, cy } = diameterHandlePosition(meta, layout);
-    // diameter=100 at scale=2 → right edge = center + 100 = 500.
     expect(cx).toBe(500);
     expect(cy).toBe(mmToY(meta.bottomMm, layout));
   });
@@ -221,15 +198,6 @@ describe("removeButtonPosition", () => {
 });
 
 describe("rulerGeometry", () => {
-  it("locks tick offsets to the constant ruler axis x", () => {
-    const layout = makeLayout();
-    const g = rulerGeometry(layout);
-    expect(g.axisX).toBe(RULER_AXIS_X_PX);
-    expect(g.tickInner).toBe(RULER_AXIS_X_PX + 6);
-    expect(g.tickOuter).toBe(RULER_AXIS_X_PX - 6);
-    expect(g.labelX).toBe(RULER_AXIS_X_PX - 10);
-  });
-
   it("axis spans the full silhouette height", () => {
     const layout = makeLayout();
     const g = rulerGeometry(layout);

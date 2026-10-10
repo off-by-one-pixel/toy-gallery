@@ -9,14 +9,10 @@ type Props = {
   scaleFactor: number;
   maxDiameter: number;
   style: StyleOption;
-  onSelect?: (id: number) => void;
   onHover?: (id: number | null) => void;
   interactive: boolean;
 };
 
-/** Renders the toy's silhouette as a stack of section / cap shapes.
- *  Shared by the editor and thumbnail render modes — purely
- *  presentational, no behaviour. */
 const Silhouette = ({
   sections,
   topShape,
@@ -24,7 +20,6 @@ const Silhouette = ({
   scaleFactor,
   maxDiameter,
   style,
-  onSelect,
   onHover,
   interactive,
 }: Props) => {
@@ -53,7 +48,6 @@ const Silhouette = ({
               shape={topShape}
               orientation="top"
               hasAdjacent={sections.length > 1}
-              onSelect={onSelect}
               interactive={interactive}
             />
           );
@@ -68,7 +62,6 @@ const Silhouette = ({
               shape={bottomShape}
               orientation="bottom"
               hasAdjacent
-              onSelect={onSelect}
               interactive={interactive}
             />
           );
@@ -80,7 +73,6 @@ const Silhouette = ({
               previousDiameter={previousDiameter}
               totalWidth={maxDiameter}
               style={style}
-              onSelect={onSelect}
               onHover={onHover}
               interactive={interactive}
             />

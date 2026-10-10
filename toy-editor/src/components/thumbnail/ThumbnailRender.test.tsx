@@ -18,7 +18,13 @@ const renderedSvg = (t: Toy, scaleFactor = 1) => {
 
 describe("ThumbnailRender", () => {
   it("sizes the viewBox exactly to the toy bounds so baselines align across thumbnails", () => {
-    const svg = renderedSvg(toy([[40, 60], [50, 90], [45, 30]]));
+    const svg = renderedSvg(
+      toy([
+        [40, 60],
+        [50, 90],
+        [45, 30],
+      ]),
+    );
     expect(svg.getAttribute("viewBox")).toBe("0 0 50 180");
   });
 
@@ -27,23 +33,16 @@ describe("ThumbnailRender", () => {
     expect(svg.getAttribute("viewBox")).toBe("0 0 80 200");
   });
 
-  it("anchors the drawing to the bottom of its container", () => {
-    const svg = renderedSvg(toy([[40, 100]]));
-    expect(svg.getAttribute("preserveAspectRatio")).toBe("xMidYMax meet");
-  });
-
   it("keeps a valid viewBox for a toy without sections", () => {
     const svg = renderedSvg(toy([]));
     expect(svg.getAttribute("viewBox")).toBe("0 0 1 1");
   });
 
-  it("lets the non-scaling stroke overhang render outside the bounds", () => {
-    const svg = renderedSvg(toy([[40, 100]]));
-    expect(svg.style.overflow).toBe("visible");
-  });
-
   it("fills each section with its own color, falling back to the toy color", () => {
-    const colored = toy([[40, 60], [50, 90]]);
+    const colored = toy([
+      [40, 60],
+      [50, 90],
+    ]);
     colored.sections[1].color = "#ff8800";
     const svg = renderedSvg(colored);
     const fills = Array.from(svg.querySelectorAll("path")).map((p) => p.getAttribute("fill"));

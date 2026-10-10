@@ -1,35 +1,35 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  DEFAULT_BOTTOM_CURVE_ANGLE,
-  DEFAULT_TOP_CURVE_ANGLE,
   CURVE_ANGLES,
   type CurveAngle,
   nextCurveAngle,
   sectionBottomCurveAngle,
   sectionTopCurveAngle,
+  type ToySection,
   useToyStore,
 } from "./toyMachine";
 
 const initialState = useToyStore.getState();
+
+const seed = (...sections: Array<Partial<ToySection> & { id: number }>) =>
+  useToyStore.setState({
+    sections: sections.map((section) => ({ diameter: 100, height: 50, ...section })),
+  });
+
+const sections = () => useToyStore.getState().sections;
 
 beforeEach(() => {
   useToyStore.setState(initialState, true);
 });
 
 describe("rim angle accessors", () => {
-  it("default top accessor returns 0 (down) for sections without a topCurveAngle", () => {
-    expect(DEFAULT_TOP_CURVE_ANGLE).toBe(0);
-    expect(sectionTopCurveAngle({ id: 0, diameter: 100, height: 50 })).toBe(0);
-  });
-
-  it("default bottom accessor returns 180 (up) for sections without a bottomCurveAngle", () => {
-    expect(DEFAULT_BOTTOM_CURVE_ANGLE).toBe(180);
-    expect(sectionBottomCurveAngle({ id: 0, diameter: 100, height: 50 })).toBe(180);
-  });
-
-  it("returns the explicit angle when set", () => {
-    expect(sectionTopCurveAngle({ id: 0, diameter: 100, height: 50, topCurveAngle: 90 })).toBe(90);
-    expect(sectionBottomCurveAngle({ id: 0, diameter: 100, height: 50, bottomCurveAngle: 45 })).toBe(45);
+  it.each<[string, (section: ToySection) => CurveAngle, Partial<ToySection>, CurveAngle]>([
+    ["top defaults to 0 (down)", sectionTopCurveAngle, {}, 0],
+    ["bottom defaults to 180 (up)", sectionBottomCurveAngle, {}, 180],
+    ["top returns the explicit angle", sectionTopCurveAngle, { topCurveAngle: 90 }, 90],
+    ["bottom returns the explicit angle", sectionBottomCurveAngle, { bottomCurveAngle: 45 }, 45],
+  ])("%s", (_, accessor, angles, expected) => {
+    expect(accessor({ id: 0, diameter: 100, height: 50, ...angles })).toBe(expected);
   });
 });
 
@@ -45,92 +45,70 @@ describe("nextCurveAngle", () => {
   });
 });
 
-describe("setTopCurveAngle / setBottomCurveAngle", () => {
-  it("updates only the targeted section", () => {
-    useToyStore.setState({
-      sections: [
-        { id: 0, diameter: 100, height: 50 },
-        { id: 1, diameter: 80, height: 30 },
-      ],
-    });
-    useToyStore.getState().setTopCurveAngle(1, 90);
-    const after = useToyStore.getState().sections;
-    expect(after[0].topCurveAngle).toBeUndefined();
-    expect(after[1].topCurveAngle).toBe(90);
+describe("curve angle cycling", () => {
+  const EDGES = [
+    {
+      edge: "top",
+      cycle: "cycleTopCurveAngle",
+      angle: "topCurveAngle",
+      other: "bottomCurveAngle",
+      walk: [45, 90, 135, 180, 0],
+    },
+    {
+      edge: "bottom",
+      cycle: "cycleBottomCurveAngle",
+      angle: "bottomCurveAngle",
+      other: "topCurveAngle",
+      walk: [0, 45, 90, 135, 180],
+    },
+  ] as const;
+
+  it.each(EDGES)("$edge starts from the default and walks the cycle", ({ cycle, angle, walk }) => {
+    seed({ id: 7 });
+    for (const expected of walk) {
+      useToyStore.getState()[cycle](7);
+      expect(sections()[0][angle]).toBe(expected);
+    }
   });
 
-  it("setBottomCurveAngle updates only the targeted section's bottomCurveAngle", () => {
-    useToyStore.setState({
-      sections: [
-        { id: 0, diameter: 100, height: 50 },
-        { id: 1, diameter: 80, height: 30 },
-      ],
-    });
-    useToyStore.getState().setBottomCurveAngle(0, 45);
-    const after = useToyStore.getState().sections;
-    expect(after[0].bottomCurveAngle).toBe(45);
-    expect(after[0].topCurveAngle).toBeUndefined();
-    expect(after[1].bottomCurveAngle).toBeUndefined();
-  });
-});
+  it.each(EDGES)(
+    "$edge updates only the targeted section and edge",
+    ({ cycle, angle, other, walk }) => {
+      seed({ id: 0 }, { id: 1 });
+      useToyStore.getState()[cycle](1);
+      expect(sections()[0][angle]).toBeUndefined();
+      expect(sections()[1][angle]).toBe(walk[0]);
+      expect(sections()[1][other]).toBeUndefined();
+    },
+  );
 
-describe("cycleTopCurveAngle / cycleBottomCurveAngle", () => {
-  it("cycleTopCurveAngle starts from the default and walks the cycle", () => {
-    useToyStore.setState({ sections: [{ id: 7, diameter: 100, height: 50 }] });
-    const cycle = useToyStore.getState().cycleTopCurveAngle;
-    cycle(7);
-    expect(useToyStore.getState().sections[0].topCurveAngle).toBe(45);
-    cycle(7);
-    expect(useToyStore.getState().sections[0].topCurveAngle).toBe(90);
-    cycle(7);
-    cycle(7);
-    expect(useToyStore.getState().sections[0].topCurveAngle).toBe(180);
-    cycle(7);
-    expect(useToyStore.getState().sections[0].topCurveAngle).toBe(0);
-  });
-
-  it("cycleBottomCurveAngle starts from the default 180 and walks the cycle", () => {
-    useToyStore.setState({ sections: [{ id: 9, diameter: 100, height: 50 }] });
-    const cycle = useToyStore.getState().cycleBottomCurveAngle;
-    cycle(9);
-    expect(useToyStore.getState().sections[0].bottomCurveAngle).toBe(0);
-    cycle(9);
-    expect(useToyStore.getState().sections[0].bottomCurveAngle).toBe(45);
-  });
-
-  it("ignores unknown ids", () => {
-    useToyStore.setState({ sections: [{ id: 1, diameter: 100, height: 50 }] });
-    useToyStore.getState().cycleTopCurveAngle(999);
-    expect(useToyStore.getState().sections[0].topCurveAngle).toBeUndefined();
+  it.each(EDGES)("$edge ignores unknown ids", ({ cycle, angle }) => {
+    seed({ id: 1 });
+    useToyStore.getState()[cycle](999);
+    expect(sections()[0][angle]).toBeUndefined();
   });
 });
 
 describe("setSectionColor", () => {
   it("sets a color on the targeted section only", () => {
-    useToyStore.setState({
-      sections: [
-        { id: 1, diameter: 100, height: 50 },
-        { id: 2, diameter: 80, height: 40 },
-      ],
-    });
+    seed({ id: 1 }, { id: 2 });
     useToyStore.getState().setSectionColor(2, "#ff0000");
-    const sections = useToyStore.getState().sections;
-    expect(sections[0].color).toBeUndefined();
-    expect(sections[1].color).toBe("#ff0000");
+    expect(sections()[0].color).toBeUndefined();
+    expect(sections()[1].color).toBe("#ff0000");
   });
 
   it("clears back to the toy color with null", () => {
-    useToyStore.setState({ sections: [{ id: 1, diameter: 100, height: 50, color: "#ff0000" }] });
+    seed({ id: 1, color: "#ff0000" });
     useToyStore.getState().setSectionColor(1, null);
-    expect(useToyStore.getState().sections[0].color).toBeNull();
+    expect(sections()[0].color).toBeNull();
   });
 
-  it("survives hydrate and getToy round-trips", () => {
+  it("survives hydrate", () => {
     useToyStore.getState().hydrate({
       sections: [{ id: 1, diameter: 100, height: 50, color: "#00ff00" }],
       topShape: "EGG",
       bottomShape: "FLAT",
     });
-    expect(useToyStore.getState().getToy().sections[0].color).toBe("#00ff00");
+    expect(sections()[0].color).toBe("#00ff00");
   });
 });
