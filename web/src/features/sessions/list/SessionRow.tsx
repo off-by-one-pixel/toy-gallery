@@ -12,7 +12,7 @@ import { useNow } from '@/hooks/useNow';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
-import { useSessions } from '@/features/sessions/useSessions';
+import { useSession } from '@/features/sessions/useSessions';
 import type { Session, Toy } from '@/api/types';
 import { type Unit } from '@/features/preferences/units';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
@@ -61,7 +61,7 @@ function SessionRow({
   onEdit,
   onDelete,
 }: Props) {
-  const session = useSessions({ sessionId: listed.id, sessionInitial: listed }).session ?? listed;
+  const session = useSession(listed.id, listed).session ?? listed;
   const t = useTranslations('session');
   const photoCount = session.photoCount ?? 0;
   const videoCount = session.videoCount ?? 0;

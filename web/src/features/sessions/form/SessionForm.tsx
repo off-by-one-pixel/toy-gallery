@@ -15,7 +15,7 @@ import { minutesBetween } from '@/lib/duration';
 import { useNow } from '@/hooks/useNow';
 import { filterToys } from '@/features/toys/search';
 import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
-import { useSessions } from '@/features/sessions/useSessions';
+import { useSaveSession, useSession } from '@/features/sessions/useSessions';
 import { useToys } from '@/features/toys/useToys';
 import SearchInput from '@/components/SearchInput';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
@@ -56,7 +56,7 @@ function SessionFormContent({ mode, onDone, onSaved }: Props) {
 
   const { toys, isLoading: toysPending, error: toysError } = useToys();
 
-  const detail = useSessions({ sessionId });
+  const detail = useSession(sessionId);
 
   const loadedSession = detail.session;
   const hasSeededDraft = useRef(false);
@@ -126,7 +126,7 @@ function SessionFormContent({ mode, onDone, onSaved }: Props) {
   const startDirty = loadedSession == null || startedAt !== datetimeLocalValue(new Date(loadedSession.startedAt));
   const canSave = selectedCount > 0 || (liveStartOnly && startDirty);
 
-  const { saveSession, isSavingSession } = detail;
+  const { saveSession, isSavingSession } = useSaveSession();
 
   const handleSave = async () => {
     if (!canSave) return;

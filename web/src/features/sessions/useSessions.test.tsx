@@ -39,7 +39,7 @@ import { navState, resetNavigation } from '@/test/navigation';
 import { settle } from '@/test/wait';
 import { createTestQueryClient } from '@/test/QueryWrapper';
 import { withAppProviders } from '@/test/render';
-import { useSessions, type SessionPayload, type SessionsOptions } from '@/features/sessions/useSessions';
+import { type SessionPayload, useSaveSession, useSession, useSessions } from '@/features/sessions/useSessions';
 
 const payload: SessionPayload = { startedAt: '2026-08-21T10:00:00Z', endedAt: null, entries: [] };
 
@@ -58,10 +58,10 @@ const makeWrapper = (client: QueryClient) =>
     return withAppProviders(children, { client, sort: SESSION_SORT });
   };
 
-const renderSessions = (options: SessionsOptions = {}, client: QueryClient = createTestQueryClient()) =>
-  renderHook(() => useSessions(options), { wrapper: makeWrapper(client) });
+const renderAppHook = <T,>(hook: () => T, client: QueryClient = createTestQueryClient()) =>
+  renderHook(hook, { wrapper: makeWrapper(client) });
 
-describe('useSessions', () => {
+describe('session hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetNavigation();
@@ -78,7 +78,7 @@ describe('useSessions', () => {
 
   it('loads and merges the session pages with the server count', async () => {
     respondSessions = () => page([makeSession({ id: 1 })], { count: 41, hasMore: true });
-    const { result } = renderSessions();
+    const { result } = renderAppHook(useSessions);
     await settle(() => expect(result.current.sessions.map((s) => s.id)).toEqual([1]));
     expect(result.current.sessionCount).toBe(41);
     expect(result.current.hasMore).toBe(true);
@@ -89,7 +89,7 @@ describe('useSessions', () => {
       query?.page === 2
         ? page([makeSession({ id: 2 }), makeSession({ id: 3 })], { count: 3 })
         : page([makeSession({ id: 1 }), makeSession({ id: 2 })], { count: 3, hasMore: true });
-    const { result } = renderSessions();
+    const { result } = renderAppHook(useSessions);
     await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     act(() => result.current.loadMore());
@@ -98,7 +98,7 @@ describe('useSessions', () => {
   });
 
   it('refetches with the selected period window and resets to the first page', async () => {
-    const { result, rerender } = renderSessions();
+    const { result, rerender } = renderAppHook(useSessions);
     await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     const week = currentPeriod('week');
@@ -114,7 +114,7 @@ describe('useSessions', () => {
 
   it('seeds the toy filter from the url and refetches when filters change', async () => {
     navState.search = 'toys=1';
-    const { result } = renderSessions();
+    const { result } = renderAppHook(useSessions);
     await settle(() => expect(sessionQueries[0]?.filters?.toyIds).toEqual([1]));
 
     act(() => result.current.setSessionFilters({ ...result.current.sessionFilters, hasMedia: true }));
@@ -126,7 +126,7 @@ describe('useSessions', () => {
 
   it('refetches when the session data is invalidated', async () => {
     const client = createTestQueryClient();
-    const { result } = renderSessions({}, client);
+    const { result } = renderAppHook(useSessions, client);
     await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     respondSessions = () => page([makeSession({ id: 1 }), makeSession({ id: 2 }), makeSession({ id: 3 })]);
@@ -135,7 +135,7 @@ describe('useSessions', () => {
   });
 
   it('prepends a freshly started session to the list', async () => {
-    const { result } = renderSessions();
+    const { result } = renderAppHook(useSessions);
     await settle(() => expect(result.current.sessions).toHaveLength(2));
 
     act(() => result.current.prependSession(makeSession({ id: 9 })));
@@ -144,21 +144,31 @@ describe('useSessions', () => {
   });
 
   it('exposes the toys and the lookup map', async () => {
-    const { result } = renderSessions();
+    const { result } = renderAppHook(useSessions);
     await settle(() => expect(result.current.toys.map((t) => t.name)).toEqual(['Steel']));
     expect(result.current.toysById.get(1)?.name).toBe('Steel');
   });
 
-  it('loads the session detail when an id is given', async () => {
+  it('loads the session detail without loading the session list', async () => {
     vi.mocked(fetchSession).mockResolvedValue(makeSession({ id: 5, isLive: true }));
-    const { result } = renderSessions({ sessionId: 5 });
+    const { result } = renderAppHook(() => useSession(5));
     await settle(() => expect(result.current.session?.isLive).toBe(true));
     expect(fetchSession).toHaveBeenCalledWith(5);
+    expect(fetchSessions).not.toHaveBeenCalled();
+  });
+
+  it('serves a listed session from its initial data without fetching', async () => {
+    const listed = makeSession({ id: 5 });
+    const { result } = renderAppHook(() => useSession(5, listed));
+    expect(result.current.session).toEqual(listed);
+    await act(async () => undefined);
+    expect(fetchSession).not.toHaveBeenCalled();
+    expect(fetchSessions).not.toHaveBeenCalled();
   });
 
   it('does not fetch a detail without an id', async () => {
-    const { result } = renderSessions();
-    await settle(() => expect(result.current.sessions).toHaveLength(2));
+    const { result } = renderAppHook(() => useSession(null));
+    await act(async () => undefined);
     expect(fetchSession).not.toHaveBeenCalled();
     expect(result.current.session).toBeNull();
     expect(result.current.isSessionLoading).toBe(false);
@@ -166,7 +176,7 @@ describe('useSessions', () => {
 
   it('creates when saving without a session id', async () => {
     vi.mocked(createSession).mockResolvedValue(makeSession({ id: 9 }));
-    const { result } = renderSessions();
+    const { result } = renderAppHook(useSaveSession);
     await act(async () => {
       await expect(result.current.saveSession({ sessionId: null, liveStartOnly: false, payload })).resolves.toEqual(
         makeSession({ id: 9 }),
@@ -178,7 +188,7 @@ describe('useSessions', () => {
 
   it('patches only the start time for a live start-only save', async () => {
     vi.mocked(patchSessionStart).mockResolvedValue(makeSession({ id: 5 }));
-    const { result } = renderSessions();
+    const { result } = renderAppHook(useSaveSession);
     await act(async () => {
       await result.current.saveSession({ sessionId: 5, liveStartOnly: true, payload });
     });
@@ -191,7 +201,7 @@ describe('useSessions', () => {
     vi.mocked(updateSession).mockResolvedValue(makeSession({ id: 5 }));
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
-    const { result } = renderSessions({}, client);
+    const { result } = renderAppHook(useSaveSession, client);
     await act(async () => {
       await result.current.saveSession({ sessionId: 5, liveStartOnly: false, payload });
     });
@@ -206,7 +216,7 @@ describe('useSessions', () => {
     vi.mocked(deleteSession).mockResolvedValue(undefined as never);
     const client = createTestQueryClient();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
-    const { result } = renderSessions({}, client);
+    const { result } = renderAppHook(useSessions, client);
     await act(async () => {
       await result.current.removeSession(4);
     });

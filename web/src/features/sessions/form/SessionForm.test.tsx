@@ -21,7 +21,8 @@ const sessionsState = vi.hoisted(() => ({
 }));
 
 vi.mock('@/features/sessions/useSessions', () => ({
-  useSessions: () => sessionsState.current,
+  useSession: () => sessionsState.current,
+  useSaveSession: () => sessionsState.current,
 }));
 
 const toysState = vi.hoisted(() => ({ current: [] as unknown[] }));

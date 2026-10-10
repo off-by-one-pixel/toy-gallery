@@ -31,6 +31,7 @@ const { sessionsState, startActionState } = vi.hoisted(() => ({
 
 vi.mock('@/features/sessions/useSessions', () => ({
   useSessions: () => sessionsState.current,
+  useSession: () => ({ session: null }),
 }));
 
 vi.mock('@/features/sessions/live/useStartLiveAction', () => ({
@@ -116,11 +117,6 @@ const listData = (overrides: Record<string, unknown> = {}) => ({
   setSessionFilters: vi.fn(),
   isLoading: false,
   error: null,
-  session: null,
-  isSessionLoading: false,
-  sessionError: null,
-  saveSession: vi.fn(),
-  isSavingSession: false,
   removeSession: vi.fn(),
   isRemovingSession: false,
   ...overrides,
