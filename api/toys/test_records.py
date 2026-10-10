@@ -8,7 +8,13 @@ from toys.records.session import record_session, resync_records, session_record
 from toys.records.toy import toy_record
 
 from . import models
-from .records import SESSION_RECORD_DEFINITIONS, TOY_RECORD_DEFINITIONS, DuplicateRecordKey
+from .records import (
+    SESSION_RECORD_DEFINITIONS,
+    TOY_RECORD_DEFINITIONS,
+    DuplicateRecordKey,
+    RecordCheckResult,
+    ToyRecordCheckCtx,
+)
 from .testutils import ApiTestBase
 from .testutils import utc as _utc
 
@@ -55,6 +61,106 @@ class RecordRegistryTests(RecordsTestBase):
         self.assertIn("pr-duration", SESSION_RECORD_DEFINITIONS)
         self.assertIn("toy-time", TOY_RECORD_DEFINITIONS)
         self.assertIn("toy-level", TOY_RECORD_DEFINITIONS)
+
+
+class ToyRecordCheckTests(RecordsTestBase):
+    def _entry(self, session, toy):
+        return session.entries.get(toy_id=toy)
+
+    def _check(self, key, sessions, entry):
+        ctx = ToyRecordCheckCtx(sessions=list(sessions), entry=entry)
+        return TOY_RECORD_DEFINITIONS[key](ctx)
+
+    def test_first_use_sets_the_time_record(self):
+        toy = self._create_toy("A")
+        session = self._session_on(1, [{"toy": toy, "duration_minutes": 30}])
+        entry = self._entry(session, toy)
+
+        result = self._check("toy-time", [], entry)
+
+        self.assertIsInstance(result, RecordCheckResult)
+        self.assertEqual(result.entry, entry)
+        self.assertEqual(result.value, 30.0)
+
+    def test_longer_use_beats_the_prior_best(self):
+        toy = self._create_toy("A")
+        prior = self._session_on(1, [{"toy": toy, "duration_minutes": 30}])
+        candidate = self._session_on(2, [{"toy": toy, "duration_minutes": 45}])
+
+        result = self._check("toy-time", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 45.0)
+
+    def test_equal_or_shorter_use_is_not_a_record(self):
+        toy = self._create_toy("A")
+        prior = self._session_on(1, [{"toy": toy, "duration_minutes": 30}])
+        equal = self._session_on(2, [{"toy": toy, "duration_minutes": 30}])
+        shorter = self._session_on(3, [{"toy": toy, "duration_minutes": 20}])
+
+        self.assertIsNone(self._check("toy-time", [prior], self._entry(equal, toy)))
+        self.assertIsNone(self._check("toy-time", [prior], self._entry(shorter, toy)))
+
+    def test_entry_without_duration_never_records_time(self):
+        toy = self._create_toy("A")
+        session = self._session_on(1, [{"toy": toy}])
+
+        self.assertIsNone(self._check("toy-time", [], self._entry(session, toy)))
+
+    def test_prior_entries_without_duration_are_ignored_in_the_baseline(self):
+        toy = self._create_toy("A")
+        prior = self._session_on(1, [{"toy": toy}])
+        candidate = self._session_on(2, [{"toy": toy, "duration_minutes": 25}])
+
+        result = self._check("toy-time", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 25.0)
+
+    def test_other_toys_in_baseline_sessions_are_ignored(self):
+        toy = self._create_toy("A")
+        other = self._create_toy("B")
+        prior = self._session_on(
+            1,
+            [{"toy": toy, "duration_minutes": 10}, {"toy": other, "duration_minutes": 90}],
+        )
+        candidate = self._session_on(2, [{"toy": toy, "duration_minutes": 20}])
+
+        result = self._check("toy-time", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 20.0)
+
+    def test_first_use_sets_the_level_record(self):
+        toy = self._create_toy("A")
+        session = self._session_on(1, [{"toy": toy, "involvement": "USED"}])
+
+        result = self._check("toy-level", [], self._entry(session, toy))
+
+        self.assertEqual(result.value, 0.0)
+
+    def test_level_up_beats_the_prior_best(self):
+        toy = self._create_toy("A")
+        prior = self._session_on(1, [{"toy": toy, "involvement": "USED"}])
+        candidate = self._session_on(2, [{"toy": toy, "involvement": "FULLY_INSERTED"}])
+
+        result = self._check("toy-level", [prior], self._entry(candidate, toy))
+
+        self.assertEqual(result.value, 2.0)
+
+    def test_same_or_lower_level_is_not_a_record(self):
+        toy = self._create_toy("A")
+        prior = self._session_on(1, [{"toy": toy, "involvement": "FULLY_INSERTED"}])
+        same = self._session_on(2, [{"toy": toy, "involvement": "FULLY_INSERTED"}])
+        lower = self._session_on(3, [{"toy": toy, "involvement": "INSERTED"}])
+
+        self.assertIsNone(self._check("toy-level", [prior], self._entry(same, toy)))
+        self.assertIsNone(self._check("toy-level", [prior], self._entry(lower, toy)))
+
+    def test_level_ranks_map_the_involvement_order(self):
+        toy = self._create_toy("A")
+        inserted = self._session_on(1, [{"toy": toy, "involvement": "INSERTED"}])
+
+        result = self._check("toy-level", [], self._entry(inserted, toy))
+
+        self.assertEqual(result.value, 1.0)
 
 
 class RecordProgressionTests(RecordsTestBase):
