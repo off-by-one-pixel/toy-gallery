@@ -35,16 +35,14 @@ class ToyShapeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         sections_data = validated_data.pop("sections")
-        shape = models.Shape.objects.create(**validated_data)
+        shape = super().create(validated_data)
         for s in sections_data:
             models.ShapeSection.objects.create(**s, shape=shape)
         return shape
 
     def update(self, instance, validated_data):
         sections_data = validated_data.pop("sections", None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        instance = super().update(instance, validated_data)
         if sections_data is not None:
             instance.sections.all().delete()
             for s in sections_data:
@@ -97,19 +95,13 @@ class ToySerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        shape_data = validated_data.pop("shape")
-        shape_serializer = self.fields["shape"]
-        shape_serializer.initial_data = shape_data
-        shape_serializer.is_valid(raise_exception=True)
-        shape = shape_serializer.save()
-        return models.Toy.objects.create(**validated_data, shape=shape)
+        shape = self.fields["shape"].create(validated_data.pop("shape"))
+        return super().create({**validated_data, "shape": shape})
 
     @transaction.atomic
     def update(self, instance, validated_data):
         shape_data = validated_data.pop("shape", None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        instance = super().update(instance, validated_data)
         if shape_data is not None:
             self.fields["shape"].update(instance.shape, shape_data)
         return instance
@@ -182,7 +174,7 @@ class SessionSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         entries_data = validated_data.pop("entries")
-        session = models.Session.objects.create(**validated_data)
+        session = super().create(validated_data)
         models.ToySessionEntry.objects.bulk_create(
             [models.ToySessionEntry(session=session, **e) for e in entries_data]
         )
