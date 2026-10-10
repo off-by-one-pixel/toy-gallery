@@ -488,7 +488,9 @@ class ToyRecordDriverTests(RecordsTestBase):
         entry.save()
         record_session(older)
 
-        time_rows = models.PersonalRecord.objects.filter(key="toy-time").order_by("-session__started_at")
+        time_rows = models.PersonalRecord.objects.filter(key="toy-time").order_by(
+            "-session__started_at"
+        )
         self.assertEqual([r.value for r in time_rows], [45.0, 30.0])
         self.assertEqual(time_rows[0].session_id, newer.id)
 

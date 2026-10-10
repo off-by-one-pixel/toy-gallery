@@ -207,7 +207,7 @@ class CurveAngleTests(TestCase):
 
     def test_rejects_curve_angle_outside_choices(self):
         payload = _payload()
-        payload["shape"]["sections"][0]["top_curve_angle"] = 30  # not in [0,45,90,135,180]
+        payload["shape"]["sections"][0]["top_curve_angle"] = 30
         response = self.client.post("/toys/toys/", payload, format="json")
         self.assertEqual(response.status_code, 400, response.content)
 
@@ -311,12 +311,6 @@ class CustomAttributesTests(TestCase):
 
 
 class PatchToyShapeTests(TestCase):
-    """PATCH /toys/toys/<id>/ with a nested `shape` updates the toy in place
-    instead of forcing the frontend to do POST-then-DELETE. Same toy id,
-    same sessions intact, atomic — and it works on toys that are
-    referenced by sessions (the old codepath couldn't, because PROTECT
-    blocks delete)."""
-
     def setUp(self):
         user = User.objects.create_user(username="u", password="p")
         self.client = APIClient()
@@ -346,7 +340,6 @@ class PatchToyShapeTests(TestCase):
         self.assertEqual(len(response.data["shape"]["sections"]), 2)
         self.assertEqual(response.data["shape"]["sections"][0]["circumference"], 314.16)
         self.assertEqual(models.Toy.objects.count(), 1)
-        # Sections are wholesale-replaced — no orphans hanging around.
         self.assertEqual(models.ShapeSection.objects.count(), 2)
 
     def test_patch_without_shape_leaves_sections_untouched(self):
@@ -366,9 +359,6 @@ class PatchToyShapeTests(TestCase):
         )
 
     def test_patch_works_on_toy_referenced_by_session(self):
-        # Reproduces the old footgun: editing a toy that's in a session used
-        # to fail because the create-then-delete flow couldn't delete the
-        # original (PROTECT FK from ToySessionEntry).
         session_response = self.client.post(
             "/toys/sessions/",
             {
@@ -392,7 +382,6 @@ class PatchToyShapeTests(TestCase):
         )
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.data["id"], self.toy["id"])
-        # Session entry still points at the same toy.
         entry = models.ToySessionEntry.objects.get()
         self.assertEqual(entry.toy_id, self.toy["id"])
 
@@ -792,7 +781,6 @@ class SessionTests(TestCase):
         user = User.objects.create_user(username="u", password="p")
         self.client = APIClient()
         self.client.force_authenticate(user=user)
-        # Seed two toys to attach to sessions.
         self.toy_a = self._create_toy(name="A")
         self.toy_b = self._create_toy(name="B")
 
@@ -817,7 +805,6 @@ class SessionTests(TestCase):
         self.assertIsNone(response.data["max_circumference"])
 
     def test_inserted_contributes_circumference_but_not_length(self):
-        # toy_a has insertable_length=170, max section circumference=220.
         response = self.client.post(
             "/toys/sessions/",
             self._session_payload([{"toy": self.toy_a, "involvement": "INSERTED"}]),
@@ -838,9 +825,6 @@ class SessionTests(TestCase):
         self.assertEqual(response.data["max_circumference"], 220)
 
     def test_peak_length_only_from_fully_inserted_when_mixed(self):
-        # toy_a INSERTED → contributes circ but not length.
-        # toy_b FULLY_INSERTED → contributes both. Length should come from
-        # toy_b alone; circumference is a tie at 220.
         response = self.client.post(
             "/toys/sessions/",
             self._session_payload(
@@ -1078,14 +1062,12 @@ class SessionTests(TestCase):
         self.assertEqual(create.status_code, 201)
         sid = create.data["id"]
 
-        # Toy delete blocked.
         response = self.client.delete(f"/toys/toys/{self.toy_a}/")
         self.assertEqual(response.status_code, 409, response.content)
         self.assertIn("detail", response.data)
         self.assertIn("session", response.data["detail"].lower())
         self.assertTrue(models.Toy.objects.filter(pk=self.toy_a).exists())
 
-        # After deleting the session, the toy can be deleted.
         self.client.delete(f"/toys/sessions/{sid}/")
         response = self.client.delete(f"/toys/toys/{self.toy_a}/")
         self.assertEqual(response.status_code, 204)
@@ -1125,7 +1107,6 @@ class ChangePasswordTests(TestCase):
         self.assertTrue(self.user.check_password("oldpassword42"))
 
     def test_rejects_new_password_failing_validators(self):
-        # Django default validators reject passwords < 8 chars and overly common ones.
         response = self.client.post(
             self.URL,
             {"current_password": "oldpassword42", "new_password": "short"},
@@ -1153,14 +1134,9 @@ class ChangePasswordTests(TestCase):
 
 
 class SpaIndexResolutionTests(TestCase):
-    """The catch-all has to find the right Next.js export file for a given
-    URL, otherwise deep-linking to /sessions ships the gallery HTML instead.
-    """
-
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.frontend = Path(self._tmp.name)
-        # Mirror the layout `next build` produces with output: 'export'.
         (self.frontend / "index.html").write_text("<root>")
         (self.frontend / "sessions.html").write_text("<sessions>")
         (self.frontend / "login.html").write_text("<login>")
@@ -1176,8 +1152,6 @@ class SpaIndexResolutionTests(TestCase):
         self.assertEqual(f.read_text(), "<root>")
 
     def test_top_level_route_serves_named_html(self):
-        # The bug: /sessions used to fall back to index.html → users saw
-        # the gallery instead of the sessions page after a hard refresh.
         f = _resolve_spa_html("/sessions", self.frontend)
         self.assertEqual(f.read_text(), "<sessions>")
 
@@ -1194,8 +1168,6 @@ class SpaIndexResolutionTests(TestCase):
         self.assertEqual(f.read_text(), "<root>")
 
     def test_path_traversal_rejected(self):
-        # A frontend dir with a sibling file outside it, the SPA must not
-        # reach via "..".
         with tempfile.TemporaryDirectory() as outer:
             outer_path = Path(outer)
             secret = outer_path / "secret.html"
@@ -1204,7 +1176,6 @@ class SpaIndexResolutionTests(TestCase):
             inside.mkdir()
             (inside / "index.html").write_text("<root>")
             f = _resolve_spa_html("/../secret", inside)
-            # Either falls back to index or returns None — never the secret.
             self.assertIsNotNone(f)
             self.assertNotEqual(f.read_text(), "<secret>")
 

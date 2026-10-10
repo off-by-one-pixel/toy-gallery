@@ -1,8 +1,3 @@
-"""Smoke test for the active database. Implements the Validation section
-of docs/migration-safety.md. Exits 0 on pass, 1 on any failure with the
-offending layer named.
-"""
-
 from __future__ import annotations
 
 import sys
@@ -32,10 +27,7 @@ class Command(BaseCommand):
             sys.exit(1)
         self.stdout.write(f"{LOG_PREFIX} all layers passed")
 
-    # ---------- Layer 1: structural ----------
-
     def _layer_1_structural(self) -> None:
-        # Catches "migration ran but django_migrations wasn't advanced".
         try:
             call_command("migrate", "--check", verbosity=0)
         except SystemExit as exit_err:
@@ -50,14 +42,10 @@ class Command(BaseCommand):
                 raise SmokeTestFailure("layer 1: `check --database default` failed") from exit_err
         self.stdout.write(f"{LOG_PREFIX} layer 1 (structural) ok")
 
-    # ---------- Layer 2: referential ----------
-
     def _layer_2_referential(self) -> None:
         for app_label in settings.LOCAL_APPS:
             app_config = apps.get_app_config(app_label)
             for model in app_config.get_models():
-                # One trivial SELECT per model catches "the migration left
-                # a model referencing a column the new schema doesn't have."
                 try:
                     model.objects.exists()
                 except Exception as err:
@@ -65,8 +53,6 @@ class Command(BaseCommand):
                         f"layer 2: query on {model._meta.label} raised {type(err).__name__}: {err}"
                     ) from err
         self.stdout.write(f"{LOG_PREFIX} layer 2 (referential) ok")
-
-    # ---------- Layer 3: invariants ----------
 
     def _layer_3_invariant_hook(self) -> None:
         try:
@@ -77,8 +63,6 @@ class Command(BaseCommand):
             ) from err
         self.stdout.write(f"{LOG_PREFIX} layer 3 (invariants) ok")
 
-    # ---------- Layer 4: API-level ----------
-
     def _layer_4_api_paths(self) -> None:
         paths = getattr(settings, "MIGRATION_SMOKE_TEST_PATHS", [])
         if not paths:
@@ -87,12 +71,9 @@ class Command(BaseCommand):
 
         superuser = get_user_model().objects.filter(is_superuser=True).first()
         if superuser is None:
-            # First deploy hasn't bootstrapped the admin account yet.
             self.stdout.write(f"{LOG_PREFIX} layer 4 (api) skipped: no superuser yet")
             return
 
-        # force_login bypasses the credential exchange — no need to know
-        # or generate a password / token for the smoke run.
         from django.test import Client
 
         client = Client()
