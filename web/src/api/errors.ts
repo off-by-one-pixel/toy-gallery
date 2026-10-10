@@ -1,15 +1,23 @@
+import type { MessageKeys, NestedKeyOf, useTranslations } from 'next-intl';
+
 import { APIError } from '@/api/types';
+import type en from '@/i18n/catalogs/en.json';
 
-const FALLBACK = 'Something went wrong';
+type ErrorMessages = (typeof en)['errors'];
 
-// Walk the response body depth-first and collect every string we hit.
-// Handles DRF shapes like:
-//   { detail: "..." }
-//   [ "...", "..." ]
-//   { shape: { sections: ["..."] } }          // nested serializer errors
-//   { shape: { sections: [{ non_field_errors: ["..."] }] } }
-// Preserves document order; preferring `detail` / `non_field_errors` first
-// at each level so the most-specific message shows up before field errors.
+export type ErrorKey = MessageKeys<ErrorMessages, NestedKeyOf<ErrorMessages>>;
+
+export type ErrorTranslator = ReturnType<typeof useTranslations<'errors'>>;
+
+export class TranslatableError extends Error {
+  constructor(
+    readonly key: ErrorKey,
+    readonly values?: Record<string, string>,
+  ) {
+    super(key);
+  }
+}
+
 const collectMessages = (data: unknown, into: string[] = []): string[] => {
   if (typeof data === 'string') {
     if (data) into.push(data);
@@ -32,19 +40,15 @@ const collectMessages = (data: unknown, into: string[] = []): string[] => {
   return into;
 };
 
-/**
- * Turn anything thrown by the API layer (or a file/JSON handler) into a
- * short, user-facing message. Single source of truth for error copy.
- */
-export const formatError = (err: unknown): string => {
-  if (err instanceof SyntaxError) return 'File is not valid JSON';
+export const formatError = (err: unknown, t: ErrorTranslator): string => {
+  if (err instanceof TranslatableError) return t(err.key, err.values);
+  if (err instanceof SyntaxError) return t('invalidJsonFile');
   if (err instanceof APIError) {
-    if (err.status === 0) return 'Network error — please try again';
+    if (err.status === 0) return t('network');
     if (typeof err.data === 'string' && err.data) return err.data;
     const messages = collectMessages(err.data);
     if (messages.length) return messages.join('\n');
-    return err.message || FALLBACK;
+    return t('server', { status: err.status });
   }
-  if (err instanceof Error && err.message) return err.message;
-  return FALLBACK;
+  return t('fallback');
 };

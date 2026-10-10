@@ -216,7 +216,8 @@
       "previous": "Previous period",
       "next": "Next period",
       "current": "Jump to current"
-    }
+    },
+    "invalidId": "Invalid session id."
   },
   "template": {
     "pickerTitle": "Choose a starting shape",
@@ -244,7 +245,11 @@
     "clipboardError": "Could not access clipboard — select the text and copy manually.",
     "dialogCopy": "Copy",
     "dialogCopied": "Copied",
-    "dialogLoad": "Load"
+    "dialogLoad": "Load",
+    "girthMode": {
+      "diameter": "Ø",
+      "circumference": "C"
+    }
   },
   "collection": {
     "appTitle": "Toy Gallery",
@@ -326,7 +331,14 @@
   },
   "colorPicker": {
     "presets": "Preset colors",
-    "custom": "Custom color"
+    "custom": "Custom color",
+    "names": {
+      "purple": "Purple",
+      "slate": "Slate",
+      "blue": "Blue",
+      "red": "Red",
+      "green": "Green"
+    }
   },
   "toyEdit": {
     "brand": "Brand",
@@ -336,6 +348,10 @@
       "newMode": "New toy",
       "copyFrom": "from {brand} · {name}",
       "untitled": "Untitled toy"
+    },
+    "validation": {
+      "identityRequired": "Brand and name are required.",
+      "sectionsRequired": "At least one section is required."
     }
   },
   "search": {
@@ -355,5 +371,16 @@
     "brand": "Toy Gallery",
     "tagline": "Your collection, shaped to scale.",
     "taglineSubtitle": "Record every toy with its silhouette, exact dimensions, and your own notes — see the whole gallery at a glance."
+  },
+  "errors": {
+    "fallback": "Something went wrong",
+    "network": "Network error — please try again",
+    "invalidJsonFile": "File is not valid JSON",
+    "server": "Server error ({status})",
+    "templateJson": {
+      "notJson": "Not valid JSON: {detail}",
+      "notObject": "Expected a JSON object.",
+      "noSections": "Missing or empty shape.sections."
+    }
   }
 }

@@ -12,16 +12,19 @@ import {
   type UseQueryOptions,
 } from '@tanstack/react-query';
 
+import { useTranslations } from 'next-intl';
+
 import { formatError } from '@/api/errors';
 
 export function useReportError(inlineSink?: (message: string) => void): (err: unknown) => void {
+  const t = useTranslations('errors');
   return useCallback(
     (err: unknown) => {
-      const message = formatError(err);
+      const message = formatError(err, t);
       if (inlineSink) inlineSink(message);
       else Toast.toast.danger(message);
     },
-    [inlineSink],
+    [inlineSink, t],
   );
 }
 
@@ -29,8 +32,9 @@ type ApiQueryOptions<T> = Omit<UseQueryOptions<T, unknown, T, QueryKey>, 'queryK
   Readonly<{ key: QueryKey; fn: () => Promise<T> }>;
 
 export function useApiQuery<T>({ key, fn, ...options }: ApiQueryOptions<T>) {
+  const t = useTranslations('errors');
   const { data, isPending, isError, isFetched, error } = useQuery({ queryKey: key, queryFn: fn, ...options });
-  return { data, isPending, isError, isFetched, errorMessage: error ? formatError(error) : null };
+  return { data, isPending, isError, isFetched, errorMessage: error ? formatError(error, t) : null };
 }
 
 type ApiInfiniteQueryOptions<TPage> = Readonly<{
@@ -40,6 +44,7 @@ type ApiInfiniteQueryOptions<TPage> = Readonly<{
 }>;
 
 export function useApiInfiniteQuery<TPage>({ key, fn, getNextPage }: ApiInfiniteQueryOptions<TPage>) {
+  const t = useTranslations('errors');
   const { data, isPending, hasNextPage, isFetchingNextPage, fetchNextPage, error } = useInfiniteQuery({
     queryKey: key,
     queryFn: ({ pageParam }) => fn(pageParam),
@@ -52,7 +57,7 @@ export function useApiInfiniteQuery<TPage>({ key, fn, getNextPage }: ApiInfinite
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-    errorMessage: error ? formatError(error) : null,
+    errorMessage: error ? formatError(error, t) : null,
   };
 }
 
@@ -73,6 +78,7 @@ export interface ApiMutation<TArgs, TResult> {
 export function useApiMutation<TArgs = void, TResult = unknown>(
   options: ApiMutationOptions<TArgs, TResult>,
 ): ApiMutation<TArgs, TResult> {
+  const t = useTranslations('errors');
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: options.fn,
@@ -85,7 +91,7 @@ export function useApiMutation<TArgs = void, TResult = unknown>(
       options.onSuccess?.(result);
     },
     onError: (err) => {
-      const message = formatError(err);
+      const message = formatError(err, t);
       if (options.errorSink) options.errorSink(message);
       else Toast.toast.danger(message);
     },

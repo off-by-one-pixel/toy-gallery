@@ -119,6 +119,7 @@ type ModeToggleProps = Readonly<{
 }>;
 
 function ModeToggle({ value, onChange }: ModeToggleProps) {
+  const t = useTranslations('template.girthMode');
   return (
     <span className="inline-flex rounded-md border border-border bg-surface-secondary p-0.5">
       {(['diameter', 'circumference'] as const).map((m) => (
@@ -131,7 +132,7 @@ function ModeToggle({ value, onChange }: ModeToggleProps) {
             (value === m ? 'bg-surface text-foreground shadow-sm' : 'text-muted hover:text-foreground')
           }
         >
-          {m === 'diameter' ? 'Ø' : 'C'}
+          {t(m)}
         </button>
       ))}
     </span>

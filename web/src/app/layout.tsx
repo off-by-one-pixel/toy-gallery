@@ -1,4 +1,5 @@
 import { Metadata, Viewport } from 'next';
+import { getTranslations } from 'next-intl/server';
 import 'toy-editor/styles.css';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/index.css';
@@ -14,21 +15,25 @@ import { ToastProvider } from '@/providers/ToastProvider';
 import { UnitProvider } from '@/features/preferences/UnitProvider';
 import { ViewModeProvider } from '@/features/preferences/ViewModeProvider';
 import { DEFAULT_THEME, THEMES } from '@/features/preferences/themeRegistry';
+import { DEFAULT_LOCALE } from '@/i18n/routing';
 
-export const metadata: Metadata = {
-  title: 'Toy Gallery',
-  description: 'Your collection, shaped to scale.',
-  manifest: '/manifest.json',
-  icons: {
-    icon: '/favicon.svg',
-    apple: '/favicon.svg',
-  },
-  appleWebApp: {
-    capable: true,
-    title: 'Toy Gallery',
-    statusBarStyle: 'default',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return {
+    title: t('collection.appTitle'),
+    description: t('login.tagline'),
+    manifest: '/manifest.json',
+    icons: {
+      icon: '/favicon.svg',
+      apple: '/favicon.svg',
+    },
+    appleWebApp: {
+      capable: true,
+      title: t('collection.appTitle'),
+      statusBarStyle: 'default',
+    },
+  };
+}
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
@@ -41,7 +46,7 @@ const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');try
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={DEFAULT_LOCALE} suppressHydrationWarning>
       <body className="bg-surface-secondary text-foreground min-h-screen antialiased">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <ToastProvider />

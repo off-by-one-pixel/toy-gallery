@@ -106,17 +106,17 @@ describe('validateAndBuildPayload', () => {
 
   it('returns an error when brand is empty / whitespace-only', () => {
     const result = validateAndBuildPayload({ ...valid, brand: '   ' }, EDITOR, newMode);
-    expect(result).toEqual({ ok: false, error: 'Brand and name are required.' });
+    expect(result).toEqual({ ok: false, error: 'identityRequired' });
   });
 
   it('returns an error when name is empty / whitespace-only', () => {
     const result = validateAndBuildPayload({ ...valid, name: '' }, EDITOR, newMode);
-    expect(result).toEqual({ ok: false, error: 'Brand and name are required.' });
+    expect(result).toEqual({ ok: false, error: 'identityRequired' });
   });
 
   it('returns an error when there are zero sections', () => {
     const result = validateAndBuildPayload(valid, { ...EDITOR, sections: [] }, newMode);
-    expect(result).toEqual({ ok: false, error: 'At least one section is required.' });
+    expect(result).toEqual({ ok: false, error: 'sectionsRequired' });
   });
 
   it('returns ok with an assembled payload when input is valid', () => {

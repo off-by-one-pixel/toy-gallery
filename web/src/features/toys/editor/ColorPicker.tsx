@@ -3,7 +3,7 @@
 import { ColorSwatchPicker } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 
-import { PRESET_COLORS } from '@/features/toys/editor/constants';
+import { usePresetPalette } from '@/features/toys/editor/usePresetPalette';
 
 type Props = Readonly<{
   value: string;
@@ -12,11 +12,12 @@ type Props = Readonly<{
 
 export default function ColorPicker({ value, onChange }: Props) {
   const t = useTranslations('colorPicker');
-  const isPreset = PRESET_COLORS.some((p) => p.value.toLowerCase() === value.toLowerCase());
+  const palette = usePresetPalette();
+  const isPreset = palette.some((p) => p.value.toLowerCase() === value.toLowerCase());
   return (
     <div className="flex flex-wrap items-center gap-2">
       <ColorSwatchPicker value={value} onChange={(c) => onChange(c.toString('hex'))} aria-label={t('presets')}>
-        {PRESET_COLORS.map((p) => (
+        {palette.map((p) => (
           <ColorSwatchPicker.Item key={p.value} color={p.value} aria-label={p.name}>
             <ColorSwatchPicker.Swatch />
             <ColorSwatchPicker.Indicator />
