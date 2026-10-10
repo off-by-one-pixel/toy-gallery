@@ -1,5 +1,3 @@
-// @vitest-environment happy-dom
-
 import { fireEvent, render, screen } from '@testing-library/react';
 import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
