@@ -1,5 +1,3 @@
-"""SQLite implementation of the CandidatePipeline."""
-
 from __future__ import annotations
 
 import sqlite3
@@ -35,13 +33,8 @@ class SqliteCandidatePipeline(SubprocessCandidatePipeline):
         if not live.exists():
             raise FileNotFoundError(f"Live database not found at {live}")
         if candidate.exists():
-            # The gate's stale-cleanup step runs ahead of this; reaching here
-            # means cleanup was bypassed or failed.
             raise FileExistsError(f"Candidate already exists at {candidate}; stale-cleanup failed")
 
-        # Online .backup is safe against concurrent writers on `live`; routing
-        # through .tmp keeps a half-written file from being mistaken for a
-        # valid candidate if we crash mid-copy.
         tmp = _candidate_tmp_path()
         if tmp.exists():
             tmp.unlink()

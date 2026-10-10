@@ -31,15 +31,10 @@ class Shape(models.Model):
     )
 
     if TYPE_CHECKING:
-        # Reverse relation from ShapeSection.shape (related_name="sections").
         sections: "RelatedManager[ShapeSection]"
 
 
 class ShapeSection(models.Model):
-    # Side-wall control-point angle in degrees (from screen-down, mirrored
-    # at left/right anchors). Defaults reproduce the legacy smooth-S
-    # taper: top points the CP straight down, bottom straight up — both
-    # into the section interior.
     CURVE_ANGLE_CHOICES = [(0, "0°"), (45, "45°"), (90, "90°"), (135, "135°"), (180, "180°")]
 
     shape = models.ForeignKey(Shape, on_delete=models.CASCADE, related_name="sections")
@@ -83,7 +78,6 @@ class Session(models.Model):
         ]
 
     if TYPE_CHECKING:
-        # Reverse relation from ToySessionEntry.session (related_name="entries").
         entries: "RelatedManager[ToySessionEntry]"
 
 

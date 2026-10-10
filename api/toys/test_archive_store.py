@@ -1,5 +1,3 @@
-"""Tests for ArchiveStore: filename conventions and retention pruning."""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -24,7 +22,6 @@ class ArchiveFilenameTests(TestCase):
         ArchiveStore.dir().mkdir(parents=True, exist_ok=True)
         ts = "20260518T120000Z"
         head = "toys.0014_x"
-        # First counter should be 1; create that archive and counter advances.
         self.assertEqual(ArchiveStore.next_counter(ts, head, "sqlite3"), 1)
         (ArchiveStore.dir() / ArchiveStore.filename(ts, head, 1, "sqlite3")).write_text("x")
         self.assertEqual(ArchiveStore.next_counter(ts, head, "sqlite3"), 2)
@@ -36,7 +33,6 @@ class ArchiveFilenameTests(TestCase):
         ts = "20260518T120000Z"
         (ArchiveStore.dir() / ArchiveStore.filename(ts, "toys.A", 1, "sqlite3")).write_text("x")
         (ArchiveStore.dir() / ArchiveStore.filename(ts, "toys.A", 2, "sqlite3")).write_text("x")
-        # Different head sharing the same ts gets its own sequence.
         self.assertEqual(ArchiveStore.next_counter(ts, "toys.B", "sqlite3"), 1)
 
 
@@ -77,6 +73,5 @@ class PruneArchivesTests(TestCase):
         self._add_archive("20260101T000000Z")
         (ArchiveStore.dir() / "stray.txt").write_text("not an archive")
         pruned = ArchiveStore.prune(0)
-        # Stray file is left alone; only the matching archive is pruned.
         self.assertEqual(len(pruned), 1)
         self.assertTrue((ArchiveStore.dir() / "stray.txt").exists())
