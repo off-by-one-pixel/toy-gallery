@@ -12,11 +12,11 @@ from .records import (
     RecordCheckResult,
     ToyRecordCheckCtx,
 )
-from .testutils import SessionApiTestBase
+from .testutils import ApiTestBase
 from .testutils import utc as _utc
 
 
-class RecordsTestBase(SessionApiTestBase):
+class RecordsTestBase(ApiTestBase):
     default_involvement = "FULLY_INSERTED"
 
     def _rows(self, key):
@@ -710,16 +710,6 @@ class RecordGatingTests(RecordsTestBase):
 
 
 class RecordApiTests(RecordsTestBase):
-    def _payload(self, entries, started_at="2026-06-01T10:00:00Z"):
-        return {"started_at": started_at, "entries": entries}
-
-    def _post_session(self, entries, started_at="2026-06-01T10:00:00Z"):
-        response = self.client.post(
-            "/toys/sessions/", self._payload(entries, started_at), format="json"
-        )
-        self.assertEqual(response.status_code, 201, response.content)
-        return response.data
-
     def _records_by_key(self, data):
         return {r["key"]: r for r in data["records"]}
 
@@ -802,14 +792,9 @@ class RecordApiTests(RecordsTestBase):
         data = self._post_session([{"toy": toy_a, "involvement": "FULLY_INSERTED"}])
 
         toy_b = self._create_toy("B", circumference=240.0, insertable_length=190)
-        response = self.client.put(
-            f"/toys/sessions/{data['id']}/",
-            self._payload([{"toy": toy_b, "involvement": "FULLY_INSERTED"}]),
-            format="json",
-        )
-        self.assertEqual(response.status_code, 200, response.content)
+        updated = self._put_session(data["id"], [{"toy": toy_b, "involvement": "FULLY_INSERTED"}])
 
-        recs = self._records_by_key(response.data)
+        recs = self._records_by_key(updated)
         self.assertEqual(recs["pr-width"]["toy"], toy_b)
         self.assertEqual(recs["pr-width"]["value"], 240.0)
         self.assertEqual(models.PersonalRecord.objects.filter(session_id=data["id"]).count(), 3)
@@ -819,13 +804,8 @@ class RecordApiTests(RecordsTestBase):
         data = self._post_session([{"toy": toy, "involvement": "FULLY_INSERTED"}])
         self.assertEqual(models.PersonalRecord.objects.count(), 3)
 
-        response = self.client.put(
-            f"/toys/sessions/{data['id']}/",
-            self._payload([{"toy": toy, "involvement": "USED"}]),
-            format="json",
-        )
-        self.assertEqual(response.status_code, 200, response.content)
-        recs = self._records_by_key(response.data)
+        updated = self._put_session(data["id"], [{"toy": toy, "involvement": "USED"}])
+        recs = self._records_by_key(updated)
         self.assertEqual(set(recs), {"toy-level"})
         self.assertEqual(recs["toy-level"]["value"], 0.0)
         self.assertEqual(len(self._rows("pr-width")), 0)
@@ -859,15 +839,6 @@ class RecordApiTests(RecordsTestBase):
 
 
 class ToyRecordEmbeddingTests(RecordsTestBase):
-    def _post_session(self, entries, started_at):
-        response = self.client.post(
-            "/toys/sessions/",
-            {"started_at": started_at, "entries": entries},
-            format="json",
-        )
-        self.assertEqual(response.status_code, 201, response.content)
-        return response.data
-
     def _toy_row(self, toy_id):
         response = self.client.get("/toys/toys/")
         self.assertEqual(response.status_code, 200, response.content)

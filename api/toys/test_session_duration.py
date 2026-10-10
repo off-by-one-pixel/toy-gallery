@@ -1,20 +1,11 @@
-from .testutils import SessionApiTestBase
+from .testutils import ApiTestBase
 
 
-class SessionTotalDurationTests(SessionApiTestBase):
+class SessionTotalDurationTests(ApiTestBase):
     def setUp(self):
         super().setUp()
         self.toy_a = self._create_toy("A")
         self.toy_b = self._create_toy("B")
-
-    def _post_session(self, entries):
-        response = self.client.post(
-            "/toys/sessions/",
-            {"started_at": "2026-05-02T21:14:00Z", "entries": entries},
-            format="json",
-        )
-        self.assertEqual(response.status_code, 201, response.content)
-        return response.data
 
     def test_sums_entry_durations(self):
         data = self._post_session(
