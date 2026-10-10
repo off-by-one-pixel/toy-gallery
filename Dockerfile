@@ -44,9 +44,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/.venv/bin:$PATH" \
     PORT=8000
 
-# libpq for psycopg2 binary; curl for the healthcheck.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends libpq5 curl \
+ && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
