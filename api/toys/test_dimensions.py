@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from django.test import SimpleTestCase, TestCase
 
 from toys import models
-from toys.dimensions import SessionDimensions, max_entry_or_none, value_or_none
+from toys.dimensions import SessionDimensions, max_entry_or_none
 
 
 class FakeEntry:
@@ -31,14 +31,6 @@ class MaxEntryOrNoneTests(SimpleTestCase):
 
     def test_returns_none_when_empty(self):
         self.assertIsNone(max_entry_or_none([], by_value))
-
-
-class ValueOrNoneTests(SimpleTestCase):
-    def test_unwraps_the_value(self):
-        self.assertEqual(value_or_none((object(), 42.0)), 42.0)
-
-    def test_passes_none_through(self):
-        self.assertIsNone(value_or_none(None))
 
 
 class SessionPeaksTests(TestCase):

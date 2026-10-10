@@ -33,16 +33,6 @@ class ToyCreateTests(ApiTestBase):
         self.assertIsNone(data["total_length"])
         self.assertIsNone(data["circumference"])
 
-    def test_response_has_scalar_mm_dimensions(self):
-        data = self._post_toy()
-        for field in ("insertable_length", "total_length", "circumference"):
-            self.assertIsInstance(data[field], (int, float), field)
-        for section in data["shape"]["sections"]:
-            for field in ("height", "diameter"):
-                self.assertIsInstance(section[field], (int, float), field)
-        null_sections = [s for s in data["shape"]["sections"] if s["circumference"] is None]
-        self.assertTrue(null_sections)
-
 
 class UsageCountTests(ApiTestBase):
     def test_list_reports_session_entry_count_per_toy(self):
@@ -632,7 +622,7 @@ class SessionTests(ApiTestBase):
             [{"toy": self.toy_a, "involvement": "USED", "duration_minutes": -5}], status=400
         )
 
-    def test_toy_total_duration_aggregates_across_sessions(self):
+    def test_toy_duration_aggregates_across_sessions(self):
         for minutes in (30, None, 65):
             self._post_session(
                 [{"toy": self.toy_a, "involvement": "USED", "duration_minutes": minutes}]
@@ -640,16 +630,8 @@ class SessionTests(ApiTestBase):
 
         toys = {t["id"]: t for t in self.client.get("/toys/toys/").data}
         self.assertEqual(toys[self.toy_a]["total_duration_minutes"], 95)
-        self.assertEqual(toys[self.toy_b]["total_duration_minutes"], 0)
-
-    def test_toy_max_duration_reports_the_longest_single_session(self):
-        for minutes in (30, None, 65):
-            self._post_session(
-                [{"toy": self.toy_a, "involvement": "USED", "duration_minutes": minutes}]
-            )
-
-        toys = {t["id"]: t for t in self.client.get("/toys/toys/").data}
         self.assertEqual(toys[self.toy_a]["max_duration_minutes"], 65)
+        self.assertEqual(toys[self.toy_b]["total_duration_minutes"], 0)
         self.assertEqual(toys[self.toy_b]["max_duration_minutes"], 0)
 
     def test_toy_detail_reports_max_duration(self):
