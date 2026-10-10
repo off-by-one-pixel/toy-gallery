@@ -1,11 +1,11 @@
 from . import models
-from .testutils import SessionApiTestBase
+from .testutils import ApiTestBase
 from .testutils import utc as _utc
 
 URL = "/toys/sessions/"
 
 
-class SessionListTestBase(SessionApiTestBase):
+class SessionListTestBase(ApiTestBase):
     def _get(self, **params):
         response = self.client.get(URL, params)
         self.assertEqual(response.status_code, 200, response.content)

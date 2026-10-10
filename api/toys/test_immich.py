@@ -1,11 +1,10 @@
 from datetime import UTC, datetime, timedelta
 from unittest import mock
 
-from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
-from rest_framework.test import APIClient
 
 from . import immich, media, models
+from .testutils import ApiTestBase
 
 
 def _response(status_code=200, json_data=None):
@@ -136,12 +135,7 @@ class ImmichClientTests(TestCase):
 @override_settings(
     IMMICH_URL="https://immich", IMMICH_PUBLIC_URL="https://immich", IMMICH_API_KEY="k"
 )
-class MediaIndicatorTests(TestCase):
-    def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
-
+class MediaIndicatorTests(ApiTestBase):
     def test_media_status_reports_configured(self):
         response = self.client.get("/toys/sessions/media-status/")
         self.assertEqual(response.status_code, 200)
@@ -191,12 +185,7 @@ class MediaIndicatorTests(TestCase):
 @override_settings(
     IMMICH_URL="https://immich", IMMICH_PUBLIC_URL="https://immich", IMMICH_API_KEY="k"
 )
-class RefreshAllMediaTests(TestCase):
-    def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
-
+class RefreshAllMediaTests(ApiTestBase):
     @mock.patch("toys.immich.requests.request")
     def test_buckets_assets_creates_links_and_cleans_empty_sessions(self, request_mock):
         with_media = models.Session.objects.create(started_at="2026-06-01T20:00:00Z")
@@ -300,11 +289,9 @@ class RefreshAllMediaTests(TestCase):
         self.assertEqual((flagged.photo_count, flagged.video_count), (2, 1))
 
 
-class SessionMediaEndpointTests(TestCase):
+class SessionMediaEndpointTests(ApiTestBase):
     def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
+        super().setUp()
         self.session = models.Session.objects.create(started_at="2026-06-01T20:00:00Z")
 
     @override_settings(IMMICH_URL="", IMMICH_API_KEY="")
@@ -360,12 +347,7 @@ class SessionMediaEndpointTests(TestCase):
         self.assertEqual((self.session.photo_count, self.session.video_count), (1, 0))
 
 
-class MediaLikeTests(TestCase):
-    def setUp(self):
-        user = User.objects.create_user(username="u", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
-
+class MediaLikeTests(ApiTestBase):
     def _like(self, asset_id="a1", liked=True):
         return self.client.post(
             "/toys/sessions/media-like/", {"asset_id": asset_id, "liked": liked}, format="json"
@@ -404,11 +386,9 @@ class MediaLikeTests(TestCase):
         self.assertEqual(response.status_code, 502)
 
 
-class LikedAssetsInMediaTests(TestCase):
+class LikedAssetsInMediaTests(ApiTestBase):
     def setUp(self):
-        user = User.objects.create_user(username="u2", password="p")
-        self.client = APIClient()
-        self.client.force_authenticate(user=user)
+        super().setUp()
         self.session = models.Session.objects.create(started_at="2026-06-01T20:00:00Z")
 
     @override_settings(
