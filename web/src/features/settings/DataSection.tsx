@@ -3,11 +3,12 @@
 import { useRef, useState } from 'react';
 
 import { Button } from '@heroui/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Download, Trash2, Trophy, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { deleteCollection, downloadExport, importFromFile, rebuildRecords } from '@/api';
-import { sessionDataKeys } from '@/api/queryKeys';
+import { invalidateAllData, sessionDataKeys } from '@/api/queryKeys';
 import { useApiMutation } from '@/hooks/useApi';
 import ConfirmModal from '@/components/ConfirmModal';
 import SectionCard from '@/features/settings/SectionCard';
@@ -17,12 +18,14 @@ export default function DataSection() {
   const t = useTranslations('settings.data');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   const exportData = useApiMutation({ fn: downloadExport, success: () => t('exportedToast') });
   const importData = useApiMutation({
     fn: importFromFile,
     success: ({ toys_created, sessions_created }) =>
       t('importedToast', { toys: toys_created, sessions: sessions_created }),
+    onSuccess: () => invalidateAllData(queryClient),
   });
   const rebuild = useApiMutation({
     fn: rebuildRecords,
@@ -33,7 +36,10 @@ export default function DataSection() {
     fn: deleteCollection,
     success: ({ toys_deleted, sessions_deleted }) =>
       t('deletedToast', { toys: toys_deleted, sessions: sessions_deleted }),
-    onSuccess: () => setConfirmOpen(false),
+    onSuccess: () => {
+      setConfirmOpen(false);
+      invalidateAllData(queryClient);
+    },
   });
   const busy = [exportData, importData, rebuild, deleteAll].some((m) => m.isPending);
 

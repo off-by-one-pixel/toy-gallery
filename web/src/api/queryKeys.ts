@@ -1,4 +1,4 @@
-import type { QueryClient } from '@tanstack/react-query';
+import type { QueryClient, QueryKey } from '@tanstack/react-query';
 
 export const queryKeys = {
   toys: {
@@ -23,8 +23,17 @@ export const queryKeys = {
   },
 };
 
-export const sessionDataKeys = [queryKeys.sessions.lists, queryKeys.sessions.stats, queryKeys.sessions.live] as const;
+export const sessionHistoryKeys = [queryKeys.toys.all, queryKeys.sessions.lists, queryKeys.sessions.stats] as const;
 
-export const invalidateSessionData = (queryClient: QueryClient): void => {
-  for (const queryKey of sessionDataKeys) void queryClient.invalidateQueries({ queryKey });
+export const sessionDataKeys = [...sessionHistoryKeys, queryKeys.sessions.live] as const;
+
+const invalidateEach = (queryClient: QueryClient, keys: readonly QueryKey[]): void => {
+  for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey });
 };
+
+export const invalidateSessionHistory = (queryClient: QueryClient): void =>
+  invalidateEach(queryClient, sessionHistoryKeys);
+
+export const invalidateSessionData = (queryClient: QueryClient): void => invalidateEach(queryClient, sessionDataKeys);
+
+export const invalidateAllData = (queryClient: QueryClient): void => void queryClient.invalidateQueries();

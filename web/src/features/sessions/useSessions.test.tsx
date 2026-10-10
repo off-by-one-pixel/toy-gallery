@@ -199,6 +199,7 @@ describe('useSessions', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'detail', 5] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'list'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'stats'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['toys'] });
   });
 
   it('removes a session and refreshes session data', async () => {
@@ -211,5 +212,6 @@ describe('useSessions', () => {
     });
     expect(vi.mocked(deleteSession).mock.calls[0][0]).toBe(4);
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions', 'live'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['toys'] });
   });
 });

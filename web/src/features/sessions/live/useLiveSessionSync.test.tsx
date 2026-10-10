@@ -56,7 +56,7 @@ describe('useLiveSessionSync', () => {
     stubLiveSession();
   });
 
-  it('polls and invalidates lists and stats only on live-id transitions', async () => {
+  it('polls and invalidates session history only on live-id transitions', async () => {
     vi.useFakeTimers();
     const client = createTestQueryClient();
     const spy = spyOnInvalidations(client);
@@ -68,6 +68,7 @@ describe('useLiveSessionSync', () => {
     await tick(LIVE_SYNC_INTERVAL_MS);
     expect(invalidations(spy, queryKeys.sessions.lists)).toBe(1);
     expect(invalidations(spy, queryKeys.sessions.stats)).toBe(1);
+    expect(invalidations(spy, queryKeys.toys.all)).toBe(1);
 
     await tick(LIVE_SYNC_INTERVAL_MS);
     expect(invalidations(spy, queryKeys.sessions.lists)).toBe(1);
@@ -76,6 +77,8 @@ describe('useLiveSessionSync', () => {
     await tick(LIVE_SYNC_INTERVAL_MS);
     expect(invalidations(spy, queryKeys.sessions.lists)).toBe(2);
     expect(invalidations(spy, queryKeys.sessions.stats)).toBe(2);
+    expect(invalidations(spy, queryKeys.toys.all)).toBe(2);
+    expect(invalidations(spy, queryKeys.sessions.live)).toBe(0);
     vi.useRealTimers();
   });
 
