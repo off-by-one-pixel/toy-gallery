@@ -7,7 +7,7 @@
 **/.next
 **/out
 web/build
-web/src/services/generated
+web/src/api/generated
 
 # Python / Django local state (the all-in-one image installs deps fresh
 # from pyproject.toml + uv.lock, so the local venv and dev DB are noise).
