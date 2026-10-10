@@ -6,8 +6,6 @@ import RemoveButtons from "./RemoveButtons";
 
 const DragLayer = ({ handlers }: { handlers: DragHandlers }) => (
   <>
-    {/* Bands first so the smaller diameter handles draw on top and win
-        hit-testing where they overlap. */}
     <BoundaryBands handlers={handlers} />
     <BottomBand handlers={handlers} />
     <DiameterHandles handlers={handlers} />

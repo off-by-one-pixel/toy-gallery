@@ -18,12 +18,8 @@ import {
   sectionInputY,
 } from "./layout";
 
-// ─── mm → px conversion (vertical axis) ────────────────────────────────
-
 export const mmToY = (mm: number, layout: EditorLayout): number =>
   layout.silhouetteY + mm * layout.silhouetteScale;
-
-// ─── Section labels ────────────────────────────────────────────────────
 
 export type HeightRowGeometry = {
   yMid: number;
@@ -69,8 +65,6 @@ export const diameterRowGeometry = (
   return { inputY, leaderD };
 };
 
-// ─── Rim angle buttons ────────────────────────────────────────────────
-
 const RIM_TICK_R_PX = RIM_BUTTON_R_PX - 2;
 const RIM_INSET_PX = RIM_BUTTON_R_PX + 4;
 
@@ -81,10 +75,7 @@ export type RimButtonsGeometry = {
   bot: RimButtonPos;
 };
 
-export const rimButtonsGeometry = (
-  meta: SectionMeta,
-  layout: EditorLayout,
-): RimButtonsGeometry => {
+export const rimButtonsGeometry = (meta: SectionMeta, layout: EditorLayout): RimButtonsGeometry => {
   const sectionPx = (meta.bottomMm - meta.topMm) * layout.silhouetteScale;
   const inset = Math.min(RIM_INSET_PX, sectionPx / 2 - 1);
   const cx = layout.silhouetteCenter;
@@ -96,12 +87,7 @@ export const rimButtonsGeometry = (
 
 export type RimTickLine = { x1: number; y1: number; x2: number; y2: number };
 
-/** Full <line> attributes for the directional tick inside a angle button. */
-export const rimTickLine = (
-  cx: number,
-  cy: number,
-  angle: CurveAngle,
-): RimTickLine => {
+export const rimTickLine = (cx: number, cy: number, angle: CurveAngle): RimTickLine => {
   const r = (angle * Math.PI) / 180;
   return {
     x1: cx,
@@ -110,8 +96,6 @@ export const rimTickLine = (
     y2: cy + Math.cos(r) * RIM_TICK_R_PX,
   };
 };
-
-// ─── Reference guides ──────────────────────────────────────────────────
 
 export type GuidesXRange = { xLeft: number; xRight: number };
 
@@ -127,10 +111,7 @@ export type SizeGuideGeometry = {
   yBot: number;
 };
 
-export const sizeGuideGeometry = (
-  knownSizeMm: number,
-  layout: EditorLayout,
-): SizeGuideGeometry => {
+export const sizeGuideGeometry = (knownSizeMm: number, layout: EditorLayout): SizeGuideGeometry => {
   const half = (knownSizeMm * layout.silhouetteScale) / 2;
   return {
     xLeft: layout.silhouetteCenter - half,
@@ -140,17 +121,13 @@ export const sizeGuideGeometry = (
   };
 };
 
-// ─── Drag layer ────────────────────────────────────────────────────────
-
 export type BandStripeGeometry = {
   x: number;
   width: number;
   halfHeight: number;
 };
 
-export const bandStripeGeometry = (
-  layout: EditorLayout,
-): BandStripeGeometry => ({
+export const bandStripeGeometry = (layout: EditorLayout): BandStripeGeometry => ({
   x: layout.silhouetteX - BAND_OVERHANG_PX,
   width: layout.silhouetteW + BAND_OVERHANG_PX * 2,
   halfHeight: BAND_HALF_H_PX,
@@ -158,7 +135,6 @@ export const bandStripeGeometry = (
 
 export type BandRect = { x: number; y: number; width: number; height: number; rx: number };
 
-/** Full SVG rect attributes for a horizontal drag band centered on a y in mm. */
 export const bandRect = (mm: number, layout: EditorLayout): BandRect => {
   const { x, width, halfHeight } = bandStripeGeometry(layout);
   return {
@@ -178,10 +154,7 @@ export const diameterHandlePosition = (
   cy: mmToY(meta.bottomMm, layout),
 });
 
-export const lastInputRightX = (
-  layout: EditorLayout,
-  showSectionCircumference: boolean,
-): number =>
+export const lastInputRightX = (layout: EditorLayout, showSectionCircumference: boolean): number =>
   showSectionCircumference
     ? layout.diameterLabelX + LABEL_INPUT_W_PX + CIRC_LABEL_GAP_PX + LABEL_INPUT_W_PX
     : layout.diameterLabelX + LABEL_INPUT_W_PX;
@@ -198,8 +171,6 @@ export const removeButtonPosition = (
     : mmToY(meta.midMm, layout);
   return { cx, cy };
 };
-
-// ─── Ruler ─────────────────────────────────────────────────────────────
 
 export type RulerGeometry = {
   axisX: number;
@@ -221,11 +192,7 @@ export const rulerGeometry = (layout: EditorLayout): RulerGeometry => ({
   unitY: layout.silhouetteY - 8,
 });
 
-// ─── Total readout ─────────────────────────────────────────────────────
-
-export const totalReadoutPosition = (
-  layout: EditorLayout,
-): { x: number; y: number } => ({
+export const totalReadoutPosition = (layout: EditorLayout): { x: number; y: number } => ({
   x: layout.silhouetteCenter,
   y: layout.silhouetteY + layout.silhouetteH + 18,
 });

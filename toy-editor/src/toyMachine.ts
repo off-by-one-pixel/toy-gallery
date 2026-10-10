@@ -7,25 +7,11 @@ export type StyleOption = {
   color: string;
 };
 
-/**
- * Tracks whether each numeric value on a section was set by the user
- * (true) or is still a template default that hasn't been touched yet
- * (false). Used purely as a visual cue (bold vs. lighter typography);
- * has no behavioral effect — we never auto-rescale.
- */
 export type ToyTouched = {
   diameter: boolean;
   height: boolean;
 };
 
-/**
- * Side-wall control-point angle for a section's top or bottom edge,
- * expressed as a tangent angle in degrees from the screen-down axis,
- * mirrored at the left vs. right anchor of the section. 0° points the
- * control point straight down, 180° straight up, 90° horizontally
- * outward. Defaults reproduce the legacy smooth-S taper: top edge → 0°,
- * bottom edge → 180° (both control points pointing into the section).
- */
 export const CURVE_ANGLES = [0, 45, 90, 135, 180] as const;
 export type CurveAngle = (typeof CURVE_ANGLES)[number];
 export const DEFAULT_TOP_CURVE_ANGLE: CurveAngle = 0;
@@ -39,17 +25,9 @@ export interface ToySection {
   diameter: number;
   height: number;
   color?: string | null;
-  /** Optional measured circumference in the same units as diameter.
-   *  Preserved for backward compatibility with consumers that persist it
-   *  per-section (notably the toy_gallery backend). */
   circumference?: number | null;
-  /** Visual-only flag: was each dimension touched by the user? Defaults to
-   *  fully touched on hydrate (loaded toys are by definition user-set) and
-   *  fully untouched for sections inserted from scratch. */
   touched?: ToyTouched;
-  /** Side-wall angle at this section's top edge. Default 0° (down). */
   topCurveAngle?: CurveAngle;
-  /** Side-wall angle at this section's bottom edge. Default 180° (up). */
   bottomCurveAngle?: CurveAngle;
 }
 
@@ -71,15 +49,8 @@ export interface Toy {
   topShape: Shape;
   bottomShape: Shape;
   ref?: RefObject<SVGSVGElement | null>;
-  /** Manufacturer-stated insertable length. Reuses the persisted
-   *  `insertable_length` field on the toy. Drawn as a horizontal reference
-   *  guide on the canvas. */
   insertableLengthMm?: number | null;
-  /** Manufacturer-stated total length. Session-only — not persisted. */
   knownTotalMm?: number | null;
-  /** Manufacturer-stated size, expressed as a canonical diameter
-   *  (= circumference / π for inputs typed in circumference). Session-only
-   *  — not persisted. */
   knownSizeMm?: number | null;
   snapEnabled?: boolean;
 }
@@ -90,8 +61,6 @@ interface ToyStore extends Toy {
   style: StyleOption;
   selectedId: number | null;
 
-  // Reference guide state (always defined inside the store; the optional
-  // markers on Toy are for the public API surface).
   insertableLengthMm: number | null;
   knownTotalMm: number | null;
   knownSizeMm: number | null;
@@ -107,18 +76,11 @@ interface ToyStore extends Toy {
   getYOffset: (id: number) => number;
   getToy: () => Toy;
 
-  // Section value setters — typing or dragging marks the dimension as user-touched.
   setDiameter: (id: number, diameter: number) => void;
   setHeight: (id: number, height: number) => void;
   setCircumference: (id: number, circumference: number | null) => void;
   setSectionColor: (id: number, color: string | null) => void;
 
-  /**
-   * Move the boundary between two sections. `aboveId` is the section above
-   * the boundary; `delta` is the change in mm (positive = boundary moves
-   * down, growing the upper section and shrinking the one below).
-   * Both adjacent sections are marked height-touched.
-   */
   setBoundaryDelta: (aboveId: number, delta: number) => void;
 
   setTopShape: (shape: Shape) => void;
@@ -133,7 +95,6 @@ interface ToyStore extends Toy {
   setRef: (ref: RefObject<SVGSVGElement | null>) => void;
   setSelected: (id: number | null) => void;
 
-  // Reference guides + snap
   setInsertableLength: (mm: number | null) => void;
   setKnownTotal: (mm: number | null) => void;
   setKnownSize: (mm: number | null) => void;
@@ -269,9 +230,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
       const below = state.sections[idx + 1];
       const newAbove = above.height + delta;
       const newBelow = below.height - delta;
-      // Refuse adjustments that would push either section below the floor
-      // — drag is purely geometric and we don't want to silently absorb the
-      // overflow somewhere else.
       if (newAbove < MIN_SECTION_HEIGHT || newBelow < MIN_SECTION_HEIGHT) return {};
       return {
         sections: state.sections.map((s, i) => {
@@ -339,9 +297,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   hydrate: (toy) => {
     const maxId = toy.sections.reduce((a, s) => Math.max(a, s.id), 0);
     set({
-      // Hydrated sections are by definition user-set (they were saved),
-      // so default `touched` to fully true unless the caller explicitly
-      // marked them otherwise.
       sections: toy.sections.map((s) => ({
         ...s,
         touched: s.touched ?? { ...FULL_TOUCHED },

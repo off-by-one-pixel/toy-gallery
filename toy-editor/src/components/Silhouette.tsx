@@ -14,9 +14,6 @@ type Props = {
   interactive: boolean;
 };
 
-/** Renders the toy's silhouette as a stack of section / cap shapes.
- *  Shared by the editor and thumbnail render modes — purely
- *  presentational, no behaviour. */
 const Silhouette = ({
   sections,
   topShape,

@@ -12,8 +12,6 @@ const DiameterHandles = ({ handlers }: { handlers: DragHandlers }) => {
   return (
     <>
       {layout.sectionMeta.map((meta) => {
-        // Bottom-shape caps inherit width from the section above, so they
-        // get no diameter handle.
         if (meta.isLast && sectionsLen > 1 && bottomShape !== Shape.FLAT) {
           return null;
         }
@@ -24,9 +22,7 @@ const DiameterHandles = ({ handlers }: { handlers: DragHandlers }) => {
             className="toy-editor-handle toy-editor-handle-diameter"
             {...pos}
             r={HANDLE_R_PX}
-            onPointerDown={(e) =>
-              handlers.onDiameterPointerDown(e, meta.section.id, pos.cx)
-            }
+            onPointerDown={(e) => handlers.onDiameterPointerDown(e, meta.section.id, pos.cx)}
             onPointerMove={handlers.onDiameterPointerMove}
             onPointerUp={handlers.onPointerUp}
             onPointerCancel={handlers.onPointerUp}

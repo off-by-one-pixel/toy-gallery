@@ -6,15 +6,11 @@ type Props = {
   shape: Shape;
   orientation: Orientation;
   scaleFactor: number;
-  /** Diameter of the section above. Used for bottom caps so the top edge
-   *  aligns with the previous section. Ignored for top caps. */
   previousDiameter?: number;
   totalWidth: number;
   style: StyleOption;
   onSelect?: (id: number) => void;
   interactive?: boolean;
-  /** True when the adjacent body edge will be stroked by the neighboring
-   *  section, so we skip re-stroking it here. */
   hasAdjacent?: boolean;
 };
 

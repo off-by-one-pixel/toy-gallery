@@ -1,6 +1,3 @@
-/** Convert a screen-space (clientX, clientY) point to the SVG viewBox-local
- *  coordinate system of the SVG that owns `target`. Returns null if the
- *  target isn't attached to an SVG or `getScreenCTM()` is unavailable. */
 export const localFromClient = (
   target: SVGElement,
   clientX: number,
