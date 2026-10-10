@@ -22,17 +22,8 @@ from toys.migration_gate.archive_store import ArchiveStore
 from toys.migration_gate.sqlite import candidate_db_path
 from toys.models import Shape, ShapeSection, Toy
 
-# ---------- Test helpers ----------
-
 
 class TempDataDir:
-    """Helper that points the live DB (and therefore all gate state) at a tmp dir.
-
-    The gate derives every path from `settings.DATABASES['default']['NAME']`,
-    so we just override that for the duration of the test. The `path` attribute
-    is the parent dir; gate state lands as siblings of the live DB file.
-    """
-
     def __init__(self, test_case: TestCase) -> None:
         self._tmpdir = tempfile.TemporaryDirectory(prefix="mgate-test-")
         self.path = Path(self._tmpdir.name)
@@ -50,7 +41,6 @@ class TempDataDir:
 
 
 def make_sqlite_with_table(path: Path, rows: int = 3) -> None:
-    """Create a tiny SQLite DB at `path` with a known table and row count."""
     conn = sqlite3.connect(str(path))
     try:
         conn.execute("CREATE TABLE things (id INTEGER PRIMARY KEY, name TEXT)")
@@ -68,9 +58,6 @@ def row_count(path: Path) -> int:
         return cur.fetchone()[0]
     finally:
         conn.close()
-
-
-# ---------- Pure helpers ----------
 
 
 class ComputePlanHashTests(TestCase):
@@ -92,12 +79,7 @@ class ComputePlanHashTests(TestCase):
         self.assertEqual(compute_plan_hash([]), compute_plan_hash([]))
 
 
-# ---------- Gate orchestration ----------
-
-
 class _MockPipeline(CandidatePipeline):
-    """Pipeline double that records calls; lets tests force specific outcomes."""
-
     def __init__(self, *, fail_on: str | None = None):
         self.calls: list[str] = []
         self.fail_on = fail_on
@@ -136,13 +118,10 @@ class _MockPipeline(CandidatePipeline):
 
 
 class GateNoPendingFastPathTests(TestCase):
-    """No-pending-migrations path: the gate must not create a candidate or archive."""
-
     def setUp(self):
         TempDataDir(self)
 
     def test_no_pending_runs_fast_path(self):
-        # In the test DB, all migrations are already applied → no pending.
         out = StringIO()
         call_command("safe_migrate", stdout=out)
         output = out.getvalue()
@@ -152,19 +131,11 @@ class GateNoPendingFastPathTests(TestCase):
 
 
 class GateMarkerExclusiveTests(TestCase):
-    """If marker exists at step 7, the gate aborts and discards the candidate."""
-
     def setUp(self):
         TempDataDir(self)
         live_db_path().parent.mkdir(parents=True, exist_ok=True)
 
     def test_marker_oexcl_aborts_when_marker_appears_after_cleanup(self):
-        """Belt-and-suspenders: step 7's O_EXCL refuses to overwrite a marker.
-
-        Simulate the race by patching the step-2 cleanup to a no-op AND
-        pre-creating the marker. The gate then reaches step 7, attempts an
-        atomic create-or-fail, and aborts with a clear message.
-        """
         marker_path().write_text("simulated concurrent run")
         pipeline = _MockPipeline()
 
@@ -183,16 +154,11 @@ class GateMarkerExclusiveTests(TestCase):
             self.assertEqual(ctx.exception.code, 1)
             self.assertIn("marker already exists", err.getvalue())
 
-        # Marker is left in place — operator inspects it.
         self.assertTrue(marker_path().exists())
-        # The mock pipeline got a discard call (cleanup of the candidate it had
-        # just been asked to create).
         self.assertIn("discard", pipeline.calls)
 
 
 class GateStaleCandidateCleanupTests(TestCase):
-    """A stale candidate from a killed prior run is cleaned up in step 2."""
-
     def setUp(self):
         TempDataDir(self)
         live_db_path().parent.mkdir(parents=True, exist_ok=True)
@@ -208,16 +174,11 @@ class GateStaleCandidateCleanupTests(TestCase):
 
 
 class GateDowngradeRefusalTests(TestCase):
-    """Step 3: if the DB has migrations the code doesn't know, halt."""
-
     def setUp(self):
         TempDataDir(self)
         live_db_path().parent.mkdir(parents=True, exist_ok=True)
 
     def test_unknown_applied_migration_refuses_to_start(self):
-        # Insert a fake migration into the test DB's django_migrations table
-        # that the code does not know about. Use a name guaranteed not to exist
-        # on disk.
         from django.db import connections
         from django.db.migrations.recorder import MigrationRecorder
 
@@ -234,7 +195,6 @@ class GateDowngradeRefusalTests(TestCase):
         self.assertIn("image is older than the database", message)
         self.assertIn("9999_fake_migration", message)
 
-        # Cleanup so we don't pollute later tests in the same process.
         recorder.record_unapplied("nonexistent_app", "9999_fake_migration")
 
 

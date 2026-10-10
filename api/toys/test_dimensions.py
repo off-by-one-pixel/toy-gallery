@@ -54,13 +54,9 @@ class SessionPeaksTests(TestCase):
         )
 
     def _session(self, entries):
-        session = models.Session.objects.create(
-            started_at=datetime(2026, 6, 1, 10, 0, tzinfo=UTC)
-        )
+        session = models.Session.objects.create(started_at=datetime(2026, 6, 1, 10, 0, tzinfo=UTC))
         for toy, involvement in entries:
-            models.ToySessionEntry.objects.create(
-                session=session, toy=toy, involvement=involvement
-            )
+            models.ToySessionEntry.objects.create(session=session, toy=toy, involvement=involvement)
         return session
 
     def _assert_peak(self, result, toy, value):

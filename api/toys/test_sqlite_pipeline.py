@@ -1,5 +1,3 @@
-"""Tests for SqliteCandidatePipeline: candidate creation, verify, promote, discard."""
-
 from __future__ import annotations
 
 import sqlite3
@@ -45,13 +43,10 @@ class SqliteCandidatePipelineTests(TestCase):
     def test_verify_fails_on_corrupted_file(self):
         candidate_db_path().write_bytes(b"\x00" * 4096)
         handle = CandidateHandle(path=candidate_db_path(), plan_hash="x")
-        # Either a sqlite3 error (unreadable file) or a RuntimeError
-        # (integrity_check failed) is an acceptable signal of corruption.
         with self.assertRaises((sqlite3.DatabaseError, RuntimeError)):
             self.pipeline.verify(handle)
 
     def test_promote_renames_live_to_archive_and_candidate_to_live(self):
-        # Distinguish live (5 rows) and candidate (8 rows) by content.
         handle = self.pipeline.create_from_live("abc12345")
         conn = sqlite3.connect(str(handle.path))
         try:
