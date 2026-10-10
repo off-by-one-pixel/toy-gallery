@@ -48,16 +48,31 @@ const persistSession = ({ sessionId, liveStartOnly, payload }: SaveSessionArgs):
   return updateSession(sessionId, payload);
 };
 
-export type SessionsOptions = Readonly<{
-  sessionId?: number | null;
-  sessionInitial?: Session;
-}>;
+export function useSession(sessionId: number | null, initial?: Session) {
+  const detail = useApiQuery({
+    key: queryKeys.sessions.detail(sessionId ?? 0),
+    fn: () => fetchSession(sessionId ?? 0),
+    enabled: sessionId !== null,
+    initialData: initial,
+  });
+  return {
+    session: detail.data ?? null,
+    isSessionLoading: sessionId !== null && detail.isPending,
+    sessionError: detail.errorMessage,
+  };
+}
+
+export function useSaveSession() {
+  const t = useTranslations('session');
+  const save = useApiMutation({
+    fn: persistSession,
+    success: () => t('savedToast'),
+    invalidates: (saved) => [queryKeys.sessions.detail(saved.id), ...sessionDataKeys],
+  });
+  return { saveSession: save.run, isSavingSession: save.isPending };
+}
 
 export type SessionsData = Readonly<{
-  session: Session | null;
-  isSessionLoading: boolean;
-  sessionError: string | null;
-
   sessionCount: number;
   sessions: Session[];
   toysById: Map<number, Toy>;
@@ -77,21 +92,11 @@ export type SessionsData = Readonly<{
   isLoading: boolean;
   error: string | null;
 
-  saveSession: (args: SaveSessionArgs) => Promise<Session | undefined>;
-  isSavingSession: boolean;
   removeSession: (id: number) => Promise<unknown>;
   isRemovingSession: boolean;
 }>;
 
-export function useSessions(options: SessionsOptions = {}): SessionsData {
-  const t = useTranslations('session');
-  const detailId = options.sessionId ?? null;
-  const detail = useApiQuery({
-    key: queryKeys.sessions.detail(detailId ?? 0),
-    fn: () => fetchSession(detailId ?? 0),
-    enabled: detailId !== null,
-    initialData: options.sessionInitial,
-  });
+export function useSessions(): SessionsData {
   const { searchParams, updateParams } = useNavigation();
   const period = useMemo<Period>(() => parsePeriodParam(searchParams.get('period')), [searchParams]);
   const setPeriod = (next: Period) => {
@@ -157,12 +162,6 @@ export function useSessions(options: SessionsOptions = {}): SessionsData {
     invalidateSessionData(queryClient);
   };
 
-  const save = useApiMutation({
-    fn: persistSession,
-    success: () => t('savedToast'),
-    invalidates: (saved) => [queryKeys.sessions.detail(saved.id), ...sessionDataKeys],
-  });
-
   const removal = useApiMutation({
     fn: deleteSession,
     onSettled: () => invalidateSessionData(queryClient),
@@ -171,9 +170,6 @@ export function useSessions(options: SessionsOptions = {}): SessionsData {
   const listError = list.data ? null : list.errorMessage;
 
   return {
-    session: detail.data ?? null,
-    isSessionLoading: detailId !== null && detail.isPending,
-    sessionError: detail.errorMessage,
     sessionCount: list.data?.pages.at(-1)?.count ?? 0,
     sessions,
     toysById,
@@ -189,8 +185,6 @@ export function useSessions(options: SessionsOptions = {}): SessionsData {
     setSessionFilters,
     isLoading: list.isPending,
     error: listError ?? toysError,
-    saveSession: save.run,
-    isSavingSession: save.isPending,
     removeSession: removal.run,
     isRemovingSession: removal.isPending,
   };

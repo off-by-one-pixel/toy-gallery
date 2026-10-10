@@ -1,3 +1,4 @@
+import datetime
 import tempfile
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from toy_gallery.urls import _resolve_spa_html
 
 from . import export as export_mod
 from . import models
+from .serializers import ToySerializer, ToyShapeSectionSerializer, ToyShapeSerializer
 
 
 def _payload(
@@ -422,7 +424,6 @@ class ExportImportTests(TestCase):
         user = User.objects.create_user(username="u", password="p")
         self.client = APIClient()
         self.client.force_authenticate(user=user)
-        # Seed one toy so the export has content.
         self.client.post(
             "/toys/toys/",
             _payload(section_circumferences=(None, 220.0, None)),
@@ -438,7 +439,6 @@ class ExportImportTests(TestCase):
         self.assertIn("sessions", data)
         self.assertEqual(len(data["toys"]), 1)
         toy = data["toys"][0]
-        # Scalar mm shape (NOT the {mm, in} dict).
         self.assertEqual(toy["brand"], "Acme")
         self.assertEqual(toy["insertable_length"], 170)
         self.assertEqual(toy["_id"], 0)
@@ -455,7 +455,6 @@ class ExportImportTests(TestCase):
         attrs_by_name = {t["name"]: t.get("custom_attributes") for t in exported["toys"]}
         self.assertEqual(attrs_by_name["Demo"], {"firmness": "medium", "material": "silicone"})
 
-        # Import the export and verify the round-tripped toy keeps its attributes.
         models.Toy.objects.all().delete()
         response = self.client.post("/toys/toys/import/", exported, format="json")
         self.assertEqual(response.status_code, 201, response.content)
@@ -466,6 +465,36 @@ class ExportImportTests(TestCase):
             {"firmness": "medium", "material": "silicone"},
         )
 
+    def test_export_round_trips_purchase_retirement_and_section_styling(self):
+        styled = _payload()
+        styled.update(name="Styled", date_purchased="2025-03-14", retired=True)
+        styled["shape"]["sections"][1].update(
+            color="#ff0000", top_curve_angle=45, bottom_curve_angle=135
+        )
+        self.client.post("/toys/toys/", styled, format="json")
+
+        exported = self.client.get("/toys/toys/export/").data
+        models.Toy.objects.all().delete()
+        response = self.client.post("/toys/toys/import/", exported, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+
+        toy = models.Toy.objects.get(name="Styled")
+        self.assertEqual(toy.date_purchased, datetime.date(2025, 3, 14))
+        self.assertTrue(toy.retired)
+        section = toy.shape.sections.get(order=1)
+        self.assertEqual(section.color, "#ff0000")
+        self.assertEqual(section.top_curve_angle, 45)
+        self.assertEqual(section.bottom_curve_angle, 135)
+
+    def test_export_includes_every_writable_toy_field(self):
+        def writable(serializer):
+            return {name for name, field in serializer.fields.items() if not field.read_only}
+
+        toy = self.client.get("/toys/toys/export/").data["toys"][0]
+        self.assertEqual(set(toy) - {"_id"}, writable(ToySerializer()))
+        self.assertEqual(set(toy["shape"]), writable(ToyShapeSerializer()))
+        self.assertEqual(set(toy["shape"]["sections"][0]), writable(ToyShapeSectionSerializer()))
+
     def test_export_download_headers(self):
         response = self.client.get("/toys/toys/export/")
         disposition = response["Content-Disposition"]
@@ -474,7 +503,6 @@ class ExportImportTests(TestCase):
         self.assertIn(".json", disposition)
 
     def test_import_is_additive(self):
-        # Export what's there, import it back, count should double.
         exported = self.client.get("/toys/toys/export/").data
         before = models.Toy.objects.count()
         response = self.client.post("/toys/toys/import/", exported, format="json")

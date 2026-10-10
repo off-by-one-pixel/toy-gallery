@@ -1,11 +1,3 @@
-"""Export / import of the full toy collection.
-
-Each schema version is a self-contained class that owns both the export
-(serialise) and import (deserialise) sides of the protocol. Subclassing
-``ExportVersion`` with a ``version`` attribute auto-registers the class,
-so adding a new version is just dropping another class in this file.
-"""
-
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -22,8 +14,6 @@ _REGISTRY: dict[int, type[ExportVersion]] = {}
 
 
 class ExportVersion:
-    """Base class for versioned export/import handlers."""
-
     version: ClassVar[int]
 
     def __init_subclass__(cls, **kwargs):
@@ -48,6 +38,8 @@ def _toy_to_portable(toy: models.Toy) -> dict:
         "brand": toy.brand,
         "name": toy.name,
         "size": toy.size,
+        "date_purchased": toy.date_purchased.isoformat() if toy.date_purchased else None,
+        "retired": toy.retired,
         "color": toy.color,
         "insertable_length": toy.insertable_length,
         "total_length": toy.total_length,
@@ -62,6 +54,9 @@ def _toy_to_portable(toy: models.Toy) -> dict:
                     "height": s.height,
                     "diameter": s.diameter,
                     "circumference": s.circumference,
+                    "color": s.color,
+                    "top_curve_angle": s.top_curve_angle,
+                    "bottom_curve_angle": s.bottom_curve_angle,
                 }
                 for s in toy.shape.sections.order_by("order")
             ],
@@ -111,8 +106,6 @@ class ExportV2(ExportVersion):
             for entry in session.entries.all():
                 local = pk_to_local.get(entry.toy_id)
                 if local is None:
-                    # Session references a toy outside the export set; skip the
-                    # whole session rather than emit a dangling reference.
                     skip_session = True
                     break
                 entries.append({"toy_id": local, **cls._entry_payload(entry)})
