@@ -382,5 +382,33 @@
       "notObject": "Expected a JSON object.",
       "noSections": "Missing or empty shape.sections."
     }
+  },
+  "toyEditor": {
+    "knownMeasurements": "Known measurements",
+    "total": "Total",
+    "snap": "Snap",
+    "sectionCircumferences": "Section circumferences",
+    "topShape": "Top shape",
+    "bottomShape": "Bottom shape",
+    "addSection": "+ Add section",
+    "addReferenceImage": "Add reference image",
+    "removeReferenceImage": "Remove reference image",
+    "referenceImageFile": "Reference image file",
+    "resizeReferenceImage": "Resize reference image",
+    "insertableGuide": "insertable {length}",
+    "totalGuide": "total {length}",
+    "totalReadout": "total {length}",
+    "heightPrefix": "H",
+    "circumferencePrefix": "C",
+    "sectionHeight": "Height of section {section}",
+    "sectionDiameter": "Diameter of section {section}",
+    "sectionCircumference": "Circumference of section {section}",
+    "sectionTooWide": "Section is wider than the known size guide",
+    "sectionTopAngle": "Section {section} top angle ({degrees}°)",
+    "sectionBottomAngle": "Section {section} bottom angle ({degrees}°)",
+    "removeSection": "Remove section {section}",
+    "sectionColor": "Color of section {section}",
+    "sectionColorPalette": "Section color",
+    "toyColor": "Toy color"
   }
 }

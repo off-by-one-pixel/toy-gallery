@@ -3,3 +3,4 @@ export { default as ThumbnailRender } from "./components/thumbnail/ThumbnailRend
 export { useToyStore } from "./toyMachine";
 export type { Toy, ToySection, StyleOption, Shape, CurveAngle } from "./toyMachine";
 export type { PaletteColor } from "./components/editor/palette";
+export type { ToyEditorLabels } from "./components/editor/labels";

@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import type { ReferenceImageState } from "./hooks/useReferenceImage";
+import { useEditorLabels } from "./labels";
 
 const PictureIcon = ({ crossed }: { crossed: boolean }) => (
   <svg
@@ -22,8 +23,9 @@ const PictureIcon = ({ crossed }: { crossed: boolean }) => (
 
 const ReferenceImageControls = ({ reference }: { reference: ReferenceImageState }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const labels = useEditorLabels();
   const loaded = reference.image !== null;
-  const label = loaded ? "Remove reference image" : "Add reference image";
+  const label = loaded ? labels.removeReferenceImage : labels.addReferenceImage;
 
   return (
     <div className="toy-editor-reference-controls">
@@ -41,7 +43,7 @@ const ReferenceImageControls = ({ reference }: { reference: ReferenceImageState 
         type="file"
         accept="image/*"
         hidden
-        aria-label="Reference image file"
+        aria-label={labels.referenceImageFile}
         onChange={reference.onFileInputChange}
       />
     </div>
