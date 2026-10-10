@@ -1,4 +1,5 @@
 import { Involvement, type Session, type SessionEntry, type Toy } from '@/api/types';
+import type { MessageKey } from '@/i18n/translator';
 
 export type FilterKey = 'all' | 'week' | 'month';
 
@@ -135,7 +136,7 @@ type SessionFlagFilterDef = Readonly<{
   urlParam: string;
   keyToken: string;
   wireParam: 'has_media' | 'has_pr';
-  labelKey: string;
+  labelKey: MessageKey<'session.filters'>;
 }>;
 
 export const SESSION_FLAG_FILTERS = {

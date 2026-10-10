@@ -57,7 +57,7 @@ function ToyCard({
   const detailsRef = useRef<HTMLDivElement>(null);
   const { sort } = useSortOf(TOY_SORT);
   const tAll = useTranslations();
-  const propertyCtx: ToyPropertyContext = { t: tAll as unknown as ToyPropertyContext['t'], girth, unit, locale };
+  const propertyCtx: ToyPropertyContext = { t: tAll, girth, unit, locale };
   const sortValue = cardSortValue(sort, toy, propertyCtx);
 
   const editorToy = toyShapeToEditor(toy.shape);

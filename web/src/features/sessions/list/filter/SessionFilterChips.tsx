@@ -13,13 +13,12 @@ import {
 export default function SessionFilterChips(props: SessionFiltersArgs) {
   const t = useTranslations('session.filters');
   const locale = useLocale();
-  const translate = t as unknown as (key: string) => string;
   const state = useSessionFilters(props);
   if (state.count === 0) return null;
 
   const chipLabel = (chip: FilterChip): string => {
     if (chip.kind === 'label') return chip.label;
-    if (chip.kind === 'flag') return translate(chip.labelKey);
+    if (chip.kind === 'flag') return t(chip.labelKey);
     return `${localizedHourLabel(chip.from, locale)} – ${localizedHourLabel(chip.to % 24, locale)}`;
   };
 

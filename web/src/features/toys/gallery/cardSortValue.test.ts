@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest';
 import type { Toy } from '@/api/types';
 import { cardSortValue } from '@/features/toys/gallery/cardSortValue';
 import type { ToyPropertyContext } from '@/features/toys/properties';
+import en from '@/i18n/catalogs/en.json';
+import { enTranslator } from '@/test/translator';
 
 const ctx: ToyPropertyContext = {
-  t: (key) => key,
+  t: enTranslator,
   girth: 'circumference',
   unit: { id: 'mm', factor: 1, decimals: 0 },
   locale: 'en',
@@ -43,7 +45,7 @@ describe('cardSortValue', () => {
 
   it('formats total length in the active unit', () => {
     expect(cardSortValue({ column: 'total', direction: 'asc' }, toy(), ctx)).toEqual({
-      label: 'common.totalLength',
+      label: en.common.totalLength,
       value: '180 mm',
     });
     expect(cardSortValue({ column: 'total', direction: 'asc' }, toy({ totalLength: null }), ctx)).toBeNull();
@@ -51,21 +53,21 @@ describe('cardSortValue', () => {
 
   it('formats popularity as a usage count', () => {
     expect(cardSortValue({ column: 'popularity', direction: 'desc' }, toy(), ctx)).toEqual({
-      label: 'sort.column.popularity',
+      label: en.sort.column.popularity,
       value: '12',
     });
   });
 
   it('formats plugged time as a localized duration', () => {
     expect(cardSortValue({ column: 'duration', direction: 'desc' }, toy(), ctx)).toEqual({
-      label: 'sort.column.duration',
+      label: en.sort.column.duration,
       value: '1h 35m',
     });
   });
 
   it('formats the longest single session as a localized duration', () => {
     expect(cardSortValue({ column: 'maxDuration', direction: 'desc' }, toy(), ctx)).toEqual({
-      label: 'sort.column.maxDuration',
+      label: en.sort.column.maxDuration,
       value: '1h 5m',
     });
   });

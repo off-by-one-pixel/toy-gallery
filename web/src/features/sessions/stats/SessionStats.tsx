@@ -60,8 +60,7 @@ function SessionStats({ period, sessionFilters, defs = SESSION_STATS }: Props) {
     if (error) reportError(error);
   }, [error, reportError]);
 
-  const translate = t as unknown as StatContext['t'];
-  const ctx = useMemo<StatContext>(() => ({ unit, girth, locale, t: translate }), [unit, girth, locale, translate]);
+  const ctx = useMemo<StatContext>(() => ({ unit, girth, locale, t }), [unit, girth, locale, t]);
 
   const items = useMemo(() => (yearReady ? buildStatViews(defs, results, ctx) : []), [yearReady, defs, results, ctx]);
 

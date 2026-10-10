@@ -58,7 +58,7 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy,
   const { sort, setSort } = useSortOf(TOY_SORT);
   const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
 
-  const propertyCtx: ToyPropertyContext = { t: t as unknown as ToyPropertyContext['t'], girth, unit, locale };
+  const propertyCtx: ToyPropertyContext = { t: t, girth, unit, locale };
   const extra: ExtraColumn | null = sort ? extraColumnFor(sort.column, propertyCtx) : null;
 
   return (

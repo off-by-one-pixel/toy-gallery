@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { Toy } from '@/api/types';
 import { useToyUsage } from '@/features/sessions/list/useToyUsage';
 import { filterToys } from '@/features/toys/search';
+import type { MessageKey } from '@/i18n/translator';
 import {
   activeFilterCount,
   activeFlagKeys,
@@ -33,7 +34,9 @@ const sliderValueToWindow = ([from, to]: SliderValue): TimeWindow | null | undef
 
 export type ToyOption = Readonly<{ toy: Toy; uses: number; toggle: () => void }>;
 
-export type FlagOption = Readonly<{ key: string; labelKey: string; active: boolean; toggle: () => void }>;
+type FlagLabelKey = MessageKey<'session.filters'>;
+
+export type FlagOption = Readonly<{ key: string; labelKey: FlagLabelKey; active: boolean; toggle: () => void }>;
 
 export type TimeSliderState = Readonly<{
   value: SliderValue;
@@ -42,7 +45,9 @@ export type TimeSliderState = Readonly<{
 
 export type FilterChip = Readonly<
   { key: string; remove: () => void } & (
-    { kind: 'label'; label: string } | { kind: 'flag'; labelKey: string } | { kind: 'time'; from: number; to: number }
+    | { kind: 'label'; label: string }
+    | { kind: 'flag'; labelKey: FlagLabelKey }
+    | { kind: 'time'; from: number; to: number }
   )
 >;
 

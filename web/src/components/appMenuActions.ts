@@ -8,21 +8,20 @@ import type { ActionMenuItem } from '@/components/ActionDropdownMenu';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
 import { useApiMutation } from '@/hooks/useApi';
+import type { Translator } from '@/i18n/translator';
 
 export type AppMenuContext = Readonly<{
   mediaConfigured: boolean;
   username: string | null;
 }>;
 
-export type AppMenuTranslator = (key: string, values?: Record<string, string | number>) => string;
-
 type AppMenuActionId = 'settings' | 'refresh-media' | 'rebuild-records' | 'logout';
 
 export type AppMenuActionDef = Readonly<{
   id: AppMenuActionId;
   icon: LucideIcon;
-  label: (t: AppMenuTranslator) => string;
-  description: (t: AppMenuTranslator, ctx: AppMenuContext) => string;
+  label: (t: Translator) => string;
+  description: (t: Translator, ctx: AppMenuContext) => string;
   visible?: (ctx: AppMenuContext) => boolean;
 }>;
 
@@ -58,7 +57,7 @@ export const APP_MENU_ACTIONS: readonly AppMenuActionDef[] = [
 ];
 
 export function useAppMenuItems(): ActionMenuItem[] {
-  const t = useTranslations() as unknown as AppMenuTranslator;
+  const t = useTranslations();
   const { navigate } = useNavigation();
   const { username, logout } = useAuth();
   const { configured } = useMediaStatus();

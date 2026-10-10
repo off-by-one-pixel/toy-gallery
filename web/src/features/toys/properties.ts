@@ -2,9 +2,10 @@ import type { Toy } from '@/api/types';
 import type { Girth } from '@/features/preferences/girth';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { formatDuration } from '@/lib/duration';
+import type { Translator } from '@/i18n/translator';
 
 export type ToyLabelContext = Readonly<{
-  t: (key: string) => string;
+  t: Translator;
   girth: Girth;
 }>;
 

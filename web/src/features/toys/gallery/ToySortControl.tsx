@@ -14,7 +14,7 @@ type Props = Readonly<{ toys?: readonly Toy[] }>;
 export default function ToySortControl({ toys }: Props) {
   const { girth } = useGirth();
   const t = useTranslations();
-  const ctx: ToyLabelContext = { t: t as unknown as ToyLabelContext['t'], girth };
+  const ctx: ToyLabelContext = { t: t, girth };
   const config = useMemo(() => (toys ? galleryToySortConfig(toys) : TOY_SORT), [toys]);
   const columnLabel = (column: ToySortColumn): string =>
     attrKeyOf(column) ?? TOY_PROPERTIES[column as ToyPropertyKey].label(ctx);

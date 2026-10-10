@@ -67,7 +67,6 @@ function TriggerContent({ label, count }: Readonly<{ label: string; count: numbe
 
 function FilterPanel({ state }: Readonly<{ state: SessionFiltersState }>) {
   const t = useTranslations('session.filters');
-  const translate = t as unknown as (key: string) => string;
   const wide = useContext(BottomSheetContext);
 
   return (
@@ -115,7 +114,7 @@ function FilterPanel({ state }: Readonly<{ state: SessionFiltersState }>) {
       <SectionLabel text={t('moreHeading')} />
       <div className="shrink-0">
         {state.flags.map((flag) => (
-          <CheckRow key={flag.key} label={translate(flag.labelKey)} checked={flag.active} onToggle={flag.toggle} />
+          <CheckRow key={flag.key} label={t(flag.labelKey)} checked={flag.active} onToggle={flag.toggle} />
         ))}
       </div>
       {state.count > 0 && (
