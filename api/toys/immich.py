@@ -8,14 +8,7 @@ import requests
 from django.conf import settings
 from django.utils import timezone
 
-from .media import (
-    MediaCounts,
-    MediaLikeResult,
-    MediaRefreshResult,
-    SessionMediaProvider,
-    SessionMediaResult,
-    session_media_window,
-)
+from .media import MediaCounts, MediaResult, session_media_window
 
 logger = logging.getLogger(__name__)
 
@@ -243,45 +236,34 @@ def _links_by_session(links: list[SharedLink]) -> dict[int, list[SharedLink]]:
     return by_session
 
 
-def _media_operation(unconfigured, degraded):
-    def wrap(fn):
-        @functools.wraps(fn)
-        def guarded(self, *args, **kwargs):
-            if not self.client.is_configured():
-                return unconfigured
-            try:
-                return fn(self, *args, **kwargs)
-            except (ImmichError, requests.RequestException) as err:
-                logger.warning("immich: %s failed: %s", fn.__name__, err)
-                return degraded
+def _media_operation(fn):
+    @functools.wraps(fn)
+    def guarded(self, *args, **kwargs):
+        if not self.client.is_configured():
+            return MediaResult(configured=False)
+        try:
+            return fn(self, *args, **kwargs)
+        except (ImmichError, requests.RequestException) as err:
+            logger.warning("immich: %s failed: %s", fn.__name__, err)
+            return MediaResult(configured=True)
 
-        return guarded
-
-    return wrap
+    return guarded
 
 
-UNCONFIGURED_REFRESH = MediaRefreshResult(configured=False, authoritative=False, counts={})
-DEGRADED_REFRESH = MediaRefreshResult(configured=True, authoritative=False, counts={})
-UNCONFIGURED_MEDIA = SessionMediaResult(configured=False, authoritative=False, items=[])
-DEGRADED_MEDIA = SessionMediaResult(configured=True, authoritative=False, items=[])
-UNCONFIGURED_LIKE = MediaLikeResult(configured=False, authoritative=False, liked=False)
-DEGRADED_LIKE = MediaLikeResult(configured=True, authoritative=False, liked=False)
-
-
-class ImmichMediaProvider(SessionMediaProvider):
+class ImmichMediaProvider:
     def __init__(self):
         self.client = ImmichClient()
 
     def is_configured(self) -> bool:
         return self.client.is_configured()
 
-    @_media_operation(UNCONFIGURED_REFRESH, DEGRADED_REFRESH)
+    @_media_operation
     def refresh_all_media(
         self, sessions: list[tuple[int, datetime, datetime | None]]
-    ) -> MediaRefreshResult:
+    ) -> MediaResult:
         windows = {sid: session_media_window(started, ended) for sid, started, ended in sessions}
         if not windows:
-            return MediaRefreshResult(configured=True, authoritative=True, counts={})
+            return MediaResult(configured=True, authoritative=True)
 
         overall_start = min(w[0] for w in windows.values())
         overall_end = max(w[1] for w in windows.values())
@@ -293,7 +275,7 @@ class ImmichMediaProvider(SessionMediaProvider):
             asset_ids = [asset.id for asset in session_assets]
             if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, [])):
                 counts[sid] = _media_counts(session_assets)
-        return MediaRefreshResult(configured=True, authoritative=True, counts=counts)
+        return MediaResult(configured=True, authoritative=True, counts=counts)
 
     def _sync_session_links(
         self, session_id: int, asset_ids: list[str], existing: list[SharedLink]
@@ -314,18 +296,18 @@ class ImmichMediaProvider(SessionMediaProvider):
             self.client._create_link(marker, asset_ids)
         return True
 
-    @_media_operation(UNCONFIGURED_MEDIA, DEGRADED_MEDIA)
+    @_media_operation
     def session_media(
         self, session_id: int, started_at: datetime, ended_at: datetime | None
-    ) -> SessionMediaResult:
+    ) -> MediaResult:
         start, end = session_media_window(started_at, ended_at)
         assets = self.client.search_assets(start, end)
         if not assets:
             self.client.clear_session_links(session_id)
-            return SessionMediaResult(configured=True, authoritative=True, items=[])
+            return MediaResult(configured=True, authoritative=True)
         key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
         items = [self._media_item(asset, key) for asset in assets]
-        return SessionMediaResult(
+        return MediaResult(
             configured=True,
             authoritative=True,
             items=items,
@@ -343,7 +325,7 @@ class ImmichMediaProvider(SessionMediaProvider):
             "liked": asset.liked,
         }
 
-    @_media_operation(UNCONFIGURED_LIKE, DEGRADED_LIKE)
-    def set_media_liked(self, asset_id: str, liked: bool) -> MediaLikeResult:
+    @_media_operation
+    def set_media_liked(self, asset_id: str, liked: bool) -> MediaResult:
         self.client.set_asset_favorite(asset_id, liked)
-        return MediaLikeResult(configured=True, authoritative=True, liked=liked)
+        return MediaResult(configured=True, authoritative=True, liked=liked)

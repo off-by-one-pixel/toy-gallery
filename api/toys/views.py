@@ -14,7 +14,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import export as export_mod
-from . import media, models, serializers, stats
+from . import models, serializers, stats
+from .immich import ImmichMediaProvider
 from .records.session import resync_records
 
 
@@ -276,7 +277,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="media")
     def media(self, request, pk=None):
         session = self.get_object()
-        result = media.get_provider().session_media(
+        result = ImmichMediaProvider().session_media(
             session.id, session.started_at, session.ended_at
         )
         if result.authoritative:
@@ -297,7 +298,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=serializers.MediaStatusSerializer)
     @action(detail=False, methods=["get"], url_path="media-status")
     def media_status(self, request):
-        return Response({"configured": media.get_provider().is_configured()})
+        return Response({"configured": ImmichMediaProvider().is_configured()})
 
     @extend_schema(
         request=serializers.MediaLikeRequestSerializer,
@@ -307,7 +308,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     def media_like(self, request):
         body = serializers.MediaLikeRequestSerializer(data=request.data)
         body.is_valid(raise_exception=True)
-        result = media.get_provider().set_media_liked(
+        result = ImmichMediaProvider().set_media_liked(
             body.validated_data["asset_id"], body.validated_data["liked"]
         )
         if not result.configured:
@@ -328,7 +329,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         sessions = list(
             models.Session.objects.order_by("id").values_list("id", "started_at", "ended_at")
         )
-        result = media.get_provider().refresh_all_media(sessions)
+        result = ImmichMediaProvider().refresh_all_media(sessions)
         if result.authoritative:
             _store_media_counts(result.counts)
         return Response(

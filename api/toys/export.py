@@ -68,14 +68,6 @@ class ExportV1(ExportVersion):
     version = 1
 
     @classmethod
-    def export(cls, toys: Iterable[models.Toy]) -> dict:
-        return {
-            "version": cls.version,
-            "exported_at": timezone.now().isoformat(),
-            "toys": [_toy_to_portable(t) for t in toys],
-        }
-
-    @classmethod
     def import_(cls, payload: dict) -> dict:
         toys = _require_list(payload, "toys")
         with transaction.atomic():
