@@ -1,15 +1,15 @@
 import { useEditorLayoutCtx } from './EditorLayoutContext';
 import { useEditorLabels } from './labels';
-import type { ReferenceImageHandlers } from './hooks/useReferenceImageDrag';
+import type { ReferenceImageDrag } from './hooks/useReferenceImageDrag';
 import { HANDLE_R_PX } from './layout';
 import { type ReferenceImage, referenceRect } from './referenceImage';
 
 type Props = {
   image: ReferenceImage;
-  handlers: ReferenceImageHandlers;
+  drag: ReferenceImageDrag;
 };
 
-export const ReferenceImageBackdrop = ({ image, handlers }: Props) => {
+export const ReferenceImageBackdrop = ({ image, drag }: Props) => {
   const layout = useEditorLayoutCtx();
   const rect = referenceRect(image, layout);
   return (
@@ -19,17 +19,14 @@ export const ReferenceImageBackdrop = ({ image, handlers }: Props) => {
         href={image.url}
         preserveAspectRatio="none"
         {...rect}
-        onPointerDown={handlers.onMovePointerDown}
-        onPointerMove={handlers.onPointerMove}
-        onPointerUp={handlers.onPointerUp}
-        onPointerCancel={handlers.onPointerUp}
+        {...drag(image, 'move')}
       />
       <rect className="toy-editor-reference-border" {...rect} />
     </>
   );
 };
 
-export const ReferenceImageResizeHandle = ({ image, handlers }: Props) => {
+export const ReferenceImageResizeHandle = ({ image, drag }: Props) => {
   const layout = useEditorLayoutCtx();
   const labels = useEditorLabels();
   const { x, y, width, height } = referenceRect(image, layout);
@@ -40,10 +37,7 @@ export const ReferenceImageResizeHandle = ({ image, handlers }: Props) => {
       cy={y + height}
       r={HANDLE_R_PX}
       aria-label={labels.resizeReferenceImage}
-      onPointerDown={handlers.onResizePointerDown}
-      onPointerMove={handlers.onPointerMove}
-      onPointerUp={handlers.onPointerUp}
-      onPointerCancel={handlers.onPointerUp}
+      {...drag(image, 'resize')}
     />
   );
 };

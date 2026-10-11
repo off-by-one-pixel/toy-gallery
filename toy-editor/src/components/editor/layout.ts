@@ -67,25 +67,3 @@ export const sectionEdgeLeftAtTop = (meta: SectionMeta, silhouetteScale: number,
 
 export const sectionEdgeLeftAtBottom = (meta: SectionMeta, silhouetteScale: number, silhouetteCenter: number): number =>
   silhouetteCenter - (meta.section.diameter * silhouetteScale) / 2;
-
-export type DragState =
-  | {
-      kind: 'diameter';
-      sectionId: number;
-      pointerId: number;
-      offsetPx: number;
-    }
-  | {
-      kind: 'boundary';
-      aboveId: number;
-      pointerId: number;
-      anchorBoundaryMm: number;
-      offsetPx: number;
-    }
-  | {
-      kind: 'bottom';
-      lastId: number;
-      pointerId: number;
-      offsetPx: number;
-      lastTopMm: number;
-    };

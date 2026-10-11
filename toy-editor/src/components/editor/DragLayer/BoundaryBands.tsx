@@ -6,20 +6,14 @@ const BoundaryBands = ({ handlers }: { handlers: DragHandlers }) => {
   const layout = useEditorLayoutCtx();
   return (
     <>
-      {layout.sectionMeta.slice(0, -1).map((meta) => {
-        const boundaryMm = meta.bottomMm;
-        return (
-          <rect
-            key={`b-${meta.section.id}`}
-            className="toy-editor-handle-boundary"
-            {...bandRect(boundaryMm, layout)}
-            onPointerDown={(e) => handlers.onBoundaryPointerDown(e, meta.section.id, boundaryMm)}
-            onPointerMove={handlers.onBoundaryPointerMove}
-            onPointerUp={handlers.onPointerUp}
-            onPointerCancel={handlers.onPointerUp}
-          />
-        );
-      })}
+      {layout.sectionMeta.map((meta) => (
+        <rect
+          key={`b-${meta.section.id}`}
+          className="toy-editor-handle-boundary"
+          {...bandRect(meta.bottomMm, layout)}
+          {...handlers.boundary(meta)}
+        />
+      ))}
     </>
   );
 };

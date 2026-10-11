@@ -28,14 +28,14 @@ const EditorRender = ({ toy, style, referenceImage, onReferenceImageChange }: Pr
   const svgRef = useRef<SVGSVGElement | null>(null);
   const layout = useEditorLayout(svgRef, toy, referenceImage);
   const handlers = useDragHandlers(layout);
-  const imageHandlers = useReferenceImageDrag(layout, referenceImage, onReferenceImageChange);
+  const imageDrag = useReferenceImageDrag(layout, onReferenceImageChange);
   const setHoveredSectionId = useEditorUiStore((s) => s.setHoveredSectionId);
 
   return (
     <SvgRoot ref={svgRef} viewBox={`0 0 ${layout.size.w || 1} ${layout.size.h || 1}`} preserveAspectRatio="none">
       {layout.ready && (
         <EditorLayoutProvider value={layout}>
-          {referenceImage && <ReferenceImageBackdrop image={referenceImage} handlers={imageHandlers} />}
+          {referenceImage && <ReferenceImageBackdrop image={referenceImage} drag={imageDrag} />}
           <Guides />
 
           <g
@@ -58,7 +58,7 @@ const EditorRender = ({ toy, style, referenceImage, onReferenceImageChange }: Pr
           <TotalReadout />
 
           <g className="toy-editor-chrome">
-            {referenceImage && <ReferenceImageResizeHandle image={referenceImage} handlers={imageHandlers} />}
+            {referenceImage && <ReferenceImageResizeHandle image={referenceImage} drag={imageDrag} />}
             <SectionLabels />
             <DragLayer handlers={handlers} />
             <CurveAngleButtons />

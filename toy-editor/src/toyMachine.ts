@@ -67,8 +67,6 @@ interface ToyStore extends Toy {
   setCircumference: (id: number, circumference: number | null) => void;
   setSectionColor: (id: number, color: string | null) => void;
 
-  setBoundaryDelta: (aboveId: number, delta: number) => void;
-
   setTopShape: (shape: Shape) => void;
   setBottomShape: (shape: Shape) => void;
   cycleTopCurveAngle: (id: number) => void;
@@ -83,7 +81,6 @@ interface ToyStore extends Toy {
   hydrate: (toy: Toy) => void;
 }
 
-const MIN_SECTION_HEIGHT = 1;
 const FULL_TOUCHED: ToyTouched = { diameter: true, height: true };
 const FRESH_TOUCHED: ToyTouched = { diameter: false, height: false };
 
@@ -139,24 +136,6 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     set((state) => ({
       sections: state.sections.map((section) => (section.id === id ? { ...section, color } : section)),
     }));
-  },
-  setBoundaryDelta: (aboveId, delta) => {
-    set((state) => {
-      const idx = state.sections.findIndex((s) => s.id === aboveId);
-      if (idx < 0 || idx >= state.sections.length - 1) return {};
-      const above = state.sections[idx];
-      const below = state.sections[idx + 1];
-      const newAbove = above.height + delta;
-      const newBelow = below.height - delta;
-      if (newAbove < MIN_SECTION_HEIGHT || newBelow < MIN_SECTION_HEIGHT) return {};
-      return {
-        sections: state.sections.map((s, i) => {
-          if (i === idx) return withTouched({ ...s, height: newAbove }, { height: true });
-          if (i === idx + 1) return withTouched({ ...s, height: newBelow }, { height: true });
-          return s;
-        }),
-      };
-    });
   },
   setTopShape: (shape) => set({ topShape: shape }),
   setBottomShape: (shape) => set({ bottomShape: shape }),
