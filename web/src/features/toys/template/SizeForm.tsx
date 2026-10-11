@@ -10,8 +10,7 @@ import { useTranslations } from 'next-intl';
 import { templateToEditor } from '@/features/toys/converters/template';
 import type { SizeMode } from '@/features/toys/template/templateForm';
 import { useUnit } from '@/features/preferences/useUnit';
-import { type Unit } from '@/features/preferences/units';
-import TextInput from '@/components/TextInput';
+import UnitField from '@/features/preferences/UnitField';
 import { PREVIEW_STYLE } from '@/features/toys/template/styles';
 import type { TemplateForm } from '@/features/toys/template/useTemplateForm';
 
@@ -50,14 +49,14 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
           </div>
 
           <div className="flex flex-col gap-3">
-            <SizeField label={common('totalLength')} value={state.totalInput} onChange={form.changeTotal} unit={unit} />
-            <SizeField
+            <UnitField label={common('totalLength')} value={state.totalInput} onChange={form.changeTotal} unit={unit} />
+            <UnitField
               label={t('fieldInsertableLength')}
               value={state.insertableInput}
               onChange={form.changeInsertable}
               unit={unit}
             />
-            <SizeField
+            <UnitField
               label={sizeFieldLabel}
               value={state.sizeInput}
               onChange={form.changeSize}
@@ -79,37 +78,6 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
         </Button>
       </footer>
     </>
-  );
-}
-
-type SizeFieldProps = Readonly<{
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  unit: Unit;
-  trailing?: React.ReactNode;
-}>;
-
-function SizeField({ label, value, onChange, unit, trailing }: SizeFieldProps) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="text-caption uppercase tracking-wide text-muted">{label}</span>
-      <TextInput
-        size="sm"
-        type="number"
-        inputMode="decimal"
-        min={0}
-        step={unit.id === 'in' ? 0.1 : 1}
-        value={value}
-        onChange={onChange}
-        trailing={
-          <span className="flex items-center gap-2 text-xs text-muted">
-            <span>{unit.id}</span>
-            {trailing}
-          </span>
-        }
-      />
-    </label>
   );
 }
 

@@ -2,12 +2,10 @@
 
 import { useState } from 'react';
 
-import { Button } from '@heroui/react';
-
-import AppModal from '@/components/AppModal';
 import { useTranslations } from 'next-intl';
 
-import SectionHeading from '@/components/SectionHeading';
+import ConfirmModal from '@/components/ConfirmModal';
+import UnitField from '@/features/preferences/UnitField';
 import { useGirth } from '@/features/preferences/useGirth';
 import { useUnit } from '@/features/preferences/useUnit';
 import {
@@ -45,57 +43,28 @@ export default function GhostModal({ target, onSave, onClose }: Props) {
   };
 
   return (
-    <AppModal label={isEdit ? t('modalTitleEdit') : t('modalTitleNew')} onClose={onClose}>
-      <div className="flex flex-col gap-4 p-5">
-        <SectionHeading
-          title={isEdit ? t('modalTitleEdit') : t('modalTitleNew')}
-          subtitle={t('modalSubtitle', { name: sourceName })}
+    <ConfirmModal
+      onClose={onClose}
+      title={isEdit ? t('modalTitleEdit') : t('modalTitleNew')}
+      body={t('modalSubtitle', { name: sourceName })}
+      confirmLabel={isEdit ? common('save') : t('add')}
+      confirmDisabled={!dims}
+      onConfirm={save}
+    >
+      <div className="flex flex-col gap-3">
+        <UnitField
+          label={common(girth)}
+          value={inputs.girthValue}
+          unit={unit}
+          onChange={(girthValue) => setInputs((current) => ({ ...current, girthValue }))}
         />
-        <div className="flex flex-col gap-3">
-          <DimensionField
-            label={common(girth)}
-            value={inputs.girthValue}
-            unitId={unit.id}
-            onChange={(girthValue) => setInputs((current) => ({ ...current, girthValue }))}
-          />
-          <DimensionField
-            label={common('insertable')}
-            value={inputs.lengthValue}
-            unitId={unit.id}
-            onChange={(lengthValue) => setInputs((current) => ({ ...current, lengthValue }))}
-          />
-        </div>
-        <div className="mt-1 flex justify-end gap-2">
-          <Button variant="outline" size="sm" onPress={onClose}>
-            {common('cancel')}
-          </Button>
-          <Button variant="primary" size="sm" isDisabled={!dims} onPress={save}>
-            {isEdit ? common('save') : t('add')}
-          </Button>
-        </div>
+        <UnitField
+          label={common('insertable')}
+          value={inputs.lengthValue}
+          unit={unit}
+          onChange={(lengthValue) => setInputs((current) => ({ ...current, lengthValue }))}
+        />
       </div>
-    </AppModal>
-  );
-}
-
-function DimensionField({
-  label,
-  value,
-  unitId,
-  onChange,
-}: Readonly<{ label: string; value: string; unitId: string; onChange: (value: string) => void }>) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-caption uppercase tracking-wider text-text-tertiary">{label}</span>
-      <span className="flex items-baseline gap-2 rounded-lg border border-border bg-surface px-3 py-2 focus-within:border-accent">
-        <input
-          value={value}
-          inputMode="decimal"
-          onChange={(e) => onChange(e.target.value)}
-          className="min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold tabular-nums text-foreground outline-none"
-        />
-        <span className="text-caption text-muted">{unitId}</span>
-      </span>
-    </label>
+    </ConfirmModal>
   );
 }
