@@ -1,4 +1,4 @@
-import { useRef, type Dispatch, type SetStateAction } from 'react';
+import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import type { StyleOption, Toy } from '../../toyMachine';
 import Silhouette from '../Silhouette';
 import SvgRoot from '../SvgRoot';
@@ -6,7 +6,6 @@ import DragLayer from './DragLayer';
 import Guides from './Guides';
 import CurveAngleButtons from './CurveAngleButtons';
 import { EditorLayoutProvider } from './EditorLayoutContext';
-import { useEditorUiStore } from './editorUiStore';
 import Ruler from './Ruler';
 import SectionColorControls from './SectionColorControls';
 import SectionLabels from './SectionLabels';
@@ -29,7 +28,7 @@ const EditorRender = ({ toy, style, referenceImage, onReferenceImageChange }: Pr
   const layout = useEditorLayout(svgRef, toy, referenceImage);
   const handlers = useDragHandlers(layout);
   const imageDrag = useReferenceImageDrag(layout, onReferenceImageChange);
-  const setHoveredSectionId = useEditorUiStore((s) => s.setHoveredSectionId);
+  const [hoveredSectionId, setHoveredSectionId] = useState<number | null>(null);
 
   return (
     <SvgRoot ref={svgRef} viewBox={`0 0 ${layout.size.w || 1} ${layout.size.h || 1}`} preserveAspectRatio="none">
@@ -61,7 +60,7 @@ const EditorRender = ({ toy, style, referenceImage, onReferenceImageChange }: Pr
             {referenceImage && <ReferenceImageResizeHandle image={referenceImage} drag={imageDrag} />}
             <SectionLabels />
             <DragLayer handlers={handlers} />
-            <CurveAngleButtons />
+            <CurveAngleButtons hoveredSectionId={hoveredSectionId} onHover={setHoveredSectionId} />
             <SectionColorControls />
           </g>
         </EditorLayoutProvider>
