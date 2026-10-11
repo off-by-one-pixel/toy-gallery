@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { formatMm, parseMm } from '../util/fmt';
 import { useToyStore } from '../toyMachine';
 import { useEditorConfig } from './editorConfig';
+import { useMmInput } from './editor/hooks/useMmInput';
 
 const KnownMeasurements = () => {
   const { labels } = useEditorConfig();
@@ -55,26 +54,13 @@ type NumberFieldProps = {
 
 const NumberField = ({ label, mm, onChangeMm }: NumberFieldProps) => {
   const { unit } = useEditorConfig();
-  const [draft, setDraft] = useState<string | null>(null);
-  const display = draft ?? formatMm(mm, unit);
+  const input = useMmInput(mm, onChangeMm);
 
   return (
     <label className="toy-editor-known-field">
       <span className="toy-editor-known-field-label">{label}</span>
       <span className="toy-editor-known-field-input">
-        <input
-          type="text"
-          inputMode="decimal"
-          value={display}
-          onChange={(e) => {
-            const raw = e.target.value;
-            setDraft(raw);
-            const parsed = parseMm(raw, unit);
-            if (parsed === undefined) return;
-            onChangeMm(parsed);
-          }}
-          onBlur={() => setDraft(null)}
-        />
+        <input {...input} />
         <span className="toy-editor-known-field-unit">{unit.id}</span>
       </span>
     </label>
