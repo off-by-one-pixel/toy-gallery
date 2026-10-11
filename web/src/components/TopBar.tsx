@@ -26,7 +26,7 @@ export default function TopBar() {
         </h1>
         <SectionTabs className="order-last sm:order-0" />
         <div className="flex-1" />
-        <ThemeToggle lightTheme="light" darkTheme="dark" />
+        <ThemeToggle />
         <AppMenu />
       </div>
     </div>

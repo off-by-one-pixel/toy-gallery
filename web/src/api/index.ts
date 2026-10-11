@@ -226,7 +226,7 @@ export const setMediaLiked = async (assetId: string, liked: boolean): Promise<bo
   return data.liked;
 };
 
-export const browserTimeZone = (): string => {
+const browserTimeZone = (): string => {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   } catch {

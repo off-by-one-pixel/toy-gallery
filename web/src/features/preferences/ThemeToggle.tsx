@@ -4,18 +4,12 @@ import { Moon, Sun } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useThemeContext } from '@/features/preferences/ThemeProvider';
-import type { Theme } from '@/features/preferences/themeRegistry';
 
-type Props = Readonly<{
-  lightTheme: Theme;
-  darkTheme: Theme;
-}>;
-
-export default function ThemeToggle({ lightTheme, darkTheme }: Props) {
+export default function ThemeToggle() {
   const { theme, setTheme } = useThemeContext();
   const t = useTranslations('theme');
-  const isDark = theme === darkTheme;
-  const toggle = () => setTheme(isDark ? lightTheme : darkTheme);
+  const isDark = theme === 'dark';
+  const toggle = () => setTheme(isDark ? 'light' : 'dark');
   return (
     <button
       type="button"
