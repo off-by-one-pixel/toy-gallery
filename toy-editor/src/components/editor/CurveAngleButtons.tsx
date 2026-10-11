@@ -1,6 +1,5 @@
 import { Shape, sectionBottomCurveAngle, sectionTopCurveAngle, useToyStore, type CurveAngle } from '../../toyMachine';
 import { useEditorLayoutCtx } from './EditorLayoutContext';
-import { useEditorUiStore } from './editorUiStore';
 import { useEditorLabels } from './labels';
 import { rimButtonsGeometry, rimTickLine, type RimButtonPos } from './geometry';
 import { RIM_BUTTON_R_PX } from './layout';
@@ -26,14 +25,17 @@ const CycleButton = ({ cx, cy, angle, ariaLabel, onClick }: ButtonProps) => (
   </g>
 );
 
-const CurveAngleButtons = () => {
+type Props = {
+  hoveredSectionId: number | null;
+  onHover: (id: number | null) => void;
+};
+
+const CurveAngleButtons = ({ hoveredSectionId, onHover }: Props) => {
   const layout = useEditorLayoutCtx();
   const labels = useEditorLabels();
   const bottomShape = useToyStore((s) => s.bottomShape);
   const cycleTop = useToyStore((s) => s.cycleTopCurveAngle);
   const cycleBot = useToyStore((s) => s.cycleBottomCurveAngle);
-  const hoveredSectionId = useEditorUiStore((s) => s.hoveredSectionId);
-  const setHoveredSectionId = useEditorUiStore((s) => s.setHoveredSectionId);
 
   const meta = layout.sectionMeta.find((m) => m.section.id === hoveredSectionId);
   if (!meta) return null;
@@ -45,7 +47,7 @@ const CurveAngleButtons = () => {
   const bot = sectionBottomCurveAngle(meta.section);
 
   return (
-    <g onMouseEnter={() => setHoveredSectionId(meta.section.id)} onMouseLeave={() => setHoveredSectionId(null)}>
+    <g onMouseEnter={() => onHover(meta.section.id)} onMouseLeave={() => onHover(null)}>
       <CycleButton
         {...topPos}
         angle={top}

@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { useToyStore } from '../../toyMachine';
 import { useEditorLayoutCtx } from './EditorLayoutContext';
-import { useEditorUiStore } from './editorUiStore';
 import { lastInputRightX } from './geometry';
 import { useEditorLabels } from './labels';
 import { useEditorPalette } from './palette';
@@ -19,8 +19,7 @@ const SectionColorControls = () => {
   const layout = useEditorLayoutCtx();
   const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
   const setSectionColor = useToyStore((s) => s.setSectionColor);
-  const openId = useEditorUiStore((s) => s.colorPickerSectionId);
-  const setOpenId = useEditorUiStore((s) => s.setColorPickerSectionId);
+  const [openId, setOpenId] = useState<number | null>(null);
 
   if (palette.length === 0) return null;
 

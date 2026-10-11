@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { combine } from 'zustand/middleware';
 
 export type StyleOption = {
   borderWidth: number;
@@ -50,131 +51,75 @@ export interface Toy {
   knownSizeMm?: number | null;
 }
 
-interface ToyStore extends Toy {
+type ToyState = Required<Toy> & {
   nextId: number;
-
-  insertableLengthMm: number | null;
-  knownTotalMm: number | null;
-  knownSizeMm: number | null;
   snapEnabled: boolean;
   showSectionCircumference: boolean;
-
-  newSection: () => void;
-  removeSection: (id: number) => void;
-
-  setDiameter: (id: number, diameter: number) => void;
-  setHeight: (id: number, height: number) => void;
-  setCircumference: (id: number, circumference: number | null) => void;
-  setSectionColor: (id: number, color: string | null) => void;
-
-  setTopShape: (shape: Shape) => void;
-  setBottomShape: (shape: Shape) => void;
-  cycleTopCurveAngle: (id: number) => void;
-  cycleBottomCurveAngle: (id: number) => void;
-
-  setInsertableLength: (mm: number | null) => void;
-  setKnownTotal: (mm: number | null) => void;
-  setKnownSize: (mm: number | null) => void;
-  setSnapEnabled: (enabled: boolean) => void;
-  setShowSectionCircumference: (v: boolean) => void;
-
-  hydrate: (toy: Toy) => void;
-}
+};
 
 const FULL_TOUCHED: ToyTouched = { diameter: true, height: true };
-const FRESH_TOUCHED: ToyTouched = { diameter: false, height: false };
 
-const withTouched = (s: ToySection, touched: Partial<ToyTouched>): ToySection => ({
-  ...s,
-  touched: { ...(s.touched ?? FULL_TOUCHED), ...touched },
+const freshSection = (id: number): ToySection => ({
+  id,
+  diameter: 100,
+  height: 50,
+  touched: { diameter: false, height: false },
 });
 
-export const useToyStore = create<ToyStore>()((set, get) => ({
-  sections: [{ id: 0, diameter: 100, height: 50, touched: { ...FRESH_TOUCHED } }],
+const touch = (section: ToySection, field: keyof ToyTouched): ToyTouched => ({
+  ...(section.touched ?? FULL_TOUCHED),
+  [field]: true,
+});
+
+const initialState: ToyState = {
+  sections: [freshSection(0)],
   topShape: Shape.CONE,
   bottomShape: Shape.FLAT,
   nextId: 1,
-
   insertableLengthMm: null,
   knownTotalMm: null,
   knownSizeMm: null,
   snapEnabled: true,
   showSectionCircumference: false,
+};
 
-  newSection: () => {
-    const id = get().nextId;
-    set((state) => ({
-      nextId: id + 1,
-      sections: [...state.sections, { id, diameter: 100, height: 50, touched: { ...FRESH_TOUCHED } }],
-    }));
-  },
-  removeSection: (id) => {
-    set((state) => ({
-      sections: state.sections.filter((section) => section.id !== id),
-    }));
-  },
-  setDiameter: (id, diameter) => {
-    set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id ? withTouched({ ...section, diameter }, { diameter: true }) : section,
-      ),
-    }));
-  },
-  setHeight: (id, height) => {
-    set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id ? withTouched({ ...section, height }, { height: true }) : section,
-      ),
-    }));
-  },
-  setCircumference: (id, circumference) => {
-    set((state) => ({
-      sections: state.sections.map((section) => (section.id === id ? { ...section, circumference } : section)),
-    }));
-  },
-  setSectionColor: (id, color) => {
-    set((state) => ({
-      sections: state.sections.map((section) => (section.id === id ? { ...section, color } : section)),
-    }));
-  },
-  setTopShape: (shape) => set({ topShape: shape }),
-  setBottomShape: (shape) => set({ bottomShape: shape }),
-  cycleTopCurveAngle: (id) => {
-    set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id ? { ...section, topCurveAngle: nextCurveAngle(sectionTopCurveAngle(section)) } : section,
-      ),
-    }));
-  },
-  cycleBottomCurveAngle: (id) => {
-    set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id
-          ? { ...section, bottomCurveAngle: nextCurveAngle(sectionBottomCurveAngle(section)) }
-          : section,
-      ),
-    }));
-  },
-  setInsertableLength: (mm) => set({ insertableLengthMm: mm }),
-  setKnownTotal: (mm) => set({ knownTotalMm: mm }),
-  setKnownSize: (mm) => set({ knownSizeMm: mm }),
-  setSnapEnabled: (enabled) => set({ snapEnabled: enabled }),
-  setShowSectionCircumference: (v) => set({ showSectionCircumference: v }),
-  hydrate: (toy) => {
-    const maxId = toy.sections.reduce((a, s) => Math.max(a, s.id), 0);
-    set({
-      sections: toy.sections.map((s) => ({
-        ...s,
-        touched: s.touched ?? { ...FULL_TOUCHED },
-      })),
-      topShape: toy.topShape,
-      bottomShape: toy.bottomShape,
-      nextId: maxId + 1,
-      insertableLengthMm: toy.insertableLengthMm ?? null,
-      knownTotalMm: toy.knownTotalMm ?? null,
-      knownSizeMm: toy.knownSizeMm ?? null,
-      snapEnabled: true,
-      showSectionCircumference: toy.sections.some((s) => s.circumference != null),
-    });
-  },
-}));
+export const useToyStore = create(
+  combine(initialState, (set) => {
+    const updateSection = (id: number, patch: (section: ToySection) => Partial<ToySection>) =>
+      set((state) => ({ sections: state.sections.map((s) => (s.id === id ? { ...s, ...patch(s) } : s)) }));
+
+    return {
+      newSection: () =>
+        set((state) => ({ nextId: state.nextId + 1, sections: [...state.sections, freshSection(state.nextId)] })),
+      removeSection: (id: number) => set((state) => ({ sections: state.sections.filter((s) => s.id !== id) })),
+      setDiameter: (id: number, diameter: number) =>
+        updateSection(id, (s) => ({ diameter, touched: touch(s, 'diameter') })),
+      setHeight: (id: number, height: number) => updateSection(id, (s) => ({ height, touched: touch(s, 'height') })),
+      setCircumference: (id: number, circumference: number | null) => updateSection(id, () => ({ circumference })),
+      setSectionColor: (id: number, color: string | null) => updateSection(id, () => ({ color })),
+      cycleTopCurveAngle: (id: number) =>
+        updateSection(id, (s) => ({ topCurveAngle: nextCurveAngle(sectionTopCurveAngle(s)) })),
+      cycleBottomCurveAngle: (id: number) =>
+        updateSection(id, (s) => ({ bottomCurveAngle: nextCurveAngle(sectionBottomCurveAngle(s)) })),
+      setTopShape: (topShape: Shape) => set({ topShape }),
+      setBottomShape: (bottomShape: Shape) => set({ bottomShape }),
+      setInsertableLength: (insertableLengthMm: number | null) => set({ insertableLengthMm }),
+      setKnownTotal: (knownTotalMm: number | null) => set({ knownTotalMm }),
+      setKnownSize: (knownSizeMm: number | null) => set({ knownSizeMm }),
+      setSnapEnabled: (snapEnabled: boolean) => set({ snapEnabled }),
+      setShowSectionCircumference: (showSectionCircumference: boolean) => set({ showSectionCircumference }),
+      hydrate: (toy: Toy) =>
+        set({
+          sections: toy.sections.map((s) => ({ ...s, touched: s.touched ?? { ...FULL_TOUCHED } })),
+          topShape: toy.topShape,
+          bottomShape: toy.bottomShape,
+          nextId: toy.sections.reduce((max, s) => Math.max(max, s.id), 0) + 1,
+          insertableLengthMm: toy.insertableLengthMm ?? null,
+          knownTotalMm: toy.knownTotalMm ?? null,
+          knownSizeMm: toy.knownSizeMm ?? null,
+          snapEnabled: true,
+          showSectionCircumference: toy.sections.some((s) => s.circumference != null),
+        }),
+    };
+  }),
+);
