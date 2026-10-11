@@ -59,30 +59,24 @@ describe('tokenStorage', () => {
 });
 
 describe('customFetch — body parsing', () => {
-  it('returns { data, status, headers } envelope on 200 with JSON body', async () => {
+  it('returns the parsed JSON body on 200', async () => {
     fetchMock.mockResolvedValueOnce(respond({ hello: 'world' }, { status: 200 }));
-    const out = await customFetch<{ data: { hello: string }; status: number; headers: Headers }>('/x', {});
-    expect(out.data).toEqual({ hello: 'world' });
-    expect(out.status).toBe(200);
-    expect(out.headers).toBeInstanceOf(Headers);
+    expect(await customFetch<{ hello: string }>('/x', {})).toEqual({ hello: 'world' });
   });
 
-  it('returns data: undefined on 204', async () => {
+  it('returns undefined on 204', async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
-    const out = await customFetch<{ data: unknown }>('/x', {});
-    expect(out.data).toBeUndefined();
+    expect(await customFetch<unknown>('/x', {})).toBeUndefined();
   });
 
-  it('returns data: undefined when the body is empty on a 2xx', async () => {
+  it('returns undefined when the body is empty on a 2xx', async () => {
     fetchMock.mockResolvedValueOnce(respond('', { status: 200 }));
-    const out = await customFetch<{ data: unknown }>('/x', {});
-    expect(out.data).toBeUndefined();
+    expect(await customFetch<unknown>('/x', {})).toBeUndefined();
   });
 
   it('returns the raw text when the body is not valid JSON', async () => {
     fetchMock.mockResolvedValueOnce(respond('not-json', { status: 200, headers: { 'Content-Type': 'text/plain' } }));
-    const out = await customFetch<{ data: unknown }>('/x', {});
-    expect(out.data).toBe('not-json');
+    expect(await customFetch<unknown>('/x', {})).toBe('not-json');
   });
 });
 
@@ -166,9 +160,9 @@ describe('customFetch — 401 refresh flow', () => {
     mockRefresh.mockResolvedValueOnce({ access: 'NEW', refresh: 'R2' });
     fetchMock.mockResolvedValueOnce(respond({ ok: true }, { status: 200 }));
 
-    const out = await customFetch<{ data: { ok: boolean } }>('/x', { method: 'GET' });
+    const out = await customFetch<{ ok: boolean }>('/x', { method: 'GET' });
 
-    expect(out.data).toEqual({ ok: true });
+    expect(out).toEqual({ ok: true });
     expect(mockRefresh).toHaveBeenCalledTimes(1);
     expect(mockRefresh).toHaveBeenCalledWith('R1');
     expect(fetchMock).toHaveBeenCalledTimes(2);
