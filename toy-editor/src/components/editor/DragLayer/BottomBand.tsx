@@ -1,6 +1,6 @@
-import { useEditorLayoutCtx } from "../EditorLayoutContext";
-import { bandRect } from "../geometry";
-import type { DragHandlers } from "../hooks/useDragHandlers";
+import { useEditorLayoutCtx } from '../EditorLayoutContext';
+import { bandRect } from '../geometry';
+import type { DragHandlers } from '../hooks/useDragHandlers';
 
 const BottomBand = ({ handlers }: { handlers: DragHandlers }) => {
   const layout = useEditorLayoutCtx();
@@ -10,9 +10,7 @@ const BottomBand = ({ handlers }: { handlers: DragHandlers }) => {
     <rect
       className="toy-editor-handle-boundary toy-editor-handle-bottom"
       {...bandRect(last.bottomMm, layout)}
-      onPointerDown={(e) =>
-        handlers.onBottomPointerDown(e, last.section.id, last.bottomMm, last.topMm)
-      }
+      onPointerDown={(e) => handlers.onBottomPointerDown(e, last.section.id, last.bottomMm, last.topMm)}
       onPointerMove={handlers.onBottomPointerMove}
       onPointerUp={handlers.onPointerUp}
       onPointerCancel={handlers.onPointerUp}

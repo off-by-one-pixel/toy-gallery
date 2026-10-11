@@ -1,8 +1,8 @@
-import { Shape, useToyStore } from "../../../toyMachine";
-import { useEditorLayoutCtx } from "../EditorLayoutContext";
-import { diameterHandlePosition } from "../geometry";
-import type { DragHandlers } from "../hooks/useDragHandlers";
-import { HANDLE_R_PX } from "../layout";
+import { Shape, useToyStore } from '../../../toyMachine';
+import { useEditorLayoutCtx } from '../EditorLayoutContext';
+import { diameterHandlePosition } from '../geometry';
+import type { DragHandlers } from '../hooks/useDragHandlers';
+import { HANDLE_R_PX } from '../layout';
 
 const DiameterHandles = ({ handlers }: { handlers: DragHandlers }) => {
   const layout = useEditorLayoutCtx();

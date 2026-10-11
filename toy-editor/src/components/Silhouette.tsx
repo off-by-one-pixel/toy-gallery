@@ -1,9 +1,10 @@
-import { Shape, type StyleOption, type Toy } from "../toyMachine";
-import CapSection from "./CapSection";
-import Section from "./Section";
+import { Shape, type StyleOption, type Toy } from '../toyMachine';
+import CapSection from './CapSection';
+import { buildSectionMeta } from './editor/layout';
+import Section from './Section';
 
 type Props = {
-  sections: Toy["sections"];
+  sections: Toy['sections'];
   topShape: Shape;
   bottomShape: Shape;
   scaleFactor: number;
@@ -23,19 +24,9 @@ const Silhouette = ({
   onHover,
   interactive,
 }: Props) => {
-  let yOffset = 0;
-  let previousHeight = 0;
-  let currentDiameter = 0;
-  let previousDiameter = 0;
   return (
     <>
-      {sections.map((section, index) => {
-        yOffset += previousHeight;
-        previousHeight = section.height;
-        previousDiameter = currentDiameter;
-        currentDiameter = section.diameter;
-        const isFirst = index === 0;
-        const isLast = index === sections.length - 1 && !isFirst;
+      {buildSectionMeta(sections).map(({ section, topMm, previousDiameter, isFirst, isLast }) => {
         const renderAsBottomCap = isLast && bottomShape !== Shape.FLAT;
         let element;
         if (isFirst) {
@@ -79,7 +70,7 @@ const Silhouette = ({
           );
         }
         return (
-          <g key={section.id} transform={`translate(0, ${yOffset * scaleFactor})`}>
+          <g key={section.id} transform={`translate(0, ${topMm * scaleFactor})`}>
             {element}
           </g>
         );

@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { formatMm, parseMm } from "../util/fmt";
-import { useToyStore } from "../toyMachine";
-import { useEditorLabels } from "./editor/labels";
-import { useEditorUnit } from "./unit";
+import { useState } from 'react';
+import { formatMm, parseMm } from '../util/fmt';
+import { useToyStore } from '../toyMachine';
+import { useEditorLabels } from './editor/labels';
+import { useEditorUnit } from './unit';
 
 const KnownMeasurements = () => {
   const labels = useEditorLabels();
@@ -36,19 +36,11 @@ const KnownMeasurements = () => {
         />
 
         <label className="toy-editor-snap">
-          <input
-            type="checkbox"
-            checked={snap}
-            onChange={(e) => setSnap(e.target.checked)}
-          />
+          <input type="checkbox" checked={snap} onChange={(e) => setSnap(e.target.checked)} />
           {labels.snap}
         </label>
         <label className="toy-editor-snap">
-          <input
-            type="checkbox"
-            checked={showSectionCirc}
-            onChange={(e) => setShowSectionCirc(e.target.checked)}
-          />
+          <input type="checkbox" checked={showSectionCirc} onChange={(e) => setShowSectionCirc(e.target.checked)} />
           {labels.sectionCircumferences}
         </label>
       </div>

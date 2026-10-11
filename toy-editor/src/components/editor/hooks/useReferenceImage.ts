@@ -6,9 +6,9 @@ import {
   useCallback,
   useEffect,
   useState,
-} from "react";
-import { useToyStore } from "../../../toyMachine";
-import { firstImageFile, placeReferenceImage, type ReferenceImage } from "../referenceImage";
+} from 'react';
+import { useToyStore } from '../../../toyMachine';
+import { firstImageFile, placeReferenceImage, type ReferenceImage } from '../referenceImage';
 
 export type ReferenceImageState = {
   image: ReferenceImage | null;
@@ -29,9 +29,7 @@ export const useReferenceImage = (): ReferenceImageState => {
     const objectUrl = URL.createObjectURL(file);
     const probe = new Image();
     probe.onload = () =>
-      setImage(
-        placeReferenceImage(objectUrl, probe.naturalWidth, probe.naturalHeight, toyHeightMm()),
-      );
+      setImage(placeReferenceImage(objectUrl, probe.naturalWidth, probe.naturalHeight, toyHeightMm()));
     probe.onerror = () => URL.revokeObjectURL(objectUrl);
     probe.src = objectUrl;
   }, []);
@@ -48,8 +46,8 @@ export const useReferenceImage = (): ReferenceImageState => {
       e.preventDefault();
       load(file);
     };
-    document.addEventListener("paste", onPaste);
-    return () => document.removeEventListener("paste", onPaste);
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
   }, [load]);
 
   const clear = useCallback(() => setImage(null), []);
@@ -58,18 +56,18 @@ export const useReferenceImage = (): ReferenceImageState => {
     (e: ChangeEvent<HTMLInputElement>) => {
       const file = firstImageFile(e.target.files);
       if (file) load(file);
-      e.target.value = "";
+      e.target.value = '';
     },
     [load],
   );
 
   const onDragOver = useCallback((e: DragEvent) => {
-    if (e.dataTransfer.types.includes("Files")) e.preventDefault();
+    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
   }, []);
 
   const onDrop = useCallback(
     (e: DragEvent) => {
-      if (!e.dataTransfer.types.includes("Files")) return;
+      if (!e.dataTransfer.types.includes('Files')) return;
       e.preventDefault();
       const file = firstImageFile(e.dataTransfer.files);
       if (file) load(file);

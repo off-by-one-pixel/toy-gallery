@@ -1,9 +1,4 @@
-import {
-  Shape,
-  sectionBottomCurveAngle,
-  sectionTopCurveAngle,
-  type ToySection,
-} from "../toyMachine";
+import { Shape, sectionBottomCurveAngle, sectionTopCurveAngle, type ToySection } from '../toyMachine';
 
 export type SectionBodyGeometry = {
   x: number;
@@ -51,12 +46,12 @@ export const sectionBodyGeometry = (
     `C ${cpTopLeftX} ${cpTopLeftY} ${cpBotLeftX} ${cpBotLeftY} ${xBL} ${height}`,
     `L ${xBR} ${height}`,
     `C ${cpBotRightX} ${cpBotRightY} ${cpTopRightX} ${cpTopRightY} ${xTR} 0`,
-  ].join(" ");
+  ].join(' ');
 
   return { x, d };
 };
 
-export type Orientation = "top" | "bottom";
+export type Orientation = 'top' | 'bottom';
 
 type CapShapeInput = {
   diameter: number;
@@ -74,21 +69,21 @@ const renderFlat: ShapeRenderer = ({ diameter, baseY, apexY }) =>
 
 const renderEgg: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
   const cpY = lerp(baseY, apexY, 4 / 3);
-  const close = openBase ? "" : " Z";
+  const close = openBase ? '' : ' Z';
   return `M 0 ${baseY} C 0 ${cpY} ${diameter} ${cpY} ${diameter} ${baseY}${close}`;
 };
 
 const renderCone: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
   const r = diameter / 2;
   const cpY = lerp(baseY, apexY, 4 / 3);
-  const close = openBase ? "" : " Z";
+  const close = openBase ? '' : ' Z';
   return `M 0 ${baseY} C ${r} ${cpY} ${r} ${cpY} ${diameter} ${baseY}${close}`;
 };
 
 const renderSpike: ShapeRenderer = ({ diameter, baseY, apexY, openBase }) => {
   const r = diameter / 2;
   const sideCpY = lerp(baseY, apexY, 0.15);
-  const close = openBase ? "" : " Z";
+  const close = openBase ? '' : ' Z';
   return (
     `M 0 ${baseY} ` +
     `C ${r * 0.4} ${sideCpY} ${r * 0.78} ${apexY} ${r} ${apexY} ` +
@@ -110,7 +105,7 @@ export const capPath = (
   height: number,
   openAdjacentEdge: boolean,
 ): string => {
-  const isTop = orientation === "top";
+  const isTop = orientation === 'top';
   return shapeRenderers[shape]({
     diameter,
     baseY: isTop ? height : 0,
@@ -133,7 +128,7 @@ export const capSectionGeometry = (
   totalWidth: number,
   hasAdjacent: boolean,
 ): CapSectionGeometry => {
-  const capWidth = (orientation === "bottom" ? previousDiameter : section.diameter) * scaleFactor;
+  const capWidth = (orientation === 'bottom' ? previousDiameter : section.diameter) * scaleFactor;
   const height = section.height * scaleFactor;
   return {
     x: (totalWidth - capWidth) / 2,

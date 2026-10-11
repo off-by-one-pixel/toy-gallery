@@ -1,5 +1,5 @@
-import { type StyleOption, type ToySection } from "../toyMachine";
-import { sectionBodyGeometry } from "./silhouetteGeometry";
+import { type StyleOption, type ToySection } from '../toyMachine';
+import { sectionBodyGeometry } from './silhouetteGeometry';
 
 type Props = {
   section: ToySection;
@@ -11,20 +11,12 @@ type Props = {
   interactive?: boolean;
 };
 
-const Section = ({
-  section,
-  scaleFactor,
-  previousDiameter,
-  totalWidth,
-  style,
-  onHover,
-  interactive = true,
-}: Props) => {
+const Section = ({ section, scaleFactor, previousDiameter, totalWidth, style, onHover, interactive = true }: Props) => {
   const { x, d } = sectionBodyGeometry(section, scaleFactor, previousDiameter, totalWidth);
 
   return (
     <g
-      className={interactive ? "toy-editor-part" : undefined}
+      className={interactive ? 'toy-editor-part' : undefined}
       transform={`translate(${x}, 0)`}
       onMouseEnter={onHover ? () => onHover(section.id) : undefined}
       onMouseLeave={onHover ? () => onHover(null) : undefined}

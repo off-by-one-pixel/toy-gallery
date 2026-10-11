@@ -1,17 +1,17 @@
-import { useToyStore } from "../../toyMachine";
-import { useEditorLayoutCtx } from "./EditorLayoutContext";
-import { useEditorUiStore } from "./editorUiStore";
-import { lastInputRightX } from "./geometry";
-import { useEditorLabels } from "./labels";
-import { useEditorPalette } from "./palette";
-import { LABEL_INPUT_H_PX, type SectionMeta, sectionInputY } from "./layout";
+import { useToyStore } from '../../toyMachine';
+import { useEditorLayoutCtx } from './EditorLayoutContext';
+import { useEditorUiStore } from './editorUiStore';
+import { lastInputRightX } from './geometry';
+import { useEditorLabels } from './labels';
+import { useEditorPalette } from './palette';
+import { LABEL_INPUT_H_PX, type SectionMeta, sectionInputY } from './layout';
 
 const CHIP_CELL_PX = 24;
 const POPOVER_COLS = 8;
 const POPOVER_PAD_PX = 8;
 
 const customPickerValue = (color: string | null | undefined): string =>
-  color && /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#888888";
+  color && /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#888888';
 
 const SectionColorControls = () => {
   const palette = useEditorPalette();
@@ -26,8 +26,7 @@ const SectionColorControls = () => {
 
   const { sectionMeta, silhouetteScale, silhouetteY, size } = layout;
   const swatchX = lastInputRightX(layout, showSectionCirc) + 6;
-  const swatchY = (meta: SectionMeta) =>
-    sectionInputY(meta, silhouetteScale, silhouetteY) - LABEL_INPUT_H_PX / 2;
+  const swatchY = (meta: SectionMeta) => sectionInputY(meta, silhouetteScale, silhouetteY) - LABEL_INPUT_H_PX / 2;
   const openMeta = sectionMeta.find((meta) => meta.section.id === openId) ?? null;
 
   const chipCount = palette.length + 2;
@@ -52,7 +51,7 @@ const SectionColorControls = () => {
         >
           <button
             type="button"
-            className={`toy-editor-swatch ${meta.section.color ? "" : "is-auto"}`}
+            className={`toy-editor-swatch ${meta.section.color ? '' : 'is-auto'}`}
             style={meta.section.color ? { backgroundColor: meta.section.color } : undefined}
             aria-label={labels.sectionColor(meta.index + 1)}
             onClick={(e) => {
@@ -65,14 +64,7 @@ const SectionColorControls = () => {
 
       {openMeta && (
         <>
-          <rect
-            x={0}
-            y={0}
-            width={size.w}
-            height={size.h}
-            fill="transparent"
-            onClick={() => setOpenId(null)}
-          />
+          <rect x={0} y={0} width={size.w} height={size.h} fill="transparent" onClick={() => setOpenId(null)} />
           <foreignObject
             x={Math.max(4, swatchX - popoverW - 6)}
             y={Math.min(

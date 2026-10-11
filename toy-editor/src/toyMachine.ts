@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export type StyleOption = {
   borderWidth: number;
@@ -30,16 +30,14 @@ export interface ToySection {
   bottomCurveAngle?: CurveAngle;
 }
 
-export const sectionTopCurveAngle = (s: ToySection): CurveAngle =>
-  s.topCurveAngle ?? DEFAULT_TOP_CURVE_ANGLE;
-export const sectionBottomCurveAngle = (s: ToySection): CurveAngle =>
-  s.bottomCurveAngle ?? DEFAULT_BOTTOM_CURVE_ANGLE;
+export const sectionTopCurveAngle = (s: ToySection): CurveAngle => s.topCurveAngle ?? DEFAULT_TOP_CURVE_ANGLE;
+export const sectionBottomCurveAngle = (s: ToySection): CurveAngle => s.bottomCurveAngle ?? DEFAULT_BOTTOM_CURVE_ANGLE;
 
 export const Shape = {
-  CONE: "CONE",
-  EGG: "EGG",
-  FLAT: "FLAT",
-  SPIKE: "SPIKE",
+  CONE: 'CONE',
+  EGG: 'EGG',
+  FLAT: 'FLAT',
+  SPIKE: 'SPIKE',
 } as const;
 export type Shape = (typeof Shape)[keyof typeof Shape];
 
@@ -110,10 +108,7 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
     const id = get().nextId;
     set((state) => ({
       nextId: id + 1,
-      sections: [
-        ...state.sections,
-        { id, diameter: 100, height: 50, touched: { ...FRESH_TOUCHED } },
-      ],
+      sections: [...state.sections, { id, diameter: 100, height: 50, touched: { ...FRESH_TOUCHED } }],
     }));
   },
   removeSection: (id) => {
@@ -137,16 +132,12 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   },
   setCircumference: (id, circumference) => {
     set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id ? { ...section, circumference } : section,
-      ),
+      sections: state.sections.map((section) => (section.id === id ? { ...section, circumference } : section)),
     }));
   },
   setSectionColor: (id, color) => {
     set((state) => ({
-      sections: state.sections.map((section) =>
-        section.id === id ? { ...section, color } : section,
-      ),
+      sections: state.sections.map((section) => (section.id === id ? { ...section, color } : section)),
     }));
   },
   setBoundaryDelta: (aboveId, delta) => {
@@ -172,9 +163,7 @@ export const useToyStore = create<ToyStore>()((set, get) => ({
   cycleTopCurveAngle: (id) => {
     set((state) => ({
       sections: state.sections.map((section) =>
-        section.id === id
-          ? { ...section, topCurveAngle: nextCurveAngle(sectionTopCurveAngle(section)) }
-          : section,
+        section.id === id ? { ...section, topCurveAngle: nextCurveAngle(sectionTopCurveAngle(section)) } : section,
       ),
     }));
   },

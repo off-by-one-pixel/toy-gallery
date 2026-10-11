@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from "react";
+import type { ReactNode, RefObject } from 'react';
 
 type Props = {
   ref?: RefObject<SVGSVGElement | null>;
@@ -7,13 +7,13 @@ type Props = {
   children: ReactNode;
 };
 
-const SvgRoot = ({ ref, viewBox, preserveAspectRatio = "xMidYMax meet", children }: Props) => (
+const SvgRoot = ({ ref, viewBox, preserveAspectRatio = 'xMidYMax meet', children }: Props) => (
   <svg
     ref={ref}
     className="toy-editor-svg"
     viewBox={viewBox}
     preserveAspectRatio={preserveAspectRatio}
-    style={{ display: "block", overflow: "visible", width: "100%", height: "100%" }}
+    style={{ display: 'block', overflow: 'visible', width: '100%', height: '100%' }}
   >
     {children}
   </svg>

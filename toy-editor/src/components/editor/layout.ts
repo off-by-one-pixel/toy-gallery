@@ -1,4 +1,4 @@
-import type { Toy, ToySection } from "../../toyMachine";
+import type { Toy, ToySection } from '../../toyMachine';
 
 export const RULER_WIDTH_PX = 240;
 export const LABEL_WIDTH_PX = 240;
@@ -30,7 +30,7 @@ export type SectionMeta = {
   isLast: boolean;
 };
 
-export const buildSectionMeta = (sections: Toy["sections"]): SectionMeta[] => {
+export const buildSectionMeta = (sections: Toy['sections']): SectionMeta[] => {
   let yMm = 0;
   return sections.map((section, index) => {
     const topMm = yMm;
@@ -52,51 +52,38 @@ export const buildSectionMeta = (sections: Toy["sections"]): SectionMeta[] => {
   });
 };
 
-export const sectionInputY = (
-  meta: SectionMeta,
-  silhouetteScale: number,
-  silhouetteY: number,
-): number => {
+export const sectionInputY = (meta: SectionMeta, silhouetteScale: number, silhouetteY: number): number => {
   if (meta.isLast) {
     return silhouetteY + meta.bottomMm * silhouetteScale + BOTTOM_INPUT_OFFSET_PX;
   }
   return silhouetteY + meta.midMm * silhouetteScale;
 };
 
-export const sectionEdgeRight = (
-  meta: SectionMeta,
-  silhouetteScale: number,
-  silhouetteCenter: number,
-): number => silhouetteCenter + (meta.section.diameter * silhouetteScale) / 2;
+export const sectionEdgeRight = (meta: SectionMeta, silhouetteScale: number, silhouetteCenter: number): number =>
+  silhouetteCenter + (meta.section.diameter * silhouetteScale) / 2;
 
-export const sectionEdgeLeftAtTop = (
-  meta: SectionMeta,
-  silhouetteScale: number,
-  silhouetteCenter: number,
-): number => silhouetteCenter - (meta.previousDiameter * silhouetteScale) / 2;
+export const sectionEdgeLeftAtTop = (meta: SectionMeta, silhouetteScale: number, silhouetteCenter: number): number =>
+  silhouetteCenter - (meta.previousDiameter * silhouetteScale) / 2;
 
-export const sectionEdgeLeftAtBottom = (
-  meta: SectionMeta,
-  silhouetteScale: number,
-  silhouetteCenter: number,
-): number => silhouetteCenter - (meta.section.diameter * silhouetteScale) / 2;
+export const sectionEdgeLeftAtBottom = (meta: SectionMeta, silhouetteScale: number, silhouetteCenter: number): number =>
+  silhouetteCenter - (meta.section.diameter * silhouetteScale) / 2;
 
 export type DragState =
   | {
-      kind: "diameter";
+      kind: 'diameter';
       sectionId: number;
       pointerId: number;
       offsetPx: number;
     }
   | {
-      kind: "boundary";
+      kind: 'boundary';
       aboveId: number;
       pointerId: number;
       anchorBoundaryMm: number;
       offsetPx: number;
     }
   | {
-      kind: "bottom";
+      kind: 'bottom';
       lastId: number;
       pointerId: number;
       offsetPx: number;

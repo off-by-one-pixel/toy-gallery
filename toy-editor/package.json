@@ -33,9 +33,6 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,json,md}\"",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
@@ -49,22 +46,15 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^10.2.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-hooks": "^7.1.0",
-    "globals": "^17.5.0",
     "happy-dom": "^20.9.0",
-    "prettier": "^3.8.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "tsup": "^8.5.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.2",
     "vitest": "^4.1.4"
   }
 }

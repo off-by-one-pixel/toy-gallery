@@ -1,6 +1,6 @@
-import type { StyleOption, Toy } from "../../toyMachine";
-import Silhouette from "../Silhouette";
-import SvgRoot from "../SvgRoot";
+import type { StyleOption, Toy } from '../../toyMachine';
+import Silhouette from '../Silhouette';
+import SvgRoot from '../SvgRoot';
 
 type Props = {
   toy: Toy;

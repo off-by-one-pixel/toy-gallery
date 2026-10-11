@@ -1,8 +1,8 @@
-import type { DragHandlers } from "../hooks/useDragHandlers";
-import BottomBand from "./BottomBand";
-import BoundaryBands from "./BoundaryBands";
-import DiameterHandles from "./DiameterHandles";
-import RemoveButtons from "./RemoveButtons";
+import type { DragHandlers } from '../hooks/useDragHandlers';
+import BottomBand from './BottomBand';
+import BoundaryBands from './BoundaryBands';
+import DiameterHandles from './DiameterHandles';
+import RemoveButtons from './RemoveButtons';
 
 const DragLayer = ({ handlers }: { handlers: DragHandlers }) => (
   <>

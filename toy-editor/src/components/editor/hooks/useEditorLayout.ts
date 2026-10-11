@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Toy } from "../../../toyMachine";
+import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
+import type { Toy } from '../../../toyMachine';
 import {
   buildSectionMeta,
   DIAMETER_LABEL_GAP_PX,
@@ -7,12 +7,11 @@ import {
   LABEL_INPUT_W_PX,
   RULER_WIDTH_PX,
   type SectionMeta,
-} from "../layout";
-import { availableArea, fitFrame, type Frame } from "../fitFrame";
-import type { ReferenceImage } from "../referenceImage";
+} from '../layout';
+import { availableArea, fitFrame, type Frame } from '../fitFrame';
+import type { ReferenceImage } from '../referenceImage';
 
 export type EditorLayout = {
-  ref: React.RefObject<SVGSVGElement | null>;
   size: { w: number; h: number };
   silhouetteScale: number;
   silhouetteX: number;
@@ -31,10 +30,10 @@ export type EditorLayout = {
 };
 
 export const useEditorLayout = (
+  ref: RefObject<SVGSVGElement | null>,
   toy: Toy,
   referenceImage: ReferenceImage | null,
 ): EditorLayout => {
-  const ref = useRef<SVGSVGElement | null>(null);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [frozenFrame, setFrozenFrame] = useState<Frame | null>(null);
 
@@ -49,7 +48,7 @@ export const useEditorLayout = (
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [ref]);
 
   const totalHeightMm = toy.sections.reduce((a, b) => a + b.height, 0);
   const maxDiameterMm = Math.max(...toy.sections.map((s) => s.diameter), 0);
@@ -63,19 +62,12 @@ export const useEditorLayout = (
   const silhouetteX = RULER_WIDTH_PX + (availW - silhouetteW) / 2;
   const silhouetteCenter = silhouetteX + silhouetteW / 2;
 
-  const sectionMeta = useMemo(
-    () => buildSectionMeta(toy.sections),
-    [toy.sections],
-  );
+  const sectionMeta = useMemo(() => buildSectionMeta(toy.sections), [toy.sections]);
 
-  const heightLabelX = Math.max(
-    4,
-    silhouetteX - HEIGHT_LABEL_GAP_PX - LABEL_INPUT_W_PX,
-  );
+  const heightLabelX = Math.max(4, silhouetteX - HEIGHT_LABEL_GAP_PX - LABEL_INPUT_W_PX);
   const diameterLabelX = silhouetteX + silhouetteW + DIAMETER_LABEL_GAP_PX;
 
   return {
-    ref,
     size,
     silhouetteScale,
     silhouetteX,

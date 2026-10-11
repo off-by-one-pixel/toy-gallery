@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from "react";
-import { formatMm, parseMm } from "../../util/fmt";
-import { useEditorUnit } from "../unit";
-import { LABEL_INPUT_H_PX, LABEL_INPUT_W_PX } from "./layout";
+import { useState, type ReactNode } from 'react';
+import { formatMm, parseMm } from '../../util/fmt';
+import { useEditorUnit } from '../unit';
+import { LABEL_INPUT_H_PX, LABEL_INPUT_W_PX } from './layout';
 
 type Props = {
   x: number;
@@ -33,13 +33,10 @@ const FloatingInput = ({
   const unit = useEditorUnit();
   const [draft, setDraft] = useState<string | null>(null);
   const display = draft ?? formatMm(value, unit);
-  const stateClass = touched ? "is-touched" : "is-default";
+  const stateClass = touched ? 'is-touched' : 'is-default';
   return (
     <foreignObject x={x} y={yCenter - LABEL_INPUT_H_PX / 2} width={width} height={LABEL_INPUT_H_PX}>
-      <div
-        className={`toy-editor-floating ${stateClass}`}
-        style={{ width: "100%", height: "100%" }}
-      >
+      <div className={`toy-editor-floating ${stateClass}`} style={{ width: '100%', height: '100%' }}>
         <span className="toy-editor-floating-prefix">{prefix}</span>
         <input
           type="text"

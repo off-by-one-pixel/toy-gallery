@@ -75,7 +75,6 @@ const LoginPage = () => {
               {signIn.isPending ? t('submitting') : t('submit')}
             </button>
           </form>
-
         </div>
       </section>
     </div>

@@ -1,9 +1,9 @@
-import { useToyStore } from "../../toyMachine";
-import { fmtUnit } from "../../util/fmt";
-import { useEditorUnit } from "../unit";
-import { useEditorLayoutCtx } from "./EditorLayoutContext";
-import { useEditorLabels } from "./labels";
-import { guidesXRange, mmToY, sizeGuideGeometry } from "./geometry";
+import { useToyStore } from '../../toyMachine';
+import { fmtUnit } from '../../util/fmt';
+import { useEditorUnit } from '../unit';
+import { useEditorLayoutCtx } from './EditorLayoutContext';
+import { useEditorLabels } from './labels';
+import { guidesXRange, mmToY, sizeGuideGeometry } from './geometry';
 
 const Guides = () => {
   const layout = useEditorLayoutCtx();
@@ -38,49 +38,23 @@ const Guides = () => {
   );
 };
 
-const HorizontalGuide = ({
-  y,
-  xLeft,
-  xRight,
-  label,
-}: {
-  y: number;
-  xLeft: number;
-  xRight: number;
-  label: string;
-}) => (
+const HorizontalGuide = ({ y, xLeft, xRight, label }: { y: number; xLeft: number; xRight: number; label: string }) => (
   <>
     <line className="toy-editor-guide" x1={xLeft} x2={xRight} y1={y} y2={y} />
-    <text
-      className="toy-editor-guide-label"
-      x={xRight}
-      y={y - 4}
-      textAnchor="end"
-    >
+    <text className="toy-editor-guide-label" x={xRight} y={y - 4} textAnchor="end">
       {label}
     </text>
   </>
 );
 
-const SizeGuide = ({
-  knownSizeMm,
-  unitLabel,
-}: {
-  knownSizeMm: number;
-  unitLabel: string;
-}) => {
+const SizeGuide = ({ knownSizeMm, unitLabel }: { knownSizeMm: number; unitLabel: string }) => {
   const layout = useEditorLayoutCtx();
   const { xLeft, xRight, yTop, yBot } = sizeGuideGeometry(knownSizeMm, layout);
   return (
     <>
       <line className="toy-editor-guide" x1={xLeft} x2={xLeft} y1={yTop} y2={yBot} />
       <line className="toy-editor-guide" x1={xRight} x2={xRight} y1={yTop} y2={yBot} />
-      <text
-        className="toy-editor-guide-label"
-        x={layout.silhouetteCenter}
-        y={yTop - 2}
-        textAnchor="middle"
-      >
+      <text className="toy-editor-guide-label" x={layout.silhouetteCenter} y={yTop - 2} textAnchor="middle">
         Ø {unitLabel}
       </text>
     </>

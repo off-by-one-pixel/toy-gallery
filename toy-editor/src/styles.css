@@ -12,7 +12,7 @@
   --toy-editor-canvas-b: #f0fdfa;
   --toy-editor-guide: #d97706;
   --toy-editor-warn: #d97706;
-  --toy-editor-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --toy-editor-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
   display: flex;
   flex-direction: row;

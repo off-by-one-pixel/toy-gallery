@@ -1,5 +1,5 @@
-import { type CurveAngle } from "../../toyMachine";
-import type { EditorLayout } from "./hooks/useEditorLayout";
+import { type CurveAngle } from '../../toyMachine';
+import type { EditorLayout } from './hooks/useEditorLayout';
 import {
   BAND_HALF_H_PX,
   BAND_OVERHANG_PX,
@@ -16,21 +16,16 @@ import {
   sectionEdgeLeftAtTop,
   sectionEdgeRight,
   sectionInputY,
-} from "./layout";
+} from './layout';
 
-export const mmToY = (mm: number, layout: EditorLayout): number =>
-  layout.silhouetteY + mm * layout.silhouetteScale;
+export const mmToY = (mm: number, layout: EditorLayout): number => layout.silhouetteY + mm * layout.silhouetteScale;
 
 export type HeightRowGeometry = {
   yMid: number;
   leaderD: string;
 };
 
-export const heightRowGeometry = (
-  meta: SectionMeta,
-  layout: EditorLayout,
-  x: number,
-): HeightRowGeometry => {
+export const heightRowGeometry = (meta: SectionMeta, layout: EditorLayout, x: number): HeightRowGeometry => {
   const { silhouetteScale, silhouetteCenter } = layout;
   const yTop = mmToY(meta.topMm, layout);
   const yMid = mmToY(meta.midMm, layout);
@@ -42,7 +37,7 @@ export const heightRowGeometry = (
   const leaderD = [
     `M ${inputRight + 2} ${yMid} L ${bendX} ${yMid}`,
     `M ${leftAtTop} ${yTop} L ${bendX} ${yTop} L ${bendX} ${yBottom} L ${leftAtBottom} ${yBottom}`,
-  ].join(" ");
+  ].join(' ');
   return { yMid, leaderD };
 };
 
@@ -51,11 +46,7 @@ export type DiameterRowGeometry = {
   leaderD: string;
 };
 
-export const diameterRowGeometry = (
-  meta: SectionMeta,
-  layout: EditorLayout,
-  x: number,
-): DiameterRowGeometry => {
+export const diameterRowGeometry = (meta: SectionMeta, layout: EditorLayout, x: number): DiameterRowGeometry => {
   const { silhouetteScale, silhouetteCenter, silhouetteY } = layout;
   const yBottom = mmToY(meta.bottomMm, layout);
   const inputY = sectionInputY(meta, silhouetteScale, silhouetteY);
@@ -146,10 +137,7 @@ export const bandRect = (mm: number, layout: EditorLayout): BandRect => {
   };
 };
 
-export const diameterHandlePosition = (
-  meta: SectionMeta,
-  layout: EditorLayout,
-): { cx: number; cy: number } => ({
+export const diameterHandlePosition = (meta: SectionMeta, layout: EditorLayout): { cx: number; cy: number } => ({
   cx: sectionEdgeRight(meta, layout.silhouetteScale, layout.silhouetteCenter),
   cy: mmToY(meta.bottomMm, layout),
 });
@@ -166,9 +154,7 @@ export const removeButtonPosition = (
   xOffset = 0,
 ): { cx: number; cy: number } => {
   const cx = lastInputRightX(layout, showSectionCircumference) + xOffset + REMOVE_R_PX + 2;
-  const cy = meta.isLast
-    ? mmToY(meta.bottomMm, layout) + BOTTOM_INPUT_OFFSET_PX
-    : mmToY(meta.midMm, layout);
+  const cy = meta.isLast ? mmToY(meta.bottomMm, layout) + BOTTOM_INPUT_OFFSET_PX : mmToY(meta.midMm, layout);
   return { cx, cy };
 };
 
