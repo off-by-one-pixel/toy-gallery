@@ -10,15 +10,15 @@ import { useTranslations } from 'next-intl';
 import { ToyEditor } from 'toy-editor';
 import type { StyleOption } from 'toy-editor';
 
-import type { WizardDialog, WizardStage, WizardStep } from '@/features/toys/editor/useToyEditorWizardNav';
+import { useToyEditorWizardNav, type WizardStage } from '@/features/toys/editor/useToyEditorWizardNav';
 import { templateJsonToEditor } from '@/features/toys/converters/templateJson';
 import type { ToyEditMode } from '@/features/toys/editor/toyEditForm';
 import { useUnit } from '@/features/preferences/useUnit';
 import { useBeforeUnloadWarning } from '@/hooks/useBeforeUnloadWarning';
 import NewToyTemplateStep from '@/features/toys/template/NewToyTemplateStep';
+import TemplateJsonDialog from '@/features/toys/template/TemplateJsonDialog';
 import Header from '@/features/toys/editor/Header';
 import IdentificationGroup from '@/features/toys/editor/IdentificationGroup';
-import JsonDialogs from '@/features/toys/editor/JsonDialogs';
 import { NEW_TOY_MM } from '@/features/toys/editor/constants';
 import { usePresetPalette } from '@/features/toys/editor/usePresetPalette';
 import { useToyEditorLabels } from '@/features/toys/editor/useToyEditorLabels';
@@ -26,28 +26,13 @@ import { useToyEditForm } from '@/features/toys/editor/useToyEditForm';
 
 type Props = Readonly<{
   mode: ToyEditMode;
-  stage: WizardStage;
-  step: WizardStep;
-  dialog: WizardDialog | null;
-  onStageChange: (next: WizardStage) => void;
-  onStepChange: (next: WizardStep) => void;
-  onDialogChange: (next: WizardDialog | null) => void;
   onClose: () => void;
   onSaved: () => void;
 }>;
 
-export default function ToyEditModal({
-  mode,
-  stage,
-  step,
-  dialog,
-  onStageChange,
-  onStepChange,
-  onDialogChange,
-  onClose,
-  onSaved,
-}: Props) {
+export default function ToyEditModal({ mode, onClose, onSaved }: Props) {
   const t = useTranslations('toy');
+  const { stage, step, dialog, goToStage, goToStep, openDialog, closeDialog } = useToyEditorWizardNav();
   const { unit } = useUnit();
   const palette = usePresetPalette();
   const editorLabels = useToyEditorLabels();
@@ -65,14 +50,14 @@ export default function ToyEditModal({
 
   const goToEditor = (next: typeof NEW_TOY_MM) => {
     form.setPickedInitial(next);
-    onStageChange('editor');
+    goToStage('editor');
   };
 
   const handleJsonImport = (text: string) => {
     const next = templateJsonToEditor(text);
     form.setPickedInitial(next);
     form.hydrate(next);
-    onStageChange('editor');
+    goToStage('editor');
   };
 
   const style: StyleOption = {
@@ -93,11 +78,11 @@ export default function ToyEditModal({
           mode={mode}
           effectiveStage={effectiveStage}
           saving={form.saving}
-          onBack={effectiveStage === 'template' && step === 'size' ? () => onStepChange('template') : requestClose}
+          onBack={effectiveStage === 'template' && step === 'size' ? () => goToStep('template') : requestClose}
           onClose={requestClose}
           onSave={() => form.save(mode, onSaved)}
-          onOpenExport={() => onDialogChange('export')}
-          onOpenImport={() => onDialogChange('import')}
+          onOpenExport={() => openDialog('export')}
+          onOpenImport={() => openDialog('import')}
         />
 
         {form.error && (
@@ -110,7 +95,7 @@ export default function ToyEditModal({
           {effectiveStage === 'template' ? (
             <NewToyTemplateStep
               step={step}
-              onStepChange={onStepChange}
+              onStepChange={goToStep}
               onPick={goToEditor}
               onSkip={() => goToEditor(NEW_TOY_MM)}
             />
@@ -126,12 +111,8 @@ export default function ToyEditModal({
           )}
         </div>
       </AppModal>
-      <JsonDialogs
-        dialog={dialog}
-        exportText={form.exportText}
-        onClose={() => onDialogChange(null)}
-        onImport={handleJsonImport}
-      />
+      {dialog === 'export' && <TemplateJsonDialog mode="export" initialText={form.exportText} onClose={closeDialog} />}
+      {dialog === 'import' && <TemplateJsonDialog mode="import" onClose={closeDialog} onImport={handleJsonImport} />}
       {confirmingDiscard && (
         <ConfirmModal
           onClose={() => setConfirmingDiscard(false)}
