@@ -3,27 +3,30 @@ import typescript from 'eslint-config-next/typescript';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 
 const config = [
-  { ignores: ['src/api/generated/**', 'build/**', 'node_modules/**'] },
+  { ignores: ['**/build/**', '**/dist/**', '**/node_modules/**', '**/coverage/**', 'web/src/api/generated/**'] },
   ...coreWebVitals,
   ...typescript,
   ...pluginQuery.configs['flat/recommended'],
   {
-    files: ['src/**/*.tsx'],
-    ignores: ['src/**/*.test.tsx'],
+    settings: { next: { rootDir: 'web/' } },
+  },
+  {
+    files: ['web/src/**/*.tsx'],
+    ignores: ['web/src/**/*.test.tsx'],
     rules: {
       'react/jsx-no-literals': ['error', { allowedStrings: ['·', '×', '—', '+', '*'] }],
     },
   },
   {
-    files: ['src/api/*.ts'],
-    ignores: ['src/api/*.test.ts'],
+    files: ['web/src/api/*.ts'],
+    ignores: ['web/src/api/*.test.ts'],
     rules: {
       '@typescript-eslint/explicit-module-boundary-types': 'error',
     },
   },
   {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/api/**'],
+    files: ['web/src/**/*.{ts,tsx}'],
+    ignores: ['web/src/api/**'],
     rules: {
       'no-restricted-imports': [
         'error',

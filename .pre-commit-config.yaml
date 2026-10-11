@@ -15,14 +15,14 @@ repos:
     hooks:
       - id: prettier
         name: prettier (frontend)
-        entry: web/node_modules/.bin/prettier --write
+        entry: node_modules/.bin/prettier --write
         language: system
-        files: ^web/src/.*\.(ts|tsx)$
+        files: ^(web/src/.*\.(ts|tsx)|toy-editor/src/.*\.(ts|tsx|css))$
         pass_filenames: true
 
       - id: eslint
         name: eslint (frontend)
-        entry: bash -c 'cd web && ./node_modules/.bin/eslint --fix "${@#web/}"' --
+        entry: node_modules/.bin/eslint --fix
         language: system
-        files: ^web/src/.*\.(ts|tsx)$
+        files: ^(web|toy-editor)/src/.*\.(ts|tsx)$
         pass_filenames: true
