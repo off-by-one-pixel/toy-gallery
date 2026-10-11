@@ -1,10 +1,7 @@
 import type { AttributeRow, AttributeSuggestion } from '@/api/types';
 
-/** Returns a fresh row id on each call. The hook supplies a
- *  per-instance counter (via `useRef`) so test setups are isolated. */
 export type IdFactory = () => number;
 
-/** Hydrate UI rows from a server-supplied attribute dictionary. */
 export function toRows(attrs: Record<string, string> | undefined, idFactory: IdFactory): AttributeRow[] {
   return Object.entries(attrs ?? {}).map(([key, value]) => ({
     rowId: idFactory(),
@@ -14,15 +11,10 @@ export function toRows(attrs: Record<string, string> | undefined, idFactory: IdF
   }));
 }
 
-/** A row is ready to be sent to the server when it has a non-empty
- *  key AND either originated on the server (so clearing the value is
- *  a valid edit) or has a non-empty value (so a half-typed new row
- *  stays draft). */
 export function isRowReady(row: AttributeRow): boolean {
   return row.key.trim() !== '' && (row.fromSaved || row.value !== '');
 }
 
-/** Project the editor rows into a server-shaped attribute dictionary. */
 export function toDict(rows: readonly AttributeRow[]): Record<string, string> {
   const out: Record<string, string> = {};
   for (const row of rows) {
@@ -49,17 +41,12 @@ export function suggestedValues(suggestions: AttributeSuggestions, key: string):
   return suggestions.valuesByKey.get(key.trim().toLowerCase()) ?? [];
 }
 
-/** Shallow equality on string-keyed string-valued dictionaries. */
 export function sameDict(a: Record<string, string>, b: Record<string, string>): boolean {
   const ak = Object.keys(a);
   if (ak.length !== Object.keys(b).length) return false;
   return ak.every((k) => a[k] === b[k]);
 }
 
-/** Mirror server state in the UI rows. Reuses rowIds for keys that
- *  survived (so React doesn't unmount inputs the user is still
- *  editing), then appends any user-added rows whose key isn't yet on
- *  the server. */
 export function reconcileRows(
   current: readonly AttributeRow[],
   serverDict: Record<string, string>,
@@ -77,7 +64,6 @@ export function reconcileRows(
   return out;
 }
 
-/** Factory for a fresh blank row (a user just clicked "+"). */
 export function newRow(idFactory: IdFactory): AttributeRow {
   return { rowId: idFactory(), key: '', value: '', fromSaved: false };
 }

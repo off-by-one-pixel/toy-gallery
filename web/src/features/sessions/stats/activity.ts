@@ -12,7 +12,6 @@ const lightnessAt = (t: number, gamma: number): number =>
 const hslAt = (hue: number, t: number, gamma: number = ACTIVITY_PALETTE.gamma): string =>
   `hsl(${hue}, ${ACTIVITY_PALETTE.saturation}%, ${lightnessAt(t, gamma).toFixed(1)}%)`;
 
-/** Cell fill for a (day-data, dimension-range) combination. */
 export function colorFor(
   value: number | null | undefined,
   min: number,
@@ -27,8 +26,6 @@ export function colorFor(
   return hslAt(hue, intensity, gamma);
 }
 
-/** CSS linear-gradient that interpolates the per-hue palette from
- *  palest to deepest, used under the legend bar. */
 export function legendGradient(hue: number, gamma: number = ACTIVITY_PALETTE.gamma): string {
   const stops = Array.from({ length: LEGEND_STOPS }, (_, i) => {
     const t = i / (LEGEND_STOPS - 1);
@@ -37,26 +34,21 @@ export function legendGradient(hue: number, gamma: number = ACTIVITY_PALETTE.gam
   return `linear-gradient(to right, ${stops.join(', ')})`;
 }
 
-/** Min / max of a numeric array; `{ min: 0, max: 0 }` for an empty input. */
 export function extent(values: number[]): { min: number; max: number } {
   if (values.length === 0) return { min: 0, max: 0 };
   return { min: Math.min(...values), max: Math.max(...values) };
 }
 
-/** Map + filter-nulls helper. */
 export function pluck<T>(items: readonly T[], pick: (item: T) => number | null | undefined): number[] {
   return items.map(pick).filter((v): v is number => v != null);
 }
 
-/** Single rendered cell — what the component hands to react-calendar-heatmap. */
 export type ActivityCell = Readonly<{
   date: string;
   tooltip: string;
   fill: string;
 }>;
 
-/** Everything a DimensionHeatmap needs to render — fully precomputed,
- *  unit labels included. */
 export type DimensionView = Readonly<{
   title: string;
   summary: string | null;

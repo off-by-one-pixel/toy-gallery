@@ -74,8 +74,6 @@
 
 html {
   font-size: 14px;
-  /* Same stack as the mockups — system font first so we get San Francisco
-     on macOS, Segoe UI on Windows, Roboto on Linux when Inter isn't loaded. */
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -89,12 +87,6 @@ html {
   }
 }
 
-/* Overrides for react-calendar-heatmap on the sessions activity tracker.
-   The library ships sensible defaults but its label text inherits a generic
-   sans-serif and sits flush against the grid; align it with the app's
-   typography and pull the weekday labels back a few pixels for breathing
-   room. Bolder month labels chunk the year into months without adding
-   structural lines. */
 .react-calendar-heatmap {
   display: block;
   overflow: visible;

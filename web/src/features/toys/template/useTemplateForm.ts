@@ -15,10 +15,6 @@ import { TOY_TEMPLATES } from '@/features/toys/template/toyTemplates';
 import type { ToyTemplate } from '@/api/types';
 import { type Unit } from '@/features/preferences/units';
 
-/** Facade returned by `useTemplateForm`. Bundles the form state, the
- *  resolved selected template, the parsed mm targets, and named
- *  action methods so children don't have to think about the underlying
- *  reducer / action types. */
 export type TemplateForm = Readonly<{
   state: TemplateFormState;
   selectedTemplate: ToyTemplate | null;
@@ -33,10 +29,6 @@ export type TemplateForm = Readonly<{
   changeSizeMode: (mode: SizeMode) => void;
 }>;
 
-/** Wire `templateFormReducer` + selectors into a typed facade the
- *  wizard's children consume. The reducer / selectors are the
- *  business logic (pure, tested in services/templateForm.test.ts);
- *  this hook is just the React-side wiring. */
 export function useTemplateForm(unit: Unit): TemplateForm {
   const [state, dispatch] = useReducer(templateFormReducer, initialTemplateFormState);
 

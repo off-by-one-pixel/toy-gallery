@@ -8,11 +8,6 @@ type Input = Readonly<{
   maxDiameterMm: number;
 }>;
 
-/** Stretch a template's canonical shape to a user-entered size. Height
- *  scales by `totalMm / template.totalLength`, width by
- *  `maxDiameterMm / (template.circumference / π)`. The user's insertable
- *  length is derived from the template's authored insertable/total
- *  ratio so the reference guides stay consistent with the silhouette. */
 export function templateToEditor({ template, totalMm, maxDiameterMm }: Input): EditorToy {
   const srcMaxDiameter = circumferenceToDiameter(template.circumference);
   if (srcMaxDiameter == null || srcMaxDiameter <= 0 || template.totalLength <= 0) {

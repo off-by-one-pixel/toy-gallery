@@ -17,7 +17,6 @@ import { APIError } from '@/api/types';
 const mockRefresh = vi.mocked(refreshTokens);
 const fetchMock = vi.fn<(...args: Parameters<typeof fetch>) => Promise<Response>>();
 
-/** Build a Response for the next fetch call. */
 const respond = (body: unknown, init: ResponseInit = {}) => {
   const isString = typeof body === 'string' || body === undefined || body === null;
   const text = body === undefined ? '' : isString ? (body as string) : JSON.stringify(body);
@@ -36,8 +35,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
 });
-
-// ---------- tokenStorage ----------
 
 describe('tokenStorage', () => {
   it('round-trips access, refresh, and username', () => {
@@ -62,8 +59,6 @@ describe('tokenStorage', () => {
     expect(tokenStorage.getUsername()).toBeNull();
   });
 });
-
-// ---------- customFetch — happy path + body shapes ----------
 
 describe('customFetch — body parsing', () => {
   it('returns { data, status, headers } envelope on 200 with JSON body', async () => {
@@ -92,8 +87,6 @@ describe('customFetch — body parsing', () => {
     expect(out.data).toBe('not-json');
   });
 });
-
-// ---------- customFetch — error wrapping ----------
 
 describe('customFetch — error wrapping', () => {
   it('uses body.detail when present', async () => {
@@ -134,8 +127,6 @@ describe('customFetch — error wrapping', () => {
   });
 });
 
-// ---------- customFetch — Bearer attach ----------
-
 describe('customFetch — Bearer header', () => {
   it('attaches Authorization: Bearer <token> when an access token is stored', async () => {
     tokenStorage.setTokens({ access: 'TOK', refresh: 'R' });
@@ -157,8 +148,6 @@ describe('customFetch — Bearer header', () => {
   });
 });
 
-// ---------- customFetch — network failure ----------
-
 describe('customFetch — network failure', () => {
   it('wraps a thrown fetch into APIError("Network error", 0, cause)', async () => {
     const cause = new TypeError('connect ECONNREFUSED');
@@ -171,8 +160,6 @@ describe('customFetch — network failure', () => {
     expect((err as APIError).data).toBe(cause);
   });
 });
-
-// ---------- customFetch — 401 → refresh → retry ----------
 
 describe('customFetch — 401 refresh flow', () => {
   it('refreshes once and retries the request with the new bearer when refresh succeeds', async () => {
@@ -190,7 +177,6 @@ describe('customFetch — 401 refresh flow', () => {
 
     const retryInit = fetchMock.mock.calls[1][1] as RequestInit;
     expect(new Headers(retryInit.headers).get('Authorization')).toBe('Bearer NEW');
-    // Tokens were persisted from the refresh response.
     expect(tokenStorage.getAccess()).toBe('NEW');
     expect(tokenStorage.getRefresh()).toBe('R2');
   });
@@ -208,7 +194,6 @@ describe('customFetch — 401 refresh flow', () => {
     fetchMock.mockResolvedValueOnce(respond({ detail: 'expired' }, { status: 401 }));
     mockRefresh.mockRejectedValueOnce(new Error('refresh failed'));
 
-    // The console.warn is intentional from the prod path; silence it for the test.
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     await expect(customFetch('/x', {})).rejects.toMatchObject({ message: 'expired', status: 401 });
