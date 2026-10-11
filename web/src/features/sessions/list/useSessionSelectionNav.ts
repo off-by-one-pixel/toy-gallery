@@ -2,16 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 
-import { parseIntParam, type Update, useNavigation } from '@/hooks/useNavigation';
+import { parseIntParam, useNavigation } from '@/hooks/useNavigation';
 
 const KEY = 'id';
 
 const REPLACE = { replace: true } as const;
-
-const sessionSelectionUpdates = {
-  select: (id: number): Update => ({ [KEY]: String(id) }),
-  clear: (): Update => ({ [KEY]: null }),
-};
 
 export const selectedSessionHref = (id: number): string => `/sessions?${KEY}=${id}`;
 
@@ -33,8 +28,8 @@ export function useSessionSelectionNav(loadedIds: readonly number[]) {
     selectedRowRef,
     toggle: (id: number) => {
       arrivalScrollPending.current = false;
-      update(id === selectedId ? sessionSelectionUpdates.clear() : sessionSelectionUpdates.select(id), REPLACE);
+      update({ [KEY]: id === selectedId ? null : String(id) }, REPLACE);
     },
-    clear: () => update(sessionSelectionUpdates.clear(), REPLACE),
+    clear: () => update({ [KEY]: null }, REPLACE),
   };
 }
