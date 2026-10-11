@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
 import type { Toy } from '@/api/types';
 import { useToys } from '@/features/toys/useToys';
-import { useToyEditorWizardNav } from '@/features/toys/editor/useToyEditorWizardNav';
 import { useToyModalNav } from '@/features/toys/gallery/useToyModalNav';
 import { useSortOf } from '@/hooks/useSortOf';
 import { useViewMode, ViewMode } from '@/features/preferences/useViewMode';
@@ -26,16 +25,14 @@ import { useSetTopBarSubtitle } from '@/components/TopBarProvider';
 import ToyCards from '@/features/toys/gallery/ToyCards';
 import ConfirmModal from '@/components/ConfirmModal';
 import ToyEditModal from '@/features/toys/editor/ToyEditModal';
+import type { ToyEditMode } from '@/features/toys/editor/toyEditForm';
 import ToyList from '@/features/toys/gallery/ToyList';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import ViewToggle from '@/features/preferences/ViewToggle';
 
-type EditorMode = { kind: 'closed' } | { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
-
 const ToyGallery = () => {
   const { navigate } = useNavigation();
   const toyModal = useToyModalNav();
-  const wizard = useToyEditorWizardNav();
   const t = useTranslations();
   const common = useTranslations('common');
 
@@ -48,13 +45,13 @@ const ToyGallery = () => {
   const { sort } = useSortOf(TOY_SORT);
   const sortedToys = useMemo(() => sortToys(filterToys(toys, query), sort), [toys, sort, query]);
 
-  const editorMode = useMemo<EditorMode>(() => {
+  const editMode = useMemo<ToyEditMode | null>(() => {
     if (toyModal.kind === 'new') return { kind: 'new' };
     if ((toyModal.kind === 'edit' || toyModal.kind === 'copy') && toyModal.toyId != null) {
       const toy = toys.find((c) => c.id === toyModal.toyId);
       if (toy) return { kind: toyModal.kind, toy };
     }
-    return { kind: 'closed' };
+    return null;
   }, [toyModal.kind, toyModal.toyId, toys]);
 
   const startLiveAction = useStartLiveAction();
@@ -65,10 +62,6 @@ const ToyGallery = () => {
     if (!pendingDelete) return;
     await removeToy(pendingDelete.id);
     setPendingDelete(null);
-  };
-
-  const handleEditorSaved = () => {
-    toyModal.close();
   };
 
   const handleEdit = useCallback((toy: Toy) => toyModal.openEdit(toy.id), [toyModal]);
@@ -190,19 +183,7 @@ const ToyGallery = () => {
         />
       )}
 
-      {editorMode.kind !== 'closed' && (
-        <ToyEditModal
-          mode={editorMode}
-          stage={wizard.stage}
-          step={wizard.step}
-          dialog={wizard.dialog}
-          onStageChange={wizard.goToStage}
-          onStepChange={wizard.goToStep}
-          onDialogChange={(d) => (d ? wizard.openDialog(d) : wizard.closeDialog())}
-          onClose={toyModal.close}
-          onSaved={handleEditorSaved}
-        />
-      )}
+      {editMode && <ToyEditModal mode={editMode} onClose={toyModal.close} onSaved={toyModal.close} />}
     </>
   );
 };
