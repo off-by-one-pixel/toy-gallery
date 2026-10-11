@@ -1,13 +1,15 @@
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { renderToString } from 'react-dom/server';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { usePersistedState } from '@/hooks/usePersistedState';
 
 const isStringList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
 
-const render = (onRestore?: (restored: string[] | undefined) => void) =>
-  renderHook(() => usePersistedState('test.items', [], isStringList, onRestore));
+const NO_ITEMS: string[] = [];
+
+const render = () => renderHook(() => usePersistedState('test.items', NO_ITEMS, isStringList));
 
 describe('usePersistedState', () => {
   beforeEach(() => {
@@ -60,16 +62,19 @@ describe('usePersistedState', () => {
     expect(localStorage.getItem('test.items')).toBe(JSON.stringify(['a', 'b', 'c']));
   });
 
-  it('notifies onRestore with the restored value', () => {
-    const onRestore = vi.fn();
-    localStorage.setItem('test.items', JSON.stringify(['a']));
-    render(onRestore);
-    expect(onRestore).toHaveBeenCalledWith(['a']);
+  it('keeps every hook that shares a key in sync', () => {
+    const first = render();
+    const second = render();
+    act(() => first.result.current[1](['a']));
+    expect(second.result.current[0]).toEqual(['a']);
   });
 
-  it('notifies onRestore with undefined when nothing valid is stored', () => {
-    const onRestore = vi.fn();
-    render(onRestore);
-    expect(onRestore).toHaveBeenCalledWith(undefined);
+  it('renders the default on the server so hydration matches', () => {
+    localStorage.setItem('test.items', JSON.stringify(['a']));
+    function Probe() {
+      const [items] = usePersistedState('test.items', NO_ITEMS, isStringList);
+      return <span>{items.length}</span>;
+    }
+    expect(renderToString(<Probe />)).toBe('<span>0</span>');
   });
 });

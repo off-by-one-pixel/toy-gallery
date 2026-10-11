@@ -1,19 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useMemo, useSyncExternalStore, type Dispatch, type SetStateAction } from 'react';
 
 export const oneOf =
   <T>(values: readonly T[]) =>
   (value: unknown): value is T =>
     values.includes(value as T);
 
-const readStored = (key: string): unknown => {
-  const raw = localStorage.getItem(key);
-  if (raw === null) return undefined;
+const listeners = new Map<string, Set<() => void>>();
+
+const resolve = <T>(raw: string | null, defaultValue: T, isValid: (value: unknown) => value is T): T => {
+  if (raw === null) return defaultValue;
   try {
-    return JSON.parse(raw);
+    const parsed: unknown = JSON.parse(raw);
+    return isValid(parsed) ? parsed : defaultValue;
   } catch {
-    return undefined;
+    return defaultValue;
   }
 };
 
@@ -21,31 +23,34 @@ export function usePersistedState<T>(
   key: string,
   defaultValue: T,
   isValid: (value: unknown) => value is T,
-  onRestore?: (restored: T | undefined) => void,
 ): [T, Dispatch<SetStateAction<T>>] {
-  const [state, setState] = useState<T>(defaultValue);
-  const stateRef = useRef(state);
-
-  useEffect(() => {
-    const stored = readStored(key);
-    const restored = isValid(stored) ? stored : undefined;
-    if (restored !== undefined) {
-      stateRef.current = restored;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setState(restored);
-    }
-    onRestore?.(restored);
-  }, [key, isValid, onRestore]);
-
-  const setValue = useCallback<Dispatch<SetStateAction<T>>>(
-    (action) => {
-      const next = typeof action === 'function' ? (action as (prev: T) => T)(stateRef.current) : action;
-      stateRef.current = next;
-      localStorage.setItem(key, JSON.stringify(next));
-      setState(next);
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      const keyListeners = listeners.get(key) ?? new Set();
+      listeners.set(key, keyListeners);
+      keyListeners.add(listener);
+      return () => {
+        keyListeners.delete(listener);
+      };
     },
     [key],
   );
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => localStorage.getItem(key),
+    () => null,
+  );
+  const value = useMemo(() => resolve(raw, defaultValue, isValid), [raw, defaultValue, isValid]);
 
-  return [state, setValue];
+  const setValue = useCallback<Dispatch<SetStateAction<T>>>(
+    (action) => {
+      const current = resolve(localStorage.getItem(key), defaultValue, isValid);
+      const next = typeof action === 'function' ? (action as (prev: T) => T)(current) : action;
+      localStorage.setItem(key, JSON.stringify(next));
+      listeners.get(key)?.forEach((listener) => listener());
+    },
+    [key, defaultValue, isValid],
+  );
+
+  return [value, setValue];
 }
