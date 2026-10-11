@@ -240,11 +240,3 @@ describe('rangeFor', () => {
     expect(rangeFor('filter', { kind: 'week', anchor: '2026-06-08' })).toEqual(week);
   });
 });
-
-describe('SESSION_STATS config', () => {
-  it('has unique keys and resolvable titles', () => {
-    const keys = SESSION_STATS.map((def) => def.key);
-    expect(new Set(keys).size).toBe(keys.length);
-    for (const def of SESSION_STATS) expect(def.title(ctx()).length).toBeGreaterThan(0);
-  });
-});

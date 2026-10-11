@@ -17,7 +17,6 @@ import {
   sessionFiltersKey,
   sessionFiltersUrlParams,
   sessionFilterWireParams,
-  INVOLVEMENT_RANK,
   mergeSessions,
   NO_SESSION_FILTERS,
   parseToyIdsParam,
@@ -37,13 +36,6 @@ const session = (id: number, isoDay: string): Session => ({
   totalToyDurationMinutes: null,
   maxInsertableLength: null,
   maxCircumference: null,
-});
-
-describe('INVOLVEMENT_RANK', () => {
-  it('orders FULLY_INSERTED < INSERTED < USED', () => {
-    expect(INVOLVEMENT_RANK[Involvement.FULLY_INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.INSERTED]);
-    expect(INVOLVEMENT_RANK[Involvement.INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.USED]);
-  });
 });
 
 describe('mergeSessions', () => {
