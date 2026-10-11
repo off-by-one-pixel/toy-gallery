@@ -7,7 +7,7 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { useNow } from '@/hooks/useNow';
 
 import { useLiveSession } from '@/features/sessions/live/useLiveSession';
-import { formatElapsedSeconds, secondsBetween } from '@/lib/duration';
+import { formatDuration, secondsBetween } from '@/lib/duration';
 import { formatWhen } from '@/lib/dates';
 
 const TICK_MS = 1000;
@@ -30,7 +30,7 @@ export default function LiveSessionBanner() {
 
   if (!liveSession) return null;
 
-  const elapsed = Math.max(0, secondsBetween(liveSession.startedAt, now.toISOString()));
+  const elapsed = secondsBetween(liveSession.startedAt, now.toISOString());
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
   return (
@@ -49,7 +49,7 @@ export default function LiveSessionBanner() {
             {formatWhen(liveSession.startedAt, now, locale, whenT)}
             {' · '}
           </span>
-          <span className="font-medium tabular-nums">{formatElapsedSeconds(elapsed, locale)}</span>
+          <span className="font-medium tabular-nums">{formatDuration(elapsed, locale, 'second')}</span>
         </span>
         {!collapsed && (
           <Button

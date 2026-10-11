@@ -1,7 +1,7 @@
 import { Involvement } from '@/api/types';
 import { displayGirth, type Girth } from '@/features/preferences/girth';
 import { formatValue, type Unit } from '@/features/preferences/units';
-import { formatElapsed } from '@/lib/duration';
+import { formatDuration } from '@/lib/duration';
 import type { Translator } from '@/i18n/translator';
 
 export type RecordPeak = 'length' | 'circumference' | 'duration';
@@ -29,7 +29,7 @@ const dimension = (mm: number, ctx: RecordDisplayContext): RecordValue => ({
 });
 
 const elapsed = (value: number, ctx: RecordDisplayContext): RecordValue => ({
-  text: formatElapsed(value, ctx.locale),
+  text: formatDuration(value, ctx.locale),
 });
 
 export const SESSION_RECORDS = {

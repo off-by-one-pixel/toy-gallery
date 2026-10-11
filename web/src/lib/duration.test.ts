@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDuration, formatElapsed, formatElapsedSeconds, minutesBetween, secondsBetween } from '@/lib/duration';
+import { formatDuration, minutesBetween, secondsBetween } from '@/lib/duration';
 
 describe('formatDuration', () => {
   it('formats minutes only', () => {
@@ -8,41 +8,50 @@ describe('formatDuration', () => {
     expect(formatDuration(0, 'en')).toBe('0m');
   });
 
-  it('formats whole hours without a minutes part', () => {
-    expect(formatDuration(60, 'en')).toBe('1h');
-    expect(formatDuration(120, 'en')).toBe('2h');
-  });
-
   it('formats mixed hours and minutes', () => {
     expect(formatDuration(95, 'en')).toBe('1h 35m');
   });
 
+  it('skips zero parts', () => {
+    expect(formatDuration(60, 'en')).toBe('1h');
+    expect(formatDuration(120, 'en')).toBe('2h');
+    expect(formatDuration(2 * 1440 + 5 * 60, 'en')).toBe('2d 5h');
+    expect(formatDuration(1440 + 30, 'en')).toBe('1d 30m');
+  });
+
+  it('rolls into days, months and years', () => {
+    expect(formatDuration(1440 + 60 + 5, 'en')).toBe('1d 1h 5m');
+    expect(formatDuration(40 * 1440, 'en')).toBe('1 mth 10d');
+    expect(formatDuration(400 * 1440 + 90, 'en')).toBe('1y 1 mth 5d 1h 30m');
+  });
+
+  it('clamps negative input to zero', () => {
+    expect(formatDuration(-30, 'en')).toBe('0m');
+  });
+
   it('localizes unit labels', () => {
     expect(formatDuration(95, 'ru')).toBe('1 ч 35 мин');
-  });
-});
-
-describe('formatElapsed', () => {
-  it('always shows the minutes component', () => {
-    expect(formatElapsed(0, 'en')).toBe('0m');
-    expect(formatElapsed(45, 'en')).toBe('45m');
-    expect(formatElapsed(95, 'en')).toBe('1h 35m');
-    expect(formatElapsed(120, 'en')).toBe('2h 0m');
+    expect(formatDuration(2 * 1440 + 5 * 60, 'ru')).toBe('2 д. 5 ч');
   });
 
-  it('rolls into days, skipping zero units above minutes', () => {
-    expect(formatElapsed(2 * 1440 + 5 * 60, 'en')).toBe('2d 5h 0m');
-    expect(formatElapsed(1440 + 30, 'en')).toBe('1d 30m');
-    expect(formatElapsed(1440 + 60 + 5, 'en')).toBe('1d 1h 5m');
-  });
+  describe('in seconds', () => {
+    it('shows bare seconds under a minute', () => {
+      expect(formatDuration(45, 'en', 'second')).toBe('45s');
+      expect(formatDuration(0, 'en', 'second')).toBe('00s');
+    });
 
-  it('rolls into months and years', () => {
-    expect(formatElapsed(40 * 1440, 'en')).toBe('1 mth 10d 0m');
-    expect(formatElapsed(400 * 1440 + 90, 'en')).toBe('1y 1 mth 5d 1h 30m');
-  });
+    it('shows minutes with seconds', () => {
+      expect(formatDuration(33 * 60 + 12, 'en', 'second')).toBe('33m 12s');
+    });
 
-  it('localizes unit labels', () => {
-    expect(formatElapsed(2 * 1440 + 5 * 60, 'ru')).toBe('2 д. 5 ч 0 мин');
+    it('skips zero parts but always shows padded seconds', () => {
+      expect(formatDuration(3600 + 5, 'en', 'second')).toBe('1h 05s');
+      expect(formatDuration(10 * 60, 'en', 'second')).toBe('10m 00s');
+    });
+
+    it('clamps negative input to zero', () => {
+      expect(formatDuration(-30, 'en', 'second')).toBe('00s');
+    });
   });
 });
 
@@ -57,25 +66,6 @@ describe('minutesBetween', () => {
 
   it('is negative when end precedes start', () => {
     expect(minutesBetween('2026-05-02T22:15', '2026-05-02T20:00')).toBeLessThan(0);
-  });
-});
-
-describe('formatElapsedSeconds', () => {
-  it('shows bare seconds under a minute', () => {
-    expect(formatElapsedSeconds(45, 'en')).toBe('45s');
-    expect(formatElapsedSeconds(0, 'en')).toBe('00s');
-  });
-
-  it('shows minutes with seconds', () => {
-    expect(formatElapsedSeconds(33 * 60 + 12, 'en')).toBe('33m 12s');
-  });
-
-  it('keeps zero middle units once a larger unit appears', () => {
-    expect(formatElapsedSeconds(3600 + 5, 'en')).toBe('1h 0m 05s');
-  });
-
-  it('clamps negative input to zero', () => {
-    expect(formatElapsedSeconds(-30, 'en')).toBe('00s');
   });
 });
 

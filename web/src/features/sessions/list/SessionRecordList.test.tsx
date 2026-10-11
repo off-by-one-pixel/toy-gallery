@@ -47,7 +47,7 @@ describe('SessionRecordList', () => {
     expect(items[0].textContent).toContain('45m');
     expect(items[0].textContent).not.toContain('Acme');
     expect(items[1].textContent).toContain(en.session.records.session);
-    expect(items[1].textContent).toContain('2h 0m');
+    expect(items[1].textContent).toContain('2h');
   });
 
   it('keeps one row per toy for the same record key', () => {

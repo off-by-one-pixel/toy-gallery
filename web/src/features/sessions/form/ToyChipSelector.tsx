@@ -4,7 +4,7 @@ import { Chip } from '@heroui/react';
 import { Check, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { DURATION_INCREMENTS_MINUTES, formatElapsed } from '@/lib/duration';
+import { DURATION_INCREMENTS_MINUTES, formatDuration } from '@/lib/duration';
 import { Involvement, type Toy } from '@/api/types';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
@@ -88,7 +88,7 @@ export default function ToyChipSelector({
             <Chip size="sm" className="border border-accent bg-surface shadow-sm">
               <Chip.Label>
                 <span className="inline-flex items-center gap-1">
-                  <span className="text-sm font-semibold tabular-nums">{formatElapsed(duration, locale)}</span>
+                  <span className="text-sm font-semibold tabular-nums">{formatDuration(duration, locale)}</span>
                   <button
                     type="button"
                     aria-label={tDuration('clearLabel')}
@@ -166,7 +166,7 @@ export default function ToyChipSelector({
                 className="mt-1.5 h-8 w-full rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
               >
                 {tDuration(wholeSessionIsLive ? 'soFar' : 'wholeSession')} ·{' '}
-                {formatElapsed(wholeSessionMinutes, locale)}
+                {formatDuration(wholeSessionMinutes, locale)}
               </button>
             )}
             <div className="mt-1.5 grid grid-cols-4 gap-1">
@@ -180,7 +180,7 @@ export default function ToyChipSelector({
                   }}
                   className="h-8 rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
                 >
-                  +{formatElapsed(minutes, locale)}
+                  +{formatDuration(minutes, locale)}
                 </button>
               ))}
             </div>
