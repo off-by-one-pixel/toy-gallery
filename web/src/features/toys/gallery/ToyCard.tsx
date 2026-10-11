@@ -34,8 +34,8 @@ type Props = Readonly<{
   onCopy: (toy: Toy) => void;
   onDelete: (toy: Toy) => void;
   onGhost?: (toy: Toy) => void;
-  ghosts?: readonly GhostToy[];
-  maxHeightMm?: number;
+  ghosts: readonly GhostToy[];
+  maxHeightMm: number;
 }>;
 
 function ToyCard({
@@ -47,7 +47,7 @@ function ToyCard({
   onCopy,
   onDelete,
   onGhost,
-  ghosts = [],
+  ghosts,
   maxHeightMm,
 }: Props) {
   const { unit } = useUnit();
@@ -114,9 +114,7 @@ function ToyCard({
             stopPropagation
           />
         </div>
-        {ghosts.length > 0 && maxHeightMm != null && (
-          <GhostCompareOverlay ghosts={ghosts} maxHeightMm={maxHeightMm} visible={detailsOpen} />
-        )}
+        {ghosts.length > 0 && <GhostCompareOverlay ghosts={ghosts} maxHeightMm={maxHeightMm} visible={detailsOpen} />}
       </ToyThumbnail>
       <div className="px-3.5 py-3">
         <div className="mb-2 flex items-start gap-2">

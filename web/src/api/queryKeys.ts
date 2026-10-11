@@ -6,7 +6,6 @@ export const queryKeys = {
     attributeSuggestions: ['toys', 'attributeSuggestions'] as const,
   },
   sessions: {
-    all: ['sessions'] as const,
     lists: ['sessions', 'list'] as const,
     list: (filter: string, ordering: string | undefined, filters: string) =>
       ['sessions', 'list', filter, ordering ?? null, filters] as const,

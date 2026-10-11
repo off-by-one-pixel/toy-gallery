@@ -25,9 +25,6 @@ export const SESSION_FORM_TOY_SORT: SortConfig<ToySortColumn> = {
   extraColumnPrefix: undefined,
 };
 
-export const isToySortColumn = (v: unknown): v is ToySortColumn =>
-  typeof v === 'string' && (v in TOY_PROPERTIES || v.startsWith(ATTR_COLUMN_PREFIX));
-
 export const attributeSortColumns = (toys: readonly Toy[]): ToySortColumn[] => {
   const counts = new Map<string, number>();
   for (const toy of toys) {

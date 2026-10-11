@@ -14,24 +14,20 @@ export type ActionMenuItem = Readonly<{
   label: string;
   description: string;
   onAction: () => void;
-  danger?: boolean;
 }>;
 
 type Props = Readonly<{
   items: ActionMenuItem[];
-  disabledKeys?: string[];
 }>;
 
-export default function ActionDropdownMenu({ items, disabledKeys }: Props) {
+export default function ActionDropdownMenu({ items }: Props) {
   return (
-    <Dropdown.Menu disabledKeys={disabledKeys ?? []}>
-      {items.map(({ id, icon: Icon, label, description, onAction, danger }) => (
+    <Dropdown.Menu>
+      {items.map(({ id, icon: Icon, label, description, onAction }) => (
         <Dropdown.Item key={id} id={id} onAction={onAction}>
           <ActionDropdownMenuRow
-            icon={
-              <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} className={danger ? 'text-danger' : undefined} />
-            }
-            label={danger ? <span className="text-danger">{label}</span> : label}
+            icon={<Icon size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />}
+            label={label}
             description={description}
           />
         </Dropdown.Item>
