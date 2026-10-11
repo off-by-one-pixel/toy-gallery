@@ -15,6 +15,30 @@ const config = [
     },
   },
   {
+    files: ['src/api/*.ts'],
+    ignores: ['src/api/*.test.ts'],
+    rules: {
+      '@typescript-eslint/explicit-module-boundary-types': 'error',
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/api/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/api/generated', '@/api/generated/*'],
+              message: 'Use the domain API in @/api, not the generated SDK.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     rules: {
       '@next/next/no-img-element': 'off',
       '@typescript-eslint/no-unused-vars': [

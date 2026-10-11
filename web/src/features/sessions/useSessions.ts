@@ -33,7 +33,7 @@ import {
 } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import { useToys } from '@/features/toys/useToys';
-import type { Session, Toy } from '@/api/types';
+import type { Session } from '@/api/types';
 
 export type SessionPayload = Parameters<typeof createSession>[0];
 
@@ -73,31 +73,7 @@ export function useSaveSession() {
   return { saveSession: save.run, isSavingSession: save.isPending };
 }
 
-export type SessionsData = Readonly<{
-  sessionCount: number;
-  sessions: Session[];
-  toysById: Map<number, Toy>;
-  hasMore: boolean;
-  isLoadingMore: boolean;
-  loadMore: () => void;
-  prependSession: (session: Session) => void;
-  reload: () => void;
-
-  period: Period;
-  setPeriod: (next: Period) => void;
-
-  toys: Toy[];
-  sessionFilters: SessionFilters;
-  setSessionFilters: (next: SessionFilters) => void;
-
-  isLoading: boolean;
-  error: string | null;
-
-  removeSession: (id: number) => Promise<unknown>;
-  isRemovingSession: boolean;
-}>;
-
-export function useSessions(): SessionsData {
+export function useSessions() {
   const { searchParams, updateParams } = useNavigation();
   const period = useMemo<Period>(() => parsePeriodParam(searchParams.get('period')), [searchParams]);
   const setPeriod = (next: Period) => {
