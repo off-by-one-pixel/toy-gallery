@@ -4,7 +4,6 @@ import { Chip } from '@heroui/react';
 import { Check, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { DURATION_INCREMENTS_MINUTES, formatElapsed } from '@/lib/duration';
 import { Involvement, type Toy } from '@/api/types';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
@@ -62,7 +61,6 @@ export default function ToyChipSelector({
   const t = useTranslations('involvement');
   const tDuration = useTranslations('session.duration');
   const locale = useLocale();
-  const editorToy = toyShapeToEditor(toy.shape);
 
   const handlePick = (next: Involvement) => {
     onChange(state === next ? null : next);
@@ -84,7 +82,7 @@ export default function ToyChipSelector({
         (state ? CHIP_BORDER[state] : 'border-border')
       }
     >
-      <ToyThumbnail toy={editorToy} fillColor={toy.color} className="h-35 border-b border-border">
+      <ToyThumbnail shape={toy.shape} fillColor={toy.color} className="h-35 border-b border-border">
         {state && duration != null && (
           <div key={duration} className="pill-flash absolute left-2.5 top-2.5 z-10 rounded-full">
             <Chip size="sm" className="border border-accent bg-surface shadow-sm">

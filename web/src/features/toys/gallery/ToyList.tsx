@@ -8,7 +8,6 @@ import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 import { useGirth } from '@/features/preferences/useGirth';
 import { useSortOf } from '@/hooks/useSortOf';
-import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { displayGirth } from '@/features/preferences/girth';
 import { cycleSort, type Sort } from '@/lib/sort';
 import { TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
@@ -220,10 +219,9 @@ function ToyRow({
 }
 
 function Thumb({ toy }: Readonly<{ toy: Toy }>) {
-  const editorToy = toyShapeToEditor(toy.shape);
   return (
     <ToyThumbnail
-      toy={editorToy}
+      shape={toy.shape}
       fillColor={toy.color}
       borderWidth={1}
       insetTop={4}

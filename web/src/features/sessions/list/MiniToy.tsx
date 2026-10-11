@@ -3,7 +3,6 @@
 import { Tooltip } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { formatElapsed } from '@/lib/duration';
 import { toyTooltip } from '@/features/sessions/session';
 import { Involvement, type SessionEntry, type Toy } from '@/api/types';
@@ -34,7 +33,6 @@ export default function MiniToy({ entry, toy, heightRatio, recordLabels = [] }: 
       </div>
     );
   }
-  const editorToy = toyShapeToEditor(toy.shape);
   const isUsed = entry.involvement === Involvement.USED;
   return (
     <Tooltip.Root delay={600}>
@@ -47,7 +45,7 @@ export default function MiniToy({ entry, toy, heightRatio, recordLabels = [] }: 
           />
         )}
         <ToyThumbnail
-          toy={editorToy}
+          shape={toy.shape}
           fillColor={isUsed ? 'transparent' : toy.color}
           strokeColor={isUsed ? 'var(--muted)' : undefined}
           borderWidth={1}
