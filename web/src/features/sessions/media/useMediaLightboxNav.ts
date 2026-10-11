@@ -1,13 +1,8 @@
 'use client';
 
-import { parseIntParam, type Update, useNavigation } from '@/hooks/useNavigation';
+import { parseIntParam, useNavigation } from '@/hooks/useNavigation';
 
 const KEY = 'lightbox';
-
-export const mediaLightboxUpdates = {
-  open: (sessionId: number, index: number): Update => ({ [KEY]: `${sessionId}:${index}` }),
-  close: (): Update => ({ [KEY]: null }),
-};
 
 export function parseMediaParam(raw: string | null, sessionId: number): number | null {
   if (!raw) return null;
@@ -22,7 +17,7 @@ export function useMediaLightboxNav(sessionId: number) {
   const openIndex = parseMediaParam(param(KEY), sessionId);
   return {
     openIndex,
-    open: (index: number) => update(mediaLightboxUpdates.open(sessionId, index)),
-    close: (options?: Readonly<{ replace?: boolean }>) => update(mediaLightboxUpdates.close(), options),
+    open: (index: number) => update({ [KEY]: `${sessionId}:${index}` }),
+    close: (options?: Readonly<{ replace?: boolean }>) => update({ [KEY]: null }, options),
   };
 }
