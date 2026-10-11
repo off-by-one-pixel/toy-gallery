@@ -6,6 +6,10 @@ on:
       - "web/**"
       - "toy-editor/**"
       - "api/schema.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "eslint.config.mjs"
+      - ".prettierrc.json"
       - ".github/workflows/web.yml"
   push:
     branches: [main]
@@ -13,6 +17,10 @@ on:
       - "web/**"
       - "toy-editor/**"
       - "api/schema.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "eslint.config.mjs"
+      - ".prettierrc.json"
       - ".github/workflows/web.yml"
 
 concurrency:
@@ -36,11 +44,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm lint
+
       - name: Build toy-editor
         run: pnpm --filter toy-editor build
-
-      - name: Lint toy-editor
-        run: pnpm --filter toy-editor lint
 
       - name: Test toy-editor
         run: pnpm --filter toy-editor test
@@ -50,9 +58,6 @@ jobs:
 
       - name: Typecheck
         run: pnpm --filter web exec tsc --noEmit
-
-      - name: Lint
-        run: pnpm --filter web lint
 
       - name: Test
         run: pnpm --filter web test
