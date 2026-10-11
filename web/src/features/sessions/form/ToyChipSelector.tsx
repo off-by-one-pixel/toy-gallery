@@ -72,6 +72,7 @@ export default function ToyChipSelector({
       tabIndex={0}
       onClick={() => onChange(nextInCycle(state))}
       onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onChange(nextInCycle(state));
