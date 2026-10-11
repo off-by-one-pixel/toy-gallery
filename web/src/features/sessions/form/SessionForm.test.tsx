@@ -4,11 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/hooks/useNavigation', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/hooks/useNavigation')>();
-  const { testNavigation } = await import('@/test/navigation');
-  return { ...original, useNavigation: () => testNavigation() };
-});
+vi.mock('@/hooks/useNavigation', async () => (await import('@/test/navigation')).navigationModule());
 
 const sessionsState = vi.hoisted(() => ({
   current: {
