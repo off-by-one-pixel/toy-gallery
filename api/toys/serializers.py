@@ -146,7 +146,7 @@ class SessionSerializer(serializers.ModelSerializer):
             "max_circumference",
             "total_toy_duration_minutes",
         ]
-        read_only_fields = ["is_live"]
+        read_only_fields = ["is_live", "photo_count", "video_count"]
 
     def get_total_toy_duration_minutes(self, obj) -> int | None:
         return SessionDimensions.total_toy_duration(obj)
