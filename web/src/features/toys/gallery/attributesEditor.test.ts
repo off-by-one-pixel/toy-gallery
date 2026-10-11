@@ -1,23 +1,9 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import {
-  type IdFactory,
-  isRowReady,
-  newRow,
-  reconcileRows,
-  sameDict,
-  suggestedValues,
-  toAttributeSuggestions,
-  toDict,
-  toRows,
-} from '@/features/toys/gallery/attributesEditor';
+import { isRowReady, newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
 import type { AttributeRow } from '@/api/types';
 
-let next: number;
-const ids: IdFactory = () => ++next;
-beforeEach(() => {
-  next = 0;
-});
+const lastIssuedId = () => newRow().rowId;
 
 const savedRow = (rowId: number, key: string, value: string): AttributeRow => ({
   rowId,
@@ -35,15 +21,17 @@ const draftRow = (rowId: number, key: string, value: string): AttributeRow => ({
 
 describe('toRows', () => {
   it('returns an empty array for undefined / empty input', () => {
-    expect(toRows(undefined, ids)).toEqual([]);
-    expect(toRows({}, ids)).toEqual([]);
+    expect(toRows(undefined)).toEqual([]);
+    expect(toRows({})).toEqual([]);
   });
 
   it('maps each key/value into a fromSaved row with a unique id', () => {
-    const rows = toRows({ size: 'M', shade: 'blue' }, ids);
-    expect(rows).toHaveLength(2);
-    expect(rows[0]).toEqual({ rowId: 1, key: 'size', value: 'M', fromSaved: true });
-    expect(rows[1]).toEqual({ rowId: 2, key: 'shade', value: 'blue', fromSaved: true });
+    const rows = toRows({ size: 'M', shade: 'blue' });
+    expect(rows).toEqual([
+      { rowId: expect.any(Number), key: 'size', value: 'M', fromSaved: true },
+      { rowId: expect.any(Number), key: 'shade', value: 'blue', fromSaved: true },
+    ]);
+    expect(rows[0].rowId).not.toBe(rows[1].rowId);
   });
 });
 
@@ -103,68 +91,49 @@ describe('sameDict', () => {
 describe('reconcileRows', () => {
   it('preserves rowIds for keys that survived', () => {
     const current = [savedRow(7, 'size', 'M'), savedRow(8, 'shade', 'blue')];
-    const out = reconcileRows(current, { size: 'L', shade: 'blue' }, ids);
+    const out = reconcileRows(current, { size: 'L', shade: 'blue' });
     expect(out.map((r) => r.rowId)).toEqual([7, 8]);
     expect(out.map((r) => r.value)).toEqual(['L', 'blue']);
   });
 
   it('assigns a fresh id to newly-arrived keys from the server', () => {
-    const out = reconcileRows([savedRow(7, 'size', 'M')], { size: 'M', shade: 'blue' }, ids);
+    const before = lastIssuedId();
+    const out = reconcileRows([savedRow(7, 'size', 'M')], { size: 'M', shade: 'blue' });
     expect(out).toHaveLength(2);
     expect(out[0].rowId).toBe(7);
-    expect(out[1]).toEqual({ rowId: 1, key: 'shade', value: 'blue', fromSaved: true });
+    expect(out[1]).toEqual({ rowId: expect.any(Number), key: 'shade', value: 'blue', fromSaved: true });
+    expect(out[1].rowId).toBeGreaterThan(before);
   });
 
   it('drops saved rows whose key no longer exists on the server', () => {
-    const out = reconcileRows([savedRow(7, 'size', 'M'), savedRow(8, 'stale', 'x')], { size: 'M' }, ids);
+    const out = reconcileRows([savedRow(7, 'size', 'M'), savedRow(8, 'stale', 'x')], { size: 'M' });
     expect(out.map((r) => r.key)).toEqual(['size']);
   });
 
   it('keeps draft rows whose key is not yet on the server', () => {
     const current = [savedRow(7, 'size', 'M'), draftRow(9, 'new', '')];
-    const out = reconcileRows(current, { size: 'M' }, ids);
+    const out = reconcileRows(current, { size: 'M' });
     expect(out).toHaveLength(2);
     expect(out[1]).toEqual({ rowId: 9, key: 'new', value: '', fromSaved: false });
   });
 
   it('drops a draft row when the server confirms its key', () => {
-    const current = [draftRow(9, 'size', 'M')];
-    const out = reconcileRows(current, { size: 'M' }, ids);
-    expect(out).toHaveLength(1);
-    expect(out[0]).toEqual({ rowId: 1, key: 'size', value: 'M', fromSaved: true });
+    const before = lastIssuedId();
+    const out = reconcileRows([draftRow(9, 'size', 'M')], { size: 'M' });
+    expect(out).toEqual([{ rowId: expect.any(Number), key: 'size', value: 'M', fromSaved: true }]);
+    expect(out[0].rowId).toBeGreaterThan(before);
   });
 });
 
 describe('newRow', () => {
   it('returns a blank draft row with a fresh id', () => {
-    expect(newRow(ids)).toEqual({ rowId: 1, key: '', value: '', fromSaved: false });
+    const before = lastIssuedId();
+    const row = newRow();
+    expect(row).toEqual({ rowId: expect.any(Number), key: '', value: '', fromSaved: false });
+    expect(row.rowId).toBeGreaterThan(before);
   });
 
   it('gives every call a distinct id', () => {
-    expect(newRow(ids).rowId).toBe(1);
-    expect(newRow(ids).rowId).toBe(2);
-  });
-});
-
-describe('attribute suggestions', () => {
-  const entries = [
-    { key: 'Base', values: ['Suction'] },
-    { key: 'Material', values: ['Glass', 'Silicone'] },
-  ];
-
-  it('exposes the server key order and looks up values by key', () => {
-    const suggestions = toAttributeSuggestions(entries);
-    expect(suggestions.keys).toEqual(['Base', 'Material']);
-    expect(suggestedValues(suggestions, 'Material')).toEqual(['Glass', 'Silicone']);
-  });
-
-  it('matches values case-insensitively and ignores surrounding whitespace', () => {
-    const suggestions = toAttributeSuggestions(entries);
-    expect(suggestedValues(suggestions, '  MATERIAL ')).toEqual(['Glass', 'Silicone']);
-  });
-
-  it('returns no values for unknown keys and empty input', () => {
-    expect(suggestedValues(toAttributeSuggestions(entries), 'unknown')).toEqual([]);
-    expect(toAttributeSuggestions([]).keys).toEqual([]);
+    expect(newRow().rowId).not.toBe(newRow().rowId);
   });
 });

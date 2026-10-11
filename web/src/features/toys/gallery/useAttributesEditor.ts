@@ -7,12 +7,9 @@ import { useToys } from '@/features/toys/useToys';
 
 export type AttributeSaveState = 'idle' | 'saving' | 'saved';
 
-let rowIdCounter = 0;
-const freshRowId = () => ++rowIdCounter;
-
 export function useAttributesEditor(toy: Toy) {
   const initial = toy.customAttributes ?? {};
-  const [rows, setRows] = useState<AttributeRow[]>(() => toRows(initial, freshRowId));
+  const [rows, setRows] = useState<AttributeRow[]>(() => toRows(initial));
 
   const [saveState, setSaveState] = useState<AttributeSaveState>('idle');
   const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -36,11 +33,11 @@ export function useAttributesEditor(toy: Toy) {
 
   const applyServerResponse = (fresh: Record<string, string>): void => {
     savedRef.current = fresh;
-    setRowsSync((rs) => reconcileRows(rs, fresh, freshRowId));
+    setRowsSync((rs) => reconcileRows(rs, fresh));
   };
 
   const revertToLastSaved = (): void => {
-    setRowsSync(toRows(savedRef.current, freshRowId));
+    setRowsSync(toRows(savedRef.current));
   };
 
   const commitSave = async (): Promise<void> => {
@@ -72,7 +69,7 @@ export function useAttributesEditor(toy: Toy) {
   const hydrateFromToy = useEffectEvent(() => {
     const fresh = toy.customAttributes ?? {};
     savedRef.current = fresh;
-    setRowsSync(toRows(fresh, freshRowId));
+    setRowsSync(toRows(fresh));
   });
 
   const lastId = useRef(toy.id);
@@ -108,7 +105,7 @@ export function useAttributesEditor(toy: Toy) {
       void commitSave();
     },
     addRow: () => {
-      setRowsSync((rs) => [...rs, newRow(freshRowId)]);
+      setRowsSync((rs) => [...rs, newRow()]);
     },
     commitChanges: () => {
       void commitSave();
