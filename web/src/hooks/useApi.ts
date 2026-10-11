@@ -9,15 +9,15 @@ import { useTranslations } from 'next-intl';
 
 import { formatError } from '@/api/errors';
 
-export function useReportError(inlineSink?: (message: string) => void): (err: unknown) => void {
+export function useReportError(errorSink?: (message: string) => void): (err: unknown) => void {
   const t = useTranslations('errors');
   return useCallback(
     (err: unknown) => {
       const message = formatError(err, t);
-      if (inlineSink) inlineSink(message);
+      if (errorSink) errorSink(message);
       else Toast.toast.danger(message);
     },
-    [inlineSink, t],
+    [errorSink, t],
   );
 }
 
@@ -47,8 +47,8 @@ export interface ApiMutation<TArgs, TResult> {
 export function useApiMutation<TArgs = void, TResult = unknown>(
   options: ApiMutationOptions<TArgs, TResult>,
 ): ApiMutation<TArgs, TResult> {
-  const t = useTranslations('errors');
   const queryClient = useQueryClient();
+  const reportError = useReportError(options.errorSink);
   const mutation = useMutation({
     mutationFn: options.fn,
     onSuccess: (result) => {
@@ -59,11 +59,7 @@ export function useApiMutation<TArgs = void, TResult = unknown>(
       for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey });
       options.onSuccess?.(result);
     },
-    onError: (err) => {
-      const message = formatError(err, t);
-      if (options.errorSink) options.errorSink(message);
-      else Toast.toast.danger(message);
-    },
+    onError: reportError,
     onSettled: options.onSettled,
   });
   const { mutateAsync, isPending } = mutation;
