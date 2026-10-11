@@ -1,4 +1,5 @@
-import type { Session, Toy } from '@/api/types';
+import type { Session, SessionMediaItem, Toy } from '@/api/types';
+import type { GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 
 export const makeSession = (overrides: Partial<Session> = {}): Session =>
   ({
@@ -28,3 +29,22 @@ export const makeToy = (overrides: Partial<Toy> = {}): Toy =>
     shape: { sections: [] },
     ...overrides,
   }) as Toy;
+
+export const makeGhost = (overrides: Partial<GhostToy> = {}): GhostToy => ({
+  id: 1,
+  sourceName: 'Acme Slim M',
+  circumference: 140,
+  insertableLength: 165,
+  shape: { sections: [{ order: 0, diameter: 45, height: 150 }] } as GhostToy['shape'],
+  ...overrides,
+});
+
+export const makeMediaItem = (overrides: Partial<SessionMediaItem> = {}): SessionMediaItem => ({
+  id: 'a1',
+  kind: 'image',
+  takenAt: '2026-06-01T20:10:00',
+  thumbnailUrl: 'https://immich/thumb1',
+  fullUrl: 'https://immich/full1',
+  liked: false,
+  ...overrides,
+});

@@ -18,9 +18,8 @@ vi.mock('@/features/toys/gallery/useAttributeSuggestions', () => ({
 import en from '@/i18n/catalogs/en.json';
 import type { Toy } from '@/api/types';
 import { TOY_SORT } from '@/features/toys/toySort';
-import type { GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import ToyCards from '@/features/toys/gallery/ToyCards';
-import { makeToy } from '@/test/fixtures';
+import { makeGhost, makeToy } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 
 const toy = (id: number, name: string, circumference: number, insertableLength: number): Toy =>
@@ -40,18 +39,6 @@ const toy = (id: number, name: string, circumference: number, insertableLength: 
       sections: [{ order: 0, diameter: 45, height: insertableLength }],
     },
   } as unknown as Partial<Toy>);
-
-const ghost = (id: number, circumference: number, insertableLength: number): GhostToy => ({
-  id,
-  sourceName: 'Acme Slim M',
-  circumference,
-  insertableLength,
-  shape: {
-    topSectionShape: 'EGG',
-    bottomSectionShape: 'FLAT',
-    sections: [{ order: 0, diameter: 45, height: 150 }],
-  } as GhostToy['shape'],
-});
 
 const noop = () => undefined;
 
@@ -88,7 +75,7 @@ describe('ToyCards ghosts', () => {
   });
 
   it('renders a ghost card with its origin and dimensions', () => {
-    renderCards({ ghosts: [ghost(1, 140, 165)] });
+    renderCards({ ghosts: [makeGhost()] });
     expect(screen.getAllByText(en.toy.ghost.badge).length).toBeGreaterThan(0);
     expect(screen.getByText('from Acme Slim M')).toBeTruthy();
     expect(screen.getAllByText(/140 × 165/).length).toBeGreaterThan(0);
@@ -96,7 +83,7 @@ describe('ToyCards ghosts', () => {
 
   it('sorts the ghost into the grid position of the active dimension sort', () => {
     localStorage.setItem('gallery.sort', JSON.stringify({ column: 'circumference', direction: 'asc' }));
-    renderCards({ ghosts: [ghost(1, 140, 165)] });
+    renderCards({ ghosts: [makeGhost()] });
     const follows = (first: Element, second: Element) =>
       Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
     const ghostCard = screen.getByText('from Acme Slim M');
@@ -105,12 +92,12 @@ describe('ToyCards ghosts', () => {
   });
 
   it('wires ghost card removal and editing', () => {
-    const handlers = renderCards({ ghosts: [ghost(5, 140, 165)] });
+    const handlers = renderCards({ ghosts: [makeGhost({ id: 5 })] });
     fireEvent.click(screen.getByLabelText(en.toy.ghost.remove));
     expect(handlers.onRemoveGhost).toHaveBeenCalledWith(5);
 
     fireEvent.click(screen.getByLabelText(en.toy.ghost.editHint));
-    expect(handlers.onEditGhost).toHaveBeenCalledWith(ghost(5, 140, 165));
+    expect(handlers.onEditGhost).toHaveBeenCalledWith(makeGhost({ id: 5 }));
   });
 
   it('shows the clear-all pill only when ghosts exist and wires it', () => {
@@ -120,7 +107,9 @@ describe('ToyCards ghosts', () => {
   });
 
   it('clears all ghosts from the pill', () => {
-    const handlers = renderCards({ ghosts: [ghost(1, 140, 165), ghost(2, 150, 175)] });
+    const handlers = renderCards({
+      ghosts: [makeGhost(), makeGhost({ id: 2, circumference: 150, insertableLength: 175 })],
+    });
     fireEvent.click(screen.getByText(en.toy.ghost.clearAll));
     expect(handlers.onClearGhosts).toHaveBeenCalledTimes(1);
   });
@@ -139,7 +128,7 @@ describe('ToyCards ghosts', () => {
   });
 
   it('annotates each toy card metric with signed deltas against the ghost', () => {
-    renderCards({ ghosts: [ghost(1, 140, 165)] });
+    renderCards({ ghosts: [makeGhost()] });
     expect(screen.getByText('+35')).toBeTruthy();
     expect(screen.getByText('+40')).toBeTruthy();
     expect(screen.getByText('-25')).toBeTruthy();
@@ -147,7 +136,7 @@ describe('ToyCards ghosts', () => {
   });
 
   it('highlights girth increases beyond half an inch as dangerous', () => {
-    renderCards({ ghosts: [ghost(1, 140, 165)] });
+    renderCards({ ghosts: [makeGhost()] });
     expect(screen.getByText('+40').className).toContain('bg-danger/15');
     expect(screen.getByText('-20').className).not.toContain('bg-danger/15');
     expect(screen.getByText('+35').className).not.toContain('bg-danger/15');
