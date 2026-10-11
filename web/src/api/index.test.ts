@@ -28,63 +28,16 @@ import {
   toysToysExportRetrieve,
   toysToysImportCreate,
 } from '@/api/generated/sdk';
-import { createSession, createToy, downloadExport, importFromFile, login, refreshTokens } from '@/api/index';
+import { createSession, createToy, downloadExport, importFromFile, login } from '@/api/index';
 import { localDateKey } from '@/lib/dates';
-import { APIError } from '@/api/types';
-
-const fetchMock = vi.fn<(...args: Parameters<typeof fetch>) => Promise<Response>>();
-
-const json = (body: unknown, init: ResponseInit = {}) =>
-  new Response(JSON.stringify(body), {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...init.headers },
-  });
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal('fetch', fetchMock);
-  fetchMock.mockReset();
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
-});
-
-describe('refreshTokens', () => {
-  it('returns the new access+refresh pair on a 2xx response', async () => {
-    fetchMock.mockResolvedValueOnce(json({ access: 'NEW', refresh: 'R2' }));
-
-    const tokens = await refreshTokens('R1');
-
-    expect(tokens).toEqual({ access: 'NEW', refresh: 'R2' });
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(String(url)).toBe('http://test.local/toys/token/refresh/');
-    expect(init?.method).toBe('POST');
-    expect(JSON.parse(init?.body as string)).toEqual({ refresh: 'R1' });
-  });
-
-  it('falls back to the input refresh token when the response omits one', async () => {
-    fetchMock.mockResolvedValueOnce(json({ access: 'NEW' }));
-    const tokens = await refreshTokens('R1');
-    expect(tokens).toEqual({ access: 'NEW', refresh: 'R1' });
-  });
-
-  it('throws APIError when the response has no access token', async () => {
-    fetchMock.mockResolvedValueOnce(json({ refresh: 'R2' }));
-    await expect(refreshTokens('R1')).rejects.toMatchObject({
-      message: 'Refresh response missing access token',
-      status: 200,
-    });
-  });
-
-  it('throws APIError when the response status is non-OK', async () => {
-    fetchMock.mockResolvedValueOnce(json({ detail: 'expired' }, { status: 401 }));
-    const err = await refreshTokens('R1').catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(APIError);
-    expect((err as APIError).message).toBe('Refresh failed: 401');
-    expect((err as APIError).status).toBe(401);
-  });
 });
 
 describe('downloadExport', () => {

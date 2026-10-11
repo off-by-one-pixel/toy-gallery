@@ -1,18 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/api/index', () => ({
-  refreshTokens: vi.fn(),
+vi.mock('@/api/generated/sdk', () => ({
+  getToysTokenCreateUrl: () => '/toys/token/',
+  getToysTokenRefreshCreateUrl: () => '/toys/token/refresh/',
+  toysTokenRefreshCreate: vi.fn(),
 }));
 
 vi.mock('@/config', () => ({
   API_CONFIG: { baseUrl: 'http://test.local' },
 }));
 
-import { refreshTokens } from '@/api/index';
+import { toysTokenRefreshCreate } from '@/api/generated/sdk';
 import { customFetch, setSessionExpiredHandler, tokenStorage } from '@/api/http';
 import { APIError } from '@/api/types';
 
-const mockRefresh = vi.mocked(refreshTokens);
+const mockRefresh = vi.mocked(toysTokenRefreshCreate);
 const fetchMock = vi.fn<(...args: Parameters<typeof fetch>) => Promise<Response>>();
 
 const respond = (body: unknown, init: ResponseInit = {}) => {
@@ -164,7 +166,7 @@ describe('customFetch — 401 refresh flow', () => {
 
     expect(out).toEqual({ ok: true });
     expect(mockRefresh).toHaveBeenCalledTimes(1);
-    expect(mockRefresh).toHaveBeenCalledWith('R1');
+    expect(mockRefresh).toHaveBeenCalledWith({ refresh: 'R1' });
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
     const retryInit = fetchMock.mock.calls[1][1] as RequestInit;
@@ -224,5 +226,30 @@ describe('customFetch — 401 refresh flow', () => {
     expect(mockRefresh).not.toHaveBeenCalled();
 
     setSessionExpiredHandler(null);
+  });
+
+  it('never refreshes when a token request itself returns 401', async () => {
+    tokenStorage.setTokens({ access: 'OLD', refresh: 'R1' });
+    fetchMock.mockImplementation(async () => respond({ detail: 'No active account' }, { status: 401 }));
+
+    await expect(customFetch('/toys/token/', { method: 'POST' })).rejects.toMatchObject({ status: 401 });
+    await expect(customFetch('/toys/token/refresh/', { method: 'POST' })).rejects.toMatchObject({ status: 401 });
+    expect(mockRefresh).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('shares one refresh between concurrent 401s', async () => {
+    tokenStorage.setTokens({ access: 'OLD', refresh: 'R1' });
+    fetchMock.mockImplementation(async (_url, init) =>
+      new Headers(init?.headers).get('Authorization') === 'Bearer NEW'
+        ? respond({ ok: true }, { status: 200 })
+        : respond({ detail: 'expired' }, { status: 401 }),
+    );
+    mockRefresh.mockResolvedValue({ access: 'NEW', refresh: 'R2' });
+
+    const results = await Promise.all([customFetch('/a', {}), customFetch('/b', {})]);
+
+    expect(results).toEqual([{ ok: true }, { ok: true }]);
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
   });
 });
