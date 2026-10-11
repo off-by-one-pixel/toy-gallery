@@ -7,23 +7,10 @@ import { useToys } from '@/features/toys/useToys';
 
 export type AttributeSaveState = 'idle' | 'saving' | 'saved';
 
-export interface AttributesEditor {
-  rows: AttributeRow[];
-  saveState: AttributeSaveState;
-  keySuggestions: readonly string[];
-  valuesFor: (key: string) => readonly string[];
-  beginEditing: () => void;
-  updateKey: (rowId: number, key: string) => void;
-  updateValue: (rowId: number, value: string) => void;
-  removeRow: (rowId: number) => void;
-  addRow: () => void;
-  commitChanges: () => void;
-}
-
 let rowIdCounter = 0;
 const freshRowId = () => ++rowIdCounter;
 
-export function useAttributesEditor(toy: Toy): AttributesEditor {
+export function useAttributesEditor(toy: Toy) {
   const initial = toy.customAttributes ?? {};
   const [rows, setRows] = useState<AttributeRow[]>(() => toRows(initial, freshRowId));
 
@@ -114,9 +101,9 @@ export function useAttributesEditor(toy: Toy): AttributesEditor {
     keySuggestions,
     valuesFor,
     beginEditing,
-    updateKey: (rowId, key) => mutateRow(rowId, (r) => ({ ...r, key })),
-    updateValue: (rowId, value) => mutateRow(rowId, (r) => ({ ...r, value })),
-    removeRow: (rowId) => {
+    updateKey: (rowId: number, key: string) => mutateRow(rowId, (r) => ({ ...r, key })),
+    updateValue: (rowId: number, value: string) => mutateRow(rowId, (r) => ({ ...r, value })),
+    removeRow: (rowId: number) => {
       setRowsSync((rs) => rs.filter((r) => r.rowId !== rowId));
       void commitSave();
     },

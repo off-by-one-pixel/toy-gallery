@@ -174,7 +174,9 @@ export const updateSession = async (id: number, payload: SessionPayload): Promis
   return snakeToCamel<Session>(data);
 };
 
-export const deleteSession = (id: number) => toysSessionsDestroy(id);
+export const deleteSession = async (id: number): Promise<void> => {
+  await toysSessionsDestroy(id);
+};
 
 export const patchSessionStart = async (id: number, startedAt: string): Promise<Session> => {
   const { data } = await toysSessionsPartialUpdate(id, { started_at: startedAt });

@@ -7,17 +7,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { fetchLiveSession, startLiveSession } from '@/api';
 import { invalidateSessionHistory, queryKeys } from '@/api/queryKeys';
 import { useApiQuery } from '@/hooks/useApi';
-import type { Session } from '@/api/types';
 
 export const LIVE_SYNC_INTERVAL_MS = 2_000;
 
-export interface LiveSessionState {
-  liveSession: Session | null;
-  isLoaded: boolean;
-  start: () => Promise<Session>;
-}
-
-export function useLiveSession(): LiveSessionState {
+export function useLiveSession() {
   const queryClient = useQueryClient();
   const { data, isFetched } = useApiQuery({
     key: queryKeys.sessions.live,
