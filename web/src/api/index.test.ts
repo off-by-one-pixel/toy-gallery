@@ -91,11 +91,9 @@ describe('downloadExport', () => {
   it('builds a JSON blob, triggers a download, and revokes the URL on a timer', async () => {
     vi.useFakeTimers();
     const payload = { toys: [{ id: 1 }], sessions: [] };
-    vi.mocked(toysToysExportRetrieve).mockResolvedValue({
-      data: payload,
-      status: 200,
-      headers: new Headers(),
-    } as unknown as Awaited<ReturnType<typeof toysToysExportRetrieve>>);
+    vi.mocked(toysToysExportRetrieve).mockResolvedValue(
+      payload as unknown as Awaited<ReturnType<typeof toysToysExportRetrieve>>,
+    );
 
     const createSpy = vi.fn<(b: Blob) => string>(() => 'blob:fake');
     const revokeSpy = vi.fn();
@@ -121,11 +119,9 @@ describe('downloadExport', () => {
   });
 
   it('names the file toy-gallery-<today>.json', async () => {
-    vi.mocked(toysToysExportRetrieve).mockResolvedValue({
-      data: {},
-      status: 200,
-      headers: new Headers(),
-    } as unknown as Awaited<ReturnType<typeof toysToysExportRetrieve>>);
+    vi.mocked(toysToysExportRetrieve).mockResolvedValue(
+      {} as unknown as Awaited<ReturnType<typeof toysToysExportRetrieve>>,
+    );
 
     vi.stubGlobal('URL', { ...URL, createObjectURL: () => 'blob:x', revokeObjectURL: () => {} });
     const anchors: HTMLAnchorElement[] = [];
@@ -147,11 +143,9 @@ describe('importFromFile', () => {
   it('reads JSON from the file, forwards it to the SDK, and returns the counts verbatim', async () => {
     const envelope = { toys: [{ id: 1 }], sessions: [{ id: 2 }] };
     const file = new File([JSON.stringify(envelope)], 'export.json', { type: 'application/json' });
-    vi.mocked(toysToysImportCreate).mockResolvedValue({
-      data: { toys_created: 1, sessions_created: 2 },
-      status: 201,
-      headers: new Headers(),
-    } as Awaited<ReturnType<typeof toysToysImportCreate>>);
+    vi.mocked(toysToysImportCreate).mockResolvedValue({ toys_created: 1, sessions_created: 2 } as Awaited<
+      ReturnType<typeof toysToysImportCreate>
+    >);
 
     const result = await importFromFile(file);
 
@@ -168,22 +162,18 @@ describe('importFromFile', () => {
 describe('createToy', () => {
   it('snake-cases the outgoing payload and camel-cases the SDK response', async () => {
     vi.mocked(toysToysCreate).mockResolvedValue({
-      data: {
-        id: 7,
-        brand: 'B',
-        name: 'N',
-        size: '',
-        usage_count: 0,
-        total_duration_minutes: 0,
-        records: [],
-        max_duration_minutes: 0,
-        shape: { sections: [], top_section_shape: 'CONE' },
-        custom_attributes: { color: 'red' },
-        date_purchased: null,
-        insertable_length: 100,
-      },
-      status: 201,
-      headers: new Headers(),
+      id: 7,
+      brand: 'B',
+      name: 'N',
+      size: '',
+      usage_count: 0,
+      total_duration_minutes: 0,
+      records: [],
+      max_duration_minutes: 0,
+      shape: { sections: [], top_section_shape: 'CONE' },
+      custom_attributes: { color: 'red' },
+      date_purchased: null,
+      insertable_length: 100,
     } as Awaited<ReturnType<typeof toysToysCreate>>);
 
     const result = await createToy({
@@ -216,14 +206,10 @@ describe('createToy', () => {
 describe('createSession', () => {
   it('snake-cases the outgoing payload and camel-cases the SDK response', async () => {
     vi.mocked(toysSessionsCreate).mockResolvedValue({
-      data: {
-        id: 11,
-        started_at: '2026-05-17T10:00:00Z',
-        ended_at: null,
-        entries: [],
-      },
-      status: 201,
-      headers: new Headers(),
+      id: 11,
+      started_at: '2026-05-17T10:00:00Z',
+      ended_at: null,
+      entries: [],
     } as unknown as Awaited<ReturnType<typeof toysSessionsCreate>>);
 
     const result = await createSession({
@@ -247,11 +233,9 @@ describe('createSession', () => {
 
 describe('login', () => {
   it('forwards credentials to the SDK and returns the token pair', async () => {
-    vi.mocked(toysTokenCreate).mockResolvedValue({
-      data: { access: 'A', refresh: 'R' },
-      status: 200,
-      headers: new Headers(),
-    } as Awaited<ReturnType<typeof toysTokenCreate>>);
+    vi.mocked(toysTokenCreate).mockResolvedValue({ access: 'A', refresh: 'R' } as Awaited<
+      ReturnType<typeof toysTokenCreate>
+    >);
 
     const tokens = await login('alice', 'pw');
 

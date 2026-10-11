@@ -116,6 +116,5 @@ export const customFetch = async <T>(url: string, options: RequestInit): Promise
 
   if (!response.ok) throw await toError(response);
 
-  const data = await parseBody(response);
-  return { data, status: response.status, headers: response.headers } as T;
+  return (await parseBody(response)) as T;
 };

@@ -17,35 +17,29 @@ describe('media API wrappers', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('fetchMediaStatus reports the configured flag', async () => {
-    vi.mocked(toysSessionsMediaStatusRetrieve).mockResolvedValue({
-      data: { configured: true },
-    } as never);
+    vi.mocked(toysSessionsMediaStatusRetrieve).mockResolvedValue({ configured: true } as never);
     const result = await fetchMediaStatus();
     expect(result).toEqual({ configured: true });
   });
 
   it('refreshAllSessionMedia maps the refresh summary', async () => {
-    vi.mocked(toysSessionsRefreshMediaCreate).mockResolvedValue({
-      data: { configured: true, sessions_with_media: 4 },
-    } as never);
+    vi.mocked(toysSessionsRefreshMediaCreate).mockResolvedValue({ configured: true, sessions_with_media: 4 } as never);
     const result = await refreshAllSessionMedia();
     expect(result).toEqual({ configured: true, sessionsWithMedia: 4 });
   });
 
   it('fetchSessionMedia camelizes items', async () => {
     vi.mocked(toysSessionsMediaRetrieve).mockResolvedValue({
-      data: {
-        configured: true,
-        items: [
-          {
-            id: 'a1',
-            kind: 'image',
-            taken_at: '2026-06-01T20:10:00',
-            thumbnail_url: 'https://immich/thumb',
-            full_url: 'https://immich/full',
-          },
-        ],
-      },
+      configured: true,
+      items: [
+        {
+          id: 'a1',
+          kind: 'image',
+          taken_at: '2026-06-01T20:10:00',
+          thumbnail_url: 'https://immich/thumb',
+          full_url: 'https://immich/full',
+        },
+      ],
     } as never);
     const media = await fetchSessionMedia(9);
     expect(toysSessionsMediaRetrieve).toHaveBeenCalledWith(9);

@@ -49,7 +49,7 @@ import {
 } from '@/api/types';
 
 export const login = async (username: string, password: string): Promise<TokenPair> => {
-  const { data } = await toysTokenCreate({ username, password });
+  const data = await toysTokenCreate({ username, password });
   return { access: data.access, refresh: data.refresh };
 };
 
@@ -74,12 +74,12 @@ export const changePassword = async (currentPassword: string, newPassword: strin
 };
 
 export const fetchToys = async (): Promise<Toy[]> => {
-  const { data } = await toysToysList();
+  const data = await toysToysList();
   return data.map((t) => snakeToCamel<Toy>(t));
 };
 
 export const fetchAttributeSuggestions = async (): Promise<AttributeSuggestion[]> => {
-  const { data } = await toysToysAttributeSuggestionsList();
+  const data = await toysToysAttributeSuggestionsList();
   return data;
 };
 
@@ -88,12 +88,12 @@ export const deleteToy = async (id: number | string): Promise<void> => {
 };
 
 export const createToy = async (toy: ToyPayload): Promise<Toy> => {
-  const { data } = await toysToysCreate(camelToSnake<ApiToyRequest>(toy));
+  const data = await toysToysCreate(camelToSnake<ApiToyRequest>(toy));
   return snakeToCamel<Toy>(data);
 };
 
 export const patchToy = async (id: number, changes: Partial<ToyPayload>): Promise<Toy> => {
-  const { data } = await toysToysPartialUpdate(id, camelToSnake<PatchedToyRequest>(changes));
+  const data = await toysToysPartialUpdate(id, camelToSnake<PatchedToyRequest>(changes));
   return snakeToCamel<Toy>(data);
 };
 
@@ -112,7 +112,7 @@ const triggerBrowserDownload = (data: unknown, filename: string) => {
 const EXPORT_FILENAME = (date: string) => `toy-gallery-${date}.json`;
 
 export const downloadExport = async (): Promise<void> => {
-  const { data } = await toysToysExportRetrieve();
+  const data = await toysToysExportRetrieve();
   const date = localDateKey(new Date());
   triggerBrowserDownload(data, EXPORT_FILENAME(date));
 };
@@ -120,7 +120,7 @@ export const downloadExport = async (): Promise<void> => {
 export const importFromFile = async (file: File): Promise<{ toys_created: number; sessions_created: number }> => {
   const text = await file.text();
   const envelope = JSON.parse(text) as ExportEnvelopeRequest;
-  const { data } = await toysToysImportCreate(envelope);
+  const data = await toysToysImportCreate(envelope);
   return data;
 };
 
@@ -128,7 +128,7 @@ export const deleteCollection = async (): Promise<{
   toys_deleted: number;
   sessions_deleted: number;
 }> => {
-  const { data } = await toysToysDeleteAllDestroy();
+  const data = await toysToysDeleteAllDestroy();
   return data;
 };
 
@@ -144,7 +144,7 @@ export const fetchSessions = async (
   }> = {},
 ): Promise<SessionPage> => {
   const filters = opts.filters ?? NO_SESSION_FILTERS;
-  const { data } = await toysSessionsList({
+  const data = await toysSessionsList({
     page: opts.page,
     start: opts.start,
     end: opts.end,
@@ -160,17 +160,17 @@ export const fetchSessions = async (
 };
 
 export const fetchSession = async (id: number): Promise<Session> => {
-  const { data } = await toysSessionsRetrieve(id);
+  const data = await toysSessionsRetrieve(id);
   return snakeToCamel<Session>(data);
 };
 
 export const createSession = async (payload: SessionPayload): Promise<Session> => {
-  const { data } = await toysSessionsCreate(camelToSnake<ApiSessionRequest>(payload));
+  const data = await toysSessionsCreate(camelToSnake<ApiSessionRequest>(payload));
   return snakeToCamel<Session>(data);
 };
 
 export const updateSession = async (id: number, payload: SessionPayload): Promise<Session> => {
-  const { data } = await toysSessionsUpdate(id, camelToSnake<ApiSessionRequest>(payload));
+  const data = await toysSessionsUpdate(id, camelToSnake<ApiSessionRequest>(payload));
   return snakeToCamel<Session>(data);
 };
 
@@ -179,17 +179,17 @@ export const deleteSession = async (id: number): Promise<void> => {
 };
 
 export const patchSessionStart = async (id: number, startedAt: string): Promise<Session> => {
-  const { data } = await toysSessionsPartialUpdate(id, { started_at: startedAt });
+  const data = await toysSessionsPartialUpdate(id, { started_at: startedAt });
   return snakeToCamel<Session>(data);
 };
 
 export const startLiveSession = async (): Promise<Session> => {
-  const { data } = await toysSessionsStartCreate();
+  const data = await toysSessionsStartCreate();
   return snakeToCamel<Session>(data);
 };
 
 export const fetchLiveSession = async (): Promise<Session | null> => {
-  const { data } = await toysSessionsLiveRetrieve();
+  const data = await toysSessionsLiveRetrieve();
   return data.session ? snakeToCamel<Session>(data.session) : null;
 };
 
@@ -198,22 +198,22 @@ export type MediaStatus = Readonly<{ configured: boolean }>;
 export type MediaRefreshSummary = Readonly<{ configured: boolean; sessionsWithMedia: number }>;
 
 export const fetchMediaStatus = async (): Promise<MediaStatus> => {
-  const { data } = await toysSessionsMediaStatusRetrieve();
+  const data = await toysSessionsMediaStatusRetrieve();
   return { configured: data.configured };
 };
 
 export const refreshAllSessionMedia = async (): Promise<MediaRefreshSummary> => {
-  const { data } = await toysSessionsRefreshMediaCreate();
+  const data = await toysSessionsRefreshMediaCreate();
   return { configured: data.configured, sessionsWithMedia: data.sessions_with_media };
 };
 
 export const rebuildRecords = async (): Promise<number> => {
-  const { data } = await toysSessionsRebuildRecordsCreate();
+  const data = await toysSessionsRebuildRecordsCreate();
   return data.records;
 };
 
 export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia> => {
-  const { data } = await toysSessionsMediaRetrieve(sessionId);
+  const data = await toysSessionsMediaRetrieve(sessionId);
   return {
     configured: data.configured,
     shareUrl: data.share_url,
@@ -222,7 +222,7 @@ export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia
 };
 
 export const setMediaLiked = async (assetId: string, liked: boolean): Promise<boolean> => {
-  const { data } = await toysSessionsMediaLikeCreate({ asset_id: assetId, liked });
+  const data = await toysSessionsMediaLikeCreate({ asset_id: assetId, liked });
   return data.liked;
 };
 
@@ -244,7 +244,7 @@ export const fetchSessionStats = async (
   } = {},
 ): Promise<StatsGroup[]> => {
   const filters = opts.filters ?? NO_SESSION_FILTERS;
-  const { data } = await toysSessionsStatsRetrieve({
+  const data = await toysSessionsStatsRetrieve({
     group_by: groupBy,
     metrics: metrics.join(','),
     start: opts.start,

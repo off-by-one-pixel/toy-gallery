@@ -10,6 +10,7 @@ export default defineConfig({
       mode: 'split',
       override: {
         mutator: { path: 'src/api/http.ts', name: 'customFetch' },
+        fetch: { includeHttpResponseReturnType: false },
       },
       clean: true,
     },
