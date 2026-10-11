@@ -96,30 +96,14 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
   const sessionSpan = startedAt && spanEnd ? minutesBetween(startedAt, spanEnd) : null;
   const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
 
-  const handlePick = (toyId: number, next: Involvement | null) => {
+  const updateSelection = (toyId: number, update: (current?: ToySelection) => ToySelection | undefined) =>
     setSelections((prev) => {
+      const next = update(prev.get(toyId));
       const updated = new Map(prev);
-      if (next === null) {
-        updated.delete(toyId);
-      } else {
-        updated.set(toyId, {
-          involvement: next,
-          durationMinutes: prev.get(toyId)?.durationMinutes ?? null,
-        });
-      }
+      if (next) updated.set(toyId, next);
+      else updated.delete(toyId);
       return updated;
     });
-  };
-
-  const changeDuration = (toyId: number, next: number | null) => {
-    setSelections((prev) => {
-      const current = prev.get(toyId);
-      if (!current) return prev;
-      const updated = new Map(prev);
-      updated.set(toyId, { ...current, durationMinutes: next });
-      return updated;
-    });
-  };
 
   const isLive = loadedSession?.isLive === true;
   const liveUpdateMode = liveOpen;
@@ -213,14 +197,25 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
                   toy={toy}
                   state={selections.get(toy.id)?.involvement ?? null}
                   duration={selections.get(toy.id)?.durationMinutes ?? null}
-                  onChange={(next) => handlePick(toy.id, next)}
+                  onChange={(next) =>
+                    updateSelection(toy.id, (current) =>
+                      next ? { involvement: next, durationMinutes: current?.durationMinutes ?? null } : undefined,
+                    )
+                  }
                   wholeSessionMinutes={wholeSessionMinutes}
                   wholeSessionIsLive={liveOpen}
                   onAddDuration={(minutes) =>
-                    changeDuration(toy.id, (selections.get(toy.id)?.durationMinutes ?? 0) + minutes)
+                    updateSelection(
+                      toy.id,
+                      (current) => current && { ...current, durationMinutes: (current.durationMinutes ?? 0) + minutes },
+                    )
                   }
-                  onSetDuration={(minutes) => changeDuration(toy.id, minutes)}
-                  onClearDuration={() => changeDuration(toy.id, null)}
+                  onSetDuration={(minutes) =>
+                    updateSelection(toy.id, (current) => current && { ...current, durationMinutes: minutes })
+                  }
+                  onClearDuration={() =>
+                    updateSelection(toy.id, (current) => current && { ...current, durationMinutes: null })
+                  }
                 />
               ))}
             </div>
