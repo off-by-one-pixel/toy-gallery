@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { TEST_LABELS } from '../../test/labels';
 import ToyEditor from './ToyEditor';
 import type { ToyEditorLabels } from './editor/labels';
@@ -54,5 +54,19 @@ describe('ToyEditor', () => {
   it('refuses to read labels outside the editor', () => {
     const Orphan = () => <>{useEditorLabels().snap}</>;
     expect(() => render(<Orphan />)).toThrow(/useEditorLabels must be used within/);
+  });
+
+  it('starts each editor with the section color palette closed', () => {
+    const size = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 900, 700));
+    const palette = [{ name: 'Red', value: '#ff0000' }];
+    const first = render(<ToyEditor unit={MM} labels={TEST_LABELS} palette={palette} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Color of section 1' }));
+    expect(screen.getByRole('listbox', { name: 'Section color' })).toBeInTheDocument();
+    first.unmount();
+
+    render(<ToyEditor unit={MM} labels={TEST_LABELS} palette={palette} />);
+    expect(screen.getByRole('button', { name: 'Color of section 1' })).toBeInTheDocument();
+    expect(screen.queryByRole('listbox', { name: 'Section color' })).toBeNull();
+    size.mockRestore();
   });
 });
