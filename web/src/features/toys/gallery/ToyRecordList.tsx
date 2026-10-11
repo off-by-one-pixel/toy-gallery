@@ -1,9 +1,6 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
-
-import { useGirth } from '@/features/preferences/useGirth';
-import { useUnit } from '@/features/preferences/useUnit';
+import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
 import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import { recordDisplay } from '@/features/sessions/records';
 import type { ToyRecord } from '@/api/types';
@@ -17,11 +14,7 @@ export const latestToyRecords = (records: readonly ToyRecord[]): ToyRecord[] => 
 };
 
 export default function ToyRecordList({ records }: Readonly<{ records: readonly ToyRecord[] }>) {
-  const t = useTranslations();
-  const { girth } = useGirth();
-  const { unit } = useUnit();
-  const locale = useLocale();
-  const ctx = { t: t, girth, unit, locale };
+  const ctx = useToyPropertyContext();
 
   const listed = latestToyRecords(records).flatMap((record) => {
     const display = recordDisplay(record.key);
@@ -31,7 +24,7 @@ export default function ToyRecordList({ records }: Readonly<{ records: readonly 
         key: record.key,
         label: display.label(ctx),
         value: display.value(record.value, ctx),
-        achieved: new Date(record.achievedAt).toLocaleDateString(locale, { dateStyle: 'medium' }),
+        achieved: new Date(record.achievedAt).toLocaleDateString(ctx.locale, { dateStyle: 'medium' }),
       },
     ];
   });

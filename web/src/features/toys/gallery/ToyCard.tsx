@@ -2,18 +2,16 @@
 
 import { memo, useRef } from 'react';
 import { Chip } from '@heroui/react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useGirth } from '@/features/preferences/useGirth';
+import { useTranslations } from 'next-intl';
 import { displayGirth } from '@/features/preferences/girth';
-import { useUnit } from '@/features/preferences/useUnit';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
 import { useSortOf } from '@/hooks/useSortOf';
 import { TOY_SORT } from '@/features/toys/toySort';
 import ToyDetails from '@/features/toys/gallery/ToyDetails';
-import { cardSortValue } from '@/features/toys/gallery/cardSortValue';
-import type { ToyPropertyContext } from '@/features/toys/properties';
+import { sortColumnDisplay } from '@/features/toys/gallery/sortColumnDisplay';
+import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 import GhostCompareOverlay from '@/features/toys/gallery/ghost/GhostCompareOverlay';
 import {
@@ -50,15 +48,13 @@ function ToyCard({
   ghosts,
   maxHeightMm,
 }: Props) {
-  const { unit } = useUnit();
-  const { girth } = useGirth();
+  const propertyCtx = useToyPropertyContext();
+  const { unit, girth } = propertyCtx;
   const common = useTranslations('common');
-  const locale = useLocale();
   const detailsRef = useRef<HTMLDivElement>(null);
   const { sort } = useSortOf(TOY_SORT);
-  const tAll = useTranslations();
-  const propertyCtx: ToyPropertyContext = { t: tAll, girth, unit, locale };
-  const sortValue = cardSortValue(sort, toy, propertyCtx);
+  const sortDisplay = sortColumnDisplay(sort.column, propertyCtx);
+  const sortValue = sortDisplay?.valueFor(toy);
 
   const editorToy = toyShapeToEditor(toy.shape);
 
@@ -93,13 +89,13 @@ function ToyCard({
         heightRatio={heightRatio}
         className="h-60 overflow-hidden rounded-t-2xl border-b border-border"
       >
-        {sortValue && (
+        {sortDisplay && sortValue != null && (
           <div className="absolute top-2.5 right-2.5 z-10 transition-opacity group-hover:opacity-0">
             <Chip size="sm" className="bg-surface shadow-sm">
               <Chip.Label>
                 <span className="inline-flex items-baseline gap-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-muted">{sortValue.label}</span>
-                  <span className="font-semibold tabular-nums">{sortValue.value}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted">{sortDisplay.label}</span>
+                  <span className="font-semibold tabular-nums">{sortValue}</span>
                 </span>
               </Chip.Label>
             </Chip>
