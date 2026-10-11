@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import {
   createGhost,
   ensureGhostIdsAbove,
@@ -15,8 +17,7 @@ import { usePersistedState } from '@/hooks/usePersistedState';
 const isGhostToyList = (value: unknown): value is GhostToy[] =>
   Array.isArray(value) && value.length <= MAX_GHOSTS && value.every(isGhostToy);
 
-const restoreGhostIds = (ghosts: GhostToy[] | undefined): void =>
-  ensureGhostIdsAbove((ghosts ?? []).map((ghost) => ghost.id));
+const NO_GHOSTS: GhostToy[] = [];
 
 export interface Ghosts {
   ghosts: GhostToy[];
@@ -27,7 +28,8 @@ export interface Ghosts {
 }
 
 export function useGhosts(): Ghosts {
-  const [ghosts, setGhosts] = usePersistedState<GhostToy[]>('gallery.ghosts', [], isGhostToyList, restoreGhostIds);
+  const [ghosts, setGhosts] = usePersistedState('gallery.ghosts', NO_GHOSTS, isGhostToyList);
+  useEffect(() => ensureGhostIdsAbove(ghosts.map((ghost) => ghost.id)), [ghosts]);
   return {
     ghosts,
     canAddGhost: ghosts.length < MAX_GHOSTS,
