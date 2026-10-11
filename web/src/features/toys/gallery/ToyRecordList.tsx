@@ -2,8 +2,8 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import { useGirth } from '@/features/preferences/GirthProvider';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useGirth } from '@/features/preferences/useGirth';
+import { useUnit } from '@/features/preferences/useUnit';
 import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import { recordDisplay } from '@/features/sessions/records';
 import type { ToyRecord } from '@/api/types';

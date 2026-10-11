@@ -6,9 +6,9 @@ import { ChevronDown } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
-import { useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 import { useSortOf } from '@/hooks/useSortOf';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { displayGirth } from '@/features/preferences/girth';
 import { cycleSort, type Sort } from '@/lib/sort';

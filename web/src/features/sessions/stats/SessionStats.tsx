@@ -5,8 +5,8 @@ import { keepPreviousData, useQueries } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useReportError } from '@/hooks/useApi';
-import { useGirth } from '@/features/preferences/GirthProvider';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useGirth } from '@/features/preferences/useGirth';
+import { useUnit } from '@/features/preferences/useUnit';
 import { fetchSessionStats } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import { type Period, periodKey, type SessionFilters, sessionFiltersKey } from '@/features/sessions/session';

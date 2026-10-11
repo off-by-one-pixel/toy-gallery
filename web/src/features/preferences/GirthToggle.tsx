@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 import { GIRTHS, type Girth } from '@/features/preferences/girth';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 

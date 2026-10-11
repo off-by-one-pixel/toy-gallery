@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 
 import { templateToEditor } from '@/features/toys/converters/template';
 import type { SizeMode } from '@/features/toys/template/templateForm';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import { type Unit } from '@/features/preferences/units';
 import TextInput from '@/components/TextInput';
 import { PREVIEW_STYLE } from '@/features/toys/template/styles';

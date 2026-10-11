@@ -5,7 +5,7 @@ import { Image as ImageIcon, Pencil, Trash2, Video } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
-import { useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 import { displayGirth } from '@/features/preferences/girth';
 import { formatElapsed, formatElapsedSeconds, secondsBetween } from '@/lib/duration';
 import { useNow } from '@/hooks/useNow';

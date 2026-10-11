@@ -5,7 +5,7 @@ import type { Toy as EditorToy } from 'toy-editor';
 import type { WizardStep } from '@/features/toys/editor/useToyEditorWizardNav';
 import { templateToEditor } from '@/features/toys/converters/template';
 import { TOY_TEMPLATES } from '@/features/toys/template/toyTemplates';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import SizeForm from '@/features/toys/template/SizeForm';
 import StepHeader from '@/features/toys/template/StepHeader';
 import TemplatePicker from '@/features/toys/template/TemplatePicker';

@@ -13,7 +13,7 @@ import type { StyleOption } from 'toy-editor';
 import type { WizardDialog, WizardStage, WizardStep } from '@/features/toys/editor/useToyEditorWizardNav';
 import { templateJsonToEditor } from '@/features/toys/converters/templateJson';
 import type { ToyEditMode } from '@/features/toys/editor/toyEditForm';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import { useBeforeUnloadWarning } from '@/hooks/useBeforeUnloadWarning';
 import NewToyTemplateStep from '@/features/toys/template/NewToyTemplateStep';
 import Header from '@/features/toys/editor/Header';

@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { isLocale, LOCALES, type Locale } from '@/i18n/routing';
-import { useLocaleContext } from '@/features/preferences/LocaleProvider';
+import { useLocalePreference } from '@/features/preferences/LocaleProvider';
 import LocaleSwitcher, { type LocaleOption } from '@/features/settings/LocaleSwitcher';
 import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
@@ -14,7 +14,7 @@ const OPTIONS: readonly LocaleOption[] = (Object.entries(LOCALES) as [Locale, { 
 
 export default function LanguageSection() {
   const t = useTranslations('settings.language');
-  const { locale, setLocale } = useLocaleContext();
+  const { locale, setLocale } = useLocalePreference();
   const handleChange = (code: string) => {
     if (isLocale(code)) setLocale(code);
   };

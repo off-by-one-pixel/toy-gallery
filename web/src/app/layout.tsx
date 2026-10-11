@@ -4,16 +4,12 @@ import 'toy-editor/styles.css';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/index.css';
 import { AuthProvider } from '@/features/auth/AuthProvider';
-import { GirthProvider } from '@/features/preferences/GirthProvider';
 import { LocaleProvider } from '@/features/preferences/LocaleProvider';
-import { PrivacyProvider } from '@/features/preferences/PrivacyProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { SortProvider } from '@/providers/SortProvider';
 import { TOY_SORT } from '@/features/toys/toySort';
 import { ThemeProvider } from '@/features/preferences/ThemeProvider';
 import { ToastProvider } from '@/providers/ToastProvider';
-import { UnitProvider } from '@/features/preferences/UnitProvider';
-import { ViewModeProvider } from '@/features/preferences/ViewModeProvider';
 import { DEFAULT_THEME, THEMES } from '@/features/preferences/themeRegistry';
 import { DEFAULT_LOCALE } from '@/i18n/routing';
 
@@ -52,19 +48,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ToastProvider />
         <ThemeProvider>
           <LocaleProvider>
-            <UnitProvider>
-              <GirthProvider>
-                <ViewModeProvider>
-                  <SortProvider config={TOY_SORT}>
-                    <PrivacyProvider>
-                      <QueryProvider>
-                        <AuthProvider>{children}</AuthProvider>
-                      </QueryProvider>
-                    </PrivacyProvider>
-                  </SortProvider>
-                </ViewModeProvider>
-              </GirthProvider>
-            </UnitProvider>
+            <SortProvider config={TOY_SORT}>
+              <QueryProvider>
+                <AuthProvider>{children}</AuthProvider>
+              </QueryProvider>
+            </SortProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

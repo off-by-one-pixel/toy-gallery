@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { GirthProvider, useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 
 function Probe() {
   const { girth, setGirth } = useGirth();
@@ -12,15 +12,11 @@ function Probe() {
   );
 }
 
-describe('GirthProvider', () => {
+describe('useGirth', () => {
   beforeEach(() => localStorage.clear());
 
   it('defaults to circumference and switches on demand', () => {
-    render(
-      <GirthProvider>
-        <Probe />
-      </GirthProvider>,
-    );
+    render(<Probe />);
     const probe = screen.getByRole('button');
     expect(probe.textContent).toBe('circumference');
     fireEvent.click(probe);
@@ -30,11 +26,7 @@ describe('GirthProvider', () => {
 
   it('restores the persisted choice on mount', () => {
     localStorage.setItem('girth', JSON.stringify('diameter'));
-    render(
-      <GirthProvider>
-        <Probe />
-      </GirthProvider>,
-    );
+    render(<Probe />);
     expect(screen.getByRole('button').textContent).toBe('diameter');
   });
 });

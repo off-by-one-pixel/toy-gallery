@@ -10,7 +10,7 @@ import { useToys } from '@/features/toys/useToys';
 import { useToyEditorWizardNav } from '@/features/toys/editor/useToyEditorWizardNav';
 import { useToyModalNav } from '@/features/toys/gallery/useToyModalNav';
 import { useSortOf } from '@/hooks/useSortOf';
-import { useViewMode, ViewMode } from '@/features/preferences/ViewModeProvider';
+import { useViewMode, ViewMode } from '@/features/preferences/useViewMode';
 import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionFabs, type ActionDef } from '@/components/ActionButtons';

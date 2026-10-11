@@ -3,9 +3,9 @@
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 import { displayGirth } from '@/features/preferences/girth';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import { formatValue } from '@/features/preferences/units';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { ghostColor, type GhostToy } from '@/features/toys/gallery/ghost/ghosts';

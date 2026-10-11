@@ -9,7 +9,7 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
 import { SortProvider } from '@/providers/SortProvider';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import { activeFilterCount, currentPeriod, FILTERS, type FilterKey, periodLabel } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session } from '@/api/types';

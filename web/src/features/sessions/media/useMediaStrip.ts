@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { fetchMediaStatus, fetchSessionMedia, setMediaLiked } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import type { SessionMedia, SessionMediaItem } from '@/api/types';
-import { usePrivacy } from '@/features/preferences/PrivacyProvider';
+import { usePrivacy } from '@/features/preferences/usePrivacy';
 import { useMediaLightboxNav } from '@/features/sessions/media/useMediaLightboxNav';
 import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 
