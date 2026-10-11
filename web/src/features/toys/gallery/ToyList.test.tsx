@@ -20,9 +20,7 @@ const renderList = (sort: { column: string; direction: 'asc' | 'desc' } | null) 
         toys={[toy]}
         openToyId={null}
         onToggleOpen={vi.fn()}
-        onEdit={vi.fn()}
-        onCopy={vi.fn()}
-        onDelete={vi.fn()}
+        actions={{ onEdit: vi.fn(), onCopy: vi.fn(), onDelete: vi.fn() }}
       />,
       { sort: TOY_SORT },
     ),

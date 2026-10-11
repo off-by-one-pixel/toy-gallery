@@ -14,7 +14,7 @@ import { useViewMode, ViewMode } from '@/features/preferences/useViewMode';
 import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionFabs, type ActionDef } from '@/components/ActionButtons';
-import { toyActionDefs } from '@/features/toys/gallery/ToyActionButtons';
+import { toyActionDefs, type ToyActions } from '@/features/toys/gallery/ToyActionButtons';
 import type { GhostDimensions, GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
@@ -76,6 +76,15 @@ const ToyGallery = () => {
   const { ghosts, canAddGhost, saveGhost, removeGhost, clearGhosts } = useGhosts();
   const [ghostModal, setGhostModal] = useState<GhostTarget | null>(null);
   const handleGhost = useCallback((toy: Toy) => setGhostModal({ kind: 'new', source: toy }), []);
+  const toyActions = useMemo<ToyActions>(
+    () => ({
+      onEdit: handleEdit,
+      onCopy: handleCopy,
+      onDelete: handleDelete,
+      onGhost: canAddGhost ? handleGhost : undefined,
+    }),
+    [handleEdit, handleCopy, handleDelete, canAddGhost, handleGhost],
+  );
   const handleEditGhost = (ghost: GhostToy) => setGhostModal({ kind: 'edit', ghost });
   const handleGhostSave = (dims: GhostDimensions) => {
     if (ghostModal) saveGhost(ghostModal, dims);
@@ -96,14 +105,7 @@ const ToyGallery = () => {
   ];
 
   const openToy = openCardId === null ? null : (toys.find((c) => c.id === openCardId) ?? null);
-  const openToyActions = openToy
-    ? toyActionDefs((k) => common(k), {
-        onEdit: () => handleEdit(openToy),
-        onCopy: () => handleCopy(openToy),
-        onDelete: () => handleDelete(openToy),
-        onGhost: canAddGhost ? () => handleGhost(openToy) : undefined,
-      })
-    : null;
+  const openToyActions = openToy ? toyActionDefs((k) => common(k), openToy, toyActions) : null;
 
   const renderBody = () => {
     if (isLoading) {
@@ -119,9 +121,7 @@ const ToyGallery = () => {
           toys={sortedToys}
           openToyId={openCardId}
           onToggleOpen={toggleOpen}
-          onEdit={handleEdit}
-          onCopy={handleCopy}
-          onDelete={handleDelete}
+          actions={{ ...toyActions, onGhost: undefined }}
         />
       );
     }
@@ -131,10 +131,7 @@ const ToyGallery = () => {
         ghosts={ghosts}
         openToyId={openCardId}
         onToggleOpen={toggleOpen}
-        onEdit={handleEdit}
-        onCopy={handleCopy}
-        onDelete={handleDelete}
-        onGhost={canAddGhost ? handleGhost : undefined}
+        actions={toyActions}
         onEditGhost={handleEditGhost}
         onRemoveGhost={removeGhost}
         onClearGhosts={clearGhosts}

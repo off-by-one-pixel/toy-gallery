@@ -3,44 +3,46 @@
 import { Copy, CopyPlus, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import type { Toy } from '@/api/types';
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
 
-type Props = Readonly<{
-  onEdit: () => void;
-  onCopy: () => void;
-  onDelete: () => void;
-  onGhost?: () => void;
-  stopPropagation?: boolean;
+export type ToyActions = Readonly<{
+  onEdit: (toy: Toy) => void;
+  onCopy: (toy: Toy) => void;
+  onDelete: (toy: Toy) => void;
+  onGhost?: (toy: Toy) => void;
 }>;
 
 export function toyActionDefs(
   t: (key: 'edit' | 'copy' | 'delete' | 'compare') => string,
-  handlers: Pick<Props, 'onEdit' | 'onCopy' | 'onDelete' | 'onGhost'>,
+  toy: Toy,
+  { onEdit, onCopy, onDelete, onGhost }: ToyActions,
 ): ActionDef[] {
   return [
-    { key: 'edit', label: t('edit'), icon: Pencil, variant: 'outline', onPress: handlers.onEdit },
-    { key: 'copy', label: t('copy'), icon: Copy, variant: 'outline', onPress: handlers.onCopy },
-    ...(handlers.onGhost
+    { key: 'edit', label: t('edit'), icon: Pencil, variant: 'outline', onPress: () => onEdit(toy) },
+    { key: 'copy', label: t('copy'), icon: Copy, variant: 'outline', onPress: () => onCopy(toy) },
+    ...(onGhost
       ? [
           {
             key: 'ghost',
             label: t('compare'),
             icon: CopyPlus,
             variant: 'outline',
-            onPress: handlers.onGhost,
+            onPress: () => onGhost(toy),
           } satisfies ActionDef,
         ]
       : []),
-    { key: 'delete', label: t('delete'), icon: Trash2, variant: 'danger-soft', onPress: handlers.onDelete },
+    { key: 'delete', label: t('delete'), icon: Trash2, variant: 'danger-soft', onPress: () => onDelete(toy) },
   ];
 }
 
-export default function ToyActionButtons({ onEdit, onCopy, onDelete, onGhost, stopPropagation }: Props) {
+type Props = Readonly<{
+  toy: Toy;
+  actions: ToyActions;
+  stopPropagation?: boolean;
+}>;
+
+export default function ToyActionButtons({ toy, actions, stopPropagation }: Props) {
   const t = useTranslations('common');
-  return (
-    <ActionButtons
-      actions={toyActionDefs(t, { onEdit, onCopy, onDelete, onGhost })}
-      stopPropagation={stopPropagation}
-    />
-  );
+  return <ActionButtons actions={toyActionDefs(t, toy, actions)} stopPropagation={stopPropagation} />;
 }

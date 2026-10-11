@@ -13,16 +13,14 @@ import type { Toy } from '@/api/types';
 import GhostToyCard from '@/features/toys/gallery/ghost/GhostToyCard';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyCard from '@/features/toys/gallery/ToyCard';
+import type { ToyActions } from '@/features/toys/gallery/ToyActionButtons';
 
 type Props = Readonly<{
   toys: Toy[];
   ghosts: readonly GhostToy[];
   openToyId: number | null;
   onToggleOpen: (id: number) => void;
-  onEdit: (toy: Toy) => void;
-  onCopy: (toy: Toy) => void;
-  onDelete: (toy: Toy) => void;
-  onGhost?: (toy: Toy) => void;
+  actions: ToyActions;
   onEditGhost: (ghost: GhostToy) => void;
   onRemoveGhost: (id: number) => void;
   onClearGhosts: () => void;
@@ -34,10 +32,7 @@ export default function ToyCards({
   ghosts,
   openToyId,
   onToggleOpen,
-  onEdit,
-  onCopy,
-  onDelete,
-  onGhost,
+  actions,
   onEditGhost,
   onRemoveGhost,
   onClearGhosts,
@@ -75,10 +70,7 @@ export default function ToyCards({
               heightRatio={heightRatioFor(silhouetteHeight(item.toy), maxHeightMm)}
               detailsOpen={openToyId === item.toy.id}
               onToggleOpen={onToggleOpen}
-              onEdit={onEdit}
-              onCopy={onCopy}
-              onDelete={onDelete}
-              onGhost={onGhost}
+              actions={actions}
               ghosts={ghosts}
               maxHeightMm={maxHeightMm}
             />

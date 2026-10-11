@@ -11,7 +11,7 @@ import { TOY_SORT } from '@/features/toys/toySort';
 import ToyDetails from '@/features/toys/gallery/ToyDetails';
 import { sortColumnDisplay } from '@/features/toys/gallery/sortColumnDisplay';
 import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
-import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
+import ToyActionButtons, { type ToyActions } from '@/features/toys/gallery/ToyActionButtons';
 import GhostCompareOverlay from '@/features/toys/gallery/ghost/GhostCompareOverlay';
 import {
   formatSignedMm,
@@ -27,26 +27,12 @@ type Props = Readonly<{
   heightRatio: number;
   detailsOpen: boolean;
   onToggleOpen: (id: number) => void;
-  onEdit: (toy: Toy) => void;
-  onCopy: (toy: Toy) => void;
-  onDelete: (toy: Toy) => void;
-  onGhost?: (toy: Toy) => void;
+  actions: ToyActions;
   ghosts: readonly GhostToy[];
   maxHeightMm: number;
 }>;
 
-function ToyCard({
-  toy,
-  heightRatio,
-  detailsOpen,
-  onToggleOpen,
-  onEdit,
-  onCopy,
-  onDelete,
-  onGhost,
-  ghosts,
-  maxHeightMm,
-}: Props) {
+function ToyCard({ toy, heightRatio, detailsOpen, onToggleOpen, actions, ghosts, maxHeightMm }: Props) {
   const propertyCtx = useToyPropertyContext();
   const { unit, girth } = propertyCtx;
   const common = useTranslations('common');
@@ -99,13 +85,7 @@ function ToyCard({
           </div>
         )}
         <div className="absolute top-2.5 right-2.5 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-          <ToyActionButtons
-            onEdit={() => onEdit(toy)}
-            onCopy={() => onCopy(toy)}
-            onDelete={() => onDelete(toy)}
-            onGhost={onGhost && (() => onGhost(toy))}
-            stopPropagation
-          />
+          <ToyActionButtons toy={toy} actions={actions} stopPropagation />
         </div>
         {ghosts.length > 0 && <GhostCompareOverlay ghosts={ghosts} maxHeightMm={maxHeightMm} visible={detailsOpen} />}
       </ToyThumbnail>
