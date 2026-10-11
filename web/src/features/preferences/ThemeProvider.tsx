@@ -1,26 +1,15 @@
 'use client';
 
-import { ReactNode, useEffect, useMemo } from 'react';
+import { ReactNode, useEffect } from 'react';
 
 import { DEFAULT_THEME, THEME_NAMES, type Theme, THEMES } from '@/features/preferences/themeRegistry';
-import { oneOf } from '@/hooks/usePersistedState';
-import { createPersistedProvider } from '@/providers/createPersistedProvider';
+import { oneOf, usePersistedState } from '@/hooks/usePersistedState';
 
-interface ThemeContextValue {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-}
+const isTheme = oneOf(THEME_NAMES);
 
-const { Provider, useValue } = createPersistedProvider<Theme>({
-  storageKey: 'theme',
-  defaultValue: DEFAULT_THEME,
-  isValid: oneOf(THEME_NAMES),
-  errorMessage: 'useThemeContext must be used within ThemeProvider',
-});
-
-export function useThemeContext(): ThemeContextValue {
-  const { value, setValue } = useValue();
-  return useMemo(() => ({ theme: value, setTheme: setValue }), [value, setValue]);
+export function useThemeContext() {
+  const [theme, setTheme] = usePersistedState<Theme>('theme', DEFAULT_THEME, isTheme);
+  return { theme, setTheme };
 }
 
 function applyTheme(theme: Theme) {
@@ -37,16 +26,8 @@ function applyTheme(theme: Theme) {
   document.head.appendChild(created);
 }
 
-function ThemeDomBridge({ children }: Readonly<{ children: ReactNode }>) {
+export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
   const { theme } = useThemeContext();
   useEffect(() => applyTheme(theme), [theme]);
   return <>{children}</>;
-}
-
-export function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
-  return (
-    <Provider>
-      <ThemeDomBridge>{children}</ThemeDomBridge>
-    </Provider>
-  );
 }

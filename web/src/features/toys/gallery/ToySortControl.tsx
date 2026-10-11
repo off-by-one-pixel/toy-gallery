@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { Toy } from '@/api/types';
-import { useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 import { TOY_PROPERTIES, type ToyLabelContext, type ToyPropertyKey } from '@/features/toys/properties';
 import { attrKeyOf, galleryToySortConfig, TOY_SORT, type ToySortColumn } from '@/features/toys/toySort';
 import SortControl from '@/components/SortControl';

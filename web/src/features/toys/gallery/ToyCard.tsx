@@ -3,9 +3,9 @@
 import { memo, useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 import { displayGirth } from '@/features/preferences/girth';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';

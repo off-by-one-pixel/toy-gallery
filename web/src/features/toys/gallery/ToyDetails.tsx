@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { formatDuration } from '@/lib/duration';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useUnit } from '@/features/preferences/useUnit';
 import { formatValue } from '@/features/preferences/units';
 import type { Toy } from '@/api/types';
 import AttributesPanel from '@/features/toys/gallery/AttributesPanel';

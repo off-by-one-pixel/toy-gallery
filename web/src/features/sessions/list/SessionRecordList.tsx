@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import { useGirth } from '@/features/preferences/GirthProvider';
+import { useGirth } from '@/features/preferences/useGirth';
 import { type Unit } from '@/features/preferences/units';
 import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import { recordDisplay } from '@/features/sessions/records';

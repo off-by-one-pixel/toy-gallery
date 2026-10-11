@@ -8,8 +8,8 @@ import AppModal from '@/components/AppModal';
 import { useTranslations } from 'next-intl';
 
 import SectionHeading from '@/components/SectionHeading';
-import { useGirth } from '@/features/preferences/GirthProvider';
-import { useUnit } from '@/features/preferences/UnitProvider';
+import { useGirth } from '@/features/preferences/useGirth';
+import { useUnit } from '@/features/preferences/useUnit';
 import {
   ghostDimsToInputs,
   ghostSourceName,
