@@ -1,5 +1,6 @@
 import { Involvement, type Session, type SessionEntry, type Toy } from '@/api/types';
 import type { MessageKey } from '@/i18n/translator';
+import { localDateKey } from '@/lib/dates';
 
 export type FilterKey = 'all' | 'week' | 'month';
 
@@ -14,9 +15,6 @@ export type Period = Readonly<{ kind: 'all' }> | Readonly<{ kind: 'week' | 'mont
 
 export const ALL_PERIOD: Period = { kind: 'all' };
 
-const dateKey = (d: Date): string =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
 const parseAnchor = (key: string): Date => {
   const [y, m, d] = key.split('-').map(Number);
   return new Date(y, m - 1, d ?? 1);
@@ -29,7 +27,7 @@ const startOfWeek = (d: Date): Date => {
 };
 
 const anchorFor = (kind: 'week' | 'month', d: Date): string =>
-  kind === 'week' ? dateKey(startOfWeek(d)) : dateKey(new Date(d.getFullYear(), d.getMonth(), 1));
+  kind === 'week' ? localDateKey(startOfWeek(d)) : localDateKey(new Date(d.getFullYear(), d.getMonth(), 1));
 
 export function currentPeriod(kind: FilterKey, now: Date = new Date()): Period {
   if (kind === 'all') return ALL_PERIOD;
@@ -52,7 +50,7 @@ export function canStepForward(period: Period, now: Date = new Date()): boolean 
 export function stepPeriod(period: Period, step: 1 | -1, now: Date = new Date()): Period {
   if (period.kind === 'all') return period;
   if (step === 1 && !canStepForward(period, now)) return period;
-  return { kind: period.kind, anchor: dateKey(shiftAnchor(period, step)) };
+  return { kind: period.kind, anchor: localDateKey(shiftAnchor(period, step)) };
 }
 
 const lastDay = (period: Period): Date => {
@@ -63,7 +61,7 @@ const lastDay = (period: Period): Date => {
 
 export function periodRange(period: Period): Readonly<{ start?: string; end?: string }> {
   if (period.kind === 'all') return {};
-  return { start: period.anchor, end: dateKey(lastDay(period)) };
+  return { start: period.anchor, end: localDateKey(lastDay(period)) };
 }
 
 export function periodUrlParam(period: Period): string | null {
