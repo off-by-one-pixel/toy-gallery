@@ -1,5 +1,5 @@
-import { LABEL_WIDTH_PX, RULER_WIDTH_PX, VPAD_BOTTOM_PX, VPAD_TOP_PX } from "./layout";
-import { referenceHeightMm, type ReferenceImage } from "./referenceImage";
+import { LABEL_WIDTH_PX, RULER_WIDTH_PX, VPAD_BOTTOM_PX, VPAD_TOP_PX } from './layout';
+import { referenceHeightMm, type ReferenceImage } from './referenceImage';
 
 export type Frame = { scale: number; silhouetteY: number };
 
@@ -10,8 +10,7 @@ export const availableArea = (size: Size) => ({
   h: Math.max(20, size.h - VPAD_TOP_PX - VPAD_BOTTOM_PX),
 });
 
-const scaleLimit = (spacePx: number, extentMm: number): number =>
-  extentMm > 0 ? spacePx / extentMm : Infinity;
+const scaleLimit = (spacePx: number, extentMm: number): number => (extentMm > 0 ? spacePx / extentMm : Infinity);
 
 const imageScaleLimits = (size: Size, totalHeightMm: number, image: ReferenceImage): number[] => {
   const centerX = RULER_WIDTH_PX + availableArea(size).w / 2;

@@ -1,5 +1,5 @@
-import { createContext, useContext } from "react";
-import type { Shape } from "../../toyMachine";
+import { createContext, useContext } from 'react';
+import type { Shape } from '../../toyMachine';
 
 export type ToyEditorLabels = {
   knownMeasurements: string;
@@ -38,6 +38,6 @@ export const EditorLabelsContext = createContext<ToyEditorLabels | null>(null);
 
 export const useEditorLabels = (): ToyEditorLabels => {
   const labels = useContext(EditorLabelsContext);
-  if (!labels) throw new Error("useEditorLabels must be used within an EditorLabelsContext.Provider");
+  if (!labels) throw new Error('useEditorLabels must be used within an EditorLabelsContext.Provider');
   return labels;
 };

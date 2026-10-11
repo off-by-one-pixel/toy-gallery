@@ -1,9 +1,9 @@
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { Shape, type Toy } from "../../toyMachine";
-import ThumbnailRender from "./ThumbnailRender";
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { Shape, type Toy } from '../../toyMachine';
+import ThumbnailRender from './ThumbnailRender';
 
-const STYLE = { color: "#c7e4ee", borderColor: "#334", borderWidth: 1.25 };
+const STYLE = { color: '#c7e4ee', borderColor: '#334', borderWidth: 1.25 };
 
 const toy = (sections: Array<[number, number]>): Toy => ({
   sections: sections.map(([diameter, height], id) => ({ id, diameter, height })),
@@ -13,11 +13,11 @@ const toy = (sections: Array<[number, number]>): Toy => ({
 
 const renderedSvg = (t: Toy, scaleFactor = 1) => {
   const { container } = render(<ThumbnailRender toy={t} scaleFactor={scaleFactor} style={STYLE} />);
-  return container.querySelector("svg") as SVGSVGElement;
+  return container.querySelector('svg') as SVGSVGElement;
 };
 
-describe("ThumbnailRender", () => {
-  it("sizes the viewBox exactly to the toy bounds so baselines align across thumbnails", () => {
+describe('ThumbnailRender', () => {
+  it('sizes the viewBox exactly to the toy bounds so baselines align across thumbnails', () => {
     const svg = renderedSvg(
       toy([
         [40, 60],
@@ -25,27 +25,27 @@ describe("ThumbnailRender", () => {
         [45, 30],
       ]),
     );
-    expect(svg.getAttribute("viewBox")).toBe("0 0 50 180");
+    expect(svg.getAttribute('viewBox')).toBe('0 0 50 180');
   });
 
-  it("applies the scale factor to the bounds", () => {
+  it('applies the scale factor to the bounds', () => {
     const svg = renderedSvg(toy([[40, 100]]), 2);
-    expect(svg.getAttribute("viewBox")).toBe("0 0 80 200");
+    expect(svg.getAttribute('viewBox')).toBe('0 0 80 200');
   });
 
-  it("keeps a valid viewBox for a toy without sections", () => {
+  it('keeps a valid viewBox for a toy without sections', () => {
     const svg = renderedSvg(toy([]));
-    expect(svg.getAttribute("viewBox")).toBe("0 0 1 1");
+    expect(svg.getAttribute('viewBox')).toBe('0 0 1 1');
   });
 
-  it("fills each section with its own color, falling back to the toy color", () => {
+  it('fills each section with its own color, falling back to the toy color', () => {
     const colored = toy([
       [40, 60],
       [50, 90],
     ]);
-    colored.sections[1].color = "#ff8800";
+    colored.sections[1].color = '#ff8800';
     const svg = renderedSvg(colored);
-    const fills = Array.from(svg.querySelectorAll("path")).map((p) => p.getAttribute("fill"));
-    expect(fills).toEqual([STYLE.color, "#ff8800"]);
+    const fills = Array.from(svg.querySelectorAll('path')).map((p) => p.getAttribute('fill'));
+    expect(fills).toEqual([STYLE.color, '#ff8800']);
   });
 });

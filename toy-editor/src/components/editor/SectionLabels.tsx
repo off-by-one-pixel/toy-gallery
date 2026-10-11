@@ -1,23 +1,14 @@
-import { useToyStore } from "../../toyMachine";
-import { useEditorLayoutCtx } from "./EditorLayoutContext";
-import type { EditorLayout } from "./hooks/useEditorLayout";
-import FloatingInput from "./FloatingInput";
-import { useEditorLabels } from "./labels";
-import {
-  diameterRowGeometry,
-  heightRowGeometry,
-} from "./geometry";
-import {
-  CIRC_LABEL_GAP_PX,
-  LABEL_INPUT_W_PX,
-  type SectionMeta,
-  sectionInputY,
-} from "./layout";
+import { useToyStore } from '../../toyMachine';
+import { useEditorLayoutCtx } from './EditorLayoutContext';
+import type { EditorLayout } from './hooks/useEditorLayout';
+import FloatingInput from './FloatingInput';
+import { useEditorLabels } from './labels';
+import { diameterRowGeometry, heightRowGeometry } from './geometry';
+import { CIRC_LABEL_GAP_PX, LABEL_INPUT_W_PX, type SectionMeta, sectionInputY } from './layout';
 
 const SectionLabels = () => {
   const layout = useEditorLayoutCtx();
-  const { sectionMeta, diameterLabelX, heightLabelX, silhouetteScale, silhouetteY } =
-    layout;
+  const { sectionMeta, diameterLabelX, heightLabelX, silhouetteScale, silhouetteY } = layout;
   const setDiameter = useToyStore((s) => s.setDiameter);
   const setHeight = useToyStore((s) => s.setHeight);
   const setCircumference = useToyStore((s) => s.setCircumference);
@@ -79,10 +70,7 @@ const HeightRow = ({ meta, layout, x, onChange }: RowProps) => {
   const { yMid, leaderD } = heightRowGeometry(meta, layout, x);
   return (
     <g>
-      <path
-        className={`toy-editor-leader ${touched ? "is-touched" : "is-default"}`}
-        d={leaderD}
-      />
+      <path className={`toy-editor-leader ${touched ? 'is-touched' : 'is-default'}`} d={leaderD} />
       <FloatingInput
         x={x}
         yCenter={yMid}
@@ -101,14 +89,10 @@ const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
   const knownSizeMm = useToyStore((s) => s.knownSizeMm);
   const touched = meta.section.touched?.diameter ?? true;
   const { inputY, leaderD } = diameterRowGeometry(meta, layout, x);
-  const overshoots =
-    knownSizeMm != null && meta.section.diameter > knownSizeMm + 0.5;
+  const overshoots = knownSizeMm != null && meta.section.diameter > knownSizeMm + 0.5;
   return (
     <g>
-      <path
-        className={`toy-editor-leader ${touched ? "is-touched" : "is-default"}`}
-        d={leaderD}
-      />
+      <path className={`toy-editor-leader ${touched ? 'is-touched' : 'is-default'}`} d={leaderD} />
       <FloatingInput
         x={x}
         yCenter={inputY}
@@ -120,11 +104,7 @@ const DiameterRow = ({ meta, layout, x, onChange }: RowProps) => {
         onChange={onChange}
         trailing={
           overshoots && (
-            <span
-              className="toy-editor-floating-warn"
-              title={labels.sectionTooWide}
-              aria-label={labels.sectionTooWide}
-            >
+            <span className="toy-editor-floating-warn" title={labels.sectionTooWide} aria-label={labels.sectionTooWide}>
               ⚠
             </span>
           )

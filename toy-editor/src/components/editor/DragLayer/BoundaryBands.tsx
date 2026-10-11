@@ -1,6 +1,6 @@
-import { useEditorLayoutCtx } from "../EditorLayoutContext";
-import { bandRect } from "../geometry";
-import type { DragHandlers } from "../hooks/useDragHandlers";
+import { useEditorLayoutCtx } from '../EditorLayoutContext';
+import { bandRect } from '../geometry';
+import type { DragHandlers } from '../hooks/useDragHandlers';
 
 const BoundaryBands = ({ handlers }: { handlers: DragHandlers }) => {
   const layout = useEditorLayoutCtx();
@@ -13,9 +13,7 @@ const BoundaryBands = ({ handlers }: { handlers: DragHandlers }) => {
             key={`b-${meta.section.id}`}
             className="toy-editor-handle-boundary"
             {...bandRect(boundaryMm, layout)}
-            onPointerDown={(e) =>
-              handlers.onBoundaryPointerDown(e, meta.section.id, boundaryMm)
-            }
+            onPointerDown={(e) => handlers.onBoundaryPointerDown(e, meta.section.id, boundaryMm)}
             onPointerMove={handlers.onBoundaryPointerMove}
             onPointerUp={handlers.onPointerUp}
             onPointerCancel={handlers.onPointerUp}

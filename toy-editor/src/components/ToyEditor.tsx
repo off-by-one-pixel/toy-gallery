@@ -1,21 +1,21 @@
-import type { ReactNode } from "react";
-import { useEffect } from "react";
-import type { StyleOption, Toy } from "../toyMachine";
-import { Shape, useToyStore } from "../toyMachine";
-import EditorRender from "./editor/EditorRender";
-import { useReferenceImage } from "./editor/hooks/useReferenceImage";
-import ReferenceImageControls from "./editor/ReferenceImageControls";
-import { EditorPaletteContext, type PaletteColor } from "./editor/palette";
-import { EditorLabelsContext, type ToyEditorLabels } from "./editor/labels";
-import KnownMeasurements from "./KnownMeasurements";
-import { EditorUnitContext, type Unit } from "./unit";
+import type { ReactNode } from 'react';
+import { useEffect } from 'react';
+import type { StyleOption, Toy } from '../toyMachine';
+import { Shape, useToyStore } from '../toyMachine';
+import EditorRender from './editor/EditorRender';
+import { useReferenceImage } from './editor/hooks/useReferenceImage';
+import ReferenceImageControls from './editor/ReferenceImageControls';
+import { EditorPaletteContext, type PaletteColor } from './editor/palette';
+import { EditorLabelsContext, type ToyEditorLabels } from './editor/labels';
+import KnownMeasurements from './KnownMeasurements';
+import { EditorUnitContext, type Unit } from './unit';
 
 const NO_PALETTE: readonly PaletteColor[] = [];
 
 const DEFAULT_STYLE: StyleOption = {
   borderWidth: 2,
-  borderColor: "#000",
-  color: "lightblue",
+  borderColor: '#000',
+  color: 'lightblue',
 };
 
 type Props = {
@@ -28,20 +28,13 @@ type Props = {
 };
 
 const CAP_SHAPES: { id: Shape; glyph: string }[] = [
-  { id: Shape.FLAT, glyph: "▬" },
-  { id: Shape.EGG, glyph: "◒" },
-  { id: Shape.CONE, glyph: "△" },
-  { id: Shape.SPIKE, glyph: "▲" },
+  { id: Shape.FLAT, glyph: '▬' },
+  { id: Shape.EGG, glyph: '◒' },
+  { id: Shape.CONE, glyph: '△' },
+  { id: Shape.SPIKE, glyph: '▲' },
 ];
 
-const ToyEditor = ({
-  style = {},
-  initialToy,
-  leadingSlot,
-  unit,
-  palette = NO_PALETTE,
-  labels,
-}: Props) => {
+const ToyEditor = ({ style = {}, initialToy, leadingSlot, unit, palette = NO_PALETTE, labels }: Props) => {
   const toy = useToyStore();
   const hydrate = useToyStore((s) => s.hydrate);
   const mergedStyle = { ...DEFAULT_STYLE, ...style };
@@ -59,11 +52,7 @@ const ToyEditor = ({
             <div className="toy-editor-main">
               <KnownMeasurements />
 
-              <section
-                className="toy-editor-canvas"
-                onDragOver={reference.onDragOver}
-                onDrop={reference.onDrop}
-              >
+              <section className="toy-editor-canvas" onDragOver={reference.onDragOver} onDrop={reference.onDrop}>
                 <ReferenceImageControls reference={reference} />
 
                 <div className="toy-editor-cap-row top">
@@ -96,11 +85,7 @@ const ToyEditor = ({
                 </div>
 
                 <div className="toy-editor-canvas-actions">
-                  <button
-                    type="button"
-                    className="toy-editor-btn toy-editor-add"
-                    onClick={() => toy.newSection()}
-                  >
+                  <button type="button" className="toy-editor-btn toy-editor-add" onClick={() => toy.newSection()}>
                     {labels.addSection}
                   </button>
                 </div>

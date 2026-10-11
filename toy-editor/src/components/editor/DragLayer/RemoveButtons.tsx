@@ -1,9 +1,9 @@
-import { useToyStore } from "../../../toyMachine";
-import { useEditorLayoutCtx } from "../EditorLayoutContext";
-import { removeButtonPosition } from "../geometry";
-import { LABEL_INPUT_H_PX, REMOVE_R_PX } from "../layout";
-import { useEditorLabels } from "../labels";
-import { useEditorPalette } from "../palette";
+import { useToyStore } from '../../../toyMachine';
+import { useEditorLayoutCtx } from '../EditorLayoutContext';
+import { removeButtonPosition } from '../geometry';
+import { LABEL_INPUT_H_PX, REMOVE_R_PX } from '../layout';
+import { useEditorLabels } from '../labels';
+import { useEditorPalette } from '../palette';
 
 const RemoveButtons = () => {
   const layout = useEditorLayoutCtx();
@@ -31,7 +31,9 @@ const RemoveButtons = () => {
             aria-label={labels.removeSection(meta.index + 1)}
           >
             <circle cx={cx} cy={cy} r={REMOVE_R_PX} />
-            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">×</text>
+            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
+              ×
+            </text>
           </g>
         );
       })}

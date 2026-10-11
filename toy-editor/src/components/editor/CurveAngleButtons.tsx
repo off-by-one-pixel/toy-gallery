@@ -1,15 +1,9 @@
-import {
-  Shape,
-  sectionBottomCurveAngle,
-  sectionTopCurveAngle,
-  useToyStore,
-  type CurveAngle,
-} from "../../toyMachine";
-import { useEditorLayoutCtx } from "./EditorLayoutContext";
-import { useEditorUiStore } from "./editorUiStore";
-import { useEditorLabels } from "./labels";
-import { rimButtonsGeometry, rimTickLine, type RimButtonPos } from "./geometry";
-import { RIM_BUTTON_R_PX } from "./layout";
+import { Shape, sectionBottomCurveAngle, sectionTopCurveAngle, useToyStore, type CurveAngle } from '../../toyMachine';
+import { useEditorLayoutCtx } from './EditorLayoutContext';
+import { useEditorUiStore } from './editorUiStore';
+import { useEditorLabels } from './labels';
+import { rimButtonsGeometry, rimTickLine, type RimButtonPos } from './geometry';
+import { RIM_BUTTON_R_PX } from './layout';
 
 type ButtonProps = RimButtonPos & {
   angle: CurveAngle;
@@ -51,10 +45,7 @@ const CurveAngleButtons = () => {
   const bot = sectionBottomCurveAngle(meta.section);
 
   return (
-    <g
-      onMouseEnter={() => setHoveredSectionId(meta.section.id)}
-      onMouseLeave={() => setHoveredSectionId(null)}
-    >
+    <g onMouseEnter={() => setHoveredSectionId(meta.section.id)} onMouseLeave={() => setHoveredSectionId(null)}>
       <CycleButton
         {...topPos}
         angle={top}

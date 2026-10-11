@@ -1,8 +1,8 @@
-import { useEditorLayoutCtx } from "./EditorLayoutContext";
-import { useEditorLabels } from "./labels";
-import type { ReferenceImageHandlers } from "./hooks/useReferenceImageDrag";
-import { HANDLE_R_PX } from "./layout";
-import { type ReferenceImage, referenceRect } from "./referenceImage";
+import { useEditorLayoutCtx } from './EditorLayoutContext';
+import { useEditorLabels } from './labels';
+import type { ReferenceImageHandlers } from './hooks/useReferenceImageDrag';
+import { HANDLE_R_PX } from './layout';
+import { type ReferenceImage, referenceRect } from './referenceImage';
 
 type Props = {
   image: ReferenceImage;

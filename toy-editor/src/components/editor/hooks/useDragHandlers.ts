@@ -1,22 +1,14 @@
-import { type PointerEvent as ReactPointerEvent, useCallback, useRef } from "react";
-import { localFromClient } from "../../../util/svgGeometry";
-import { snapToNearest } from "../../../util/sync";
-import { useToyStore } from "../../../toyMachine";
-import { type DragState, SNAP_THRESHOLD_MM } from "../layout";
-import type { EditorLayout } from "./useEditorLayout";
+import { type PointerEvent as ReactPointerEvent, useCallback, useRef } from 'react';
+import { localFromClient } from '../../../util/svgGeometry';
+import { snapToNearest } from '../../../util/sync';
+import { useToyStore } from '../../../toyMachine';
+import { type DragState, SNAP_THRESHOLD_MM } from '../layout';
+import type { EditorLayout } from './useEditorLayout';
 
 export type DragHandlers = {
-  onDiameterPointerDown: (
-    e: ReactPointerEvent<SVGCircleElement>,
-    sectionId: number,
-    handleX: number,
-  ) => void;
+  onDiameterPointerDown: (e: ReactPointerEvent<SVGCircleElement>, sectionId: number, handleX: number) => void;
   onDiameterPointerMove: (e: ReactPointerEvent<SVGCircleElement>) => void;
-  onBoundaryPointerDown: (
-    e: ReactPointerEvent<SVGRectElement>,
-    aboveId: number,
-    boundaryMm: number,
-  ) => void;
+  onBoundaryPointerDown: (e: ReactPointerEvent<SVGRectElement>, aboveId: number, boundaryMm: number) => void;
   onBoundaryPointerMove: (e: ReactPointerEvent<SVGRectElement>) => void;
   onBottomPointerDown: (
     e: ReactPointerEvent<SVGRectElement>,
@@ -47,24 +39,20 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
-      if (drag.kind === "bottom") unfreezeFrame();
+      if (drag.kind === 'bottom') unfreezeFrame();
       dragRef.current = null;
     },
     [unfreezeFrame],
   );
 
   const onDiameterPointerDown = useCallback(
-    (
-      e: ReactPointerEvent<SVGCircleElement>,
-      sectionId: number,
-      handleX: number,
-    ) => {
+    (e: ReactPointerEvent<SVGCircleElement>, sectionId: number, handleX: number) => {
       e.preventDefault();
       e.stopPropagation();
       e.currentTarget.setPointerCapture(e.pointerId);
       const local = localFromClient(e.currentTarget, e.clientX, e.clientY);
       const offsetPx = local ? local.x - handleX : 0;
-      dragRef.current = { kind: "diameter", sectionId, pointerId: e.pointerId, offsetPx };
+      dragRef.current = { kind: 'diameter', sectionId, pointerId: e.pointerId, offsetPx };
     },
     [],
   );
@@ -72,7 +60,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const onDiameterPointerMove = useCallback(
     (e: ReactPointerEvent<SVGCircleElement>) => {
       const drag = dragRef.current;
-      if (drag?.kind !== "diameter" || drag.pointerId !== e.pointerId) return;
+      if (drag?.kind !== 'diameter' || drag.pointerId !== e.pointerId) return;
       const local = localFromClient(e.currentTarget, e.clientX, e.clientY);
       if (!local) return;
       const desiredBorderX = local.x - drag.offsetPx;
@@ -87,11 +75,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   );
 
   const onBoundaryPointerDown = useCallback(
-    (
-      e: ReactPointerEvent<SVGRectElement>,
-      aboveId: number,
-      boundaryMm: number,
-    ) => {
+    (e: ReactPointerEvent<SVGRectElement>, aboveId: number, boundaryMm: number) => {
       e.preventDefault();
       e.stopPropagation();
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -99,7 +83,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
       const boundaryY = silhouetteY + boundaryMm * silhouetteScale;
       const offsetPx = local ? local.y - boundaryY : 0;
       dragRef.current = {
-        kind: "boundary",
+        kind: 'boundary',
         aboveId,
         pointerId: e.pointerId,
         anchorBoundaryMm: boundaryMm,
@@ -112,17 +96,13 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const onBoundaryPointerMove = useCallback(
     (e: ReactPointerEvent<SVGRectElement>) => {
       const drag = dragRef.current;
-      if (drag?.kind !== "boundary" || drag.pointerId !== e.pointerId) return;
+      if (drag?.kind !== 'boundary' || drag.pointerId !== e.pointerId) return;
       const local = localFromClient(e.currentTarget, e.clientX, e.clientY);
       if (!local) return;
       const desiredBorderY = local.y - drag.offsetPx;
       let newBoundaryMm = (desiredBorderY - silhouetteY) / silhouetteScale;
       if (snapEnabled) {
-        newBoundaryMm = snapToNearest(
-          newBoundaryMm,
-          [insertableMm, knownTotalMm],
-          SNAP_THRESHOLD_MM,
-        );
+        newBoundaryMm = snapToNearest(newBoundaryMm, [insertableMm, knownTotalMm], SNAP_THRESHOLD_MM);
       }
       const delta = newBoundaryMm - drag.anchorBoundaryMm;
       if (Math.abs(delta) < 1e-6) return;
@@ -133,12 +113,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   );
 
   const onBottomPointerDown = useCallback(
-    (
-      e: ReactPointerEvent<SVGRectElement>,
-      lastId: number,
-      bottomMm: number,
-      lastTopMm: number,
-    ) => {
+    (e: ReactPointerEvent<SVGRectElement>, lastId: number, bottomMm: number, lastTopMm: number) => {
       e.preventDefault();
       e.stopPropagation();
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -146,7 +121,7 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
       const bottomY = silhouetteY + bottomMm * silhouetteScale;
       const offsetPx = local ? local.y - bottomY : 0;
       dragRef.current = {
-        kind: "bottom",
+        kind: 'bottom',
         lastId,
         pointerId: e.pointerId,
         offsetPx,
@@ -160,17 +135,13 @@ export const useDragHandlers = (layout: EditorLayout): DragHandlers => {
   const onBottomPointerMove = useCallback(
     (e: ReactPointerEvent<SVGRectElement>) => {
       const drag = dragRef.current;
-      if (drag?.kind !== "bottom" || drag.pointerId !== e.pointerId) return;
+      if (drag?.kind !== 'bottom' || drag.pointerId !== e.pointerId) return;
       const local = localFromClient(e.currentTarget, e.clientX, e.clientY);
       if (!local) return;
       const desiredBorderY = local.y - drag.offsetPx;
       let newBottomMm = (desiredBorderY - silhouetteY) / silhouetteScale;
       if (snapEnabled) {
-        newBottomMm = snapToNearest(
-          newBottomMm,
-          [knownTotalMm, insertableMm],
-          SNAP_THRESHOLD_MM,
-        );
+        newBottomMm = snapToNearest(newBottomMm, [knownTotalMm, insertableMm], SNAP_THRESHOLD_MM);
       }
       const newLastHeight = Math.max(1, newBottomMm - drag.lastTopMm);
       setHeight(drag.lastId, newLastHeight);

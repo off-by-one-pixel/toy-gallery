@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import type { ReferenceImageState } from "./hooks/useReferenceImage";
-import { useEditorLabels } from "./labels";
+import { useRef } from 'react';
+import type { ReferenceImageState } from './hooks/useReferenceImage';
+import { useEditorLabels } from './labels';
 
 const PictureIcon = ({ crossed }: { crossed: boolean }) => (
   <svg

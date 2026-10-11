@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState, type RefObject } from "react";
-import type { Toy } from "../../../toyMachine";
+import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
+import type { Toy } from '../../../toyMachine';
 import {
   buildSectionMeta,
   DIAMETER_LABEL_GAP_PX,
@@ -7,9 +7,9 @@ import {
   LABEL_INPUT_W_PX,
   RULER_WIDTH_PX,
   type SectionMeta,
-} from "../layout";
-import { availableArea, fitFrame, type Frame } from "../fitFrame";
-import type { ReferenceImage } from "../referenceImage";
+} from '../layout';
+import { availableArea, fitFrame, type Frame } from '../fitFrame';
+import type { ReferenceImage } from '../referenceImage';
 
 export type EditorLayout = {
   size: { w: number; h: number };

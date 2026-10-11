@@ -1,5 +1,5 @@
-import { Shape, type StyleOption, type ToySection } from "../toyMachine";
-import { capSectionGeometry, type Orientation } from "./silhouetteGeometry";
+import { Shape, type StyleOption, type ToySection } from '../toyMachine';
+import { capSectionGeometry, type Orientation } from './silhouetteGeometry';
 
 type Props = {
   section: ToySection;
@@ -35,7 +35,7 @@ const CapSection = ({
   );
 
   return (
-    <g className={interactive ? "toy-editor-part" : undefined} transform={`translate(${x}, 0)`}>
+    <g className={interactive ? 'toy-editor-part' : undefined} transform={`translate(${x}, 0)`}>
       <path
         d={d}
         fill={section.color || style.color}

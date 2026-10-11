@@ -1,4 +1,4 @@
-import type { EditorLayout } from "./hooks/useEditorLayout";
+import type { EditorLayout } from './hooks/useEditorLayout';
 
 export type ReferenceImage = {
   url: string;
@@ -24,11 +24,7 @@ export const placeReferenceImage = (
   return { url, aspect, xMm: -widthMm / 2, yMm: 0, widthMm };
 };
 
-export const resizedWidthMm = (
-  image: ReferenceImage,
-  cornerXMm: number,
-  cornerYMm: number,
-): number =>
+export const resizedWidthMm = (image: ReferenceImage, cornerXMm: number, cornerYMm: number): number =>
   Math.max(MIN_REFERENCE_WIDTH_MM, cornerXMm - image.xMm, (cornerYMm - image.yMm) / image.aspect);
 
 export const referenceRect = (
@@ -42,4 +38,4 @@ export const referenceRect = (
 });
 
 export const firstImageFile = (files: FileList | null | undefined): File | undefined =>
-  Array.from(files ?? []).find((file) => file.type.startsWith("image/"));
+  Array.from(files ?? []).find((file) => file.type.startsWith('image/'));

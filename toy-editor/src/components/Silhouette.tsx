@@ -1,10 +1,10 @@
-import { Shape, type StyleOption, type Toy } from "../toyMachine";
-import CapSection from "./CapSection";
-import { buildSectionMeta } from "./editor/layout";
-import Section from "./Section";
+import { Shape, type StyleOption, type Toy } from '../toyMachine';
+import CapSection from './CapSection';
+import { buildSectionMeta } from './editor/layout';
+import Section from './Section';
 
 type Props = {
-  sections: Toy["sections"];
+  sections: Toy['sections'];
   topShape: Shape;
   bottomShape: Shape;
   scaleFactor: number;

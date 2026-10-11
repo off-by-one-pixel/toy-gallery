@@ -1,15 +1,9 @@
-import {
-  type Dispatch,
-  type PointerEvent as ReactPointerEvent,
-  type SetStateAction,
-  useCallback,
-  useRef,
-} from "react";
-import { localFromClient } from "../../../util/svgGeometry";
-import { referenceHeightMm, type ReferenceImage, resizedWidthMm } from "../referenceImage";
-import type { EditorLayout } from "./useEditorLayout";
+import { type Dispatch, type PointerEvent as ReactPointerEvent, type SetStateAction, useCallback, useRef } from 'react';
+import { localFromClient } from '../../../util/svgGeometry';
+import { referenceHeightMm, type ReferenceImage, resizedWidthMm } from '../referenceImage';
+import type { EditorLayout } from './useEditorLayout';
 
-type ImageDragKind = "move" | "resize";
+type ImageDragKind = 'move' | 'resize';
 
 type ImageDrag = {
   kind: ImageDragKind;
@@ -26,7 +20,7 @@ export type ReferenceImageHandlers = {
 };
 
 const grabAnchor = (image: ReferenceImage, kind: ImageDragKind) =>
-  kind === "move"
+  kind === 'move'
     ? { xMm: image.xMm, yMm: image.yMm }
     : { xMm: image.xMm + image.widthMm, yMm: image.yMm + referenceHeightMm(image) };
 
@@ -79,7 +73,7 @@ export const useReferenceImageDrag = (
       const yMm = pointer.yMm - drag.offsetYMm;
       setImage((current) => {
         if (!current) return current;
-        if (drag.kind === "move") return { ...current, xMm, yMm };
+        if (drag.kind === 'move') return { ...current, xMm, yMm };
         return { ...current, widthMm: resizedWidthMm(current, xMm, yMm) };
       });
     },
@@ -99,8 +93,8 @@ export const useReferenceImageDrag = (
   );
 
   return {
-    onMovePointerDown: useCallback((e) => startDrag(e, "move"), [startDrag]),
-    onResizePointerDown: useCallback((e) => startDrag(e, "resize"), [startDrag]),
+    onMovePointerDown: useCallback((e) => startDrag(e, 'move'), [startDrag]),
+    onResizePointerDown: useCallback((e) => startDrag(e, 'resize'), [startDrag]),
     onPointerMove,
     onPointerUp,
   };
