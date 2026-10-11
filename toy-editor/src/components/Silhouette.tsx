@@ -1,7 +1,6 @@
 import { Shape, type StyleOption, type Toy } from '../toyMachine';
-import CapSection from './CapSection';
-import { buildSectionMeta } from './editor/layout';
-import Section from './Section';
+import { buildSectionMeta, type SectionMeta } from './editor/layout';
+import { capSectionGeometry, sectionBodyGeometry } from './silhouetteGeometry';
 
 type Props = {
   sections: Toy['sections'];
@@ -14,64 +13,60 @@ type Props = {
   interactive: boolean;
 };
 
-const Silhouette = ({
-  sections,
-  topShape,
-  bottomShape,
-  scaleFactor,
-  maxDiameter,
-  style,
-  onHover,
-  interactive,
-}: Props) => {
+const partGeometry = (
+  { section, previousDiameter, isFirst, isLast }: SectionMeta,
+  { sections, topShape, bottomShape, scaleFactor, maxDiameter }: Props,
+) => {
+  if (isFirst) {
+    const geometry = capSectionGeometry(
+      section,
+      topShape,
+      'top',
+      scaleFactor,
+      previousDiameter,
+      maxDiameter,
+      sections.length > 1,
+    );
+    return { ...geometry, isCap: true };
+  }
+  if (isLast && bottomShape !== Shape.FLAT) {
+    const geometry = capSectionGeometry(
+      section,
+      bottomShape,
+      'bottom',
+      scaleFactor,
+      previousDiameter,
+      maxDiameter,
+      true,
+    );
+    return { ...geometry, isCap: true };
+  }
+  return { ...sectionBodyGeometry(section, scaleFactor, previousDiameter, maxDiameter), isCap: false };
+};
+
+const Silhouette = (props: Props) => {
+  const { sections, scaleFactor, style, onHover, interactive } = props;
   return (
     <>
-      {buildSectionMeta(sections).map(({ section, topMm, previousDiameter, isFirst, isLast }) => {
-        const renderAsBottomCap = isLast && bottomShape !== Shape.FLAT;
-        let element;
-        if (isFirst) {
-          element = (
-            <CapSection
-              section={section}
-              scaleFactor={scaleFactor}
-              totalWidth={maxDiameter}
-              style={style}
-              shape={topShape}
-              orientation="top"
-              hasAdjacent={sections.length > 1}
-              interactive={interactive}
-            />
-          );
-        } else if (renderAsBottomCap) {
-          element = (
-            <CapSection
-              section={section}
-              scaleFactor={scaleFactor}
-              previousDiameter={previousDiameter}
-              totalWidth={maxDiameter}
-              style={style}
-              shape={bottomShape}
-              orientation="bottom"
-              hasAdjacent
-              interactive={interactive}
-            />
-          );
-        } else {
-          element = (
-            <Section
-              section={section}
-              scaleFactor={scaleFactor}
-              previousDiameter={previousDiameter}
-              totalWidth={maxDiameter}
-              style={style}
-              onHover={onHover}
-              interactive={interactive}
-            />
-          );
-        }
+      {buildSectionMeta(sections).map((meta) => {
+        const { section, topMm } = meta;
+        const { x, d, isCap } = partGeometry(meta, props);
+        const hover = isCap ? undefined : onHover;
         return (
-          <g key={section.id} transform={`translate(0, ${topMm * scaleFactor})`}>
-            {element}
+          <g
+            key={section.id}
+            className={interactive ? 'toy-editor-part' : undefined}
+            transform={`translate(${x}, ${topMm * scaleFactor})`}
+            onMouseEnter={hover ? () => hover(section.id) : undefined}
+            onMouseLeave={hover ? () => hover(null) : undefined}
+          >
+            <path
+              d={d}
+              fill={section.color || style.color}
+              stroke={style.borderColor}
+              strokeWidth={style.borderWidth}
+              vectorEffect="non-scaling-stroke"
+            />
           </g>
         );
       })}
