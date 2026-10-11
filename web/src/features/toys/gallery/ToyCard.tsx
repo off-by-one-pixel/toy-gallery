@@ -4,7 +4,6 @@ import { memo, useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { displayGirth } from '@/features/preferences/girth';
-import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
 import { useSortOf } from '@/hooks/useSortOf';
@@ -56,8 +55,6 @@ function ToyCard({
   const sortDisplay = sortColumnDisplay(sort.column, propertyCtx);
   const sortValue = sortDisplay?.valueFor(toy);
 
-  const editorToy = toyShapeToEditor(toy.shape);
-
   const handleClick = (e: React.MouseEvent) => {
     if (detailsRef.current?.contains(e.target as Node)) return;
     onToggleOpen(toy.id);
@@ -84,7 +81,7 @@ function ToyCard({
       }}
     >
       <ToyThumbnail
-        toy={editorToy}
+        shape={toy.shape}
         fillColor={toy.color}
         heightRatio={heightRatio}
         className="h-60 overflow-hidden rounded-t-2xl border-b border-border"
