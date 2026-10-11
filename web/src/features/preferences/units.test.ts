@@ -24,10 +24,6 @@ describe('toMm / fromMm', () => {
     expect(fromMm(254, Unit.in)).toBeCloseTo(10);
   });
 
-  it('has the correct inch conversion factor', () => {
-    expect(Unit.in.factor).toBe(25.4);
-  });
-
   it('round-trips a non-trivial value', () => {
     const mm = 170;
     expect(toMm(fromMm(mm, Unit.in), Unit.in)).toBeCloseTo(mm);

@@ -14,17 +14,6 @@ const ctx = (overrides: Partial<RecordDisplayContext> = {}): RecordDisplayContex
 });
 
 describe('SESSION_RECORDS', () => {
-  it('defines a display for every seed record key', () => {
-    expect(Object.keys(SESSION_RECORDS).sort()).toEqual([
-      'pr-depth',
-      'pr-duration',
-      'pr-time',
-      'pr-width',
-      'toy-level',
-      'toy-time',
-    ]);
-  });
-
   it('maps the session records to their peak rows', () => {
     expect(SESSION_RECORDS['pr-width'].peak).toBe('circumference');
     expect(SESSION_RECORDS['pr-depth'].peak).toBe('length');

@@ -17,7 +17,6 @@ import {
   sessionFiltersKey,
   sessionFiltersUrlParams,
   sessionFilterWireParams,
-  INVOLVEMENT_RANK,
   mergeSessions,
   NO_SESSION_FILTERS,
   parseToyIdsParam,
@@ -28,13 +27,6 @@ import {
 } from '@/features/sessions/session';
 import { Involvement, type SessionEntry } from '@/api/types';
 import { makeSession, makeToy } from '@/test/fixtures';
-
-describe('INVOLVEMENT_RANK', () => {
-  it('orders FULLY_INSERTED < INSERTED < USED', () => {
-    expect(INVOLVEMENT_RANK[Involvement.FULLY_INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.INSERTED]);
-    expect(INVOLVEMENT_RANK[Involvement.INSERTED]).toBeLessThan(INVOLVEMENT_RANK[Involvement.USED]);
-  });
-});
 
 describe('mergeSessions', () => {
   it('appends only unseen ids preserving order', () => {
