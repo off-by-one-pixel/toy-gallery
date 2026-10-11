@@ -204,17 +204,8 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
                   }
                   wholeSessionMinutes={wholeSessionMinutes}
                   wholeSessionIsLive={liveOpen}
-                  onAddDuration={(minutes) =>
-                    updateSelection(
-                      toy.id,
-                      (current) => current && { ...current, durationMinutes: (current.durationMinutes ?? 0) + minutes },
-                    )
-                  }
-                  onSetDuration={(minutes) =>
+                  onDurationChange={(minutes) =>
                     updateSelection(toy.id, (current) => current && { ...current, durationMinutes: minutes })
-                  }
-                  onClearDuration={() =>
-                    updateSelection(toy.id, (current) => current && { ...current, durationMinutes: null })
                   }
                 />
               ))}
