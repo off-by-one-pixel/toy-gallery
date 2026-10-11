@@ -23,8 +23,7 @@ export default function DataSection() {
   const exportData = useApiMutation({ fn: downloadExport, success: () => t('exportedToast') });
   const importData = useApiMutation({
     fn: importFromFile,
-    success: ({ toys_created, sessions_created }) =>
-      t('importedToast', { toys: toys_created, sessions: sessions_created }),
+    success: ({ toysCreated, sessionsCreated }) => t('importedToast', { toys: toysCreated, sessions: sessionsCreated }),
     onSuccess: () => invalidateAllData(queryClient),
   });
   const rebuild = useApiMutation({
@@ -34,8 +33,7 @@ export default function DataSection() {
   });
   const deleteAll = useApiMutation({
     fn: deleteCollection,
-    success: ({ toys_deleted, sessions_deleted }) =>
-      t('deletedToast', { toys: toys_deleted, sessions: sessions_deleted }),
+    success: ({ toysDeleted, sessionsDeleted }) => t('deletedToast', { toys: toysDeleted, sessions: sessionsDeleted }),
     onSuccess: () => {
       setConfirmOpen(false);
       invalidateAllData(queryClient);

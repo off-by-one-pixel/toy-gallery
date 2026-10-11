@@ -140,7 +140,7 @@ describe('downloadExport', () => {
 });
 
 describe('importFromFile', () => {
-  it('reads JSON from the file, forwards it to the SDK, and returns the counts verbatim', async () => {
+  it('reads JSON from the file, forwards it to the SDK, and returns the camel-cased counts', async () => {
     const envelope = { toys: [{ id: 1 }], sessions: [{ id: 2 }] };
     const file = new File([JSON.stringify(envelope)], 'export.json', { type: 'application/json' });
     vi.mocked(toysToysImportCreate).mockResolvedValue({ toys_created: 1, sessions_created: 2 } as Awaited<
@@ -150,7 +150,7 @@ describe('importFromFile', () => {
     const result = await importFromFile(file);
 
     expect(vi.mocked(toysToysImportCreate)).toHaveBeenCalledWith(envelope);
-    expect(result).toEqual({ toys_created: 1, sessions_created: 2 });
+    expect(result).toEqual({ toysCreated: 1, sessionsCreated: 2 });
   });
 
   it('rejects when the file body is not valid JSON', async () => {

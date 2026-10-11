@@ -2,7 +2,11 @@ import { InvolvementEnum, SectionShapeEnum } from '@/api/generated/schemas';
 
 export type { AttributeSuggestion } from '@/api/generated/schemas';
 import type {
+  DeleteCollectionSummary as ApiDeleteCollectionSummary,
+  ImportSummary as ApiImportSummary,
+  MediaStatus as ApiMediaStatus,
   PersonalRecord as ApiPersonalRecord,
+  RefreshMediaResponse as ApiRefreshMediaResponse,
   ToyRecord as ApiToyRecord,
   Session as ApiSession,
   SessionMediaItem as ApiSessionMediaItem,
@@ -11,7 +15,6 @@ import type {
   Toy as ApiToy,
   ToyRequest as ApiToyRequest,
   ToyShape as ApiShape,
-  ToyShapeSection as ApiSection,
   ToySessionEntry as ApiSessionEntry,
 } from '@/api/generated/schemas';
 import type { SnakeToCamel } from '@/api/case';
@@ -24,7 +27,6 @@ export interface TokenPair {
 export type SectionShape = SectionShapeEnum;
 export const SectionShape = SectionShapeEnum;
 
-export type Section = SnakeToCamel<ApiSection>;
 export type Shape = SnakeToCamel<ApiShape>;
 export type Toy = SnakeToCamel<ApiToy>;
 export type ToyRecord = SnakeToCamel<ApiToyRecord>;
@@ -40,7 +42,12 @@ export type SessionPayload = SnakeToCamel<ApiSessionRequest>;
 
 export type { StatsGroup } from '@/api/generated/schemas';
 export type SessionMediaItem = SnakeToCamel<ApiSessionMediaItem>;
-export type SessionMedia = Omit<SnakeToCamel<ApiSessionMediaResponse>, 'items'> & { items: SessionMediaItem[] };
+export type SessionMedia = SnakeToCamel<ApiSessionMediaResponse>;
+export type MediaStatus = SnakeToCamel<ApiMediaStatus>;
+export type MediaRefreshSummary = SnakeToCamel<ApiRefreshMediaResponse>;
+
+export type ImportSummary = SnakeToCamel<ApiImportSummary>;
+export type DeleteCollectionSummary = SnakeToCamel<ApiDeleteCollectionSummary>;
 
 export type ToyTemplate = Readonly<{
   id: string;
