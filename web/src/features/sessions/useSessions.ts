@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo } from 'react';
 
-import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
+import { type InfiniteData, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useTranslations } from 'next-intl';
 
-import { useApiInfiniteQuery, useApiMutation, useApiQuery, useReportError } from '@/hooks/useApi';
+import { useApiMutation, useApiQuery, useReportError } from '@/hooks/useApi';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useSortOf } from '@/hooks/useSortOf';
 import {
@@ -18,6 +18,7 @@ import {
   updateSession,
   type SessionPage,
 } from '@/api';
+import { formatError } from '@/api/errors';
 import { invalidateSessionData, queryKeys, sessionDataKeys } from '@/api/queryKeys';
 import { sessionListKey, sessionListQuery } from '@/features/sessions/list/sessionQuery';
 import {
@@ -111,15 +112,17 @@ export function useSessions(): SessionsData {
   };
   const { sort } = useSortOf(SESSION_SORT);
   const queryClient = useQueryClient();
+  const t = useTranslations('errors');
   const reportError = useReportError();
 
   const queryState = { period, sort, filters: sessionFilters };
   const listKey = sessionListKey(queryState);
 
-  const list = useApiInfiniteQuery({
-    key: listKey,
-    fn: (page) => fetchSessions(sessionListQuery(queryState, page)),
-    getNextPage: (lastPage: SessionPage, pages: SessionPage[]) => (lastPage.hasMore ? pages.length + 1 : undefined),
+  const list = useInfiniteQuery({
+    queryKey: listKey,
+    queryFn: ({ pageParam }) => fetchSessions(sessionListQuery(queryState, pageParam)),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => (lastPage.hasMore ? pages.length + 1 : undefined),
   });
 
   const { toys: loadedToys, error: toysError } = useToys();
@@ -167,7 +170,7 @@ export function useSessions(): SessionsData {
     onSettled: () => invalidateSessionData(queryClient),
   });
 
-  const listError = list.data ? null : list.errorMessage;
+  const listError = list.error && !list.data ? formatError(list.error, t) : null;
 
   return {
     sessionCount: list.data?.pages.at(-1)?.count ?? 0,

@@ -3,14 +3,7 @@
 import { useCallback } from 'react';
 
 import { Toast } from '@heroui/react';
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryKey,
-  type UseQueryOptions,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryKey, type UseQueryOptions } from '@tanstack/react-query';
 
 import { useTranslations } from 'next-intl';
 
@@ -35,30 +28,6 @@ export function useApiQuery<T>({ key, fn, ...options }: ApiQueryOptions<T>) {
   const t = useTranslations('errors');
   const { data, isPending, isError, isFetched, error } = useQuery({ queryKey: key, queryFn: fn, ...options });
   return { data, isPending, isError, isFetched, errorMessage: error ? formatError(error, t) : null };
-}
-
-type ApiInfiniteQueryOptions<TPage> = Readonly<{
-  key: QueryKey;
-  fn: (page: number) => Promise<TPage>;
-  getNextPage: (lastPage: TPage, pages: TPage[]) => number | undefined;
-}>;
-
-export function useApiInfiniteQuery<TPage>({ key, fn, getNextPage }: ApiInfiniteQueryOptions<TPage>) {
-  const t = useTranslations('errors');
-  const { data, isPending, hasNextPage, isFetchingNextPage, fetchNextPage, error } = useInfiniteQuery({
-    queryKey: key,
-    queryFn: ({ pageParam }) => fn(pageParam),
-    initialPageParam: 1,
-    getNextPageParam: getNextPage,
-  });
-  return {
-    data,
-    isPending,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    errorMessage: error ? formatError(error, t) : null,
-  };
 }
 
 type ApiMutationOptions<TArgs, TResult> = Readonly<{
