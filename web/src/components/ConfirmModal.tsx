@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Button } from '@heroui/react';
 
 import AppModal from '@/components/AppModal';
@@ -13,8 +14,10 @@ type Props = Readonly<{
   body?: string;
   confirmLabel: string;
   confirmVariant?: 'primary' | 'danger';
+  confirmDisabled?: boolean;
   busy?: boolean;
   onConfirm: () => void;
+  children?: ReactNode;
 }>;
 
 export default function ConfirmModal({
@@ -23,8 +26,10 @@ export default function ConfirmModal({
   body,
   confirmLabel,
   confirmVariant = 'primary',
+  confirmDisabled = false,
   busy = false,
   onConfirm,
+  children,
 }: Props) {
   const common = useTranslations('common');
 
@@ -32,11 +37,12 @@ export default function ConfirmModal({
     <AppModal label={title} onClose={onClose}>
       <div className="flex flex-col gap-4 p-5">
         <SectionHeading title={title} subtitle={body} />
+        {children}
         <div className="mt-1 flex justify-end gap-2">
           <Button variant="outline" size="sm" isDisabled={busy} onPress={onClose}>
             {common('cancel')}
           </Button>
-          <Button variant={confirmVariant} size="sm" isDisabled={busy} onPress={onConfirm}>
+          <Button variant={confirmVariant} size="sm" isDisabled={busy || confirmDisabled} onPress={onConfirm}>
             {confirmLabel}
           </Button>
         </div>
