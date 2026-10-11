@@ -12,9 +12,6 @@ import {
 
 export type SizeMode = 'diameter' | 'circumference';
 
-/** All the form state for the "set the dimensions" step. Input strings
- *  match the user's display unit; conversions to mm happen at the
- *  boundary via the selectors below. */
 export type TemplateFormState = Readonly<{
   selectedId: string | null;
   totalInput: string;
@@ -35,23 +32,16 @@ export function selectTotalMm(state: TemplateFormState, unit: Unit): number | nu
   return parseToMm(state.totalInput, unit);
 }
 
-/** Insertable length in mm derived from the input. */
 export function selectInsertableMm(state: TemplateFormState, unit: Unit): number | null {
   return parseToMm(state.insertableInput, unit);
 }
 
-/** Max diameter in mm — the size input read as diameter, or converted
- *  from circumference via π depending on the size mode. */
 export function selectMaxDiameterMm(state: TemplateFormState, unit: Unit): number | null {
   const inputMm = parseToMm(state.sizeInput, unit);
   if (inputMm == null) return null;
   return state.sizeMode === 'diameter' ? inputMm : circumferenceToDiameter(inputMm);
 }
 
-// -------- Pure helpers needed by the reducer --------
-
-/** Canonical preview EditorToy at the template's authored dimensions —
- *  what the picker cards render. */
 export function templatePreviewToy(template: ToyTemplate): EditorToy {
   return templateToEditor({
     template,
@@ -60,14 +50,10 @@ export function templatePreviewToy(template: ToyTemplate): EditorToy {
   });
 }
 
-/** Returns the canonical size value (diameter or circumference) the
- *  size input should hold when `template` is freshly selected with the
- *  given mode. */
 function templateCanonicalSizeMm(template: ToyTemplate, mode: SizeMode): number | null {
   return mode === 'diameter' ? circumferenceToDiameter(template.circumference) : template.circumference;
 }
 
-/** Convert a typed size string between the two modes (Ø ↔ C) via π. */
 function convertSizeBetweenModes(sizeInput: string, from: SizeMode, to: SizeMode, unit: Unit): string {
   if (from === to) return sizeInput;
   const mm = parseToMm(sizeInput, unit);
@@ -75,8 +61,6 @@ function convertSizeBetweenModes(sizeInput: string, from: SizeMode, to: SizeMode
   const converted = to === 'diameter' ? circumferenceToDiameter(mm) : diameterToCircumference(mm);
   return converted == null ? sizeInput : formatForInput(converted, unit);
 }
-
-// -------- Reducer --------
 
 export type TemplateFormAction =
   | Readonly<{ type: 'select-template'; template: ToyTemplate; unit: Unit }>

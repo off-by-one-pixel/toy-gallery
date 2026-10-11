@@ -1,10 +1,6 @@
 import type { Toy as EditorToy } from 'toy-editor';
 import { SectionShape, type Shape } from '@/api/types';
 
-/** Map a domain Shape to the read-only triple the thumbnail renderer
- *  needs. Used by card / list / chip thumbnails that don't care about
- *  the manufacturer reference dimensions (insertable / total / size).
- *  The optional EditorToy reference fields stay `undefined`. */
 export function toyShapeToEditor(shape: Shape): EditorToy {
   return {
     sections: shape.sections,

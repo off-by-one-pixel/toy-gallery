@@ -10,8 +10,6 @@ type Props = Readonly<{
   onImport: (text: string) => void;
 }>;
 
-/** Routes the URL `?dialog=` value to the right TemplateJsonDialog
- *  variant. Render nothing when no dialog is open. */
 export default function JsonDialogs({ dialog, exportText, onClose, onImport }: Props) {
   if (dialog === 'export') {
     return <TemplateJsonDialog mode="export" initialText={exportText} onClose={onClose} />;

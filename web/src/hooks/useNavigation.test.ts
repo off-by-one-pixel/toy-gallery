@@ -71,7 +71,6 @@ describe('parseEnumParam', () => {
   it('narrows the return type to the allowed union', () => {
     const allowed = ['template', 'editor'] as const;
     const result = parseEnumParam('editor', allowed);
-    // Compile-time check: result is 'template' | 'editor' | null. Runtime sanity:
     expect(result).toBe('editor');
   });
 });

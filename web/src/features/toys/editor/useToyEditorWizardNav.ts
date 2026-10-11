@@ -10,7 +10,6 @@ export type WizardStage = (typeof STAGES)[number];
 export type WizardStep = (typeof STEPS)[number];
 export type WizardDialog = (typeof DIALOGS)[number];
 
-/** Pure URL-update producers for the new-toy wizard. */
 export const wizardUpdates = {
   goToStage: (next: WizardStage): Update => ({ stage: next, dialog: null }),
   goToStep: (next: WizardStep): Update => ({ step: next }),

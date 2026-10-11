@@ -2,8 +2,6 @@ import { API_CONFIG } from '@/config';
 import { refreshTokens } from '@/api/index';
 import { APIError, type TokenPair } from '@/api/types';
 
-// ---------- Token storage ----------
-
 const ACCESS_KEY = 'auth.access';
 const REFRESH_KEY = 'auth.refresh';
 const USERNAME_KEY = 'auth.username';
@@ -34,8 +32,6 @@ export const setSessionExpiredHandler = (handler: (() => void) | null): void => 
   onSessionExpired = handler;
 };
 
-// ---------- Silent token refresh (deduplicated across concurrent 401s) ----------
-
 let refreshInFlight: Promise<string | null> | null = null;
 
 const refreshAccessToken = (): Promise<string | null> => {
@@ -64,8 +60,6 @@ const refreshAccessToken = (): Promise<string | null> => {
   return refreshInFlight;
 };
 
-// ---------- Response parsing + error wrapping ----------
-
 const parseBody = async (response: Response): Promise<unknown> => {
   if (response.status === 204) return undefined;
   const text = await response.text();
@@ -90,8 +84,6 @@ const toError = async (response: Response): Promise<APIError> => {
   return new APIError(detail, response.status, data);
 };
 
-// ---------- Mutator ----------
-
 const attachAuth = (init: RequestInit): RequestInit => {
   const token = tokenStorage.getAccess();
   if (!token) return init;
@@ -100,11 +92,6 @@ const attachAuth = (init: RequestInit): RequestInit => {
   return { ...init, headers };
 };
 
-/**
- * Orval mutator. Every generated SDK call routes through here so Bearer
- * attach, 401→refresh→retry, and APIError wrapping stay in one place. The
- * generated code expects a `{ data, status, headers }` envelope back.
- */
 export const customFetch = async <T>(url: string, options: RequestInit): Promise<T> => {
   const target = new URL(url, API_CONFIG.baseUrl);
   const doFetch = () => fetch(target, attachAuth(options));

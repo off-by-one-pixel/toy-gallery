@@ -13,7 +13,6 @@ import {
 } from '@/features/toys/gallery/attributesEditor';
 import type { AttributeRow } from '@/api/types';
 
-// Each test resets its own counter so row ids are deterministic.
 let next: number;
 const ids: IdFactory = () => ++next;
 beforeEach(() => {

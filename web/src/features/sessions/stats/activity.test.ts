@@ -61,7 +61,6 @@ describe('legendGradient', () => {
     const out = legendGradient(220);
     expect(out.startsWith('linear-gradient(to right,')).toBe(true);
     expect(out).toContain('hsl(220,');
-    // 11 stops at 0%, 10%, 20%, … 100%.
     expect(out).toContain('0.0%');
     expect(out).toContain('100.0%');
   });

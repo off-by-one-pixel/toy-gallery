@@ -17,8 +17,6 @@ describe('localDateKey', () => {
   });
 
   it('uses local calendar fields, not UTC', () => {
-    // Construct a local-midnight date — exercises that the key is built
-    // from getFullYear/Month/Date (local) rather than ISO (UTC).
     const d = new Date(2026, 11, 31, 0, 0, 0, 0);
     expect(localDateKey(d)).toBe('2026-12-31');
   });
