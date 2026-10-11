@@ -1,5 +1,3 @@
-// @vitest-environment happy-dom
-
 import type { QueryClient } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import { settle } from '@/test/wait';
