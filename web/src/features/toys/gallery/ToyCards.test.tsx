@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/features/toys/useToys', () => ({
@@ -64,6 +64,22 @@ const renderCards = (props: Partial<React.ComponentProps<typeof ToyCards>> = {},
   );
   return { ...handlers, ...toyActions };
 };
+
+describe('ToyCards toggling', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('toggles a card from its body but not from inside its open details', () => {
+    const onToggleOpen = vi.fn();
+    renderCards({ openToyId: 1, onToggleOpen });
+    const card = screen.getByText('Small').closest('.group') as HTMLElement;
+    fireEvent.click(within(card).getByText(en.common.totalLength));
+    expect(onToggleOpen).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Small'));
+    expect(onToggleOpen).toHaveBeenCalledWith(1);
+  });
+});
 
 describe('ToyCards ghosts', () => {
   beforeEach(() => {
