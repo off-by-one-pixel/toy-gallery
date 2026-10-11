@@ -26,7 +26,7 @@ describe('DataSection', () => {
   });
 
   it('invalidates every query after an import', async () => {
-    vi.mocked(importFromFile).mockResolvedValue({ toys_created: 2, sessions_created: 3 });
+    vi.mocked(importFromFile).mockResolvedValue({ toysCreated: 2, sessionsCreated: 3 });
     const { container, invalidate } = renderSection();
     const input = container.querySelector<HTMLInputElement>('input[type="file"]');
     fireEvent.change(input!, { target: { files: [new File(['{}'], 'export.json')] } });
@@ -35,7 +35,7 @@ describe('DataSection', () => {
   });
 
   it('invalidates every query after deleting the collection', async () => {
-    vi.mocked(deleteCollection).mockResolvedValue({ toys_deleted: 2, sessions_deleted: 3 });
+    vi.mocked(deleteCollection).mockResolvedValue({ toysDeleted: 2, sessionsDeleted: 3 });
     const { invalidate } = renderSection();
     fireEvent.click(screen.getByRole('button', { name: en.settings.data.deleteButton }));
     fireEvent.click(await screen.findByRole('button', { name: en.settings.data.deleteConfirm.action }));

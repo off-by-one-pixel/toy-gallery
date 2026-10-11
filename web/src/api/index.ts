@@ -38,19 +38,24 @@ import type {
 import {
   APIError,
   type AttributeSuggestion,
+  type DeleteCollectionSummary,
+  type ImportSummary,
+  type MediaRefreshSummary,
+  type MediaStatus,
   type StatsGroup,
   type Session,
   type SessionMedia,
-  type SessionMediaItem,
   type SessionPayload,
   type TokenPair,
   type Toy,
   type ToyPayload,
 } from '@/api/types';
 
+const camel = <T>(response: Promise<unknown>): Promise<T> => response.then((data) => snakeToCamel<T>(data));
+
 export const login = async (username: string, password: string): Promise<TokenPair> => {
-  const data = await toysTokenCreate({ username, password });
-  return { access: data.access, refresh: data.refresh };
+  const { access, refresh } = await toysTokenCreate({ username, password });
+  return { access, refresh };
 };
 
 export const refreshTokens = async (refresh: string): Promise<TokenPair> => {
@@ -73,29 +78,18 @@ export const changePassword = async (currentPassword: string, newPassword: strin
   await toysChangePasswordCreate({ current_password: currentPassword, new_password: newPassword });
 };
 
-export const fetchToys = async (): Promise<Toy[]> => {
-  const data = await toysToysList();
-  return data.map((t) => snakeToCamel<Toy>(t));
-};
+export const fetchToys = (): Promise<Toy[]> => camel(toysToysList());
 
-export const fetchAttributeSuggestions = async (): Promise<AttributeSuggestion[]> => {
-  const data = await toysToysAttributeSuggestionsList();
-  return data;
-};
+export const fetchAttributeSuggestions = (): Promise<AttributeSuggestion[]> => toysToysAttributeSuggestionsList();
 
 export const deleteToy = async (id: number | string): Promise<void> => {
   await toysToysDestroy(Number(id));
 };
 
-export const createToy = async (toy: ToyPayload): Promise<Toy> => {
-  const data = await toysToysCreate(camelToSnake<ApiToyRequest>(toy));
-  return snakeToCamel<Toy>(data);
-};
+export const createToy = (toy: ToyPayload): Promise<Toy> => camel(toysToysCreate(camelToSnake<ApiToyRequest>(toy)));
 
-export const patchToy = async (id: number, changes: Partial<ToyPayload>): Promise<Toy> => {
-  const data = await toysToysPartialUpdate(id, camelToSnake<PatchedToyRequest>(changes));
-  return snakeToCamel<Toy>(data);
-};
+export const patchToy = (id: number, changes: Partial<ToyPayload>): Promise<Toy> =>
+  camel(toysToysPartialUpdate(id, camelToSnake<PatchedToyRequest>(changes)));
 
 const triggerBrowserDownload = (data: unknown, filename: string) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -117,20 +111,10 @@ export const downloadExport = async (): Promise<void> => {
   triggerBrowserDownload(data, EXPORT_FILENAME(date));
 };
 
-export const importFromFile = async (file: File): Promise<{ toys_created: number; sessions_created: number }> => {
-  const text = await file.text();
-  const envelope = JSON.parse(text) as ExportEnvelopeRequest;
-  const data = await toysToysImportCreate(envelope);
-  return data;
-};
+export const importFromFile = async (file: File): Promise<ImportSummary> =>
+  camel(toysToysImportCreate(JSON.parse(await file.text()) as ExportEnvelopeRequest));
 
-export const deleteCollection = async (): Promise<{
-  toys_deleted: number;
-  sessions_deleted: number;
-}> => {
-  const data = await toysToysDeleteAllDestroy();
-  return data;
-};
+export const deleteCollection = (): Promise<DeleteCollectionSummary> => camel(toysToysDeleteAllDestroy());
 
 export type SessionPage = Readonly<{ sessions: Session[]; count: number; hasMore: boolean }>;
 
@@ -144,7 +128,7 @@ export const fetchSessions = async (
   }> = {},
 ): Promise<SessionPage> => {
   const filters = opts.filters ?? NO_SESSION_FILTERS;
-  const data = await toysSessionsList({
+  const { results, count, next } = await toysSessionsList({
     page: opts.page,
     start: opts.start,
     end: opts.end,
@@ -152,79 +136,42 @@ export const fetchSessions = async (
     ...sessionFilterWireParams(filters),
     tz: browserTimeZone(),
   });
-  return {
-    sessions: data.results.map((s) => snakeToCamel<Session>(s)),
-    count: data.count,
-    hasMore: data.next != null,
-  };
+  return { sessions: snakeToCamel<Session[]>(results), count, hasMore: next != null };
 };
 
-export const fetchSession = async (id: number): Promise<Session> => {
-  const data = await toysSessionsRetrieve(id);
-  return snakeToCamel<Session>(data);
-};
+export const fetchSession = (id: number): Promise<Session> => camel(toysSessionsRetrieve(id));
 
-export const createSession = async (payload: SessionPayload): Promise<Session> => {
-  const data = await toysSessionsCreate(camelToSnake<ApiSessionRequest>(payload));
-  return snakeToCamel<Session>(data);
-};
+export const createSession = (payload: SessionPayload): Promise<Session> =>
+  camel(toysSessionsCreate(camelToSnake<ApiSessionRequest>(payload)));
 
-export const updateSession = async (id: number, payload: SessionPayload): Promise<Session> => {
-  const data = await toysSessionsUpdate(id, camelToSnake<ApiSessionRequest>(payload));
-  return snakeToCamel<Session>(data);
-};
+export const updateSession = (id: number, payload: SessionPayload): Promise<Session> =>
+  camel(toysSessionsUpdate(id, camelToSnake<ApiSessionRequest>(payload)));
 
 export const deleteSession = async (id: number): Promise<void> => {
   await toysSessionsDestroy(id);
 };
 
-export const patchSessionStart = async (id: number, startedAt: string): Promise<Session> => {
-  const data = await toysSessionsPartialUpdate(id, { started_at: startedAt });
-  return snakeToCamel<Session>(data);
-};
+export const patchSessionStart = (id: number, startedAt: string): Promise<Session> =>
+  camel(toysSessionsPartialUpdate(id, { started_at: startedAt }));
 
-export const startLiveSession = async (): Promise<Session> => {
-  const data = await toysSessionsStartCreate();
-  return snakeToCamel<Session>(data);
-};
+export const startLiveSession = (): Promise<Session> => camel(toysSessionsStartCreate());
 
 export const fetchLiveSession = async (): Promise<Session | null> => {
-  const data = await toysSessionsLiveRetrieve();
-  return data.session ? snakeToCamel<Session>(data.session) : null;
+  const { session } = await toysSessionsLiveRetrieve();
+  return session ? snakeToCamel<Session>(session) : null;
 };
 
-export type MediaStatus = Readonly<{ configured: boolean }>;
+export const fetchMediaStatus = (): Promise<MediaStatus> => camel(toysSessionsMediaStatusRetrieve());
 
-export type MediaRefreshSummary = Readonly<{ configured: boolean; sessionsWithMedia: number }>;
+export const refreshAllSessionMedia = (): Promise<MediaRefreshSummary> => camel(toysSessionsRefreshMediaCreate());
 
-export const fetchMediaStatus = async (): Promise<MediaStatus> => {
-  const data = await toysSessionsMediaStatusRetrieve();
-  return { configured: data.configured };
-};
+export const rebuildRecords = async (): Promise<number> => (await toysSessionsRebuildRecordsCreate()).records;
 
-export const refreshAllSessionMedia = async (): Promise<MediaRefreshSummary> => {
-  const data = await toysSessionsRefreshMediaCreate();
-  return { configured: data.configured, sessionsWithMedia: data.sessions_with_media };
-};
+export const fetchSessionMedia = (sessionId: number): Promise<SessionMedia> =>
+  camel(toysSessionsMediaRetrieve(sessionId));
 
-export const rebuildRecords = async (): Promise<number> => {
-  const data = await toysSessionsRebuildRecordsCreate();
-  return data.records;
-};
-
-export const fetchSessionMedia = async (sessionId: number): Promise<SessionMedia> => {
-  const data = await toysSessionsMediaRetrieve(sessionId);
-  return {
-    configured: data.configured,
-    shareUrl: data.share_url,
-    items: data.items.map((i) => snakeToCamel<SessionMediaItem>(i)),
-  };
-};
-
-export const setMediaLiked = async (assetId: string, liked: boolean): Promise<boolean> => {
-  const data = await toysSessionsMediaLikeCreate({ asset_id: assetId, liked });
-  return data.liked;
-};
+export const setMediaLiked = async (assetId: string, liked: boolean): Promise<boolean> =>
+  (await toysSessionsMediaLikeCreate({ asset_id: assetId, liked })).liked;
 
 const browserTimeZone = (): string => {
   try {
@@ -244,7 +191,7 @@ export const fetchSessionStats = async (
   } = {},
 ): Promise<StatsGroup[]> => {
   const filters = opts.filters ?? NO_SESSION_FILTERS;
-  const data = await toysSessionsStatsRetrieve({
+  const { groups } = await toysSessionsStatsRetrieve({
     group_by: groupBy,
     metrics: metrics.join(','),
     start: opts.start,
@@ -252,5 +199,5 @@ export const fetchSessionStats = async (
     ...sessionFilterWireParams(filters),
     tz: browserTimeZone(),
   });
-  return data.groups;
+  return groups;
 };
