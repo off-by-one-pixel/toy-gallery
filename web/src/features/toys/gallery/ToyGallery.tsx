@@ -14,10 +14,11 @@ import { useViewMode, ViewMode } from '@/features/preferences/useViewMode';
 import { filterToys } from '@/features/toys/search';
 import { sortToys, TOY_SORT } from '@/features/toys/toySort';
 import { ActionFabs, type ActionDef } from '@/components/ActionButtons';
-import { toyActionDefs } from '@/features/toys/gallery/ToyActionButtons';
+import { toyActionDefs, type ToyActions } from '@/features/toys/gallery/ToyActionButtons';
 import type { GhostDimensions, GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
+import ClearGhostsButton from '@/features/toys/gallery/ghost/ClearGhostsButton';
 import PageToolbar from '@/components/PageToolbar';
 import SearchInput from '@/components/SearchInput';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
@@ -76,6 +77,15 @@ const ToyGallery = () => {
   const { ghosts, canAddGhost, saveGhost, removeGhost, clearGhosts } = useGhosts();
   const [ghostModal, setGhostModal] = useState<GhostTarget | null>(null);
   const handleGhost = useCallback((toy: Toy) => setGhostModal({ kind: 'new', source: toy }), []);
+  const toyActions = useMemo<ToyActions>(
+    () => ({
+      onEdit: handleEdit,
+      onCopy: handleCopy,
+      onDelete: handleDelete,
+      onGhost: canAddGhost ? handleGhost : undefined,
+    }),
+    [handleEdit, handleCopy, handleDelete, canAddGhost, handleGhost],
+  );
   const handleEditGhost = (ghost: GhostToy) => setGhostModal({ kind: 'edit', ghost });
   const handleGhostSave = (dims: GhostDimensions) => {
     if (ghostModal) saveGhost(ghostModal, dims);
@@ -96,14 +106,7 @@ const ToyGallery = () => {
   ];
 
   const openToy = openCardId === null ? null : (toys.find((c) => c.id === openCardId) ?? null);
-  const openToyActions = openToy
-    ? toyActionDefs((k) => common(k), {
-        onEdit: () => handleEdit(openToy),
-        onCopy: () => handleCopy(openToy),
-        onDelete: () => handleDelete(openToy),
-        onGhost: canAddGhost ? () => handleGhost(openToy) : undefined,
-      })
-    : null;
+  const openToyActions = openToy ? toyActionDefs((k) => common(k), openToy, toyActions) : null;
 
   const renderBody = () => {
     if (isLoading) {
@@ -113,33 +116,35 @@ const ToyGallery = () => {
         </div>
       );
     }
-    if (view === ViewMode.list) {
-      return (
-        <ToyList
-          toys={sortedToys}
-          openToyId={openCardId}
-          onToggleOpen={toggleOpen}
-          onEdit={handleEdit}
-          onCopy={handleCopy}
-          onDelete={handleDelete}
-        />
-      );
-    }
+    const ghostCount = view === ViewMode.list ? 0 : ghosts.length;
     return (
-      <ToyCards
-        toys={sortedToys}
-        ghosts={ghosts}
-        openToyId={openCardId}
-        onToggleOpen={toggleOpen}
-        onEdit={handleEdit}
-        onCopy={handleCopy}
-        onDelete={handleDelete}
-        onGhost={canAddGhost ? handleGhost : undefined}
-        onEditGhost={handleEditGhost}
-        onRemoveGhost={removeGhost}
-        onClearGhosts={clearGhosts}
-        onNew={toyModal.openNew}
-      />
+      <>
+        <div className={`mb-3 items-center justify-end gap-2 ${ghostCount > 0 ? 'flex' : 'hidden sm:flex'}`}>
+          <ClearGhostsButton count={ghostCount} onClear={clearGhosts} />
+          <div className="hidden sm:block">
+            <ToySortControl toys={toys} />
+          </div>
+        </div>
+        {view === ViewMode.list ? (
+          <ToyList
+            toys={sortedToys}
+            openToyId={openCardId}
+            onToggleOpen={toggleOpen}
+            actions={{ ...toyActions, onGhost: undefined }}
+          />
+        ) : (
+          <ToyCards
+            toys={sortedToys}
+            ghosts={ghosts}
+            openToyId={openCardId}
+            onToggleOpen={toggleOpen}
+            actions={toyActions}
+            onEditGhost={handleEditGhost}
+            onRemoveGhost={removeGhost}
+            onNew={toyModal.openNew}
+          />
+        )}
+      </>
     );
   };
 

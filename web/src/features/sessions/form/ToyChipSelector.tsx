@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { DURATION_INCREMENTS_MINUTES, formatDuration } from '@/lib/duration';
 import { Involvement, type Toy } from '@/api/types';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
+import { pressable } from '@/lib/pressable';
 
 type Props = Readonly<{
   toy: Toy;
@@ -68,15 +69,7 @@ export default function ToyChipSelector({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => onChange(nextInCycle(state))}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onChange(nextInCycle(state));
-        }
-      }}
+      {...pressable(() => onChange(nextInCycle(state)))}
       className={
         'relative cursor-pointer overflow-hidden rounded-2xl border bg-surface shadow-sm transition-shadow hover:shadow-md ' +
         (state ? CHIP_BORDER[state] : 'border-border')

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/features/toys/useToys', () => ({
@@ -17,6 +17,7 @@ import en from '@/i18n/catalogs/en.json';
 import type { Toy } from '@/api/types';
 import { TOY_SORT } from '@/features/toys/toySort';
 import ToyCards from '@/features/toys/gallery/ToyCards';
+import type { ToyActions } from '@/features/toys/gallery/ToyActionButtons';
 import { makeGhost, makeToy } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 
@@ -40,16 +41,12 @@ const toy = (id: number, name: string, circumference: number, insertableLength: 
 
 const noop = () => undefined;
 
-const renderCards = (props: Partial<React.ComponentProps<typeof ToyCards>> = {}) => {
+const renderCards = (props: Partial<React.ComponentProps<typeof ToyCards>> = {}, actions: Partial<ToyActions> = {}) => {
+  const toyActions = { onEdit: noop, onCopy: noop, onDelete: noop, onGhost: vi.fn(), ...actions };
   const handlers = {
     onToggleOpen: noop,
-    onEdit: noop,
-    onCopy: noop,
-    onDelete: noop,
-    onGhost: vi.fn(),
     onEditGhost: vi.fn(),
     onRemoveGhost: vi.fn(),
-    onClearGhosts: vi.fn(),
     onNew: noop,
   };
   render(
@@ -59,13 +56,30 @@ const renderCards = (props: Partial<React.ComponentProps<typeof ToyCards>> = {})
         ghosts={[]}
         openToyId={null}
         {...handlers}
+        actions={toyActions}
         {...props}
       />,
       { sort: TOY_SORT },
     ),
   );
-  return handlers;
+  return { ...handlers, ...toyActions };
 };
+
+describe('ToyCards toggling', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('toggles a card from its body but not from inside its open details', () => {
+    const onToggleOpen = vi.fn();
+    renderCards({ openToyId: 1, onToggleOpen });
+    const card = screen.getByText('Small').closest('.group') as HTMLElement;
+    fireEvent.click(within(card).getByText(en.common.totalLength));
+    expect(onToggleOpen).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Small'));
+    expect(onToggleOpen).toHaveBeenCalledWith(1);
+  });
+});
 
 describe('ToyCards ghosts', () => {
   beforeEach(() => {
@@ -98,30 +112,17 @@ describe('ToyCards ghosts', () => {
     expect(handlers.onEditGhost).toHaveBeenCalledWith(makeGhost({ id: 5 }));
   });
 
-  it('shows the clear-all pill only when ghosts exist and wires it', () => {
-    const bare = renderCards();
-    expect(screen.queryByText(en.toy.ghost.clearAll)).toBeNull();
-    expect(bare.onClearGhosts).not.toHaveBeenCalled();
-  });
-
-  it('clears all ghosts from the pill', () => {
-    const handlers = renderCards({
-      ghosts: [makeGhost(), makeGhost({ id: 2, circumference: 150, insertableLength: 175 })],
-    });
-    fireEvent.click(screen.getByText(en.toy.ghost.clearAll));
-    expect(handlers.onClearGhosts).toHaveBeenCalledTimes(1);
-  });
-
   it('offers the compare action on every toy card', () => {
     const handlers = renderCards();
     const buttons = screen.getAllByLabelText(en.common.compare);
     expect(buttons).toHaveLength(2);
     fireEvent.click(buttons[0]);
     expect(handlers.onGhost).toHaveBeenCalledTimes(1);
+    expect(handlers.onGhost).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
   });
 
   it('hides the compare action when onGhost is not provided', () => {
-    renderCards({ onGhost: undefined });
+    renderCards({}, { onGhost: undefined });
     expect(screen.queryByLabelText(en.common.compare)).toBeNull();
   });
 

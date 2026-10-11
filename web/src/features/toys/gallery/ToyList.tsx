@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -16,8 +15,8 @@ import { type Toy } from '@/api/types';
 import ToyDetails from '@/features/toys/gallery/ToyDetails';
 import { type SortColumnDisplay, sortColumnDisplay } from '@/features/toys/gallery/sortColumnDisplay';
 import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
-import ToySortControl from '@/features/toys/gallery/ToySortControl';
-import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
+import ToyActionButtons, { type ToyActions } from '@/features/toys/gallery/ToyActionButtons';
+import { pressable } from '@/lib/pressable';
 
 const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr]';
 const EXTRA_GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr_1fr]';
@@ -28,12 +27,10 @@ type Props = Readonly<{
   toys: Toy[];
   openToyId: number | null;
   onToggleOpen: (id: number) => void;
-  onEdit: (toy: Toy) => void;
-  onCopy: (toy: Toy) => void;
-  onDelete: (toy: Toy) => void;
+  actions: ToyActions;
 }>;
 
-export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy, onDelete }: Props) {
+export default function ToyList({ toys, openToyId, onToggleOpen, actions }: Props) {
   const propertyCtx = useToyPropertyContext();
   const { unit } = propertyCtx;
   const { sort, setSort } = useSortOf(TOY_SORT);
@@ -42,27 +39,20 @@ export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy,
   const extra = sortColumnDisplay(sort.column, propertyCtx);
 
   return (
-    <>
-      <div className="mb-3 hidden items-center justify-end sm:flex">
-        <ToySortControl toys={toys} />
-      </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
-        <ListHeader sort={sort} onSort={handleSort} extra={extra} />
-        {toys.map((toy) => (
-          <ToyRow
-            key={toy.id}
-            toy={toy}
-            unit={unit}
-            extra={extra}
-            open={openToyId === toy.id}
-            onToggle={() => onToggleOpen(toy.id)}
-            onEdit={() => onEdit(toy)}
-            onCopy={() => onCopy(toy)}
-            onDelete={() => onDelete(toy)}
-          />
-        ))}
-      </div>
-    </>
+    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+      <ListHeader sort={sort} onSort={handleSort} extra={extra} />
+      {toys.map((toy) => (
+        <ToyRow
+          key={toy.id}
+          toy={toy}
+          unit={unit}
+          extra={extra}
+          open={openToyId === toy.id}
+          onToggle={() => onToggleOpen(toy.id)}
+          actions={actions}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -157,60 +147,42 @@ function ToyRow({
   extra,
   open,
   onToggle,
-  onEdit,
-  onCopy,
-  onDelete,
+  actions,
 }: Readonly<{
   toy: Toy;
   unit: Unit;
   extra: SortColumnDisplay | null;
   open: boolean;
   onToggle: () => void;
-  onEdit: () => void;
-  onCopy: () => void;
-  onDelete: () => void;
+  actions: ToyActions;
 }>) {
   const { girth } = useGirth();
-  const actionsRef = useRef<HTMLDivElement>(null);
-  const handleRowClick = (e: React.MouseEvent) => {
-    if (actionsRef.current?.contains(e.target as Node)) return;
-    onToggle();
-  };
   return (
     <>
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={handleRowClick}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-        className={
-          `group relative grid cursor-pointer items-center gap-x-3 border-b border-border px-4 py-2.5 transition-colors hover:bg-surface-secondary min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
-          (extra ? EXTRA_GRID_COLS : GRID_COLS) +
-          (open ? ' bg-accent-soft/50' : '')
-        }
-      >
-        <Thumb toy={toy} />
-        <NameCol toy={toy} />
-        <div className={HIDDEN_SIZE}>
-          {toy.size && (
-            <Chip size="sm" color="accent">
-              <Chip.Label>{toy.size}</Chip.Label>
-            </Chip>
-          )}
-        </div>
-        <Metric value={toy.insertableLength} unit={unit} />
-        <Metric value={displayGirth(toy.circumference, girth)} unit={unit} />
-        {extra && <ExtraMetric value={extra.valueFor(toy)} />}
+      <div className="group relative">
         <div
-          ref={actionsRef}
-          className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-surface/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4"
+          {...pressable(onToggle)}
+          className={
+            `grid cursor-pointer items-center gap-x-3 border-b border-border px-4 py-2.5 transition-colors group-hover:bg-surface-secondary min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
+            (extra ? EXTRA_GRID_COLS : GRID_COLS) +
+            (open ? ' bg-accent-soft/50' : '')
+          }
         >
-          <ToyActionButtons onEdit={onEdit} onCopy={onCopy} onDelete={onDelete} />
+          <Thumb toy={toy} />
+          <NameCol toy={toy} />
+          <div className={HIDDEN_SIZE}>
+            {toy.size && (
+              <Chip size="sm" color="accent">
+                <Chip.Label>{toy.size}</Chip.Label>
+              </Chip>
+            )}
+          </div>
+          <Metric value={toy.insertableLength} unit={unit} />
+          <Metric value={displayGirth(toy.circumference, girth)} unit={unit} />
+          {extra && <ExtraMetric value={extra.valueFor(toy)} />}
+        </div>
+        <div className="absolute right-3 top-1/2 hidden -translate-y-1/2 gap-1 rounded-md bg-surface/95 p-0.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 sm:flex min-[640px]:right-4">
+          <ToyActionButtons toy={toy} actions={actions} />
         </div>
       </div>
       {open && <ExpandedPanel toy={toy} />}
