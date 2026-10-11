@@ -24,7 +24,6 @@ import {
   toysToysList,
   toysToysPartialUpdate,
 } from '@/api/generated/sdk';
-import { API_CONFIG } from '@/config';
 import { localDateKey } from '@/lib/dates';
 import { NO_SESSION_FILTERS, type SessionFilters, sessionFilterWireParams } from '@/features/sessions/session';
 import { camelToSnake, snakeToCamel } from '@/api/case';
@@ -36,7 +35,6 @@ import type {
   ToyRequest as ApiToyRequest,
 } from '@/api/generated/schemas';
 import {
-  APIError,
   type AttributeSuggestion,
   type DeleteCollectionSummary,
   type ImportSummary,
@@ -56,22 +54,6 @@ const camel = <T>(response: Promise<unknown>): Promise<T> => response.then((data
 export const login = async (username: string, password: string): Promise<TokenPair> => {
   const { access, refresh } = await toysTokenCreate({ username, password });
   return { access, refresh };
-};
-
-export const refreshTokens = async (refresh: string): Promise<TokenPair> => {
-  const response = await fetch(new URL('/toys/token/refresh/', API_CONFIG.baseUrl), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh }),
-  });
-  if (!response.ok) {
-    throw new APIError(`Refresh failed: ${response.status}`, response.status, null);
-  }
-  const data = (await response.json()) as Partial<TokenPair>;
-  if (!data.access) {
-    throw new APIError('Refresh response missing access token', response.status, data);
-  }
-  return { access: data.access, refresh: data.refresh ?? refresh };
 };
 
 export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {

@@ -1,5 +1,5 @@
 import { API_CONFIG } from '@/config';
-import { refreshTokens } from '@/api/index';
+import { getToysTokenCreateUrl, getToysTokenRefreshCreateUrl, toysTokenRefreshCreate } from '@/api/generated/sdk';
 import { APIError, type TokenPair } from '@/api/types';
 
 const ACCESS_KEY = 'auth.access';
@@ -44,8 +44,8 @@ const refreshAccessToken = (): Promise<string | null> => {
 
   refreshInFlight = (async () => {
     try {
-      const tokens = await refreshTokens(refresh);
-      tokenStorage.setTokens(tokens);
+      const tokens = await toysTokenRefreshCreate({ refresh });
+      tokenStorage.setTokens({ access: tokens.access, refresh: tokens.refresh });
       return tokens.access;
     } catch (err) {
       console.warn('Silent token refresh failed', err);
@@ -84,6 +84,9 @@ const toError = async (response: Response): Promise<APIError> => {
   return new APIError(detail, response.status, data);
 };
 
+const isTokenRequest = (url: string): boolean =>
+  url === getToysTokenCreateUrl() || url === getToysTokenRefreshCreateUrl();
+
 const attachAuth = (init: RequestInit): RequestInit => {
   const token = tokenStorage.getAccess();
   if (!token) return init;
@@ -103,7 +106,7 @@ export const customFetch = async <T>(url: string, options: RequestInit): Promise
     throw new APIError('Network error', 0, error);
   }
 
-  if (response.status === 401) {
+  if (response.status === 401 && !isTokenRequest(url)) {
     const newAccess = await refreshAccessToken();
     if (newAccess) {
       try {
