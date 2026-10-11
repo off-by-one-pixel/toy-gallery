@@ -1,4 +1,9 @@
-import type { Toy as EditorToy, ToySection } from 'toy-editor';
+import {
+  DEFAULT_BOTTOM_CURVE_ANGLE,
+  DEFAULT_TOP_CURVE_ANGLE,
+  type Toy as EditorToy,
+  type ToySection,
+} from 'toy-editor';
 import { type SectionShape, type ToyPayload } from '@/api/types';
 import { diameterToCircumference } from '@/features/preferences/units';
 
@@ -78,9 +83,6 @@ export function editorStateFromToy(toy: EditorToy): EditorState {
     knownSizeMm: toy.knownSizeMm ?? null,
   };
 }
-
-const DEFAULT_TOP_CURVE_ANGLE = 0;
-const DEFAULT_BOTTOM_CURVE_ANGLE = 180;
 
 function editorFingerprint(state: EditorState): string {
   return JSON.stringify({

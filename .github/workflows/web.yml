@@ -56,6 +56,9 @@ jobs:
       - name: Generate API SDK
         run: pnpm --filter web codegen
 
+      - name: Find unused code
+        run: pnpm knip
+
       - name: Typecheck
         run: pnpm --filter web exec tsc --noEmit
 

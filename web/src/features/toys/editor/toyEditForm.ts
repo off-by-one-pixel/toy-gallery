@@ -10,7 +10,7 @@ export type ToyIdentity = Readonly<{
 
 export type ToyEditMode = { kind: 'new' } | { kind: 'edit'; toy: Toy } | { kind: 'copy'; toy: Toy };
 
-export type ValidationError = 'identityRequired' | 'sectionsRequired';
+type ValidationError = 'identityRequired' | 'sectionsRequired';
 
 export type ValidationResult =
   Readonly<{ ok: true; payload: ToyPayload }> | Readonly<{ ok: false; error: ValidationError }>;

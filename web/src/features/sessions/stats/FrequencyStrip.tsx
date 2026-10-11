@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-export type FrequencyCell = Readonly<{
+type FrequencyCell = Readonly<{
   key: string | number;
   label: ReactNode;
   fill: string;

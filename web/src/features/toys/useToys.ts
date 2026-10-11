@@ -9,9 +9,9 @@ import { useApiMutation, useApiQuery } from '@/hooks/useApi';
 
 const NO_TOYS: Toy[] = [];
 
-export type SaveToyArgs = Readonly<{ toyId: number | null; payload: ToyPayload }>;
+type SaveToyArgs = Readonly<{ toyId: number | null; payload: ToyPayload }>;
 
-export type UpdateToyArgs = Readonly<{ toyId: number; changes: Partial<ToyPayload> }>;
+type UpdateToyArgs = Readonly<{ toyId: number; changes: Partial<ToyPayload> }>;
 
 export type ToysOptions = Readonly<{ saveErrorSink?: (message: string) => void }>;
 

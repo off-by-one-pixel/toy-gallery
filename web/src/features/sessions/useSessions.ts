@@ -37,7 +37,7 @@ import type { Session } from '@/api/types';
 
 export type SessionPayload = Parameters<typeof createSession>[0];
 
-export type SaveSessionArgs = Readonly<{
+type SaveSessionArgs = Readonly<{
   sessionId: number | null;
   liveStartOnly: boolean;
   payload: SessionPayload;
