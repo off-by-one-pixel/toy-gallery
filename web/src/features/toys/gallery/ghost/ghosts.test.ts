@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Toy } from '@/api/types';
-import { makeToy } from '@/test/fixtures';
+import { makeGhost, makeToy } from '@/test/fixtures';
 import { Unit } from '@/features/preferences/units';
 import { silhouetteDiameter, silhouetteHeight } from '@/features/toys/dimensions';
 import {
@@ -15,21 +15,12 @@ import {
   mergeGalleryItems,
   parseGhostInputs,
   updateGhostDimensions,
-  type GhostToy,
 } from '@/features/toys/gallery/ghost/ghosts';
 
 const shape = { sections: [{ order: 0, diameter: 45, height: 150, circumference: 130 }] } as Toy['shape'];
 
 const toy = (id: number, name: string, circumference: number | null, insertableLength: number | null): Toy =>
   makeToy({ id, brand: 'Acme', name, size: 'M', circumference, insertableLength, shape } as Partial<Toy>);
-
-const ghost = (id: number, circumference: number, insertableLength: number): GhostToy => ({
-  id,
-  sourceName: 'Acme Source M',
-  circumference,
-  insertableLength,
-  shape,
-});
 
 const itemLabel = (item: ReturnType<typeof mergeGalleryItems>[number]) =>
   item.kind === 'toy' ? item.toy.name : `ghost-${item.ghost.id}`;
@@ -81,26 +72,30 @@ describe('mergeGalleryItems', () => {
   const toys = [toy(1, 'Small', 100, 120), toy(2, 'Mid', 130, 150), toy(3, 'Big', 160, 190)];
 
   it('inserts ghosts at their sorted position for girth ascending', () => {
-    const items = mergeGalleryItems(toys, [ghost(1, 140, 165)], { column: 'circumference', direction: 'asc' });
+    const items = mergeGalleryItems(toys, [makeGhost()], { column: 'circumference', direction: 'asc' });
     expect(items.map(itemLabel)).toEqual(['Small', 'Mid', 'ghost-1', 'Big']);
   });
 
   it('respects descending direction', () => {
     const sorted = [...toys].reverse();
-    const items = mergeGalleryItems(sorted, [ghost(1, 140, 165)], { column: 'circumference', direction: 'desc' });
+    const items = mergeGalleryItems(sorted, [makeGhost()], { column: 'circumference', direction: 'desc' });
     expect(items.map(itemLabel)).toEqual(['Big', 'ghost-1', 'Mid', 'Small']);
   });
 
   it('orders ghosts against each other by insertable length', () => {
-    const items = mergeGalleryItems(toys, [ghost(1, 0, 200), ghost(2, 0, 130)], {
-      column: 'insertable',
-      direction: 'asc',
-    });
+    const items = mergeGalleryItems(
+      toys,
+      [
+        makeGhost({ id: 1, circumference: 0, insertableLength: 200 }),
+        makeGhost({ id: 2, circumference: 0, insertableLength: 130 }),
+      ],
+      { column: 'insertable', direction: 'asc' },
+    );
     expect(items.map(itemLabel)).toEqual(['Small', 'ghost-2', 'Mid', 'Big', 'ghost-1']);
   });
 
   it('appends ghosts for unmapped sort columns', () => {
-    const byName = mergeGalleryItems(toys, [ghost(1, 140, 165)], { column: 'name', direction: 'asc' });
+    const byName = mergeGalleryItems(toys, [makeGhost()], { column: 'name', direction: 'asc' });
     expect(itemLabel(byName.at(-1)!)).toBe('ghost-1');
   });
 });
@@ -158,8 +153,8 @@ describe('formatSignedMm', () => {
 
 describe('ghostColor', () => {
   it('cycles the palette by ghost id', () => {
-    expect(ghostColor(ghost(1, 140, 165))).toBe(GHOST_COLORS[0]);
-    expect(ghostColor(ghost(2, 140, 165))).toBe(GHOST_COLORS[1]);
-    expect(ghostColor(ghost(GHOST_COLORS.length + 1, 140, 165))).toBe(GHOST_COLORS[0]);
+    expect(ghostColor(makeGhost())).toBe(GHOST_COLORS[0]);
+    expect(ghostColor(makeGhost({ id: 2 }))).toBe(GHOST_COLORS[1]);
+    expect(ghostColor(makeGhost({ id: GHOST_COLORS.length + 1 }))).toBe(GHOST_COLORS[0]);
   });
 });

@@ -21,20 +21,11 @@ vi.mock('@/features/sessions/media/useMediaLightboxNav', () => ({
 }));
 
 import { fetchMediaStatus, fetchSessionMedia, setMediaLiked } from '@/api';
-import type { SessionMedia, SessionMediaItem } from '@/api/types';
+import type { SessionMedia } from '@/api/types';
+import { makeMediaItem } from '@/test/fixtures';
 import { createTestQueryClient } from '@/test/QueryWrapper';
 import { appWrapper } from '@/test/render';
 import { useMediaStrip } from '@/features/sessions/media/useMediaStrip';
-
-const item = (overrides: Partial<SessionMediaItem> = {}): SessionMediaItem => ({
-  id: 'a1',
-  kind: 'image',
-  takenAt: '2026-06-01T20:10:00',
-  thumbnailUrl: 'https://immich/thumb1',
-  fullUrl: 'https://immich/full1',
-  liked: false,
-  ...overrides,
-});
 
 const media = (overrides: Partial<SessionMedia> = {}): SessionMedia => ({
   configured: true,
@@ -62,7 +53,7 @@ describe('useMediaStrip', () => {
   });
 
   it('loads the session media once configured', async () => {
-    vi.mocked(fetchSessionMedia).mockResolvedValue(media({ items: [item()], shareUrl: 'https://s' }));
+    vi.mocked(fetchSessionMedia).mockResolvedValue(media({ items: [makeMediaItem()], shareUrl: 'https://s' }));
     const { result } = renderStrip();
     await settle(() => expect(result.current.items).toHaveLength(1));
     expect(fetchSessionMedia).toHaveBeenCalledWith(1);
@@ -95,8 +86,8 @@ describe('useMediaStrip', () => {
 
   it('toggles a like through the API and reconciles the cache', async () => {
     vi.mocked(fetchSessionMedia)
-      .mockResolvedValueOnce(media({ items: [item()] }))
-      .mockResolvedValue(media({ items: [item({ liked: true })] }));
+      .mockResolvedValueOnce(media({ items: [makeMediaItem()] }))
+      .mockResolvedValue(media({ items: [makeMediaItem({ liked: true })] }));
     const client = createTestQueryClient();
     const { result } = renderStrip(client);
     await settle(() => expect(result.current.items).toHaveLength(1));

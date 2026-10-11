@@ -26,18 +26,8 @@ import {
   toyTooltip,
   toysById,
 } from '@/features/sessions/session';
-import { Involvement, type Session, type SessionEntry, type Toy } from '@/api/types';
-
-const session = (id: number, isoDay: string): Session => ({
-  id,
-  startedAt: `${isoDay}T10:00:00`,
-  isLive: false,
-  entries: [],
-  records: [],
-  totalToyDurationMinutes: null,
-  maxInsertableLength: null,
-  maxCircumference: null,
-});
+import { Involvement, type SessionEntry } from '@/api/types';
+import { makeSession, makeToy } from '@/test/fixtures';
 
 describe('INVOLVEMENT_RANK', () => {
   it('orders FULLY_INSERTED < INSERTED < USED', () => {
@@ -48,34 +38,21 @@ describe('INVOLVEMENT_RANK', () => {
 
 describe('mergeSessions', () => {
   it('appends only unseen ids preserving order', () => {
-    const a = session(1, '2026-06-05');
-    const b = session(2, '2026-06-04');
-    const c = session(3, '2026-06-03');
+    const a = makeSession({ id: 1 });
+    const b = makeSession({ id: 2 });
+    const c = makeSession({ id: 3 });
     expect(mergeSessions([a, b], [b, c]).map((s) => s.id)).toEqual([1, 2, 3]);
   });
 
   it('handles empty sides', () => {
-    const a = session(1, '2026-06-05');
+    const a = makeSession({ id: 1 });
     expect(mergeSessions([], [a]).map((s) => s.id)).toEqual([1]);
     expect(mergeSessions([a], []).map((s) => s.id)).toEqual([1]);
   });
 });
 
 describe('sortEntriesByInvolvement', () => {
-  const toy = (id: number, circumference: number | null): Toy =>
-    ({
-      id,
-      brand: 'B',
-      name: `t${id}`,
-      size: '',
-      usageCount: 0,
-      totalDurationMinutes: 0,
-      maxDurationMinutes: 0,
-      records: [],
-      circumference,
-      shape: { sections: [] },
-    }) as Toy;
-  const toys = new Map([1, 2, 3, 4].map((id) => [id, toy(id, id === 4 ? 90 : 100 + id * 10)]));
+  const toys = new Map([1, 2, 3, 4].map((id) => [id, makeToy({ id, circumference: id === 4 ? 90 : 100 + id * 10 })]));
   const entries: SessionEntry[] = [
     { toy: 1, involvement: Involvement.FULLY_INSERTED },
     { toy: 2, involvement: Involvement.USED },
@@ -111,30 +88,9 @@ describe('sortEntriesByInvolvement', () => {
 });
 
 describe('toysById', () => {
-  const t1: Toy = {
-    id: 1,
-    brand: 'A',
-    name: 'a',
-    size: '',
-    usageCount: 0,
-    totalDurationMinutes: 0,
-    maxDurationMinutes: 0,
-    records: [],
-    shape: { sections: [] },
-  } as Toy;
-  const t2: Toy = {
-    id: 2,
-    brand: 'B',
-    name: 'b',
-    size: '',
-    usageCount: 0,
-    totalDurationMinutes: 0,
-    maxDurationMinutes: 0,
-    records: [],
-    shape: { sections: [] },
-  } as Toy;
-
   it('builds a map keyed by toy.id', () => {
+    const t1 = makeToy({ id: 1 });
+    const t2 = makeToy({ id: 2 });
     const map = toysById([t1, t2]);
     expect(map.get(1)).toBe(t1);
     expect(map.get(2)).toBe(t2);
@@ -147,15 +103,15 @@ describe('toysById', () => {
 
 describe('toyTooltip', () => {
   it('joins brand, name, size with single spaces', () => {
-    expect(toyTooltip({ brand: 'Acme', name: 'Slim', size: 'M' } as Toy)).toBe('Acme Slim M');
+    expect(toyTooltip(makeToy({ brand: 'Acme', name: 'Slim', size: 'M' }))).toBe('Acme Slim M');
   });
 
   it('omits empty parts', () => {
-    expect(toyTooltip({ brand: 'Acme', name: 'Slim', size: '' } as Toy)).toBe('Acme Slim');
+    expect(toyTooltip(makeToy({ brand: 'Acme', name: 'Slim', size: '' }))).toBe('Acme Slim');
   });
 
   it('returns an empty string when every part is empty', () => {
-    expect(toyTooltip({ brand: '', name: '', size: '' } as Toy)).toBe('');
+    expect(toyTooltip(makeToy({ brand: '', name: '', size: '' }))).toBe('');
   });
 });
 
