@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { StyleOption, Toy } from '../toyMachine';
 import { Shape, useToyStore } from '../toyMachine';
 import EditorRender from './editor/EditorRender';
 import { useReferenceImage } from './editor/hooks/useReferenceImage';
 import ReferenceImageControls from './editor/ReferenceImageControls';
-import { EditorPaletteContext, type PaletteColor } from './editor/palette';
-import { EditorLabelsContext, type ToyEditorLabels } from './editor/labels';
+import type { ToyEditorLabels } from './editor/labels';
 import KnownMeasurements from './KnownMeasurements';
-import { EditorUnitContext, type Unit } from './unit';
+import { EditorConfigContext, type PaletteColor, type Unit } from './editorConfig';
 
 const NO_PALETTE: readonly PaletteColor[] = [];
 
@@ -39,64 +38,61 @@ const ToyEditor = ({ style = {}, initialToy, leadingSlot, unit, palette = NO_PAL
   const hydrate = useToyStore((s) => s.hydrate);
   const mergedStyle = { ...DEFAULT_STYLE, ...style };
   const reference = useReferenceImage();
+  const config = useMemo(() => ({ unit, labels, palette }), [unit, labels, palette]);
 
   useEffect(() => {
     if (initialToy) hydrate(initialToy);
   }, [initialToy, hydrate]);
 
   return (
-    <EditorUnitContext.Provider value={unit}>
-      <EditorLabelsContext.Provider value={labels}>
-        <EditorPaletteContext.Provider value={palette}>
-          <div className="toy-editor-root">
-            <div className="toy-editor-main">
-              <KnownMeasurements />
+    <EditorConfigContext.Provider value={config}>
+      <div className="toy-editor-root">
+        <div className="toy-editor-main">
+          <KnownMeasurements />
 
-              <section className="toy-editor-canvas" onDragOver={reference.onDragOver} onDrop={reference.onDrop}>
-                <ReferenceImageControls reference={reference} />
+          <section className="toy-editor-canvas" onDragOver={reference.onDragOver} onDrop={reference.onDrop}>
+            <ReferenceImageControls reference={reference} />
 
-                <div className="toy-editor-cap-row top">
-                  <ShapeSelect
-                    id="toy-editor-top-shape"
-                    label={labels.topShape}
-                    shapeNames={labels.shapes}
-                    value={toy.topShape}
-                    onChange={toy.setTopShape}
-                  />
-                </div>
-
-                <div className="toy-editor-stage">
-                  <EditorRender
-                    toy={toy}
-                    style={mergedStyle}
-                    referenceImage={reference.image}
-                    onReferenceImageChange={reference.setImage}
-                  />
-                </div>
-
-                <div className="toy-editor-cap-row bottom">
-                  <ShapeSelect
-                    id="toy-editor-bottom-shape"
-                    label={labels.bottomShape}
-                    shapeNames={labels.shapes}
-                    value={toy.bottomShape}
-                    onChange={toy.setBottomShape}
-                  />
-                </div>
-
-                <div className="toy-editor-canvas-actions">
-                  <button type="button" className="toy-editor-btn toy-editor-add" onClick={() => toy.newSection()}>
-                    {labels.addSection}
-                  </button>
-                </div>
-              </section>
+            <div className="toy-editor-cap-row top">
+              <ShapeSelect
+                id="toy-editor-top-shape"
+                label={labels.topShape}
+                shapeNames={labels.shapes}
+                value={toy.topShape}
+                onChange={toy.setTopShape}
+              />
             </div>
 
-            {leadingSlot && <aside className="toy-editor-side">{leadingSlot}</aside>}
-          </div>
-        </EditorPaletteContext.Provider>
-      </EditorLabelsContext.Provider>
-    </EditorUnitContext.Provider>
+            <div className="toy-editor-stage">
+              <EditorRender
+                toy={toy}
+                style={mergedStyle}
+                referenceImage={reference.image}
+                onReferenceImageChange={reference.setImage}
+              />
+            </div>
+
+            <div className="toy-editor-cap-row bottom">
+              <ShapeSelect
+                id="toy-editor-bottom-shape"
+                label={labels.bottomShape}
+                shapeNames={labels.shapes}
+                value={toy.bottomShape}
+                onChange={toy.setBottomShape}
+              />
+            </div>
+
+            <div className="toy-editor-canvas-actions">
+              <button type="button" className="toy-editor-btn toy-editor-add" onClick={() => toy.newSection()}>
+                {labels.addSection}
+              </button>
+            </div>
+          </section>
+        </div>
+
+        {leadingSlot && <aside className="toy-editor-side">{leadingSlot}</aside>}
+      </div>
+    </EditorConfigContext.Provider>
   );
 };
 

@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { formatMm, parseMm } from '../util/fmt';
 import { useToyStore } from '../toyMachine';
-import { useEditorLabels } from './editor/labels';
-import { useEditorUnit } from './unit';
+import { useEditorConfig } from './editorConfig';
 
 const KnownMeasurements = () => {
-  const labels = useEditorLabels();
+  const { labels } = useEditorConfig();
   const insertable = useToyStore((s) => s.insertableLengthMm);
   const knownTotal = useToyStore((s) => s.knownTotalMm);
   const knownSize = useToyStore((s) => s.knownSizeMm);
@@ -55,7 +54,7 @@ type NumberFieldProps = {
 };
 
 const NumberField = ({ label, mm, onChangeMm }: NumberFieldProps) => {
-  const unit = useEditorUnit();
+  const { unit } = useEditorConfig();
   const [draft, setDraft] = useState<string | null>(null);
   const display = draft ?? formatMm(mm, unit);
 

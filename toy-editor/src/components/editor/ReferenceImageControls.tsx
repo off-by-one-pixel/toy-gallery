@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { ReferenceImageState } from './hooks/useReferenceImage';
-import { useEditorLabels } from './labels';
+import { useEditorConfig } from '../editorConfig';
 
 const PictureIcon = ({ crossed }: { crossed: boolean }) => (
   <svg
@@ -23,7 +23,7 @@ const PictureIcon = ({ crossed }: { crossed: boolean }) => (
 
 const ReferenceImageControls = ({ reference }: { reference: ReferenceImageState }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const labels = useEditorLabels();
+  const { labels } = useEditorConfig();
   const loaded = reference.image !== null;
   const label = loaded ? labels.removeReferenceImage : labels.addReferenceImage;
 

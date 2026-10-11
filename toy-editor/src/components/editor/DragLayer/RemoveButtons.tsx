@@ -2,15 +2,13 @@ import { useToyStore } from '../../../toyMachine';
 import { useEditorLayoutCtx } from '../EditorLayoutContext';
 import { removeButtonPosition } from '../geometry';
 import { LABEL_INPUT_H_PX, REMOVE_R_PX } from '../layout';
-import { useEditorLabels } from '../labels';
-import { useEditorPalette } from '../palette';
+import { useEditorConfig } from '../../editorConfig';
 
 const RemoveButtons = () => {
   const layout = useEditorLayoutCtx();
   const removeSection = useToyStore((s) => s.removeSection);
   const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
-  const palette = useEditorPalette();
-  const labels = useEditorLabels();
+  const { palette, labels } = useEditorConfig();
   const xOffset = palette.length > 0 ? LABEL_INPUT_H_PX + 8 : 0;
 
   if (layout.sectionMeta.length <= 1) return null;

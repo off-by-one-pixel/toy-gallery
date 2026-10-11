@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { formatMm, parseMm } from '../../util/fmt';
-import { useEditorUnit } from '../unit';
+import { useEditorConfig } from '../editorConfig';
 import { LABEL_INPUT_H_PX, LABEL_INPUT_W_PX } from './layout';
 
 type Props = {
@@ -30,7 +30,7 @@ const FloatingInput = ({
   trailing,
   onChange,
 }: Props) => {
-  const unit = useEditorUnit();
+  const { unit } = useEditorConfig();
   const [draft, setDraft] = useState<string | null>(null);
   const display = draft ?? formatMm(value, unit);
   const stateClass = touched ? 'is-touched' : 'is-default';

@@ -1,6 +1,6 @@
 import { Shape, sectionBottomCurveAngle, sectionTopCurveAngle, useToyStore, type CurveAngle } from '../../toyMachine';
 import { useEditorLayoutCtx } from './EditorLayoutContext';
-import { useEditorLabels } from './labels';
+import { useEditorConfig } from '../editorConfig';
 import { rimButtonsGeometry, rimTickLine, type RimButtonPos } from './geometry';
 import { RIM_BUTTON_R_PX } from './layout';
 
@@ -32,7 +32,7 @@ type Props = {
 
 const CurveAngleButtons = ({ hoveredSectionId, onHover }: Props) => {
   const layout = useEditorLayoutCtx();
-  const labels = useEditorLabels();
+  const { labels } = useEditorConfig();
   const bottomShape = useToyStore((s) => s.bottomShape);
   const cycleTop = useToyStore((s) => s.cycleTopCurveAngle);
   const cycleBot = useToyStore((s) => s.cycleBottomCurveAngle);
