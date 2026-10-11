@@ -28,7 +28,7 @@ vi.mock('@/features/toys/useToys', () => ({
 import en from '@/i18n/catalogs/en.json';
 import { resetNavigation } from '@/test/navigation';
 import { makeSession, makeToy } from '@/test/fixtures';
-import { formatElapsed } from '@/lib/duration';
+import { formatDuration } from '@/lib/duration';
 import { withAppProviders } from '@/test/render';
 import SessionForm from '@/features/sessions/form/SessionForm';
 
@@ -110,7 +110,7 @@ describe('SessionForm live sessions', () => {
     render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
 
     const wholeSession = await settle(() =>
-      screen.getByRole('button', { name: `${en.session.duration.wholeSession} · ${formatElapsed(90, 'en')}` }),
+      screen.getByRole('button', { name: `${en.session.duration.wholeSession} · ${formatDuration(90, 'en')}` }),
     );
     expect(screen.queryByRole('button', { name: new RegExp(`^${en.session.duration.soFar} ·`) })).toBeNull();
     fireEvent.click(wholeSession);

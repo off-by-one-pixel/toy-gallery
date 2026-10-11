@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
 import { useGirth } from '@/features/preferences/useGirth';
 import { displayGirth } from '@/features/preferences/girth';
-import { formatElapsed, formatElapsedSeconds, secondsBetween } from '@/lib/duration';
+import { formatDuration, secondsBetween } from '@/lib/duration';
 import { useNow } from '@/hooks/useNow';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
@@ -80,8 +80,8 @@ function SessionRow({
   const now = useNow(1000, session.isLive);
   const totalMinutes = session.totalToyDurationMinutes ?? 0;
   const timeValue = session.isLive
-    ? formatElapsedSeconds(Math.max(0, secondsBetween(session.startedAt, now.toISOString())), locale)
-    : formatElapsed(totalMinutes, locale);
+    ? formatDuration(secondsBetween(session.startedAt, now.toISOString()), locale, 'second')
+    : formatDuration(totalMinutes, locale);
 
   const recordCtx = { t: catalog, girth, unit, locale };
   const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);

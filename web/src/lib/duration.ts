@@ -1,52 +1,35 @@
 export const DURATION_INCREMENTS_MINUTES = [60, 30, 5, 1] as const;
 
-type DurationUnit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second';
+const UNIT_SECONDS = {
+  year: 31_536_000,
+  month: 2_592_000,
+  day: 86_400,
+  hour: 3_600,
+  minute: 60,
+  second: 1,
+} as const;
 
-const unitFormat = (locale: string, unit: DurationUnit, value: number, minimumIntegerDigits = 1): string =>
+type DurationUnit = keyof typeof UNIT_SECONDS;
+
+const UNITS = Object.keys(UNIT_SECONDS) as DurationUnit[];
+
+const unitFormat = (locale: string, unit: DurationUnit, value: number): string =>
   new Intl.NumberFormat(locale, {
     style: 'unit',
     unit,
     unitDisplay: unit === 'month' ? 'short' : 'narrow',
-    minimumIntegerDigits,
+    minimumIntegerDigits: unit === 'second' ? 2 : 1,
   }).format(value);
 
-const ELAPSED_UNITS: readonly { unit: DurationUnit; minutes: number }[] = [
-  { unit: 'year', minutes: 525_600 },
-  { unit: 'month', minutes: 43_200 },
-  { unit: 'day', minutes: 1_440 },
-  { unit: 'hour', minutes: 60 },
-  { unit: 'minute', minutes: 1 },
-];
-
-export const formatElapsed = (minutes: number, locale: string): string => {
+export const formatDuration = (value: number, locale: string, unit: 'minute' | 'second' = 'minute'): string => {
   const parts: string[] = [];
-  let remaining = Math.max(0, Math.floor(minutes));
-  for (const { unit, minutes: size } of ELAPSED_UNITS) {
-    const value = Math.floor(remaining / size);
-    remaining -= value * size;
-    if (value > 0 || unit === 'minute') parts.push(unitFormat(locale, unit, value));
+  let remaining = Math.max(0, Math.floor(value)) * UNIT_SECONDS[unit];
+  for (const part of UNITS.slice(0, UNITS.indexOf(unit) + 1)) {
+    const count = Math.floor(remaining / UNIT_SECONDS[part]);
+    remaining %= UNIT_SECONDS[part];
+    if (count > 0 || part === 'second') parts.push(unitFormat(locale, part, count));
   }
-  return parts.join(' ');
-};
-
-export const formatElapsedSeconds = (seconds: number, locale: string): string => {
-  const parts: string[] = [];
-  let remaining = Math.max(0, Math.floor(seconds));
-  for (const { unit, minutes: size } of ELAPSED_UNITS) {
-    const value = Math.floor(remaining / (size * 60));
-    remaining -= value * size * 60;
-    if (value > 0 || parts.length > 0) parts.push(unitFormat(locale, unit, value));
-  }
-  parts.push(unitFormat(locale, 'second', remaining, 2));
-  return parts.join(' ');
-};
-
-export const formatDuration = (minutes: number, locale: string): string => {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h > 0 && m > 0) return `${unitFormat(locale, 'hour', h)} ${unitFormat(locale, 'minute', m)}`;
-  if (h > 0) return unitFormat(locale, 'hour', h);
-  return unitFormat(locale, 'minute', m);
+  return parts.length > 0 ? parts.join(' ') : unitFormat(locale, unit, 0);
 };
 
 export const minutesBetween = (start: string, end: string): number =>

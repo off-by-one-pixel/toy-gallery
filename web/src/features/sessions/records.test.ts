@@ -49,7 +49,7 @@ describe('SESSION_RECORDS', () => {
   it('formats time records as elapsed duration without a unit suffix', () => {
     expect(SESSION_RECORDS['toy-time'].value(90, ctx())).toEqual({ text: '1h 30m' });
     expect(SESSION_RECORDS['pr-time'].value(45, ctx())).toEqual({ text: '45m' });
-    expect(SESSION_RECORDS['pr-duration'].value(120, ctx())).toEqual({ text: '2h 0m' });
+    expect(SESSION_RECORDS['pr-duration'].value(120, ctx())).toEqual({ text: '2h' });
   });
 
   it('formats level records as the involvement label', () => {
