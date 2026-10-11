@@ -25,6 +25,15 @@ class MediaCounts:
     photos: int
     videos: int
 
+    @classmethod
+    def from_kinds(cls, kinds) -> "MediaCounts":
+        kinds = list(kinds)
+        videos = kinds.count("video")
+        return cls(photos=len(kinds) - videos, videos=videos)
+
+
+NO_MEDIA = MediaCounts(photos=0, videos=0)
+
 
 @dataclass(frozen=True)
 class MediaRefreshResult:

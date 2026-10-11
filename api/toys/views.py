@@ -214,18 +214,24 @@ def _filter_sessions(queryset, params):
     return queryset.filter(window) if window else queryset
 
 
+MEDIA_COUNT_FIELDS = ["photo_count", "video_count"]
+
+
+def _apply_media_counts(session, counts):
+    if (session.photo_count, session.video_count) == (counts.photos, counts.videos):
+        return False
+    session.photo_count, session.video_count = counts.photos, counts.videos
+    return True
+
+
 def _store_media_counts(counts):
-    changed = []
-    for session in models.Session.objects.all():
-        new = counts.get(session.id)
-        photos = new.photos if new else 0
-        videos = new.videos if new else 0
-        if session.photo_count != photos or session.video_count != videos:
-            session.photo_count = photos
-            session.video_count = videos
-            changed.append(session)
+    changed = [
+        session
+        for session in models.Session.objects.all()
+        if _apply_media_counts(session, counts.get(session.id, media.NO_MEDIA))
+    ]
     if changed:
-        models.Session.objects.bulk_update(changed, ["photo_count", "video_count"])
+        models.Session.objects.bulk_update(changed, MEDIA_COUNT_FIELDS)
 
 
 @extend_schema_view(
@@ -279,13 +285,9 @@ class SessionViewSet(viewsets.ModelViewSet):
         result = media.get_provider().session_media(
             session.id, session.started_at, session.ended_at
         )
-        if result.authoritative:
-            videos = sum(1 for item in result.items if item["kind"] == "video")
-            photos = len(result.items) - videos
-            if session.photo_count != photos or session.video_count != videos:
-                session.photo_count = photos
-                session.video_count = videos
-                session.save(update_fields=["photo_count", "video_count"])
+        counts = media.MediaCounts.from_kinds(item["kind"] for item in result.items)
+        if result.authoritative and _apply_media_counts(session, counts):
+            session.save(update_fields=MEDIA_COUNT_FIELDS)
         return Response(
             {
                 "configured": result.configured,

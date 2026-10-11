@@ -34,10 +34,6 @@ def _link_marker(session_id: int, asset_ids: list[str]) -> str:
     return f"{LINK_MARKER_PREFIX}:{session_id}:{_asset_set_hash(asset_ids)}"
 
 
-def _session_marker_prefix(session_id: int) -> str:
-    return f"{LINK_MARKER_PREFIX}:{session_id}:"
-
-
 def _marker_session_id(description: str) -> int | None:
     parts = description.split(":")
     if len(parts) != 3 or parts[0] != LINK_MARKER_PREFIX:
@@ -145,27 +141,23 @@ class ImmichClient:
     def shared_links(self) -> list[SharedLink]:
         return [_parse_link(raw) for raw in self._request("GET", "/shared-links") or []]
 
-    def ensure_shared_link(self, session_id: int, asset_ids: list[str]) -> str:
+    def session_links(self, session_id: int) -> list[SharedLink]:
+        return [link for link in self.shared_links() if link.session_id == session_id]
+
+    def sync_session_links(
+        self, session_id: int, asset_ids: list[str], links: list[SharedLink]
+    ) -> str | None:
         marker = _link_marker(session_id, asset_ids)
-        session_prefix = _session_marker_prefix(session_id)
-        reusable_key = None
-        stale_link_ids = []
-
-        for link in self.shared_links():
-            if not link.description.startswith(session_prefix):
-                continue
-            matches = link.description == marker and self._has_remaining_life(link)
-            if reusable_key is None and matches:
-                reusable_key = link.key
+        kept_key = None
+        for link in links:
+            reusable = asset_ids and link.description == marker and self._has_remaining_life(link)
+            if kept_key is None and reusable:
+                kept_key = link.key
             else:
-                stale_link_ids.append(link.id)
-
-        for link_id in stale_link_ids:
-            self._delete_link(link_id)
-
-        if reusable_key is not None:
-            return reusable_key
-        return self._create_link(marker, asset_ids)
+                self._delete_link(link.id)
+        if kept_key is None and asset_ids:
+            kept_key = self._create_link(marker, asset_ids)
+        return kept_key
 
     def _create_link(self, marker: str, asset_ids: list[str]) -> str:
         expires_at = timezone.now() + timedelta(minutes=settings.SESSION_MEDIA_LINK_MINUTES)
@@ -197,12 +189,6 @@ class ImmichClient:
             return True
         return link.expires_at - timezone.now() >= REUSE_MIN_REMAINING
 
-    def clear_session_links(self, session_id: int) -> None:
-        prefix = _session_marker_prefix(session_id)
-        for link in self.shared_links():
-            if link.description.startswith(prefix):
-                self._delete_link(link.id)
-
     def set_asset_favorite(self, asset_id: str, favorite: bool) -> None:
         self._request("PUT", f"/assets/{asset_id}", json={"isFavorite": favorite})
 
@@ -228,11 +214,6 @@ def _assets_by_session(
             if window_start <= asset.instant <= window_end:
                 per_session[sid].append(asset)
     return per_session
-
-
-def _media_counts(session_assets: list[MediaAsset]) -> MediaCounts:
-    videos = sum(1 for asset in session_assets if asset.kind == "video")
-    return MediaCounts(photos=len(session_assets) - videos, videos=videos)
 
 
 def _links_by_session(links: list[SharedLink]) -> dict[int, list[SharedLink]]:
@@ -291,28 +272,12 @@ class ImmichMediaProvider(SessionMediaProvider):
         counts: dict[int, MediaCounts] = {}
         for sid, session_assets in sorted(_assets_by_session(assets, windows).items()):
             asset_ids = [asset.id for asset in session_assets]
-            if self._sync_session_links(sid, asset_ids, links_by_session.get(sid, [])):
-                counts[sid] = _media_counts(session_assets)
+            if (
+                self.client.sync_session_links(sid, asset_ids, links_by_session.get(sid, []))
+                is not None
+            ):
+                counts[sid] = MediaCounts.from_kinds(asset.kind for asset in session_assets)
         return MediaRefreshResult(configured=True, authoritative=True, counts=counts)
-
-    def _sync_session_links(
-        self, session_id: int, asset_ids: list[str], existing: list[SharedLink]
-    ) -> bool:
-        if not asset_ids:
-            for link in existing:
-                self.client._delete_link(link.id)
-            return False
-        marker = _link_marker(session_id, asset_ids)
-        keep_found = False
-        for link in existing:
-            matches = link.description == marker and self.client._has_remaining_life(link)
-            if not keep_found and matches:
-                keep_found = True
-            else:
-                self.client._delete_link(link.id)
-        if not keep_found:
-            self.client._create_link(marker, asset_ids)
-        return True
 
     @_media_operation(UNCONFIGURED_MEDIA, DEGRADED_MEDIA)
     def session_media(
@@ -320,10 +285,12 @@ class ImmichMediaProvider(SessionMediaProvider):
     ) -> SessionMediaResult:
         start, end = session_media_window(started_at, ended_at)
         assets = self.client.search_assets(start, end)
-        if not assets:
-            self.client.clear_session_links(session_id)
+        asset_ids = [asset.id for asset in assets]
+        key = self.client.sync_session_links(
+            session_id, asset_ids, self.client.session_links(session_id)
+        )
+        if key is None:
             return SessionMediaResult(configured=True, authoritative=True, items=[])
-        key = self.client.ensure_shared_link(session_id, [a.id for a in assets])
         items = [self._media_item(asset, key) for asset in assets]
         return SessionMediaResult(
             configured=True,
