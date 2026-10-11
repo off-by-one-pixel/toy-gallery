@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -18,6 +18,7 @@ import { SESSION_FORM_TOY_SORT, sortToys } from '@/features/toys/toySort';
 import { useSaveSession, useSession } from '@/features/sessions/useSessions';
 import { useToys } from '@/features/toys/useToys';
 import SearchInput from '@/components/SearchInput';
+import TextInput from '@/components/TextInput';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
 import SectionHeading from '@/components/SectionHeading';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
@@ -179,59 +180,13 @@ function SessionFormContent({ mode, onDone, onSaved }: Props) {
             <div className="h-px flex-1 bg-border" />
           </div>
           <div className="flex flex-col gap-3">
-            <div>
-              <div className="mb-1 text-caption font-medium uppercase tracking-wider text-text-tertiary">
-                {t('startedLabel')}
-                <span className="ml-0.5 align-middle text-sm leading-none text-accent">*</span>
-              </div>
-              <div className="flex w-full max-w-90 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm">
-                <Clock size={16} className="shrink-0 text-muted" />
-                <input
-                  type="datetime-local"
-                  value={startedAt}
-                  onChange={(e) => setStartedAt(e.target.value)}
-                  className="min-w-0 flex-1 border-0 bg-transparent text-sm tabular-nums text-foreground outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setStartedAt(datetimeLocalNow())}
-                  className="shrink-0 rounded-md border border-border bg-surface-secondary px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface"
-                >
-                  {t('nowButton')}
-                </button>
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 text-caption font-medium uppercase tracking-wider text-text-tertiary">
-                {t('endedLabel')}
-              </div>
-              <div className="flex w-full max-w-90 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm">
-                <Clock size={16} className="shrink-0 text-muted" />
-                <input
-                  type="datetime-local"
-                  value={endedAt}
-                  onChange={(e) => setEndedAt(e.target.value)}
-                  className="min-w-0 flex-1 border-0 bg-transparent text-sm tabular-nums text-foreground outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setEndedAt(datetimeLocalNow())}
-                  className="shrink-0 rounded-md border border-border bg-surface-secondary px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface"
-                >
-                  {t('nowButton')}
-                </button>
-                {endedAt && (
-                  <button
-                    type="button"
-                    aria-label={t('clearEndedLabel')}
-                    onClick={() => setEndedAt('')}
-                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
-                  >
-                    <X size={14} strokeWidth={2.5} />
-                  </button>
-                )}
-              </div>
-            </div>
+            <DateTimeField label={t('startedLabel')} required value={startedAt} onChange={setStartedAt} />
+            <DateTimeField
+              label={t('endedLabel')}
+              value={endedAt}
+              onChange={setEndedAt}
+              clearLabel={t('clearEndedLabel')}
+            />
           </div>
         </section>
 
@@ -296,5 +251,64 @@ function SessionFormContent({ mode, onDone, onSaved }: Props) {
         </div>
       </div>
     </>
+  );
+}
+
+function DateTimeField({
+  label,
+  required,
+  value,
+  onChange,
+  clearLabel,
+}: Readonly<{
+  label: string;
+  required?: boolean;
+  value: string;
+  onChange: (value: string) => void;
+  clearLabel?: string;
+}>) {
+  const t = useTranslations('session');
+  const id = useId();
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-caption font-medium uppercase tracking-wider text-text-tertiary">
+        {label}
+        {required && (
+          <span aria-hidden className="ml-0.5 align-middle text-sm leading-none text-accent">
+            *
+          </span>
+        )}
+      </label>
+      <TextInput
+        id={id}
+        type="datetime-local"
+        size="sm"
+        value={value}
+        onChange={onChange}
+        className="max-w-90 tabular-nums shadow-sm"
+        leading={<Clock size={16} className="shrink-0 text-muted" />}
+        trailing={
+          <>
+            <button
+              type="button"
+              onClick={() => onChange(datetimeLocalNow())}
+              className="shrink-0 rounded-md border border-border bg-surface-secondary px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface"
+            >
+              {t('nowButton')}
+            </button>
+            {clearLabel && value && (
+              <button
+                type="button"
+                aria-label={clearLabel}
+                onClick={() => onChange('')}
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+              >
+                <X size={14} strokeWidth={2.5} />
+              </button>
+            )}
+          </>
+        }
+      />
+    </div>
   );
 }
