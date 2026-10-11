@@ -10,20 +10,6 @@ vi.mock('@/hooks/useNavigation', async (importOriginal) => {
   return { ...original, useNavigation: () => testNavigation() };
 });
 
-type IOCallback = (entries: Array<{ isIntersecting: boolean }>) => void;
-const ioCallbacks: IOCallback[] = [];
-
-class IntersectionObserverStub {
-  constructor(callback: IOCallback) {
-    ioCallbacks.push(callback);
-  }
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
-
 const { sessionsState, startActionState } = vi.hoisted(() => ({
   sessionsState: { current: {} as Record<string, unknown> },
   startActionState: { current: null as Record<string, unknown> | null },
@@ -86,8 +72,16 @@ import { navState, resetNavigation, updateParamsMock } from '@/test/navigation';
 import type { Session, Toy } from '@/api/types';
 import { currentPeriod, parseSessionFilters, stepPeriod, toysById } from '@/features/sessions/session';
 import { makeSession, makeToy } from '@/test/fixtures';
+import {
+  intersect,
+  observerCallbacks,
+  resetIntersectionObserver,
+  stubIntersectionObserver,
+} from '@/test/intersectionObserver';
 import { withAppProviders } from '@/test/render';
 import SessionList from '@/features/sessions/list/SessionList';
+
+stubIntersectionObserver();
 
 const session = (id: number, media: { photos: number; videos: number } = { photos: 0, videos: 0 }): Session =>
   makeSession({
@@ -134,7 +128,7 @@ describe('SessionList', () => {
     vi.clearAllMocks();
     resetNavigation();
     localStorage.clear();
-    ioCallbacks.length = 0;
+    resetIntersectionObserver();
     startActionState.current = null;
   });
 
@@ -283,8 +277,8 @@ describe('SessionList', () => {
 
   it('loads more when the sentinel intersects', () => {
     const data = renderList({ hasMore: true });
-    expect(ioCallbacks.length).toBeGreaterThan(0);
-    ioCallbacks[ioCallbacks.length - 1]([{ isIntersecting: true }]);
+    expect(observerCallbacks.length).toBeGreaterThan(0);
+    intersect(true);
     expect(data.loadMore).toHaveBeenCalledTimes(1);
   });
 
