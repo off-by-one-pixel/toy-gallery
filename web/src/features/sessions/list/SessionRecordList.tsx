@@ -1,9 +1,6 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
-
-import { useGirth } from '@/features/preferences/useGirth';
-import { type Unit } from '@/features/preferences/units';
+import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
 import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import { recordDisplay } from '@/features/sessions/records';
 import { toyTooltip } from '@/features/sessions/session';
@@ -12,14 +9,10 @@ import type { SessionRecord, Toy } from '@/api/types';
 type Props = Readonly<{
   records: readonly SessionRecord[];
   toysById: Map<number, Toy>;
-  unit: Unit;
 }>;
 
-export default function SessionRecordList({ records, toysById, unit }: Props) {
-  const t = useTranslations();
-  const { girth } = useGirth();
-  const locale = useLocale();
-  const ctx = { t: t, girth, unit, locale };
+export default function SessionRecordList({ records, toysById }: Props) {
+  const ctx = useToyPropertyContext();
 
   const listed = records.flatMap((record) => {
     const display = recordDisplay(record.key);

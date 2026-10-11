@@ -205,7 +205,7 @@ function SessionRow({
       </div>
       {session.records.length > 0 && (
         <div className="relative sm:order-5 sm:col-span-4">
-          <SessionRecordList records={session.records} toysById={toysById} unit={unit} />
+          <SessionRecordList records={session.records} toysById={toysById} />
         </div>
       )}
       {selected && mediaConfigured && (

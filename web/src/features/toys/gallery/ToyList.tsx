@@ -3,41 +3,25 @@
 import { useRef } from 'react';
 import { Chip } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 
 import { useGirth } from '@/features/preferences/useGirth';
 import { useSortOf } from '@/hooks/useSortOf';
-import { useUnit } from '@/features/preferences/useUnit';
 import { toyShapeToEditor } from '@/features/toys/converters/toyShape';
 import { displayGirth } from '@/features/preferences/girth';
 import { cycleSort, type Sort } from '@/lib/sort';
-import { TOY_PROPERTIES, type ToyPropertyContext, type ToyPropertyKey } from '@/features/toys/properties';
-import { attrKeyOf, TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
+import { TOY_SORT, type ToySortColumn as SortColumn } from '@/features/toys/toySort';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { type Toy } from '@/api/types';
 import ToyDetails from '@/features/toys/gallery/ToyDetails';
+import { type SortColumnDisplay, sortColumnDisplay } from '@/features/toys/gallery/sortColumnDisplay';
+import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyActionButtons from '@/features/toys/gallery/ToyActionButtons';
 
 const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr]';
 const EXTRA_GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr_1fr]';
-
-type ExtraColumn = Readonly<{
-  column: SortColumn;
-  label: string;
-  valueFor: (toy: Toy) => string | null;
-}>;
-
-const extraColumnFor = (column: SortColumn, ctx: ToyPropertyContext): ExtraColumn | null => {
-  const attrKey = attrKeyOf(column);
-  if (attrKey !== null) {
-    return { column, label: attrKey, valueFor: (toy) => toy.customAttributes?.[attrKey] ?? null };
-  }
-  const property = TOY_PROPERTIES[column as ToyPropertyKey];
-  if (property.onCard) return null;
-  return { column, label: property.label(ctx), valueFor: (toy) => property.format(toy, ctx) };
-};
 
 const HIDDEN_SIZE = 'hidden min-[640px]:block';
 
@@ -51,15 +35,12 @@ type Props = Readonly<{
 }>;
 
 export default function ToyList({ toys, openToyId, onToggleOpen, onEdit, onCopy, onDelete }: Props) {
-  const { unit } = useUnit();
-  const { girth } = useGirth();
-  const locale = useLocale();
-  const t = useTranslations();
+  const propertyCtx = useToyPropertyContext();
+  const { unit } = propertyCtx;
   const { sort, setSort } = useSortOf(TOY_SORT);
   const handleSort = (column: SortColumn) => setSort(cycleSort(sort, column));
 
-  const propertyCtx: ToyPropertyContext = { t: t, girth, unit, locale };
-  const extra: ExtraColumn | null = sort ? extraColumnFor(sort.column, propertyCtx) : null;
+  const extra = sortColumnDisplay(sort.column, propertyCtx);
 
   return (
     <>
@@ -90,7 +71,7 @@ function ListHeader({
   sort,
   onSort,
   extra,
-}: Readonly<{ sort: Sort; onSort: (column: SortColumn) => void; extra: ExtraColumn | null }>) {
+}: Readonly<{ sort: Sort<SortColumn>; onSort: (column: SortColumn) => void; extra: SortColumnDisplay | null }>) {
   const t = useTranslations('toy.columns');
   const common = useTranslations('common');
   const { girth } = useGirth();
@@ -120,7 +101,7 @@ function ListHeader({
         onSort={onSort}
         align="right"
       />
-      {extra && <SortHeader label={extra.label} column={extra.column} sort={sort} onSort={onSort} align="right" />}
+      {extra && <SortHeader label={extra.label} column={sort.column} sort={sort} onSort={onSort} align="right" />}
     </div>
   );
 }
@@ -183,7 +164,7 @@ function ToyRow({
 }: Readonly<{
   toy: Toy;
   unit: Unit;
-  extra: ExtraColumn | null;
+  extra: SortColumnDisplay | null;
   open: boolean;
   onToggle: () => void;
   onEdit: () => void;

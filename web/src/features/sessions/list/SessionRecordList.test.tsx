@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 
 import en from '@/i18n/catalogs/en.json';
 import type { SessionRecord, Toy } from '@/api/types';
-import { Unit } from '@/features/preferences/units';
 import { makeToy } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
@@ -14,12 +13,7 @@ const record = (key: string, value: number, toy: number | null = 1): SessionReco
 const renderList = (
   records: SessionRecord[],
   toys: Toy[] = [makeToy({ id: 1, brand: 'Acme', name: 'Steel', size: 'M' })],
-) =>
-  render(
-    withAppProviders(
-      <SessionRecordList records={records} toysById={new Map(toys.map((t) => [t.id, t]))} unit={Unit.mm} />,
-    ),
-  );
+) => render(withAppProviders(<SessionRecordList records={records} toysById={new Map(toys.map((t) => [t.id, t]))} />));
 
 describe('SessionRecordList', () => {
   it('lists each record with its label, value and toy', () => {

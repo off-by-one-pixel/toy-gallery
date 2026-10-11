@@ -1,20 +1,17 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
 
 import type { Toy } from '@/api/types';
-import { useGirth } from '@/features/preferences/useGirth';
-import { TOY_PROPERTIES, type ToyLabelContext, type ToyPropertyKey } from '@/features/toys/properties';
+import { TOY_PROPERTIES, type ToyPropertyKey } from '@/features/toys/properties';
+import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
 import { attrKeyOf, galleryToySortConfig, TOY_SORT, type ToySortColumn } from '@/features/toys/toySort';
 import SortControl from '@/components/SortControl';
 
 type Props = Readonly<{ toys?: readonly Toy[] }>;
 
 export default function ToySortControl({ toys }: Props) {
-  const { girth } = useGirth();
-  const t = useTranslations();
-  const ctx: ToyLabelContext = { t: t, girth };
+  const ctx = useToyPropertyContext();
   const config = useMemo(() => (toys ? galleryToySortConfig(toys) : TOY_SORT), [toys]);
   const columnLabel = (column: ToySortColumn): string =>
     attrKeyOf(column) ?? TOY_PROPERTIES[column as ToyPropertyKey].label(ctx);

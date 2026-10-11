@@ -4,7 +4,7 @@ import { formatValue, type Unit } from '@/features/preferences/units';
 import { formatDuration } from '@/lib/duration';
 import type { Translator } from '@/i18n/translator';
 
-export type ToyLabelContext = Readonly<{
+type ToyLabelContext = Readonly<{
   t: Translator;
   girth: Girth;
 }>;
