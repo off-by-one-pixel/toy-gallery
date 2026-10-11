@@ -30,6 +30,7 @@ describe('useAttributeSuggestions', () => {
     const { result } = renderSuggestions();
     await settle(() => expect(result.current.keySuggestions).toEqual(['Base', 'Material']));
     expect(result.current.valuesFor('material')).toEqual(['Glass', 'Silicone']);
+    expect(result.current.valuesFor('  MATERIAL ')).toEqual(['Glass', 'Silicone']);
     expect(result.current.valuesFor('unknown')).toEqual([]);
   });
 
