@@ -23,7 +23,7 @@ vi.mock('@/features/sessions/media/useMediaLightboxNav', () => ({
 import { fetchMediaStatus, fetchSessionMedia, setMediaLiked } from '@/api';
 import type { SessionMedia, SessionMediaItem } from '@/api/types';
 import { createTestQueryClient } from '@/test/QueryWrapper';
-import { withAppProviders } from '@/test/render';
+import { appWrapper } from '@/test/render';
 import { useMediaStrip } from '@/features/sessions/media/useMediaStrip';
 
 const item = (overrides: Partial<SessionMediaItem> = {}): SessionMediaItem => ({
@@ -43,13 +43,8 @@ const media = (overrides: Partial<SessionMedia> = {}): SessionMedia => ({
   ...overrides,
 });
 
-const makeWrapper = (client: QueryClient) =>
-  function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-    return withAppProviders(children, { client });
-  };
-
 const renderStrip = (client: QueryClient = createTestQueryClient(), expectedCount = 1) =>
-  renderHook(() => useMediaStrip(1, expectedCount), { wrapper: makeWrapper(client) });
+  renderHook(() => useMediaStrip(1, expectedCount), { wrapper: appWrapper(client) });
 
 describe('useMediaStrip', () => {
   beforeEach(() => {

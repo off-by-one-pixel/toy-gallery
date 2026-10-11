@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 
-import type { QueryClient } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -12,13 +11,9 @@ vi.mock('@heroui/react', () => ({
 import { Toast } from '@heroui/react';
 
 import { APIError } from '@/api/types';
-import { createTestQueryClient, QueryWrapper } from '@/test/QueryWrapper';
+import { createTestQueryClient } from '@/test/QueryWrapper';
+import { appWrapper } from '@/test/render';
 import { useApiMutation, useApiQuery } from '@/hooks/useApi';
-
-const makeWrapper = (client: QueryClient) =>
-  function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-    return <QueryWrapper client={client}>{children}</QueryWrapper>;
-  };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -37,7 +32,7 @@ describe('useApiMutation', () => {
           invalidates: [['toys']],
           onSuccess,
         }),
-      { wrapper: makeWrapper(client) },
+      { wrapper: appWrapper(client) },
     );
 
     await act(async () => {
@@ -57,7 +52,7 @@ describe('useApiMutation', () => {
           fn: async () => 7,
           invalidates: (value) => [['sessions', 'detail', value]],
         }),
-      { wrapper: makeWrapper(client) },
+      { wrapper: appWrapper(client) },
     );
 
     await act(async () => {
@@ -77,7 +72,7 @@ describe('useApiMutation', () => {
           },
           success: () => 'never',
         }),
-      { wrapper: makeWrapper(client) },
+      { wrapper: appWrapper(client) },
     );
 
     await act(async () => {
@@ -98,7 +93,7 @@ describe('useApiMutation', () => {
           },
           errorSink,
         }),
-      { wrapper: makeWrapper(client) },
+      { wrapper: appWrapper(client) },
     );
 
     await act(async () => {
@@ -119,7 +114,7 @@ describe('useApiMutation', () => {
               resolveCall = resolve;
             }),
         }),
-      { wrapper: makeWrapper(client) },
+      { wrapper: appWrapper(client) },
     );
 
     void result.current.run();
@@ -133,7 +128,7 @@ describe('useApiQuery', () => {
   it('exposes the data with a null error message on success', async () => {
     const client = createTestQueryClient();
     const { result } = renderHook(() => useApiQuery({ key: ['thing'], fn: async () => 'value' }), {
-      wrapper: makeWrapper(client),
+      wrapper: appWrapper(client),
     });
     await settle(() => expect(result.current.data).toBe('value'));
     expect(result.current.errorMessage).toBeNull();
@@ -149,7 +144,7 @@ describe('useApiQuery', () => {
             throw new APIError('boom', 400, { detail: 'boom' });
           },
         }),
-      { wrapper: makeWrapper(client) },
+      { wrapper: appWrapper(client) },
     );
     await settle(() => expect(result.current.errorMessage).toBe('boom'));
   });

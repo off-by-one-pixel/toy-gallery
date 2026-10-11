@@ -24,15 +24,10 @@ import { fetchMediaStatus, rebuildRecords, refreshAllSessionMedia } from '@/api'
 import { tokenStorage } from '@/api/http';
 import { useAppMenuItems } from '@/components/appMenuActions';
 import { createTestQueryClient } from '@/test/QueryWrapper';
-import { withAppProviders } from '@/test/render';
-
-const makeWrapper = (client: QueryClient) =>
-  function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-    return withAppProviders(children, { client });
-  };
+import { appWrapper } from '@/test/render';
 
 const renderItems = (client: QueryClient = createTestQueryClient()) =>
-  renderHook(() => useAppMenuItems(), { wrapper: makeWrapper(client) });
+  renderHook(() => useAppMenuItems(), { wrapper: appWrapper(client) });
 
 const settle = async () => {
   await settleAssert(() => expect(fetchMediaStatus).toHaveBeenCalled());
