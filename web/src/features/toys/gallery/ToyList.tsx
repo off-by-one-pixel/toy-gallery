@@ -16,7 +16,6 @@ import { type Toy } from '@/api/types';
 import ToyDetails from '@/features/toys/gallery/ToyDetails';
 import { type SortColumnDisplay, sortColumnDisplay } from '@/features/toys/gallery/sortColumnDisplay';
 import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
-import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyActionButtons, { type ToyActions } from '@/features/toys/gallery/ToyActionButtons';
 
 const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr]';
@@ -40,25 +39,20 @@ export default function ToyList({ toys, openToyId, onToggleOpen, actions }: Prop
   const extra = sortColumnDisplay(sort.column, propertyCtx);
 
   return (
-    <>
-      <div className="mb-3 hidden items-center justify-end sm:flex">
-        <ToySortControl toys={toys} />
-      </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
-        <ListHeader sort={sort} onSort={handleSort} extra={extra} />
-        {toys.map((toy) => (
-          <ToyRow
-            key={toy.id}
-            toy={toy}
-            unit={unit}
-            extra={extra}
-            open={openToyId === toy.id}
-            onToggle={() => onToggleOpen(toy.id)}
-            actions={actions}
-          />
-        ))}
-      </div>
-    </>
+    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+      <ListHeader sort={sort} onSort={handleSort} extra={extra} />
+      {toys.map((toy) => (
+        <ToyRow
+          key={toy.id}
+          toy={toy}
+          unit={unit}
+          extra={extra}
+          open={openToyId === toy.id}
+          onToggle={() => onToggleOpen(toy.id)}
+          actions={actions}
+        />
+      ))}
+    </div>
   );
 }
 

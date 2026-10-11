@@ -34,7 +34,7 @@ describe('ToyList sort column', () => {
 
   it('adds a column for a sort property that has no column of its own', () => {
     renderList({ column: 'popularity', direction: 'desc' });
-    expect(screen.getAllByRole('button', { name: en.sort.column.popularity })).toHaveLength(2);
+    expect(screen.getByRole('button', { name: en.sort.column.popularity })).toBeTruthy();
     expect(screen.getByText('7')).toBeTruthy();
   });
 

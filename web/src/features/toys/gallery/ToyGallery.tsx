@@ -18,6 +18,7 @@ import { toyActionDefs, type ToyActions } from '@/features/toys/gallery/ToyActio
 import type { GhostDimensions, GhostTarget, GhostToy } from '@/features/toys/gallery/ghost/ghosts';
 import { useGhosts } from '@/features/toys/gallery/ghost/useGhosts';
 import GhostModal from '@/features/toys/gallery/ghost/GhostModal';
+import ClearGhostsButton from '@/features/toys/gallery/ghost/ClearGhostsButton';
 import PageToolbar from '@/components/PageToolbar';
 import SearchInput from '@/components/SearchInput';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
@@ -115,28 +116,35 @@ const ToyGallery = () => {
         </div>
       );
     }
-    if (view === ViewMode.list) {
-      return (
-        <ToyList
-          toys={sortedToys}
-          openToyId={openCardId}
-          onToggleOpen={toggleOpen}
-          actions={{ ...toyActions, onGhost: undefined }}
-        />
-      );
-    }
+    const ghostCount = view === ViewMode.list ? 0 : ghosts.length;
     return (
-      <ToyCards
-        toys={sortedToys}
-        ghosts={ghosts}
-        openToyId={openCardId}
-        onToggleOpen={toggleOpen}
-        actions={toyActions}
-        onEditGhost={handleEditGhost}
-        onRemoveGhost={removeGhost}
-        onClearGhosts={clearGhosts}
-        onNew={toyModal.openNew}
-      />
+      <>
+        <div className={`mb-3 items-center justify-end gap-2 ${ghostCount > 0 ? 'flex' : 'hidden sm:flex'}`}>
+          <ClearGhostsButton count={ghostCount} onClear={clearGhosts} />
+          <div className="hidden sm:block">
+            <ToySortControl toys={toys} />
+          </div>
+        </div>
+        {view === ViewMode.list ? (
+          <ToyList
+            toys={sortedToys}
+            openToyId={openCardId}
+            onToggleOpen={toggleOpen}
+            actions={{ ...toyActions, onGhost: undefined }}
+          />
+        ) : (
+          <ToyCards
+            toys={sortedToys}
+            ghosts={ghosts}
+            openToyId={openCardId}
+            onToggleOpen={toggleOpen}
+            actions={toyActions}
+            onEditGhost={handleEditGhost}
+            onRemoveGhost={removeGhost}
+            onNew={toyModal.openNew}
+          />
+        )}
+      </>
     );
   };
 

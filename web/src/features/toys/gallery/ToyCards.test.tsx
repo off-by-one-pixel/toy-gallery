@@ -47,7 +47,6 @@ const renderCards = (props: Partial<React.ComponentProps<typeof ToyCards>> = {},
     onToggleOpen: noop,
     onEditGhost: vi.fn(),
     onRemoveGhost: vi.fn(),
-    onClearGhosts: vi.fn(),
     onNew: noop,
   };
   render(
@@ -95,20 +94,6 @@ describe('ToyCards ghosts', () => {
 
     fireEvent.click(screen.getByLabelText(en.toy.ghost.editHint));
     expect(handlers.onEditGhost).toHaveBeenCalledWith(makeGhost({ id: 5 }));
-  });
-
-  it('shows the clear-all pill only when ghosts exist and wires it', () => {
-    const bare = renderCards();
-    expect(screen.queryByText(en.toy.ghost.clearAll)).toBeNull();
-    expect(bare.onClearGhosts).not.toHaveBeenCalled();
-  });
-
-  it('clears all ghosts from the pill', () => {
-    const handlers = renderCards({
-      ghosts: [makeGhost(), makeGhost({ id: 2, circumference: 150, insertableLength: 175 })],
-    });
-    fireEvent.click(screen.getByText(en.toy.ghost.clearAll));
-    expect(handlers.onClearGhosts).toHaveBeenCalledTimes(1);
   });
 
   it('offers the compare action on every toy card', () => {
