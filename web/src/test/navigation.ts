@@ -37,3 +37,8 @@ export const testNavigation = (): Navigation => ({
   backOr: backOrMock,
   updateParams: updateParamsMock,
 });
+
+export const navigationModule = async () => ({
+  ...(await vi.importActual<typeof import('@/hooks/useNavigation')>('@/hooks/useNavigation')),
+  useNavigation: testNavigation,
+});
