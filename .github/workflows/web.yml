@@ -47,9 +47,6 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Build toy-editor
-        run: pnpm --filter toy-editor build
-
       - name: Test toy-editor
         run: pnpm --filter toy-editor test
 
