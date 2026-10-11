@@ -1,36 +1,19 @@
 {
   "name": "toy-editor",
   "version": "0.1.0",
+  "private": true,
   "description": "Headless React component for editing stacked cylindrical sections (toys, cones, etc.)",
   "type": "module",
   "sideEffects": [
     "**/*.css"
   ],
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./styles.css": "./dist/styles.css",
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css",
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "react",
-    "component",
-    "editor",
-    "typescript",
-    "svg"
-  ],
-  "author": "",
   "license": "MIT",
   "scripts": {
-    "build": "tsup && tsc -p tsconfig.build.json",
-    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -53,7 +36,6 @@
     "happy-dom": "^20.9.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.4"
   }

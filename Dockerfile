@@ -14,7 +14,7 @@ COPY api/schema.yml api/schema.yml
 ENV NEXT_PUBLIC_API_URL=""
 ENV NEXT_PUBLIC_APP_VERSION=$APP_VERSION
 ENV NEXT_PUBLIC_APP_COMMIT_SHA=$APP_COMMIT_SHA
-RUN pnpm --filter toy-editor build && pnpm --filter web build
+RUN pnpm --filter web build
 
 FROM python:3.13-slim AS python_deps
 ENV UV_LINK_MODE=copy \
