@@ -871,16 +871,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        photo_count:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
-        video_count:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
         entries:
           type: array
           items:
@@ -1003,14 +993,10 @@ components:
           readOnly: true
         photo_count:
           type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
+          readOnly: true
         video_count:
           type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
+          readOnly: true
         entries:
           type: array
           items:
@@ -1040,9 +1026,11 @@ components:
       - is_live
       - max_circumference
       - max_insertable_length
+      - photo_count
       - records
       - started_at
       - total_toy_duration_minutes
+      - video_count
     SessionMediaItem:
       type: object
       properties:
@@ -1107,16 +1095,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        photo_count:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
-        video_count:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
         entries:
           type: array
           items:

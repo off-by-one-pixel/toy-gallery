@@ -63,8 +63,7 @@ function SessionRow({
 }: Props) {
   const session = useSession(listed.id, listed).session ?? listed;
   const t = useTranslations('session');
-  const photoCount = session.photoCount ?? 0;
-  const videoCount = session.videoCount ?? 0;
+  const { photoCount, videoCount } = session;
   const common = useTranslations('common');
   const catalog = useTranslations();
   const { configured: mediaConfigured } = useMediaStatus();
