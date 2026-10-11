@@ -8,7 +8,6 @@ import { LocaleProvider } from '@/features/preferences/LocaleProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { SortProvider } from '@/providers/SortProvider';
 import { TOY_SORT } from '@/features/toys/toySort';
-import { ThemeProvider } from '@/features/preferences/ThemeProvider';
 import { ToastProvider } from '@/providers/ToastProvider';
 import { DEFAULT_THEME, THEMES } from '@/features/preferences/themeRegistry';
 import { DEFAULT_LOCALE } from '@/i18n/routing';
@@ -46,15 +45,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="bg-surface-secondary text-foreground min-h-screen antialiased">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <ToastProvider />
-        <ThemeProvider>
-          <LocaleProvider>
-            <SortProvider config={TOY_SORT}>
-              <QueryProvider>
-                <AuthProvider>{children}</AuthProvider>
-              </QueryProvider>
-            </SortProvider>
-          </LocaleProvider>
-        </ThemeProvider>
+        <LocaleProvider>
+          <SortProvider config={TOY_SORT}>
+            <QueryProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </QueryProvider>
+          </SortProvider>
+        </LocaleProvider>
       </body>
     </html>
   );
