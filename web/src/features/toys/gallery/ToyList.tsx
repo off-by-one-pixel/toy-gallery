@@ -17,6 +17,7 @@ import ToyDetails from '@/features/toys/gallery/ToyDetails';
 import { type SortColumnDisplay, sortColumnDisplay } from '@/features/toys/gallery/sortColumnDisplay';
 import { useToyPropertyContext } from '@/features/toys/useToyPropertyContext';
 import ToyActionButtons, { type ToyActions } from '@/features/toys/gallery/ToyActionButtons';
+import { pressable } from '@/lib/pressable';
 
 const GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr]';
 const EXTRA_GRID_COLS = 'grid-cols-[44px_3fr_1fr_1fr_1fr] ' + 'min-[640px]:grid-cols-[48px_3fr_60px_1fr_1fr_1fr]';
@@ -165,16 +166,8 @@ function ToyRow({
   return (
     <>
       <div
-        role="button"
-        tabIndex={0}
+        {...pressable(onToggle)}
         onClick={handleRowClick}
-        onKeyDown={(e) => {
-          if (e.target !== e.currentTarget) return;
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
         className={
           `group relative grid cursor-pointer items-center gap-x-3 border-b border-border px-4 py-2.5 transition-colors hover:bg-surface-secondary min-[640px]:gap-x-3.5 min-[640px]:px-5 ` +
           (extra ? EXTRA_GRID_COLS : GRID_COLS) +

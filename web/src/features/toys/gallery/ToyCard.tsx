@@ -21,6 +21,7 @@ import {
   type GhostToy,
 } from '@/features/toys/gallery/ghost/ghosts';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
+import { pressable } from '@/lib/pressable';
 
 type Props = Readonly<{
   toy: Toy;
@@ -54,17 +55,9 @@ function ToyCard({ toy, heightRatio, detailsOpen, onToggleOpen, actions, ghosts,
           ? 'z-10 rounded-t-2xl rounded-b-none'
           : 'z-0 rounded-2xl hover:shadow-lg motion-safe:hover:-translate-y-1')
       }
-      role="button"
-      tabIndex={0}
+      {...pressable(() => onToggleOpen(toy.id))}
       aria-expanded={detailsOpen}
       onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onToggleOpen(toy.id);
-        }
-      }}
     >
       <ToyThumbnail
         shape={toy.shape}
