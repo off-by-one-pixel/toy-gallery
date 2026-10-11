@@ -1,4 +1,5 @@
 import type { Shape, Toy } from '@/api/types';
+import { silhouetteDiameter, silhouetteHeight } from '@/features/toys/dimensions';
 import { TOY_PROPERTIES, type ToyPropertyKey } from '@/features/toys/properties';
 import type { ToySort, ToySortColumn } from '@/features/toys/toySort';
 import { diameterToCircumference, formatForInput, parseToMm, toMm, Unit } from '@/features/preferences/units';
@@ -21,10 +22,6 @@ export type GhostTarget = Readonly<{ kind: 'new'; source: Toy }> | Readonly<{ ki
 export const ghostSourceName = (source: Toy): string =>
   [source.brand, source.name, source.size].filter(Boolean).join(' ');
 
-const shapeHeight = (shape: Shape): number => shape.sections.reduce((acc, s) => acc + s.height, 0);
-
-const shapeDiameter = (shape: Shape): number => Math.max(0, ...shape.sections.map((s) => s.diameter));
-
 let nextGhostId = 1;
 
 const safeRatio = (target: number, reference: number): number => (reference > 0 ? target / reference : 1);
@@ -41,8 +38,8 @@ const scaleShape = (shape: Shape, width: number, height: number): Shape => ({
 
 export const createGhost = (source: Toy, dims: GhostDimensions): GhostToy => {
   const sourceCircumference =
-    source.circumference ?? diameterToCircumference(shapeDiameter(source.shape)) ?? dims.circumference;
-  const sourceInsertableLength = source.insertableLength ?? shapeHeight(source.shape);
+    source.circumference ?? diameterToCircumference(silhouetteDiameter(source)) ?? dims.circumference;
+  const sourceInsertableLength = source.insertableLength ?? silhouetteHeight(source);
   return {
     id: nextGhostId++,
     sourceName: ghostSourceName(source),
