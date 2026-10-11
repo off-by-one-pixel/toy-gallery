@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import type { StyleOption, Toy } from "../../toyMachine";
 import Silhouette from "../Silhouette";
 import SvgRoot from "../SvgRoot";
@@ -25,14 +25,15 @@ type Props = {
 };
 
 const EditorRender = ({ toy, style, referenceImage, onReferenceImageChange }: Props) => {
-  const layout = useEditorLayout(toy, referenceImage);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const layout = useEditorLayout(svgRef, toy, referenceImage);
   const handlers = useDragHandlers(layout);
   const imageHandlers = useReferenceImageDrag(layout, referenceImage, onReferenceImageChange);
   const setHoveredSectionId = useEditorUiStore((s) => s.setHoveredSectionId);
 
   return (
     <SvgRoot
-      ref={layout.ref}
+      ref={svgRef}
       viewBox={`0 0 ${layout.size.w || 1} ${layout.size.h || 1}`}
       preserveAspectRatio="none"
     >

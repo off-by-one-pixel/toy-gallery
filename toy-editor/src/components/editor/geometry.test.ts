@@ -26,7 +26,6 @@ const makeLayout = (overrides: Partial<EditorLayout> = {}): EditorLayout => {
   ];
   const sectionMeta = buildSectionMeta(sections);
   return {
-    ref: { current: null },
     size: { w: 800, h: 600 },
     silhouetteScale: 2,
     silhouetteX: 300,
