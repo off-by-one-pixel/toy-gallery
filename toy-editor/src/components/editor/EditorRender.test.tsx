@@ -3,27 +3,25 @@ import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TEST_LABELS } from '../../../test/labels';
 import { Shape, useToyStore } from '../../toyMachine';
-import { EditorUnitContext } from '../unit';
+import { EditorConfigContext } from '../editorConfig';
 import EditorRender from './EditorRender';
-import { EditorLabelsContext } from './labels';
 import type { ReferenceImage } from './referenceImage';
 
 vi.mock('../../util/svgGeometry', () => ({
   localFromClient: (_target: unknown, x: number, y: number) => ({ x, y }),
 }));
 
+const CONFIG = { unit: { id: 'mm', factor: 1, decimals: 0 }, labels: TEST_LABELS, palette: [] };
 const STYLE = { borderWidth: 2, borderColor: '#000', color: 'lightblue' };
 
 const Harness = ({ initialImage }: { initialImage: ReferenceImage | null }) => {
   const toy = useToyStore();
   const [image, setImage] = useState(initialImage);
   return (
-    <EditorUnitContext.Provider value={{ id: 'mm', factor: 1, decimals: 0 }}>
-      <EditorLabelsContext.Provider value={TEST_LABELS}>
-        <EditorRender toy={toy} style={STYLE} referenceImage={image} onReferenceImageChange={setImage} />
-        <output data-testid="image">{JSON.stringify(image)}</output>
-      </EditorLabelsContext.Provider>
-    </EditorUnitContext.Provider>
+    <EditorConfigContext.Provider value={CONFIG}>
+      <EditorRender toy={toy} style={STYLE} referenceImage={image} onReferenceImageChange={setImage} />
+      <output data-testid="image">{JSON.stringify(image)}</output>
+    </EditorConfigContext.Provider>
   );
 };
 

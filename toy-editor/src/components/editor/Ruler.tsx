@@ -1,11 +1,11 @@
 import { fmtUnitNum } from '../../util/fmt';
-import { useEditorUnit } from '../unit';
+import { useEditorConfig } from '../editorConfig';
 import { useEditorLayoutCtx } from './EditorLayoutContext';
 import { mmToY, rulerGeometry } from './geometry';
 
 const Ruler = () => {
   const layout = useEditorLayoutCtx();
-  const unit = useEditorUnit();
+  const { unit } = useEditorConfig();
   const { axisX, axisY1, axisY2, tickInner, tickOuter, labelX, unitY } = rulerGeometry(layout);
   const ticks = [0, ...layout.sectionMeta.map((s) => s.bottomMm)];
 

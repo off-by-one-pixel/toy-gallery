@@ -1,5 +1,5 @@
 import { useEditorLayoutCtx } from './EditorLayoutContext';
-import { useEditorLabels } from './labels';
+import { useEditorConfig } from '../editorConfig';
 import type { ReferenceImageDrag } from './hooks/useReferenceImageDrag';
 import { HANDLE_R_PX } from './layout';
 import { type ReferenceImage, referenceRect } from './referenceImage';
@@ -28,7 +28,7 @@ export const ReferenceImageBackdrop = ({ image, drag }: Props) => {
 
 export const ReferenceImageResizeHandle = ({ image, drag }: Props) => {
   const layout = useEditorLayoutCtx();
-  const labels = useEditorLabels();
+  const { labels } = useEditorConfig();
   const { x, y, width, height } = referenceRect(image, layout);
   return (
     <circle

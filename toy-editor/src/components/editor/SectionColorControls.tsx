@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useToyStore } from '../../toyMachine';
 import { useEditorLayoutCtx } from './EditorLayoutContext';
 import { lastInputRightX } from './geometry';
-import { useEditorLabels } from './labels';
-import { useEditorPalette } from './palette';
+import { useEditorConfig } from '../editorConfig';
 import { LABEL_INPUT_H_PX, type SectionMeta, sectionInputY } from './layout';
 
 const CHIP_CELL_PX = 24;
@@ -14,8 +13,7 @@ const customPickerValue = (color: string | null | undefined): string =>
   color && /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#888888';
 
 const SectionColorControls = () => {
-  const palette = useEditorPalette();
-  const labels = useEditorLabels();
+  const { palette, labels } = useEditorConfig();
   const layout = useEditorLayoutCtx();
   const showSectionCirc = useToyStore((s) => s.showSectionCircumference);
   const setSectionColor = useToyStore((s) => s.setSectionColor);

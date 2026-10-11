@@ -1,4 +1,4 @@
-import type { Unit } from '../components/unit';
+import type { Unit } from '../components/editorConfig';
 
 export const fmtUnit = (mm: number, unit: Unit): string => `${(mm / unit.factor).toFixed(unit.decimals)} ${unit.id}`;
 

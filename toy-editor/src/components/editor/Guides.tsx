@@ -1,8 +1,7 @@
 import { useToyStore } from '../../toyMachine';
 import { fmtUnit } from '../../util/fmt';
-import { useEditorUnit } from '../unit';
+import { useEditorConfig } from '../editorConfig';
 import { useEditorLayoutCtx } from './EditorLayoutContext';
-import { useEditorLabels } from './labels';
 import { guidesXRange, mmToY, sizeGuideGeometry } from './geometry';
 
 const Guides = () => {
@@ -10,8 +9,7 @@ const Guides = () => {
   const insertableMm = useToyStore((s) => s.insertableLengthMm);
   const knownTotalMm = useToyStore((s) => s.knownTotalMm);
   const knownSizeMm = useToyStore((s) => s.knownSizeMm);
-  const unit = useEditorUnit();
-  const labels = useEditorLabels();
+  const { unit, labels } = useEditorConfig();
 
   const xRange = guidesXRange(layout);
 

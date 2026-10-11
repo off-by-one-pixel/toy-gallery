@@ -1,13 +1,11 @@
 import { fmtUnit } from '../../util/fmt';
-import { useEditorUnit } from '../unit';
+import { useEditorConfig } from '../editorConfig';
 import { useEditorLayoutCtx } from './EditorLayoutContext';
-import { useEditorLabels } from './labels';
 import { totalReadoutPosition } from './geometry';
 
 const TotalReadout = () => {
   const layout = useEditorLayoutCtx();
-  const unit = useEditorUnit();
-  const labels = useEditorLabels();
+  const { unit, labels } = useEditorConfig();
   return (
     <text className="toy-editor-total-readout" {...totalReadoutPosition(layout)} textAnchor="middle">
       {labels.totalReadout(fmtUnit(layout.totalHeightMm, unit))} · Ø {fmtUnit(layout.maxDiameterMm, unit)}

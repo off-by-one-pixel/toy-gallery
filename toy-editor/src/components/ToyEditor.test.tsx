@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { TEST_LABELS } from '../../test/labels';
 import ToyEditor from './ToyEditor';
 import type { ToyEditorLabels } from './editor/labels';
-import { useEditorLabels } from './editor/labels';
+import { useEditorConfig } from './editorConfig';
 
 const MM = { id: 'mm', factor: 1, decimals: 0 };
 
@@ -51,9 +51,9 @@ describe('ToyEditor', () => {
     expect(screen.getByLabelText(/reference image file/i)).toHaveAttribute('accept', 'image/*');
   });
 
-  it('refuses to read labels outside the editor', () => {
-    const Orphan = () => <>{useEditorLabels().snap}</>;
-    expect(() => render(<Orphan />)).toThrow(/useEditorLabels must be used within/);
+  it('refuses to read its config outside the editor', () => {
+    const Orphan = () => <>{useEditorConfig().labels.snap}</>;
+    expect(() => render(<Orphan />)).toThrow(/useEditorConfig must be used within/);
   });
 
   it('starts each editor with the section color palette closed', () => {
