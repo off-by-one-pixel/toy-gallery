@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Alert, Button, Spinner } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -36,46 +36,46 @@ const datetimeLocalNow = () => datetimeLocalValue(new Date());
 
 type Props = Readonly<{ mode: SessionFormMode; onDone: () => void; onSaved: (session: Session) => void }>;
 
+type SessionDetail = ReturnType<typeof useSession>;
+
 export default function SessionForm(props: Props) {
   return (
     <SortProvider config={SESSION_FORM_TOY_SORT}>
-      <SessionFormContent {...props} />
+      <SessionFormLoader {...props} />
     </SortProvider>
   );
 }
 
-function SessionFormContent({ mode, onDone, onSaved }: Props) {
+function SessionFormLoader(props: Props) {
+  const detail = useSession(props.mode.kind === 'edit' ? props.mode.sessionId : null);
+  return <SessionFormContent key={detail.session?.id ?? 'new'} {...props} detail={detail} />;
+}
+
+function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<{ detail: SessionDetail }>) {
   const t = useTranslations('session');
   const common = useTranslations('common');
-  const [startedAt, setStartedAt] = useState(datetimeLocalNow);
-  const [endedAt, setEndedAt] = useState('');
-  const [query, setQuery] = useState('');
-  const [selections, setSelections] = useState<Map<number, ToySelection>>(() => new Map());
-  const [initialToyIds, setInitialToyIds] = useState<ReadonlySet<number>>(() => new Set());
-
-  const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
-
-  const { toys, isLoading: toysPending, error: toysError } = useToys();
-
-  const detail = useSession(sessionId);
-
   const loadedSession = detail.session;
-  const hasSeededDraft = useRef(false);
-  useEffect(() => {
-    if (!loadedSession || hasSeededDraft.current) return;
-    hasSeededDraft.current = true;
-    setStartedAt(datetimeLocalValue(new Date(loadedSession.startedAt)));
-    setEndedAt(loadedSession.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '');
-    setSelections(
-      new Map(
-        loadedSession.entries.map((e) => [
+  const [startedAt, setStartedAt] = useState(() =>
+    loadedSession ? datetimeLocalValue(new Date(loadedSession.startedAt)) : datetimeLocalNow(),
+  );
+  const [endedAt, setEndedAt] = useState(() =>
+    loadedSession?.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '',
+  );
+  const [query, setQuery] = useState('');
+  const [selections, setSelections] = useState(
+    () =>
+      new Map<number, ToySelection>(
+        loadedSession?.entries.map((e) => [
           e.toy,
           { involvement: e.involvement, durationMinutes: e.durationMinutes ?? null },
         ]),
       ),
-    );
-    setInitialToyIds(new Set(loadedSession.entries.map((e) => e.toy)));
-  }, [loadedSession]);
+  );
+  const [initialToyIds] = useState<ReadonlySet<number>>(() => new Set(loadedSession?.entries.map((e) => e.toy)));
+
+  const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
+
+  const { toys, isLoading: toysPending, error: toysError } = useToys();
 
   const isLoading = toysPending || detail.isSessionLoading;
   const errorMessage = toysError ?? detail.sessionError;
