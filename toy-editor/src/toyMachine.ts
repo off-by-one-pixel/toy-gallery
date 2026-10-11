@@ -6,7 +6,7 @@ export type StyleOption = {
   color: string;
 };
 
-export type ToyTouched = {
+type ToyTouched = {
   diameter: boolean;
   height: boolean;
 };

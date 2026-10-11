@@ -106,7 +106,7 @@ export function periodKey(period: Period): string {
   return period.kind === 'all' ? 'all' : `${period.kind}:${period.anchor}`;
 }
 
-export const INVOLVEMENT_RANK: Record<Involvement, number> = {
+const INVOLVEMENT_RANK: Record<Involvement, number> = {
   [Involvement.FULLY_INSERTED]: 0,
   [Involvement.INSERTED]: 1,
   [Involvement.USED]: 2,

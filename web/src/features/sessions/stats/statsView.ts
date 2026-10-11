@@ -21,7 +21,7 @@ export type StatContext = Readonly<{
 }>;
 
 export type StatWindow = 'year' | 'filter';
-export type StatGroupBy = 'date' | 'hour' | 'weekday';
+type StatGroupBy = 'date' | 'hour' | 'weekday';
 
 export type CalendarStatDef = Readonly<{
   kind: 'calendar';
@@ -62,7 +62,7 @@ export type StatQuery = Readonly<{
   metrics: string[];
 }>;
 
-export const queryKeyOf = (def: StatDef): string => `${def.groupBy}:${def.window}`;
+const queryKeyOf = (def: StatDef): string => `${def.groupBy}:${def.window}`;
 
 export const deriveQueries = (defs: readonly StatDef[]): StatQuery[] => {
   const queries = new Map<string, StatQuery>();

@@ -22,7 +22,7 @@ export const queryKeys = {
   },
 };
 
-export const sessionHistoryKeys = [queryKeys.toys.all, queryKeys.sessions.lists, queryKeys.sessions.stats] as const;
+const sessionHistoryKeys = [queryKeys.toys.all, queryKeys.sessions.lists, queryKeys.sessions.stats] as const;
 
 export const sessionDataKeys = [...sessionHistoryKeys, queryKeys.sessions.live] as const;
 

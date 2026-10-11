@@ -6,7 +6,7 @@ import { Dropdown } from '@heroui/react';
 import BottomSheet from '@/components/BottomSheet';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-export type OverlayContext = Readonly<{
+type OverlayContext = Readonly<{
   close: () => void;
   mode: 'popover' | 'sheet';
 }>;

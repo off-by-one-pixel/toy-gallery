@@ -24,7 +24,7 @@ import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
 import type { Translator } from '@/i18n/translator';
 
-export type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
+type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
 
 const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: Translator<'session'>): string => {
   if (!isLive) return t('save');

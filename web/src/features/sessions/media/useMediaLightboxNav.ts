@@ -4,7 +4,7 @@ import { parseIntParam, useNavigation } from '@/hooks/useNavigation';
 
 const KEY = 'lightbox';
 
-export function parseMediaParam(raw: string | null, sessionId: number): number | null {
+function parseMediaParam(raw: string | null, sessionId: number): number | null {
   if (!raw) return null;
   const [sid, idx] = raw.split(':');
   if (parseIntParam(sid) !== sessionId) return null;

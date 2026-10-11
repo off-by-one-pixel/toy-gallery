@@ -1,4 +1,4 @@
-export type SortDirection = 'asc' | 'desc';
+type SortDirection = 'asc' | 'desc';
 export type Sort<C extends string = string> = Readonly<{ column: C; direction: SortDirection }>;
 
 export interface SortConfig<C extends string = string> {

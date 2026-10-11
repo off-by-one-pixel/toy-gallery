@@ -36,7 +36,7 @@ export type ToyOption = Readonly<{ toy: Toy; uses: number; toggle: () => void }>
 
 type FlagLabelKey = MessageKey<'session.filters'>;
 
-export type FlagOption = Readonly<{ key: string; labelKey: FlagLabelKey; active: boolean; toggle: () => void }>;
+type FlagOption = Readonly<{ key: string; labelKey: FlagLabelKey; active: boolean; toggle: () => void }>;
 
 export type TimeSliderState = Readonly<{
   value: SliderValue;
