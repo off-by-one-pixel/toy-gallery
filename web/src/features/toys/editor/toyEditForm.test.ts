@@ -5,7 +5,6 @@ import type { ToySection } from 'toy-editor';
 import type { EditorState } from '@/features/toys/converters/editor';
 import {
   initialIdentity,
-  isIdentityEqual,
   type ToyEditMode,
   type ToyIdentity,
   validateAndBuildPayload,
@@ -62,21 +61,6 @@ describe('initialIdentity', () => {
   it('falls back to the default color when the source has no color', () => {
     const blank: Toy = { ...SOURCE_TOY, color: '' };
     expect(initialIdentity(blank, '#c4b5fd').color).toBe('#c4b5fd');
-  });
-});
-
-describe('isIdentityEqual', () => {
-  const base: ToyIdentity = { brand: 'Acme', name: 'Cone', size: 'M', color: '#c4b5fd' };
-
-  it('is true for identical fields', () => {
-    expect(isIdentityEqual(base, { ...base })).toBe(true);
-  });
-
-  it('is false when any field differs', () => {
-    expect(isIdentityEqual(base, { ...base, brand: 'Other' })).toBe(false);
-    expect(isIdentityEqual(base, { ...base, name: 'Other' })).toBe(false);
-    expect(isIdentityEqual(base, { ...base, size: 'L' })).toBe(false);
-    expect(isIdentityEqual(base, { ...base, color: '#000000' })).toBe(false);
   });
 });
 

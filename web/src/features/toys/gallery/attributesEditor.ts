@@ -24,12 +24,6 @@ export function toDict(rows: readonly AttributeRow[]): Record<string, string> {
   return out;
 }
 
-export function sameDict(a: Record<string, string>, b: Record<string, string>): boolean {
-  const ak = Object.keys(a);
-  if (ak.length !== Object.keys(b).length) return false;
-  return ak.every((k) => a[k] === b[k]);
-}
-
 export function reconcileRows(current: readonly AttributeRow[], serverDict: Record<string, string>): AttributeRow[] {
   const byKey = new Map(current.filter((r) => r.fromSaved).map((r) => [r.key.trim(), r] as const));
   const out: AttributeRow[] = [];

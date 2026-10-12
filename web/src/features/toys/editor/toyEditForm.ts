@@ -24,10 +24,6 @@ export function initialIdentity(source: Toy | null, defaultColor: string): ToyId
   };
 }
 
-export function isIdentityEqual(a: ToyIdentity, b: ToyIdentity): boolean {
-  return a.brand === b.brand && a.name === b.name && a.size === b.size && a.color === b.color;
-}
-
 export function validateAndBuildPayload(
   identity: ToyIdentity,
   editor: EditorState,

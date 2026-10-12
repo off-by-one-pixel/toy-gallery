@@ -11,12 +11,12 @@ import { editorToTemplateJson, isEditorStateEqual } from '@/features/toys/conver
 import { toyToEditor } from '@/features/toys/converters/toy';
 import {
   initialIdentity,
-  isIdentityEqual,
   type ToyEditMode,
   type ToyIdentity,
   validateAndBuildPayload,
 } from '@/features/toys/editor/toyEditForm';
 import { DEFAULT_FILL } from '@/features/toys/editor/constants';
+import { sameDict } from '@/lib/sameDict';
 
 export type ToyEditForm = Readonly<{
   identity: ToyIdentity;
@@ -53,7 +53,7 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
   const hydrate = useToyStore((s) => s.hydrate);
   const exportText = useMemo(() => editorToTemplateJson(editorState), [editorState]);
 
-  const identityDirty = !isIdentityEqual(identity, seedIdentity);
+  const identityDirty = !sameDict(identity, seedIdentity);
   const editorDirty = initialToy !== null && !isEditorStateEqual(editorState, initialToy);
   const dirty = identityDirty || editorDirty;
 
