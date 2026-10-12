@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ToyRecord } from '@/api/types';
+import type { SessionRecord, ToyRecord } from '@/api/types';
 import {
   latestToyRecords,
   recordDisplay,
   SESSION_RECORDS,
+  sessionRecordItems,
+  toyRecordItems,
   type RecordDisplayContext,
 } from '@/features/sessions/records';
+import { makeToy } from '@/test/fixtures';
 import { Unit } from '@/features/preferences/units';
 import en from '@/i18n/catalogs/en.json';
 import { enTranslator } from '@/test/translator';
@@ -86,5 +89,40 @@ describe('latestToyRecords', () => {
       ['toy-level', 2],
       ['toy-time', 90],
     ]);
+  });
+});
+
+describe('sessionRecordItems', () => {
+  const record = (key: string, value: number, toy: number | null): SessionRecord =>
+    ({ key, toy, value, achievedAt: '2026-06-01T21:00:00' }) as SessionRecord;
+  const toys = new Map([[1, makeToy({ id: 1, brand: 'Acme', name: 'Steel', size: 'M' })]]);
+
+  it('notes the toy a record belongs to', () => {
+    expect(sessionRecordItems([record('pr-width', 240, 1)], toys)).toEqual([
+      { id: 'pr-width-1', key: 'pr-width', value: 240, note: 'Acme Steel M' },
+    ]);
+  });
+
+  it('leaves session-wide records and records of unloaded toys without a note', () => {
+    const items = sessionRecordItems([record('pr-time', 45, null), record('pr-width', 240, 99)], toys);
+    expect(items.map((item) => item.note)).toEqual([undefined, undefined]);
+  });
+
+  it('keeps one item per toy for the same record key', () => {
+    const items = sessionRecordItems([record('toy-time', 30, 1), record('toy-time', 90, 2)], toys);
+    expect(new Set(items.map((item) => item.id)).size).toBe(2);
+  });
+});
+
+describe('toyRecordItems', () => {
+  it('keeps the latest record per key and notes the day it was achieved', () => {
+    const items = toyRecordItems(
+      [
+        { key: 'toy-time', value: 90, achievedAt: '2026-06-02T10:00:00Z' },
+        { key: 'toy-time', value: 30, achievedAt: '2026-06-01T10:00:00Z' },
+      ],
+      'en',
+    );
+    expect(items).toEqual([{ id: 'toy-time', key: 'toy-time', value: 90, note: expect.stringMatching(/Jun 2, 2026/) }]);
   });
 });
