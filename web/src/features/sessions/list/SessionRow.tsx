@@ -1,10 +1,10 @@
 'use client';
 
 import { memo, type Ref } from 'react';
-import { Image as ImageIcon, Pencil, Trash2, Video } from 'lucide-react';
+import { Image as ImageIcon, Video } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
+import { ActionButtons, editDeleteActions } from '@/components/ActionButtons';
 import { useGirth } from '@/features/preferences/useGirth';
 import { displayGirth } from '@/features/preferences/girth';
 import { formatDuration, secondsBetween } from '@/lib/duration';
@@ -92,16 +92,11 @@ function SessionRow({
   const entryRecordLabels = (toyId: number) =>
     session.records.filter((r) => r.toy === toyId).flatMap((r) => recordLabel(r.key) ?? []);
 
-  const actions: ActionDef[] = [
-    { key: 'edit', label: common('edit'), icon: Pencil, variant: 'outline', onPress: () => onEdit(session.id) },
-    {
-      key: 'delete',
-      label: common('delete'),
-      icon: Trash2,
-      variant: 'danger-soft',
-      onPress: () => onDelete(session.id),
-    },
-  ];
+  const actions = editDeleteActions(
+    (k) => common(k),
+    () => onEdit(session.id),
+    () => onDelete(session.id),
+  );
 
   return (
     <div

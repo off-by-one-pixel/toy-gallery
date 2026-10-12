@@ -1,10 +1,10 @@
 'use client';
 
-import { Copy, CopyPlus, Pencil, Trash2 } from 'lucide-react';
+import { Copy, CopyPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import type { Toy } from '@/api/types';
-import { ActionButtons, type ActionDef } from '@/components/ActionButtons';
+import { ActionButtons, type ActionDef, editDeleteActions } from '@/components/ActionButtons';
 
 export type ToyActions = Readonly<{
   onEdit: (toy: Toy) => void;
@@ -18,8 +18,13 @@ export function toyActionDefs(
   toy: Toy,
   { onEdit, onCopy, onDelete, onGhost }: ToyActions,
 ): ActionDef[] {
+  const [edit, remove] = editDeleteActions(
+    t,
+    () => onEdit(toy),
+    () => onDelete(toy),
+  );
   return [
-    { key: 'edit', label: t('edit'), icon: Pencil, variant: 'outline', onPress: () => onEdit(toy) },
+    edit,
     { key: 'copy', label: t('copy'), icon: Copy, variant: 'outline', onPress: () => onCopy(toy) },
     ...(onGhost
       ? [
@@ -32,7 +37,7 @@ export function toyActionDefs(
           } satisfies ActionDef,
         ]
       : []),
-    { key: 'delete', label: t('delete'), icon: Trash2, variant: 'danger-soft', onPress: () => onDelete(toy) },
+    remove,
   ];
 }
 

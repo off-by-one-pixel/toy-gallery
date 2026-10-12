@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from 'react';
 import { Button, Tooltip } from '@heroui/react';
-import type { LucideIcon } from 'lucide-react';
+import { type LucideIcon, Pencil, Trash2 } from 'lucide-react';
 
 const TOOLTIP_DELAY_MS = 200;
 const ICON_SIZE = 13;
@@ -21,6 +21,17 @@ export type ActionDef = Readonly<{
   iconStrokeWidth?: number;
   fabIconSize?: number;
 }>;
+
+export function editDeleteActions(
+  t: (key: 'edit' | 'delete') => string,
+  onEdit: () => void,
+  onDelete: () => void,
+): readonly [ActionDef, ActionDef] {
+  return [
+    { key: 'edit', label: t('edit'), icon: Pencil, variant: 'outline', onPress: onEdit },
+    { key: 'delete', label: t('delete'), icon: Trash2, variant: 'danger-soft', onPress: onDelete },
+  ];
+}
 
 type Props = Readonly<{
   actions: readonly ActionDef[];
