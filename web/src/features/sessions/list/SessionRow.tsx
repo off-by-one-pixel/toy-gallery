@@ -14,13 +14,12 @@ import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
 import { useSession } from '@/features/sessions/useSessions';
 import type { Session, Toy } from '@/api/types';
-import { type Unit } from '@/features/preferences/units';
+import { formatValue, type Unit } from '@/features/preferences/units';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
-import RecordTrophy from '@/features/sessions/list/RecordTrophy';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
 import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
 
@@ -82,6 +81,14 @@ function SessionRow({
   const timeValue = session.isLive
     ? formatDuration(secondsBetween(session.startedAt, now.toISOString()), locale, 'second')
     : formatDuration(totalMinutes, locale);
+
+  const mmValue = (mm: number | null | undefined) =>
+    mm == null ? null : (
+      <>
+        {formatValue(mm, unit)}
+        <span className="ml-1.5 text-caption font-medium text-muted">{unit.id}</span>
+      </>
+    );
 
   const recordCtx = { t: catalog, girth, unit, locale };
   const recordLabel = (key: string) => recordDisplay(key)?.label(recordCtx);
@@ -165,36 +172,21 @@ function SessionRow({
         <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-2 border-t border-border pt-2.5 sm:order-3 sm:mt-0 sm:grid sm:min-w-32 sm:shrink-0 sm:grid-cols-[auto_auto] sm:items-baseline sm:justify-end sm:gap-x-2.5 sm:gap-y-1 sm:border-t-0 sm:pt-0">
           <PeakRow
             label={t('peakLength')}
-            mm={session.maxInsertableLength}
-            unit={unit}
+            value={mmValue(session.maxInsertableLength)}
             recordLabel={peakRecordLabel('length')}
           />
           <PeakRow
             label={t(`peakGirth.${girth}`)}
-            mm={displayGirth(session.maxCircumference, girth)}
-            unit={unit}
+            value={mmValue(displayGirth(session.maxCircumference, girth))}
             recordLabel={peakRecordLabel('circumference')}
           />
           {(session.isLive || totalMinutes > 0) && (
-            <div className="flex items-baseline gap-2 py-0.5 sm:contents">
-              <span className="text-caption uppercase tracking-wider text-text-tertiary sm:justify-self-end">
-                {t('totalTime')}
-              </span>
-              <span
-                className={
-                  'whitespace-nowrap text-[15px] font-semibold tracking-tight tabular-nums sm:justify-self-start sm:text-[17px] ' +
-                  (session.isLive ? 'rounded-full bg-live/15 px-2.5 py-0.5 text-live-strong' : 'text-foreground')
-                }
-              >
-                {timeValue}
-                {!session.isLive && peakRecordLabel('duration') && (
-                  <RecordTrophy
-                    label={peakRecordLabel('duration') as string}
-                    className="relative -top-0.5 ml-1.5 align-middle"
-                  />
-                )}
-              </span>
-            </div>
+            <PeakRow
+              label={t('totalTime')}
+              value={timeValue}
+              recordLabel={session.isLive ? undefined : peakRecordLabel('duration')}
+              live={session.isLive}
+            />
           )}
         </div>
       </div>
