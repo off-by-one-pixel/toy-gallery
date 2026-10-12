@@ -20,8 +20,8 @@ import PeakRow from '@/features/sessions/list/PeakRow';
 import { useLiveElapsed } from '@/features/sessions/live/useLiveElapsed';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
-import SessionRecordList from '@/features/sessions/list/SessionRecordList';
-import { recordDisplay, type RecordPeak } from '@/features/sessions/records';
+import RecordList from '@/features/sessions/list/RecordList';
+import { recordDisplay, type RecordPeak, sessionRecordItems } from '@/features/sessions/records';
 
 const STRIP_LIMIT = 5;
 
@@ -190,7 +190,11 @@ function SessionRow({
       </div>
       {session.records.length > 0 && (
         <div className="relative sm:order-5 sm:col-span-4">
-          <SessionRecordList records={session.records} toysById={toysById} />
+          <RecordList
+            items={sessionRecordItems(session.records, toysById)}
+            className="mt-3 border-t pt-2.5"
+            noteClassName="min-w-0 truncate text-muted"
+          />
         </div>
       )}
       {selected && mediaConfigured && (
