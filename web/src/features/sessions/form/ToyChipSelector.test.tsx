@@ -4,27 +4,26 @@ import { describe, expect, it, vi } from 'vitest';
 import en from '@/i18n/catalogs/en.json';
 import { Involvement } from '@/api/types';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
+import { formatDuration } from '@/lib/duration';
 import { makeToy } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
 
 const renderChip = () => {
   const onChange = vi.fn();
-  const onClearDuration = vi.fn();
+  const onDurationChange = vi.fn();
   render(
     withAppProviders(
       <ToyChipSelector
         toy={makeToy({ id: 1, name: 'Steel' })}
         state={Involvement.USED}
         duration={30}
-        wholeSessionMinutes={null}
+        wholeSessionMinutes={90}
         onChange={onChange}
-        onAddDuration={vi.fn()}
-        onSetDuration={vi.fn()}
-        onClearDuration={onClearDuration}
+        onDurationChange={onDurationChange}
       />,
     ),
   );
-  return { onChange, onClearDuration, chip: screen.getAllByRole('button')[0] };
+  return { onChange, onDurationChange, chip: screen.getAllByRole('button')[0] };
 };
 
 describe('ToyChipSelector keyboard', () => {
@@ -34,12 +33,35 @@ describe('ToyChipSelector keyboard', () => {
     expect(onChange).toHaveBeenCalledWith(Involvement.INSERTED);
   });
 
-  it.each(['Enter', ' '])('leaves %j on a control inside the chip to that control', (key) => {
-    const { onChange, chip } = renderChip();
+  it.each(['Enter', ' '])('leaves %j on a chip control to that control', (key) => {
+    const { onChange } = renderChip();
     const clear = screen.getByRole('button', { name: en.session.duration.clearLabel });
-    expect(chip.contains(clear)).toBe(true);
     const notPrevented = fireEvent.keyDown(clear, { key });
     expect(onChange).not.toHaveBeenCalled();
     expect(notPrevented).toBe(true);
+  });
+});
+
+describe('ToyChipSelector controls', () => {
+  it('picks another involvement or clears the active one without cycling the chip', () => {
+    const { onChange } = renderChip();
+    fireEvent.click(screen.getByRole('button', { name: en.involvement.INSERTED }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith(Involvement.INSERTED);
+    fireEvent.click(screen.getByRole('button', { name: en.involvement.USED }));
+    expect(onChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it('reports every duration control as the new duration in minutes', () => {
+    const { onChange, onDurationChange } = renderChip();
+    fireEvent.click(screen.getByRole('button', { name: `+${formatDuration(5, 'en')}` }));
+    expect(onDurationChange).toHaveBeenLastCalledWith(35);
+    fireEvent.click(
+      screen.getByRole('button', { name: `${en.session.duration.wholeSession} · ${formatDuration(90, 'en')}` }),
+    );
+    expect(onDurationChange).toHaveBeenLastCalledWith(90);
+    fireEvent.click(screen.getByRole('button', { name: en.session.duration.clearLabel }));
+    expect(onDurationChange).toHaveBeenLastCalledWith(null);
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

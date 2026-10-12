@@ -16,9 +16,7 @@ type Props = Readonly<{
   wholeSessionMinutes: number | null;
   wholeSessionIsLive?: boolean;
   onChange: (next: Involvement | null) => void;
-  onAddDuration: (minutes: number) => void;
-  onSetDuration: (minutes: number) => void;
-  onClearDuration: () => void;
+  onDurationChange: (minutes: number | null) => void;
 }>;
 
 const STATE_ORDER: Involvement[] = [Involvement.USED, Involvement.INSERTED, Involvement.FULLY_INSERTED];
@@ -55,62 +53,33 @@ export default function ToyChipSelector({
   wholeSessionMinutes,
   wholeSessionIsLive = false,
   onChange,
-  onAddDuration,
-  onSetDuration,
-  onClearDuration,
+  onDurationChange,
 }: Props) {
   const t = useTranslations('involvement');
   const tDuration = useTranslations('session.duration');
   const locale = useLocale();
 
-  const handlePick = (next: Involvement) => {
-    onChange(state === next ? null : next);
-  };
-
   return (
     <div
-      {...pressable(() => onChange(nextInCycle(state)))}
       className={
-        'relative cursor-pointer overflow-hidden rounded-2xl border bg-surface shadow-sm transition-shadow hover:shadow-md ' +
+        'relative overflow-hidden rounded-2xl border bg-surface shadow-sm transition-shadow hover:shadow-md ' +
         (state ? CHIP_BORDER[state] : 'border-border')
       }
     >
-      <ToyThumbnail shape={toy.shape} fillColor={toy.color} className="h-35 border-b border-border">
-        {state && duration != null && (
-          <div key={duration} className="pill-flash absolute left-2.5 top-2.5 z-10 rounded-full">
-            <Chip size="sm" className="border border-accent bg-surface shadow-sm">
-              <Chip.Label>
-                <span className="inline-flex items-center gap-1">
-                  <span className="text-sm font-semibold tabular-nums">{formatDuration(duration, locale)}</span>
-                  <button
-                    type="button"
-                    aria-label={tDuration('clearLabel')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClearDuration();
-                    }}
-                    className="-my-1 -mr-1 grid h-6 w-6 place-items-center rounded-full text-muted transition-colors hover:text-foreground"
-                  >
-                    <X size={11} strokeWidth={2.5} />
-                  </button>
-                </span>
-              </Chip.Label>
-            </Chip>
-          </div>
-        )}
-        {state && (
-          <div
-            className={
-              'absolute right-2.5 top-2.5 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full border ' +
-              CHIP_CHECK[state]
-            }
-          >
-            <Check size={14} strokeWidth={3} />
-          </div>
-        )}
-      </ToyThumbnail>
-      <div className="px-3 py-2.5">
-        <div className="flex items-start gap-2">
+      <div {...pressable(() => onChange(nextInCycle(state)))} className="cursor-pointer">
+        <ToyThumbnail shape={toy.shape} fillColor={toy.color} className="h-35 border-b border-border">
+          {state && (
+            <div
+              className={
+                'absolute right-2.5 top-2.5 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full border ' +
+                CHIP_CHECK[state]
+              }
+            >
+              <Check size={14} strokeWidth={3} />
+            </div>
+          )}
+        </ToyThumbnail>
+        <div className="flex items-start gap-2 px-3 pt-2.5">
           <div className="min-w-0 flex-1">
             <div className="truncate text-caption font-medium uppercase tracking-wider text-muted">{toy.brand}</div>
             <div className="truncate text-sm font-semibold text-foreground">{toy.name}</div>
@@ -121,27 +90,43 @@ export default function ToyChipSelector({
             </Chip>
           )}
         </div>
+      </div>
 
+      {state && duration != null && (
+        <div key={duration} className="pill-flash absolute left-2.5 top-2.5 z-10 rounded-full">
+          <Chip size="sm" className="border border-accent bg-surface shadow-sm">
+            <Chip.Label>
+              <span className="inline-flex items-center gap-1">
+                <span className="text-sm font-semibold tabular-nums">{formatDuration(duration, locale)}</span>
+                <button
+                  type="button"
+                  aria-label={tDuration('clearLabel')}
+                  onClick={() => onDurationChange(null)}
+                  className="-my-1 -mr-1 grid h-6 w-6 place-items-center rounded-full text-muted transition-colors hover:text-foreground"
+                >
+                  <X size={11} strokeWidth={2.5} />
+                </button>
+              </span>
+            </Chip.Label>
+          </Chip>
+        </div>
+      )}
+
+      <div className="px-3 pb-2.5">
         <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-lg bg-surface-secondary p-1">
-          {STATE_ORDER.map((s) => {
-            const active = s === state;
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePick(s);
-                }}
-                className={
-                  'h-11 rounded-md text-xs font-medium transition-colors ' +
-                  (active ? SEG_ACTIVE[s] : 'text-muted hover:bg-surface/60 hover:text-foreground')
-                }
-              >
-                {t(s)}
-              </button>
-            );
-          })}
+          {STATE_ORDER.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onChange(state === s ? null : s)}
+              className={
+                'h-11 rounded-md text-xs font-medium transition-colors ' +
+                (s === state ? SEG_ACTIVE[s] : 'text-muted hover:bg-surface/60 hover:text-foreground')
+              }
+            >
+              {t(s)}
+            </button>
+          ))}
         </div>
 
         {state && (
@@ -152,10 +137,7 @@ export default function ToyChipSelector({
             {wholeSessionMinutes != null && (
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSetDuration(wholeSessionMinutes);
-                }}
+                onClick={() => onDurationChange(wholeSessionMinutes)}
                 className="mt-1.5 h-8 w-full rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
               >
                 {tDuration(wholeSessionIsLive ? 'soFar' : 'wholeSession')} ·{' '}
@@ -167,10 +149,7 @@ export default function ToyChipSelector({
                 <button
                   key={minutes}
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddDuration(minutes);
-                  }}
+                  onClick={() => onDurationChange((duration ?? 0) + minutes)}
                   className="h-8 rounded-md bg-surface-secondary text-xs font-medium tabular-nums text-muted transition-colors hover:bg-surface/60 hover:text-foreground"
                 >
                   +{formatDuration(minutes, locale)}
