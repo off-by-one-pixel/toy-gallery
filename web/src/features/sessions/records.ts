@@ -1,5 +1,5 @@
-import { Involvement } from '@/api/types';
-import { INVOLVEMENT_LEVELS } from '@/features/sessions/session';
+import { Involvement, type SessionRecord, type Toy, type ToyRecord } from '@/api/types';
+import { INVOLVEMENT_LEVELS, toyTooltip } from '@/features/sessions/session';
 import { displayGirth, type Girth } from '@/features/preferences/girth';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { formatDuration } from '@/lib/duration';
@@ -65,3 +65,30 @@ export const SESSION_RECORDS = {
 
 export const recordDisplay = (key: string): SessionRecordDisplay | undefined =>
   key in SESSION_RECORDS ? SESSION_RECORDS[key as keyof typeof SESSION_RECORDS] : undefined;
+
+export type RecordItem = Readonly<{ id: string; key: string; value: number; note?: string }>;
+
+export const sessionRecordItems = (
+  records: readonly SessionRecord[],
+  toysById: ReadonlyMap<number, Toy>,
+): RecordItem[] =>
+  records.map((record) => {
+    const toy = record.toy == null ? undefined : toysById.get(record.toy);
+    return { id: `${record.key}-${record.toy}`, key: record.key, value: record.value, note: toy && toyTooltip(toy) };
+  });
+
+export const latestToyRecords = (records: readonly ToyRecord[]): ToyRecord[] => {
+  const latest = new Map<string, ToyRecord>();
+  for (const record of records) {
+    if (!latest.has(record.key)) latest.set(record.key, record);
+  }
+  return [...latest.values()];
+};
+
+export const toyRecordItems = (records: readonly ToyRecord[], locale: string): RecordItem[] =>
+  latestToyRecords(records).map((record) => ({
+    id: record.key,
+    key: record.key,
+    value: record.value,
+    note: new Date(record.achievedAt).toLocaleDateString(locale, { dateStyle: 'medium' }),
+  }));

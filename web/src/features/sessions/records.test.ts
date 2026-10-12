@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { recordDisplay, SESSION_RECORDS, type RecordDisplayContext } from '@/features/sessions/records';
+import type { ToyRecord } from '@/api/types';
+import {
+  latestToyRecords,
+  recordDisplay,
+  SESSION_RECORDS,
+  type RecordDisplayContext,
+} from '@/features/sessions/records';
 import { Unit } from '@/features/preferences/units';
 import en from '@/i18n/catalogs/en.json';
 import { enTranslator } from '@/test/translator';
@@ -65,5 +71,20 @@ describe('recordDisplay', () => {
     expect(recordDisplay('toy-time')).toBe(SESSION_RECORDS['toy-time']);
     expect(recordDisplay('pr-duration')).toBe(SESSION_RECORDS['pr-duration']);
     expect(recordDisplay('pr-future')).toBeUndefined();
+  });
+});
+
+describe('latestToyRecords', () => {
+  it('keeps the first row per key in server order', () => {
+    const rows: ToyRecord[] = [
+      { key: 'toy-level', value: 2, achievedAt: '2026-06-03T10:00:00Z' },
+      { key: 'toy-level', value: 1, achievedAt: '2026-06-01T10:00:00Z' },
+      { key: 'toy-time', value: 90, achievedAt: '2026-06-02T10:00:00Z' },
+      { key: 'toy-time', value: 30, achievedAt: '2026-06-01T10:00:00Z' },
+    ];
+    expect(latestToyRecords(rows).map((r) => [r.key, r.value])).toEqual([
+      ['toy-level', 2],
+      ['toy-time', 90],
+    ]);
   });
 });
