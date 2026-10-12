@@ -102,10 +102,6 @@ export function periodLabel(period: Period, locale: string, now: Date = new Date
   return sameYear ? range : `${range}, ${start.getFullYear()}`;
 }
 
-export function periodKey(period: Period): string {
-  return period.kind === 'all' ? 'all' : `${period.kind}:${period.anchor}`;
-}
-
 export const INVOLVEMENT_LEVELS: readonly Involvement[] = [
   Involvement.USED,
   Involvement.INSERTED,
@@ -132,14 +128,13 @@ export function toyTooltip(toy: Toy): string {
 
 type SessionFlagFilterDef = Readonly<{
   urlParam: string;
-  keyToken: string;
   wireParam: 'has_media' | 'has_pr';
   labelKey: MessageKey<'session.filters'>;
 }>;
 
 export const SESSION_FLAG_FILTERS = {
-  hasMedia: { urlParam: 'media', keyToken: 'm', wireParam: 'has_media', labelKey: 'hasMedia' },
-  hasPr: { urlParam: 'pr', keyToken: 'r', wireParam: 'has_pr', labelKey: 'hasPr' },
+  hasMedia: { urlParam: 'media', wireParam: 'has_media', labelKey: 'hasMedia' },
+  hasPr: { urlParam: 'pr', wireParam: 'has_pr', labelKey: 'hasPr' },
 } as const satisfies Record<string, SessionFlagFilterDef>;
 
 export type SessionFlagKey = keyof typeof SESSION_FLAG_FILTERS;
@@ -167,15 +162,6 @@ export const NO_SESSION_FILTERS: SessionFilters = { toyIds: [], timeWindow: null
 
 export const activeFlagKeys = (filters: SessionFilters): SessionFlagKey[] =>
   SESSION_FLAG_KEYS.filter((key) => filters[key]);
-
-export const sessionFiltersKey = (filters: SessionFilters): string =>
-  [
-    filters.toyIds.join(','),
-    activeFlagKeys(filters)
-      .map((key) => SESSION_FLAG_FILTERS[key].keyToken)
-      .join(''),
-    filters.timeWindow ? `${filters.timeWindow.from}-${filters.timeWindow.to}` : '',
-  ].join('|');
 
 export const activeFilterCount = (filters: SessionFilters): number =>
   filters.toyIds.length + activeFlagKeys(filters).length + (filters.timeWindow ? 1 : 0);

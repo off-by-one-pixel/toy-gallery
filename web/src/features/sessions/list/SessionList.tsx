@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { Alert, Spinner } from '@heroui/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
 
@@ -13,7 +13,7 @@ import { useUnit } from '@/features/preferences/useUnit';
 import { activeFilterCount, currentPeriod, FILTERS, type FilterKey, periodLabel } from '@/features/sessions/session';
 import { SESSION_SORT } from '@/features/sessions/sessionSort';
 import type { Session } from '@/api/types';
-import { ActionFabs, type ActionDef } from '@/components/ActionButtons';
+import { ActionFabs, type ActionDef, editDeleteActions } from '@/components/ActionButtons';
 import PageToolbar from '@/components/PageToolbar';
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -77,25 +77,14 @@ function SessionListContent() {
     setPendingDeleteId(null);
   };
 
-  const selectedActions: ActionDef[] | null =
+  const selectedActions =
     selectedId === null
       ? null
-      : [
-          {
-            key: 'edit',
-            label: common('edit'),
-            icon: Pencil,
-            variant: 'outline',
-            onPress: () => editSession(selectedId),
-          },
-          {
-            key: 'delete',
-            label: common('delete'),
-            icon: Trash2,
-            variant: 'danger-soft',
-            onPress: () => removeSession(selectedId),
-          },
-        ];
+      : editDeleteActions(
+          (k) => common(k),
+          () => editSession(selectedId),
+          () => removeSession(selectedId),
+        );
   const newActions: ActionDef[] = [
     ...(startLiveAction ? [startLiveAction] : []),
     {

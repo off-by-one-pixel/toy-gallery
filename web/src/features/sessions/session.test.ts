@@ -6,7 +6,6 @@ import {
   canStepForward,
   currentPeriod,
   parsePeriodParam,
-  periodKey,
   periodLabel,
   periodRange,
   periodUrlParam,
@@ -14,7 +13,6 @@ import {
   parseSessionFilters,
   parseTimeWindowParam,
   setTimeWindowFilter,
-  sessionFiltersKey,
   sessionFiltersUrlParams,
   sessionFilterWireParams,
   mergeSessions,
@@ -120,10 +118,9 @@ describe('session filters', () => {
     expect(toggleToyFilter(withToy, 5).toyIds).toEqual([]);
   });
 
-  it('counts and keys the time window as one filter', () => {
+  it('counts the time window as one filter', () => {
     const filters = setTimeWindowFilter(NO_SESSION_FILTERS, { from: 18, to: 20 });
     expect(activeFilterCount(filters)).toBe(1);
-    expect(sessionFiltersKey(filters)).toBe('||18-20');
     expect(setTimeWindowFilter(filters, null)).toEqual(NO_SESSION_FILTERS);
   });
 
@@ -181,9 +178,8 @@ describe('session flag filter registry', () => {
     expect(parseSessionFilters((name) => map.get(name) ?? null)).toEqual(filters);
   });
 
-  it('builds cache keys and wire params from active flags', () => {
+  it('builds wire params from active flags', () => {
     const filters = { ...NO_SESSION_FILTERS, toyIds: [1], hasMedia: true, hasPr: true };
-    expect(sessionFiltersKey(filters)).toBe('1|mr|');
     expect(sessionFilterWireParams(filters)).toEqual({ toys: [1], has_media: true, has_pr: true });
     expect(sessionFilterWireParams(NO_SESSION_FILTERS)).toEqual({});
   });
@@ -241,11 +237,5 @@ describe('periods', () => {
     expect(periodLabel({ kind: 'week', anchor: '2026-09-28' }, 'en-US', now)).toBe('Sep 28 \u2013 Oct 4');
     expect(periodLabel({ kind: 'week', anchor: '2025-12-29' }, 'en-US', now)).toBe('Dec 29 \u2013 Jan 4, 2025');
     expect(periodLabel(ALL_PERIOD, 'en-US', now)).toBe('');
-  });
-
-  it('builds distinct cache keys per period', () => {
-    expect(periodKey(ALL_PERIOD)).toBe('all');
-    expect(periodKey({ kind: 'week', anchor: '2026-09-07' })).toBe('week:2026-09-07');
-    expect(periodKey({ kind: 'month', anchor: '2026-09-01' })).toBe('month:2026-09-01');
   });
 });

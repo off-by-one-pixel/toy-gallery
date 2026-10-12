@@ -7,12 +7,12 @@ export const queryKeys = {
   },
   sessions: {
     lists: ['sessions', 'list'] as const,
-    list: (filter: string, ordering: string | undefined, filters: string) =>
-      ['sessions', 'list', filter, ordering ?? null, filters] as const,
+    list: (period: object, ordering: string | undefined, filters: object) =>
+      ['sessions', 'list', period, ordering ?? null, filters] as const,
     detail: (id: number) => ['sessions', 'detail', id] as const,
     live: ['sessions', 'live'] as const,
     stats: ['sessions', 'stats'] as const,
-    stat: (groupBy: string, metrics: readonly string[], range: string, filters: string) =>
+    stat: (groupBy: string, metrics: readonly string[], range: object, filters: object | null) =>
       ['sessions', 'stats', groupBy, [...metrics], range, filters] as const,
   },
   media: {
