@@ -1,11 +1,5 @@
 import { queryKeys } from '@/api/queryKeys';
-import {
-  type Period,
-  periodKey,
-  periodRange,
-  sessionFiltersKey,
-  type SessionFilters,
-} from '@/features/sessions/session';
+import { type Period, periodRange, type SessionFilters } from '@/features/sessions/session';
 import { sessionOrderingParam, type SessionSort } from '@/features/sessions/sessionSort';
 
 export type SessionListQueryState = Readonly<{
@@ -22,4 +16,4 @@ export const sessionListQuery = (state: SessionListQueryState, page: number) => 
 });
 
 export const sessionListKey = (state: SessionListQueryState) =>
-  queryKeys.sessions.list(periodKey(state.period), sessionOrderingParam(state.sort), sessionFiltersKey(state.filters));
+  queryKeys.sessions.list(state.period, sessionOrderingParam(state.sort), state.filters);

@@ -9,7 +9,7 @@ import { useGirth } from '@/features/preferences/useGirth';
 import { useUnit } from '@/features/preferences/useUnit';
 import { fetchSessionStats } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
-import { type Period, periodKey, type SessionFilters, sessionFiltersKey } from '@/features/sessions/session';
+import type { Period, SessionFilters } from '@/features/sessions/session';
 import { SESSION_STATS } from '@/features/sessions/stats/statsConfig';
 import {
   buildStatViews,
@@ -35,9 +35,8 @@ function SessionStats({ period, sessionFilters, defs = SESSION_STATS }: Props) {
   const { results, yearReady, error } = useQueries({
     queries: queries.map((query) => {
       const range = rangeFor(query.window, period);
-      const rangeId = query.window === 'year' && period.kind === 'all' ? 'year' : periodKey(period);
       return {
-        queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, rangeId, sessionFiltersKey(sessionFilters)),
+        queryKey: queryKeys.sessions.stat(query.groupBy, query.metrics, range, sessionFilters),
         queryFn: () => fetchSessionStats(query.groupBy, query.metrics, { ...range, filters: sessionFilters }),
         placeholderData: keepPreviousData,
       };
