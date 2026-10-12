@@ -24,6 +24,7 @@ vi.mock('@/features/toys/template/toyTemplates', () => ({
 import {
   initialTemplateFormState,
   selectMaxDiameterMm,
+  templateById,
   templateFormReducer,
   templatePreviewToy,
   type TemplateFormState,
@@ -56,6 +57,14 @@ describe('selectors', () => {
   });
 });
 
+describe('templateById', () => {
+  it('finds a template by id and returns null for unknown or missing ids', () => {
+    expect(templateById(TEMPLATE.id)).toBe(TEMPLATE);
+    expect(templateById('unknown')).toBeNull();
+    expect(templateById(null)).toBeNull();
+  });
+});
+
 describe('templatePreviewToy', () => {
   it('returns an EditorToy at the template canonical dimensions', () => {
     const preview = templatePreviewToy(TEMPLATE);
@@ -83,6 +92,15 @@ describe('templateFormReducer', () => {
       const seeded: TemplateFormState = { ...initialTemplateFormState, sizeMode: 'circumference' };
       const out = templateFormReducer(seeded, { type: 'select-template', id: TEMPLATE.id, unit: Unit.mm });
       expect(out.sizeInput).toBe('126');
+    });
+
+    it('ignores an unknown template id', () => {
+      const out = templateFormReducer(initialTemplateFormState, {
+        type: 'select-template',
+        id: 'unknown',
+        unit: Unit.mm,
+      });
+      expect(out).toBe(initialTemplateFormState);
     });
   });
 
