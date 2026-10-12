@@ -4,21 +4,18 @@ import { useEffect, useState } from 'react';
 import { Button } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
-import { useNow } from '@/hooks/useNow';
 
 import LiveDot from '@/features/sessions/live/LiveDot';
+import { useLiveElapsed } from '@/features/sessions/live/useLiveElapsed';
 import { useLiveSession } from '@/features/sessions/live/useLiveSession';
-import { formatDuration, secondsBetween } from '@/lib/duration';
 import { formatWhen } from '@/lib/dates';
-
-const TICK_MS = 1000;
 
 export default function LiveSessionBanner() {
   const { liveSession } = useLiveSession();
   const { navigate } = useNavigation();
   const t = useTranslations('session');
   const locale = useLocale();
-  const now = useNow(TICK_MS, liveSession != null);
+  const { now, elapsed } = useLiveElapsed(liveSession?.startedAt ?? null);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -31,7 +28,6 @@ export default function LiveSessionBanner() {
 
   if (!liveSession) return null;
 
-  const elapsed = secondsBetween(liveSession.startedAt, now.toISOString());
   const whenT = (key: 'today' | 'yesterday') => t(key);
 
   return (
@@ -47,7 +43,7 @@ export default function LiveSessionBanner() {
             {formatWhen(liveSession.startedAt, now, locale, whenT)}
             {' · '}
           </span>
-          <span className="font-medium tabular-nums">{formatDuration(elapsed, locale, 'second')}</span>
+          <span className="font-medium tabular-nums">{elapsed}</span>
         </span>
         {!collapsed && (
           <Button

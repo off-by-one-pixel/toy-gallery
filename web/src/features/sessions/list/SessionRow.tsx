@@ -7,8 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActionButtons, editDeleteActions } from '@/components/ActionButtons';
 import { useGirth } from '@/features/preferences/useGirth';
 import { displayGirth } from '@/features/preferences/girth';
-import { formatDuration, secondsBetween } from '@/lib/duration';
-import { useNow } from '@/hooks/useNow';
+import { formatDuration } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
@@ -18,6 +17,7 @@ import { formatValue, type Unit } from '@/features/preferences/units';
 import LiveBadge from '@/features/sessions/live/LiveBadge';
 import MiniToy from '@/features/sessions/list/MiniToy';
 import PeakRow from '@/features/sessions/list/PeakRow';
+import { useLiveElapsed } from '@/features/sessions/live/useLiveElapsed';
 import SessionMediaStrip from '@/features/sessions/media/SessionMediaStrip';
 import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
 import SessionRecordList from '@/features/sessions/list/SessionRecordList';
@@ -76,11 +76,9 @@ function SessionRow({
   const overflow = orderedEntries.length - visibleEntries.length;
 
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
-  const now = useNow(1000, session.isLive);
   const totalMinutes = session.totalToyDurationMinutes ?? 0;
-  const timeValue = session.isLive
-    ? formatDuration(secondsBetween(session.startedAt, now.toISOString()), locale, 'second')
-    : formatDuration(totalMinutes, locale);
+  const { elapsed } = useLiveElapsed(session.isLive ? session.startedAt : null);
+  const timeValue = elapsed ?? formatDuration(totalMinutes, locale);
 
   const mmValue = (mm: number | null | undefined) =>
     mm == null ? null : (
