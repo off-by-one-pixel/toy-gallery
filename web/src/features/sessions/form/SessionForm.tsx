@@ -5,9 +5,7 @@ import { Alert, Button, Spinner } from '@heroui/react';
 import { ArrowLeft, Check, Clock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { Involvement, type Session } from '@/api/types';
-
-type ToySelection = { involvement: Involvement; durationMinutes: number | null };
+import type { Session } from '@/api/types';
 import { SortProvider } from '@/providers/SortProvider';
 import { useSortOf } from '@/hooks/useSortOf';
 import { datetimeLocalValue } from '@/lib/dates';
@@ -23,6 +21,14 @@ import LiveBadge from '@/features/sessions/live/LiveBadge';
 import SectionHeading from '@/components/SectionHeading';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
+import {
+  isLiveOpen,
+  selectionsFromSession,
+  sessionPayload,
+  sessionSaveKind,
+  withDuration,
+  withInvolvement,
+} from '@/features/sessions/form/sessionDraft';
 import type { Translator } from '@/i18n/translator';
 
 type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
@@ -62,15 +68,7 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
     loadedSession?.endedAt ? datetimeLocalValue(new Date(loadedSession.endedAt)) : '',
   );
   const [query, setQuery] = useState('');
-  const [selections, setSelections] = useState(
-    () =>
-      new Map<number, ToySelection>(
-        loadedSession?.entries.map((e) => [
-          e.toy,
-          { involvement: e.involvement, durationMinutes: e.durationMinutes ?? null },
-        ]),
-      ),
-  );
+  const [selections, setSelections] = useState(() => selectionsFromSession(loadedSession));
   const [initialToyIds] = useState<ReadonlySet<number>>(() => new Set(loadedSession?.entries.map((e) => e.toy)));
 
   const sessionId = mode.kind === 'edit' ? mode.sessionId : null;
@@ -90,49 +88,30 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
     ];
   }, [toys, query, sort, initialToyIds]);
   const selectedCount = selections.size;
-  const liveOpen = loadedSession?.isLive === true && endedAt === '';
+  const liveOpen = isLiveOpen(loadedSession, endedAt);
   const now = useNow(60_000, liveOpen);
   const spanEnd = liveOpen ? datetimeLocalValue(now) : endedAt;
   const sessionSpan = startedAt && spanEnd ? minutesBetween(startedAt, spanEnd) : null;
   const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
 
-  const updateSelection = (toyId: number, update: (current?: ToySelection) => ToySelection | undefined) =>
-    setSelections((prev) => {
-      const next = update(prev.get(toyId));
-      const updated = new Map(prev);
-      if (next) updated.set(toyId, next);
-      else updated.delete(toyId);
-      return updated;
-    });
-
   const isLive = loadedSession?.isLive === true;
-  const liveUpdateMode = liveOpen;
-  const liveStartOnly = liveUpdateMode && selectedCount === 0;
-  const startDirty = loadedSession == null || startedAt !== datetimeLocalValue(new Date(loadedSession.startedAt));
-  const canSave = selectedCount > 0 || (liveStartOnly && startDirty);
+  const draft = { startedAt, endedAt, selections };
+  const saveKind = sessionSaveKind(loadedSession, draft);
 
   const { saveSession, isSavingSession } = useSaveSession();
 
   const handleSave = async () => {
-    if (!canSave) return;
+    if (!saveKind) return;
     const saved = await saveSession({
       sessionId,
-      liveStartOnly,
-      payload: {
-        startedAt: new Date(startedAt).toISOString(),
-        endedAt: endedAt ? new Date(endedAt).toISOString() : null,
-        entries: [...selections.entries()].map(([toy, sel]) => ({
-          toy,
-          involvement: sel.involvement,
-          durationMinutes: sel.durationMinutes,
-        })),
-      },
+      liveStartOnly: saveKind === 'startOnly',
+      payload: sessionPayload(draft),
     });
     if (saved) onSaved(saved);
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
-  const saveLabel = saveLabelFor(isLive, liveUpdateMode, t);
+  const saveLabel = saveLabelFor(isLive, liveOpen, t);
 
   return (
     <>
@@ -197,16 +176,10 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
                   toy={toy}
                   state={selections.get(toy.id)?.involvement ?? null}
                   duration={selections.get(toy.id)?.durationMinutes ?? null}
-                  onChange={(next) =>
-                    updateSelection(toy.id, (current) =>
-                      next ? { involvement: next, durationMinutes: current?.durationMinutes ?? null } : undefined,
-                    )
-                  }
+                  onChange={(next) => setSelections((prev) => withInvolvement(prev, toy.id, next))}
                   wholeSessionMinutes={wholeSessionMinutes}
                   wholeSessionIsLive={liveOpen}
-                  onDurationChange={(minutes) =>
-                    updateSelection(toy.id, (current) => current && { ...current, durationMinutes: minutes })
-                  }
+                  onDurationChange={(minutes) => setSelections((prev) => withDuration(prev, toy.id, minutes))}
                 />
               ))}
             </div>
@@ -227,8 +200,8 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
           <Button
             variant="primary"
             size="sm"
-            isDisabled={!canSave || isSavingSession}
-            className={liveUpdateMode ? 'bg-live-strong text-white hover:bg-live' : ''}
+            isDisabled={!saveKind || isSavingSession}
+            className={liveOpen ? 'bg-live-strong text-white hover:bg-live' : ''}
             onPress={handleSave}
           >
             <Check size={14} strokeWidth={2.2} />
