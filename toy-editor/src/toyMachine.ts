@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { combine } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 
 export type StyleOption = {
   borderWidth: number;
@@ -123,3 +124,15 @@ export const useToyStore = create(
     };
   }),
 );
+
+export const useEditorSnapshot = () =>
+  useToyStore(
+    useShallow(({ sections, topShape, bottomShape, insertableLengthMm, knownTotalMm, knownSizeMm }) => ({
+      sections,
+      topShape,
+      bottomShape,
+      insertableLengthMm,
+      knownTotalMm,
+      knownSizeMm,
+    })),
+  );
