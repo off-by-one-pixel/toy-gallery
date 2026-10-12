@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isRowReady, newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
+import { isRowReady, newRow, reconcileRows, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
 import type { AttributeRow } from '@/api/types';
 
 const lastIssuedId = () => newRow().rowId;
@@ -67,24 +67,6 @@ describe('toDict', () => {
   it('last writer wins when two rows have the same trimmed key', () => {
     const rows = [savedRow(1, 'size', 'M'), savedRow(2, 'size', 'L')];
     expect(toDict(rows)).toEqual({ size: 'L' });
-  });
-});
-
-describe('sameDict', () => {
-  it('is true for two empty dicts', () => {
-    expect(sameDict({}, {})).toBe(true);
-  });
-
-  it('is true when keys + values match', () => {
-    expect(sameDict({ a: '1', b: '2' }, { b: '2', a: '1' })).toBe(true);
-  });
-
-  it('is false when sizes differ', () => {
-    expect(sameDict({ a: '1' }, { a: '1', b: '2' })).toBe(false);
-  });
-
-  it('is false when a shared key has different values', () => {
-    expect(sameDict({ a: '1' }, { a: '2' })).toBe(false);
   });
 });
 

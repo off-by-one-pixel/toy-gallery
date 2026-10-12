@@ -1,9 +1,4 @@
-import {
-  DEFAULT_BOTTOM_CURVE_ANGLE,
-  DEFAULT_TOP_CURVE_ANGLE,
-  type Toy as EditorToy,
-  type ToySection,
-} from 'toy-editor';
+import { DEFAULT_BOTTOM_CURVE_ANGLE, DEFAULT_TOP_CURVE_ANGLE, type ToySection } from 'toy-editor';
 import { type SectionShape, type ToyPayload } from '@/api/types';
 import { diameterToCircumference } from '@/features/preferences/units';
 
@@ -73,24 +68,15 @@ export function editorToTemplateJson(state: EditorState): string {
   return JSON.stringify(entry, null, 2);
 }
 
-export function editorStateFromToy(toy: EditorToy): EditorState {
-  return {
-    sections: toy.sections,
-    topShape: toy.topShape,
-    bottomShape: toy.bottomShape,
-    insertableLengthMm: toy.insertableLengthMm ?? null,
-    knownTotalMm: toy.knownTotalMm ?? null,
-    knownSizeMm: toy.knownSizeMm ?? null,
-  };
-}
+type ComparableEditorState = Pick<EditorState, 'sections' | 'topShape' | 'bottomShape'> & Partial<EditorState>;
 
-function editorFingerprint(state: EditorState): string {
+function editorFingerprint(state: ComparableEditorState): string {
   return JSON.stringify({
     topShape: state.topShape,
     bottomShape: state.bottomShape,
-    insertableLengthMm: state.insertableLengthMm,
-    knownTotalMm: state.knownTotalMm,
-    knownSizeMm: state.knownSizeMm,
+    insertableLengthMm: state.insertableLengthMm ?? null,
+    knownTotalMm: state.knownTotalMm ?? null,
+    knownSizeMm: state.knownSizeMm ?? null,
     sections: state.sections.map((s) => ({
       diameter: s.diameter,
       height: s.height,
@@ -102,6 +88,6 @@ function editorFingerprint(state: EditorState): string {
   });
 }
 
-export function isEditorStateEqual(a: EditorState, b: EditorState): boolean {
+export function isEditorStateEqual(a: ComparableEditorState, b: ComparableEditorState): boolean {
   return editorFingerprint(a) === editorFingerprint(b);
 }

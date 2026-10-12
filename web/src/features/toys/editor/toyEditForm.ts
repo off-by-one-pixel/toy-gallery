@@ -15,12 +15,6 @@ type ValidationError = 'identityRequired' | 'sectionsRequired';
 export type ValidationResult =
   Readonly<{ ok: true; payload: ToyPayload }> | Readonly<{ ok: false; error: ValidationError }>;
 
-export type IdentityAction = Readonly<{ field: keyof ToyIdentity; value: string }>;
-
-export function identityReducer(state: ToyIdentity, action: IdentityAction): ToyIdentity {
-  return { ...state, [action.field]: action.value };
-}
-
 export function initialIdentity(source: Toy | null, defaultColor: string): ToyIdentity {
   return {
     brand: source?.brand ?? '',
@@ -28,10 +22,6 @@ export function initialIdentity(source: Toy | null, defaultColor: string): ToyId
     size: source?.size ?? '',
     color: source?.color || defaultColor,
   };
-}
-
-export function isIdentityEqual(a: ToyIdentity, b: ToyIdentity): boolean {
-  return a.brand === b.brand && a.name === b.name && a.size === b.size && a.color === b.color;
 }
 
 export function validateAndBuildPayload(

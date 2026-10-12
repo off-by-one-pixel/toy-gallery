@@ -4,9 +4,7 @@ import type { ToySection } from 'toy-editor';
 
 import type { EditorState } from '@/features/toys/converters/editor';
 import {
-  identityReducer,
   initialIdentity,
-  isIdentityEqual,
   type ToyEditMode,
   type ToyIdentity,
   validateAndBuildPayload,
@@ -63,40 +61,6 @@ describe('initialIdentity', () => {
   it('falls back to the default color when the source has no color', () => {
     const blank: Toy = { ...SOURCE_TOY, color: '' };
     expect(initialIdentity(blank, '#c4b5fd').color).toBe('#c4b5fd');
-  });
-});
-
-describe('identityReducer', () => {
-  const start: ToyIdentity = { brand: '', name: '', size: '', color: '#c4b5fd' };
-
-  it('updates a single field, leaving the rest untouched', () => {
-    expect(identityReducer(start, { field: 'brand', value: 'Acme' })).toEqual({ ...start, brand: 'Acme' });
-  });
-
-  it('overwrites a previously-set field', () => {
-    const after = identityReducer({ ...start, name: 'Old' }, { field: 'name', value: 'New' });
-    expect(after.name).toBe('New');
-  });
-
-  it('does not mutate the input state', () => {
-    const before = { ...start };
-    identityReducer(start, { field: 'size', value: 'L' });
-    expect(start).toEqual(before);
-  });
-});
-
-describe('isIdentityEqual', () => {
-  const base: ToyIdentity = { brand: 'Acme', name: 'Cone', size: 'M', color: '#c4b5fd' };
-
-  it('is true for identical fields', () => {
-    expect(isIdentityEqual(base, { ...base })).toBe(true);
-  });
-
-  it('is false when any field differs', () => {
-    expect(isIdentityEqual(base, { ...base, brand: 'Other' })).toBe(false);
-    expect(isIdentityEqual(base, { ...base, name: 'Other' })).toBe(false);
-    expect(isIdentityEqual(base, { ...base, size: 'L' })).toBe(false);
-    expect(isIdentityEqual(base, { ...base, color: '#000000' })).toBe(false);
   });
 });
 

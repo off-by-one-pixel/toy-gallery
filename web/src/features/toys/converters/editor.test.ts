@@ -4,7 +4,6 @@ import type { ToySection } from 'toy-editor';
 
 import { SectionShape } from '@/api/types';
 import {
-  editorStateFromToy,
   editorToPayload,
   editorToTemplateJson,
   isEditorStateEqual,
@@ -138,21 +137,14 @@ describe('editorToTemplateJson', () => {
   });
 });
 
-describe('editorStateFromToy', () => {
-  it('defaults missing reference dimensions to null', () => {
-    const state = editorStateFromToy({ sections, topShape: SectionShape.EGG, bottomShape: SectionShape.FLAT });
-    expect(state).toEqual({
-      sections,
-      topShape: SectionShape.EGG,
-      bottomShape: SectionShape.FLAT,
-      insertableLengthMm: null,
-      knownTotalMm: null,
-      knownSizeMm: null,
-    });
-  });
-});
-
 describe('isEditorStateEqual', () => {
+  it('treats missing reference dimensions as null', () => {
+    const bare = { sections, topShape: SectionShape.EGG, bottomShape: SectionShape.FLAT };
+    const nulls: EditorState = { ...bare, insertableLengthMm: null, knownTotalMm: null, knownSizeMm: null };
+    expect(isEditorStateEqual(nulls, bare)).toBe(true);
+    expect(isEditorStateEqual({ ...nulls, knownTotalMm: 130 }, bare)).toBe(false);
+  });
+
   it('is true for a hydrated copy of the same toy', () => {
     const hydrated: EditorState = {
       ...baseState,

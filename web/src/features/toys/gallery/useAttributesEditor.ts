@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
-import { newRow, reconcileRows, sameDict, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
+import { newRow, reconcileRows, toDict, toRows } from '@/features/toys/gallery/attributesEditor';
+import { sameDict } from '@/lib/sameDict';
 import { useAttributeSuggestions } from '@/features/toys/gallery/useAttributeSuggestions';
 import type { AttributeRow, Toy } from '@/api/types';
 import { useToys } from '@/features/toys/useToys';
