@@ -8,6 +8,7 @@ import { DURATION_INCREMENTS_MINUTES, formatDuration } from '@/lib/duration';
 import { Involvement, type Toy } from '@/api/types';
 import ToyThumbnail from '@/features/toys/ToyThumbnail';
 import { pressable } from '@/lib/pressable';
+import { INVOLVEMENT_LEVELS } from '@/features/sessions/session';
 
 type Props = Readonly<{
   toy: Toy;
@@ -18,8 +19,6 @@ type Props = Readonly<{
   onChange: (next: Involvement | null) => void;
   onDurationChange: (minutes: number | null) => void;
 }>;
-
-const STATE_ORDER: Involvement[] = [Involvement.USED, Involvement.INSERTED, Involvement.FULLY_INSERTED];
 
 const CHIP_BORDER: Record<Involvement, string> = {
   [Involvement.USED]: 'border-blue-300',
@@ -39,7 +38,7 @@ const SEG_ACTIVE: Record<Involvement, string> = {
   [Involvement.FULLY_INSERTED]: 'bg-blue-700 text-white shadow-xs',
 };
 
-const STATE_CYCLE: (Involvement | null)[] = [null, Involvement.USED, Involvement.INSERTED, Involvement.FULLY_INSERTED];
+const STATE_CYCLE = [null, ...INVOLVEMENT_LEVELS];
 
 const nextInCycle = (current: Involvement | null): Involvement | null => {
   const idx = STATE_CYCLE.indexOf(current);
@@ -114,7 +113,7 @@ export default function ToyChipSelector({
 
       <div className="px-3 pb-2.5">
         <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-lg bg-surface-secondary p-1">
-          {STATE_ORDER.map((s) => (
+          {INVOLVEMENT_LEVELS.map((s) => (
             <button
               key={s}
               type="button"
