@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useNow } from '@/hooks/useNow';
 
+import LiveDot from '@/features/sessions/live/LiveDot';
 import { useLiveSession } from '@/features/sessions/live/useLiveSession';
 import { formatDuration, secondsBetween } from '@/lib/duration';
 import { formatWhen } from '@/lib/dates';
@@ -38,10 +39,7 @@ export default function LiveSessionBanner() {
       <div
         className={`mx-auto flex max-w-300 items-center gap-3 px-4 transition-all sm:px-6 ${collapsed ? 'py-1' : 'py-2'}`}
       >
-        <span className="relative flex h-2.5 w-2.5 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-live opacity-60" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-live" />
-        </span>
+        <LiveDot className="h-2.5 w-2.5" />
         <span className="min-w-0 flex-1 truncate text-sm text-foreground">
           <span className="font-semibold">{t('live.badge')}</span>
           <span className="text-muted">
