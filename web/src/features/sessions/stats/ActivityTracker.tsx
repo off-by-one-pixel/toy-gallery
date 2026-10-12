@@ -1,12 +1,11 @@
 'use client';
 
-import { cloneElement, type ReactElement } from 'react';
+import { cloneElement, type ReactElement, type ReactNode } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
 
 import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 import type { ActivityCell, DimensionView } from '@/features/sessions/stats/activity';
-import type { StatViewItem } from '@/features/sessions/stats/statsView';
-import FrequencyStrip from '@/features/sessions/stats/FrequencyStrip';
+import type { FrequencyView, StatViewItem } from '@/features/sessions/stats/statsView';
 
 type Props = Readonly<{ items: readonly StatViewItem[] }>;
 
@@ -19,25 +18,45 @@ const asActivityCell = (value: unknown): ActivityCell | null => (value ?? null) 
 export default function ActivityTracker({ items }: Props) {
   return (
     <div className="mx-auto grid max-w-300 grid-cols-1 gap-6 rounded-lg bg-surface/60 px-4 pt-3 pb-4 sm:grid-cols-2 sm:gap-8">
-      {items.map((item) => (
-        <StatView key={item.key} item={item} />
-      ))}
+      {items.map((item) =>
+        item.kind === 'calendar' ? (
+          <DimensionHeatmap key={item.key} view={item.view} />
+        ) : (
+          <FrequencyStrip key={item.key} view={item.view} />
+        ),
+      )}
     </div>
   );
 }
 
-function StatView({ item }: Readonly<{ item: StatViewItem }>) {
-  if (item.kind === 'calendar') return <DimensionHeatmap view={item.view} />;
-  return <FrequencyStrip {...item.view} />;
+function StatTitle({ title, summary }: Readonly<{ title: string; summary?: string | null }>) {
+  return (
+    <div className="mb-2 flex items-baseline justify-between gap-3">
+      <h3 className="text-xs font-medium uppercase tracking-wider text-muted">{title}</h3>
+      {summary && <span className="text-xs font-semibold tabular-nums text-foreground">{summary}</span>}
+    </div>
+  );
+}
+
+function StatLegend({
+  min,
+  max,
+  gradient,
+  className,
+}: Readonly<{ min: ReactNode; max: ReactNode; gradient: string; className: string }>) {
+  return (
+    <div className={`ml-auto flex w-1/3 items-center gap-2 text-caption tabular-nums text-muted ${className}`}>
+      <span>{min}</span>
+      <span aria-hidden className="h-1.5 flex-1 rounded-full" style={{ background: gradient }} />
+      <span>{max}</span>
+    </div>
+  );
 }
 
 function DimensionHeatmap({ view }: Readonly<{ view: DimensionView }>) {
   return (
     <div>
-      <div className="mb-2 flex items-baseline justify-between gap-3">
-        <h3 className="text-xs font-medium uppercase tracking-wider text-muted">{view.title}</h3>
-        {view.summary && <span className="text-xs font-semibold tabular-nums text-foreground">{view.summary}</span>}
-      </div>
+      <StatTitle title={view.title} summary={view.summary} />
       <div>
         <CalendarHeatmap
           startDate={view.startDate}
@@ -57,11 +76,44 @@ function DimensionHeatmap({ view }: Readonly<{ view: DimensionView }>) {
           }}
         />
       </div>
-      <div className="-mt-4 ml-auto flex w-1/3 items-center gap-2 text-caption tabular-nums text-muted">
-        <span>{view.legendMinLabel}</span>
-        <span aria-hidden className="h-1.5 flex-1 rounded-full" style={{ background: view.legendGradient }} />
-        <span>{view.legendMaxLabel}</span>
-      </div>
+      <StatLegend
+        min={view.legendMinLabel}
+        max={view.legendMaxLabel}
+        gradient={view.legendGradient}
+        className="-mt-4"
+      />
+    </div>
+  );
+}
+
+function FrequencyStrip({ view }: Readonly<{ view: FrequencyView }>) {
+  return (
+    <div>
+      <StatTitle title={view.title} />
+      {view.total === 0 ? (
+        <p className="py-2 text-caption text-text-tertiary">{view.emptyLabel}</p>
+      ) : (
+        <>
+          <div className="flex gap-0.5">
+            {view.cells.map((cell) => (
+              <span
+                key={cell.key}
+                className="h-4 flex-1 rounded-sm"
+                style={{ background: cell.fill }}
+                title={cell.tooltip}
+              />
+            ))}
+          </div>
+          <div className="mt-1 flex gap-0.5 text-[9px] tabular-nums text-text-tertiary">
+            {view.cells.map((cell) => (
+              <span key={cell.key} className="flex-1 text-center">
+                {cell.label}
+              </span>
+            ))}
+          </div>
+          <StatLegend min={view.legendMin} max={view.max} gradient={view.legendGradient} className="mt-2" />
+        </>
+      )}
     </div>
   );
 }
