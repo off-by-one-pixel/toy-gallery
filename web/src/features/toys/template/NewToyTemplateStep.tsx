@@ -3,8 +3,6 @@
 import type { Toy as EditorToy } from 'toy-editor';
 
 import type { WizardStep } from '@/features/toys/editor/useToyEditorWizardNav';
-import { templateToEditor } from '@/features/toys/converters/template';
-import { TOY_TEMPLATES } from '@/features/toys/template/toyTemplates';
 import { useUnit } from '@/features/preferences/useUnit';
 import SizeForm from '@/features/toys/template/SizeForm';
 import StepHeader from '@/features/toys/template/StepHeader';
@@ -23,20 +21,12 @@ export default function NewToyTemplateStep({ step, onStepChange, onPick, onSkip 
   const form = useTemplateForm(unit);
 
   const handleSelectTemplate = (id: string) => {
-    const template = TOY_TEMPLATES.find((t) => t.id === id);
-    if (template) form.selectTemplate(template);
+    form.selectTemplate(id);
     onStepChange('size');
   };
 
   const handleContinue = () => {
-    if (!form.selectedTemplate || form.totalMm == null || form.maxDiameterMm == null) return;
-    onPick(
-      templateToEditor({
-        template: form.selectedTemplate,
-        totalMm: form.totalMm,
-        maxDiameterMm: form.maxDiameterMm,
-      }),
-    );
+    if (form.previewToy) onPick(form.previewToy);
   };
 
   return (

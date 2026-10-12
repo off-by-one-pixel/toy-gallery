@@ -1,6 +1,7 @@
 import type { Toy as EditorToy } from 'toy-editor';
 
 import { templateToEditor } from '@/features/toys/converters/template';
+import { TOY_TEMPLATES } from '@/features/toys/template/toyTemplates';
 import type { ToyTemplate } from '@/api/types';
 import {
   circumferenceToDiameter,
@@ -28,13 +29,8 @@ export const initialTemplateFormState: TemplateFormState = {
   sizeInput: '',
 };
 
-export function selectTotalMm(state: TemplateFormState, unit: Unit): number | null {
-  return parseToMm(state.totalInput, unit);
-}
-
-export function selectInsertableMm(state: TemplateFormState, unit: Unit): number | null {
-  return parseToMm(state.insertableInput, unit);
-}
+export const templateById = (id: string | null): ToyTemplate | null =>
+  TOY_TEMPLATES.find((template) => template.id === id) ?? null;
 
 export function selectMaxDiameterMm(state: TemplateFormState, unit: Unit): number | null {
   const inputMm = parseToMm(state.sizeInput, unit);
@@ -63,16 +59,17 @@ function convertSizeBetweenModes(sizeInput: string, from: SizeMode, to: SizeMode
 }
 
 export type TemplateFormAction =
-  | Readonly<{ type: 'select-template'; template: ToyTemplate; unit: Unit }>
-  | Readonly<{ type: 'change-total'; value: string; selectedTemplate: ToyTemplate | null; unit: Unit }>
-  | Readonly<{ type: 'change-insertable'; value: string; selectedTemplate: ToyTemplate | null; unit: Unit }>
+  | Readonly<{ type: 'select-template'; id: string; unit: Unit }>
+  | Readonly<{ type: 'change-length'; field: 'totalInput' | 'insertableInput'; value: string; unit: Unit }>
   | Readonly<{ type: 'change-size'; value: string }>
   | Readonly<{ type: 'change-size-mode'; mode: SizeMode; unit: Unit }>;
 
 export function templateFormReducer(state: TemplateFormState, action: TemplateFormAction): TemplateFormState {
   switch (action.type) {
     case 'select-template': {
-      const { template, unit } = action;
+      const { unit } = action;
+      const template = templateById(action.id);
+      if (!template) return state;
       const canonicalSize = templateCanonicalSizeMm(template, state.sizeMode);
       return {
         ...state,
@@ -82,28 +79,19 @@ export function templateFormReducer(state: TemplateFormState, action: TemplateFo
         sizeInput: canonicalSize == null ? state.sizeInput : formatForInput(canonicalSize, unit),
       };
     }
-    case 'change-total': {
-      const { value, selectedTemplate, unit } = action;
-      if (!selectedTemplate) return { ...state, totalInput: value };
+    case 'change-length': {
+      const { field, value, unit } = action;
+      const template = templateById(state.selectedId);
       const mm = parseToMm(value, unit);
-      if (mm == null) return { ...state, totalInput: value };
-      const ratio = selectedTemplate.insertableLength / selectedTemplate.totalLength;
+      if (!template || mm == null) return { ...state, [field]: value };
+      const isTotal = field === 'totalInput';
+      const ratio = isTotal
+        ? template.insertableLength / template.totalLength
+        : template.totalLength / template.insertableLength;
       return {
         ...state,
-        totalInput: value,
-        insertableInput: formatForInput(mm * ratio, unit),
-      };
-    }
-    case 'change-insertable': {
-      const { value, selectedTemplate, unit } = action;
-      if (!selectedTemplate) return { ...state, insertableInput: value };
-      const mm = parseToMm(value, unit);
-      if (mm == null) return { ...state, insertableInput: value };
-      const ratio = selectedTemplate.totalLength / selectedTemplate.insertableLength;
-      return {
-        ...state,
-        insertableInput: value,
-        totalInput: formatForInput(mm * ratio, unit),
+        [field]: value,
+        [isTotal ? 'insertableInput' : 'totalInput']: formatForInput(mm * ratio, unit),
       };
     }
     case 'change-size':

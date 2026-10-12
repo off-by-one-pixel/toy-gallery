@@ -1,21 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
 import { Button } from '@heroui/react';
 import { ThumbnailRender } from 'toy-editor';
-import type { Toy as EditorToy } from 'toy-editor';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { templateToEditor } from '@/features/toys/converters/template';
 import type { SizeMode } from '@/features/toys/template/templateForm';
 import { useUnit } from '@/features/preferences/useUnit';
 import UnitField from '@/features/preferences/UnitField';
 import { PREVIEW_STYLE } from '@/features/toys/template/styles';
-import type { TemplateForm } from '@/features/toys/template/useTemplateForm';
+import type { useTemplateForm } from '@/features/toys/template/useTemplateForm';
 
 type Props = Readonly<{
-  form: TemplateForm;
+  form: ReturnType<typeof useTemplateForm>;
   onBack: () => void;
   onContinue: () => void;
 }>;
@@ -24,14 +21,8 @@ export default function SizeForm({ form, onBack, onContinue }: Props) {
   const { unit } = useUnit();
   const t = useTranslations('template');
   const common = useTranslations('common');
-  const { state, selectedTemplate: template, totalMm, insertableMm, maxDiameterMm } = form;
-
-  const previewToy = useMemo<EditorToy | null>(() => {
-    if (!template || totalMm == null || maxDiameterMm == null) return null;
-    return templateToEditor({ template, totalMm, maxDiameterMm });
-  }, [template, totalMm, maxDiameterMm]);
-
-  const canContinue = template != null && totalMm != null && insertableMm != null && maxDiameterMm != null;
+  const { state, selectedTemplate: template, previewToy } = form;
+  const canContinue = previewToy != null && form.insertableMm != null;
   const sizeFieldLabel = state.sizeMode === 'diameter' ? t('fieldMaxDiameter') : common('circumference');
 
   return (
