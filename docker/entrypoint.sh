@@ -12,8 +12,22 @@ python manage.py safe_migrate
 echo "[entrypoint] collecting Django static files"
 python manage.py collectstatic --noinput
 
-echo "[entrypoint] checking superuser"
-python /app/docker/init_superuser.py
+if [ -n "${INITIAL_USERNAME:-}" ] && [ -n "${INITIAL_PASSWORD:-}" ]; then
+  echo "[entrypoint] checking admin '$INITIAL_USERNAME'"
+  if result=$(
+    DJANGO_SUPERUSER_USERNAME="$INITIAL_USERNAME" \
+    DJANGO_SUPERUSER_PASSWORD="$INITIAL_PASSWORD" \
+    DJANGO_SUPERUSER_EMAIL="${INITIAL_EMAIL:-}" \
+      python manage.py createsuperuser --noinput 2>&1
+  ); then
+    echo "[entrypoint] $result"
+  else
+    case "$result" in
+      *"already taken"*) echo "[entrypoint] admin '$INITIAL_USERNAME' already exists, skipping creation" ;;
+      *) echo "$result" >&2; exit 1 ;;
+    esac
+  fi
+fi
 
 SSL_CERT_PATH="${SSL_CERT_PATH:-$DATA_DIR/certs/cert.pem}"
 SSL_KEY_PATH="${SSL_KEY_PATH:-$DATA_DIR/certs/key.pem}"
