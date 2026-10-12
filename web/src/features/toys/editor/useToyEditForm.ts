@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useReducer, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useEditorSnapshot, useToyStore } from 'toy-editor';
 import type { Toy as EditorToy } from 'toy-editor';
@@ -10,7 +10,6 @@ import type { EditorState } from '@/features/toys/converters/editor';
 import { editorToTemplateJson, isEditorStateEqual } from '@/features/toys/converters/editor';
 import { toyToEditor } from '@/features/toys/converters/toy';
 import {
-  identityReducer,
   initialIdentity,
   isIdentityEqual,
   type ToyEditMode,
@@ -40,8 +39,11 @@ export function useToyEditForm(mode: ToyEditMode): ToyEditForm {
   const source = mode.kind === 'new' ? null : mode.toy;
 
   const seedIdentity = useMemo(() => initialIdentity(source, DEFAULT_FILL), [source]);
-  const [identity, dispatch] = useReducer(identityReducer, seedIdentity);
-  const setIdentityField = useCallback((field: keyof ToyIdentity, value: string) => dispatch({ field, value }), []);
+  const [identity, setIdentity] = useState(seedIdentity);
+  const setIdentityField = useCallback(
+    (field: keyof ToyIdentity, value: string) => setIdentity((current) => ({ ...current, [field]: value })),
+    [],
+  );
 
   const sourceInitial = useMemo<EditorToy | null>(() => (source ? toyToEditor(source) : null), [source]);
   const [pickedInitial, setPickedInitial] = useState<EditorToy | null>(null);
