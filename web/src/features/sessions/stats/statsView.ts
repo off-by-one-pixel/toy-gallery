@@ -26,8 +26,6 @@ type StatGroupBy = 'date' | 'hour' | 'weekday';
 export type CalendarStatDef = Readonly<{
   kind: 'calendar';
   key: string;
-  groupBy: 'date';
-  window: StatWindow;
   metric: string;
   hue: number;
   gamma?: number;
@@ -38,12 +36,9 @@ export type CalendarStatDef = Readonly<{
 }>;
 
 export type FrequencyStatDef = Readonly<{
-  kind: 'frequency';
+  kind: 'hour' | 'weekday';
   key: string;
-  groupBy: 'hour' | 'weekday';
-  window: StatWindow;
   metric: string;
-  size: number;
   hue: number;
   gamma?: number;
   minPolicy: 'zero' | 'nonzeroMin';
@@ -56,23 +51,28 @@ export type FrequencyStatDef = Readonly<{
 export type StatDef = CalendarStatDef | FrequencyStatDef;
 
 export type StatQuery = Readonly<{
-  key: string;
+  key: StatDef['kind'];
   groupBy: StatGroupBy;
   window: StatWindow;
   metrics: string[];
 }>;
 
-const queryKeyOf = (def: StatDef): string => `${def.groupBy}:${def.window}`;
+const BUCKET_COUNT = { hour: 24, weekday: 7 } as const;
 
 export const deriveQueries = (defs: readonly StatDef[]): StatQuery[] => {
-  const queries = new Map<string, StatQuery>();
-  for (const def of defs) {
-    const key = queryKeyOf(def);
-    const existing = queries.get(key);
+  const queries = new Map<StatDef['kind'], StatQuery>();
+  for (const { kind, metric } of defs) {
+    const existing = queries.get(kind);
     if (existing) {
-      if (!existing.metrics.includes(def.metric)) existing.metrics.push(def.metric);
+      if (!existing.metrics.includes(metric)) existing.metrics.push(metric);
     } else {
-      queries.set(key, { key, groupBy: def.groupBy, window: def.window, metrics: [def.metric] });
+      const calendar = kind === 'calendar';
+      queries.set(kind, {
+        key: kind,
+        groupBy: calendar ? 'date' : kind,
+        window: calendar ? 'year' : 'filter',
+        metrics: [metric],
+      });
     }
   }
   return [...queries.values()];
@@ -145,10 +145,11 @@ export function buildCalendarView(
 }
 
 const bucketValues = (def: FrequencyStatDef, groups: readonly StatsGroup[]): number[] => {
-  const counts = Array.from({ length: def.size }, () => 0);
+  const size = BUCKET_COUNT[def.kind];
+  const counts = Array.from({ length: size }, () => 0);
   for (const group of groups) {
     const index = Number(group.key);
-    if (Number.isInteger(index) && index >= 0 && index < def.size) {
+    if (Number.isInteger(index) && index >= 0 && index < size) {
       counts[index] = group.values[def.metric] ?? 0;
     }
   }
@@ -192,7 +193,7 @@ export function buildStatViews(
   ctx: StatContext,
 ): StatViewItem[] {
   return defs.map((def) => {
-    const groups = results.get(queryKeyOf(def)) ?? [];
+    const groups = results.get(def.kind) ?? [];
     if (def.kind === 'calendar') {
       return { kind: 'calendar', key: def.key, view: buildCalendarView(def, groups, ctx) };
     }

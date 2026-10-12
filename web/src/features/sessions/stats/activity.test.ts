@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { colorFor, extent, legendGradient, pluck } from '@/features/sessions/stats/activity';
+import { colorFor, extent, legendGradient } from '@/features/sessions/stats/activity';
 import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 
 describe('extent', () => {
@@ -14,17 +14,6 @@ describe('extent', () => {
 
   it('handles a single-value array', () => {
     expect(extent([42])).toEqual({ min: 42, max: 42 });
-  });
-});
-
-describe('pluck', () => {
-  it('extracts non-null values via the picker', () => {
-    const items = [{ v: 1 }, { v: null }, { v: 2 }, { v: undefined }];
-    expect(pluck(items, (i) => i.v)).toEqual([1, 2]);
-  });
-
-  it('returns an empty array when every value is null/undefined', () => {
-    expect(pluck([{ v: null }, { v: null }], (i) => i.v)).toEqual([]);
   });
 });
 

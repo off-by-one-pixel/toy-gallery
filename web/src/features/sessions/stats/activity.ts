@@ -39,10 +39,6 @@ export function extent(values: number[]): { min: number; max: number } {
   return { min: Math.min(...values), max: Math.max(...values) };
 }
 
-export function pluck<T>(items: readonly T[], pick: (item: T) => number | null | undefined): number[] {
-  return items.map(pick).filter((v): v is number => v != null);
-}
-
 export type ActivityCell = Readonly<{
   date: string;
   tooltip: string;

@@ -13,8 +13,6 @@ export const SESSION_STATS: readonly StatDef[] = [
   {
     kind: 'calendar',
     key: 'length',
-    groupBy: 'date',
-    window: 'year',
     metric: METRIC_MAX_LENGTH,
     hue: ACTIVITY_PALETTE.lengthHue,
     title: (ctx) => ctx.t('common.depth'),
@@ -22,8 +20,6 @@ export const SESSION_STATS: readonly StatDef[] = [
   {
     kind: 'calendar',
     key: 'girth',
-    groupBy: 'date',
-    window: 'year',
     metric: METRIC_MAX_CIRCUMFERENCE,
     hue: ACTIVITY_PALETTE.circumferenceHue,
     title: (ctx) => ctx.t('common.girth'),
@@ -32,8 +28,6 @@ export const SESSION_STATS: readonly StatDef[] = [
   {
     kind: 'calendar',
     key: 'sessions-per-day',
-    groupBy: 'date',
-    window: 'year',
     metric: METRIC_COUNT,
     hue: ACTIVITY_PALETTE.sessionsHue,
     gamma: ACTIVITY_PALETTE.sessionsGamma,
@@ -43,8 +37,6 @@ export const SESSION_STATS: readonly StatDef[] = [
   {
     kind: 'calendar',
     key: 'time-per-day',
-    groupBy: 'date',
-    window: 'year',
     metric: METRIC_TOTAL_DURATION,
     hue: ACTIVITY_PALETTE.durationHue,
     gamma: ACTIVITY_PALETTE.durationGamma,
@@ -53,12 +45,9 @@ export const SESSION_STATS: readonly StatDef[] = [
     summary: (total, ctx) => formatDuration(Math.round(total), ctx.locale),
   },
   {
-    kind: 'frequency',
+    kind: 'hour',
     key: 'time-of-day',
-    groupBy: 'hour',
-    window: 'filter',
     metric: METRIC_COUNT,
-    size: 24,
     hue: ACTIVITY_PALETTE.timeOfDayHue,
     gamma: ACTIVITY_PALETTE.sessionsGamma,
     minPolicy: 'zero',
@@ -69,12 +58,9 @@ export const SESSION_STATS: readonly StatDef[] = [
       ctx.t('session.timeOfDay.tooltip', { bucket: localizedHourLabel(hour, ctx.locale), count }),
   },
   {
-    kind: 'frequency',
+    kind: 'weekday',
     key: 'weekday',
-    groupBy: 'weekday',
-    window: 'filter',
     metric: METRIC_COUNT,
-    size: 7,
     hue: ACTIVITY_PALETTE.weekdayHue,
     gamma: ACTIVITY_PALETTE.sessionsGamma,
     minPolicy: 'nonzeroMin',
