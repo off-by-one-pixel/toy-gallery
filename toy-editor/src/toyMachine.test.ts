@@ -1,3 +1,4 @@
+import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   CURVE_ANGLES,
@@ -6,6 +7,7 @@ import {
   sectionBottomCurveAngle,
   sectionTopCurveAngle,
   type ToySection,
+  useEditorSnapshot,
   useToyStore,
 } from './toyMachine';
 
@@ -230,5 +232,28 @@ describe('plain setters', () => {
       snapEnabled: false,
       showSectionCircumference: true,
     });
+  });
+});
+
+describe('useEditorSnapshot', () => {
+  it('returns the toy fields and keeps its identity until one of them changes', () => {
+    seed({ id: 1 });
+    const { result } = renderHook(() => useEditorSnapshot());
+    const first = result.current;
+    expect(first).toEqual({
+      sections: sections(),
+      topShape: useToyStore.getState().topShape,
+      bottomShape: useToyStore.getState().bottomShape,
+      insertableLengthMm: null,
+      knownTotalMm: null,
+      knownSizeMm: null,
+    });
+
+    act(() => useToyStore.getState().setSnapEnabled(false));
+    expect(result.current).toBe(first);
+
+    act(() => useToyStore.getState().setHeight(1, 20));
+    expect(result.current).not.toBe(first);
+    expect(result.current.sections[0].height).toBe(20);
   });
 });
