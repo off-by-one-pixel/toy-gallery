@@ -1,4 +1,5 @@
 import { Involvement } from '@/api/types';
+import { INVOLVEMENT_LEVELS } from '@/features/sessions/session';
 import { displayGirth, type Girth } from '@/features/preferences/girth';
 import { formatValue, type Unit } from '@/features/preferences/units';
 import { formatDuration } from '@/lib/duration';
@@ -20,8 +21,6 @@ export type SessionRecordDisplay = Readonly<{
   label: (ctx: RecordDisplayContext) => string;
   value: (value: number, ctx: RecordDisplayContext) => RecordValue;
 }>;
-
-const INVOLVEMENT_BY_RANK = [Involvement.USED, Involvement.INSERTED, Involvement.FULLY_INSERTED];
 
 const dimension = (mm: number, ctx: RecordDisplayContext): RecordValue => ({
   text: formatValue(mm, ctx.unit),
@@ -59,7 +58,7 @@ export const SESSION_RECORDS = {
   'toy-level': {
     label: (ctx) => ctx.t('session.records.level'),
     value: (value, ctx) => ({
-      text: ctx.t(`involvement.${INVOLVEMENT_BY_RANK[value] ?? Involvement.USED}`),
+      text: ctx.t(`involvement.${INVOLVEMENT_LEVELS[value] ?? Involvement.USED}`),
     }),
   },
 } as const satisfies Record<string, SessionRecordDisplay>;

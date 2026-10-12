@@ -106,20 +106,20 @@ export function periodKey(period: Period): string {
   return period.kind === 'all' ? 'all' : `${period.kind}:${period.anchor}`;
 }
 
-const INVOLVEMENT_RANK: Record<Involvement, number> = {
-  [Involvement.FULLY_INSERTED]: 0,
-  [Involvement.INSERTED]: 1,
-  [Involvement.USED]: 2,
-};
+export const INVOLVEMENT_LEVELS: readonly Involvement[] = [
+  Involvement.USED,
+  Involvement.INSERTED,
+  Involvement.FULLY_INSERTED,
+];
+
+const levelOf = (involvement: Involvement) => INVOLVEMENT_LEVELS.indexOf(involvement);
 
 export function sortEntriesByInvolvement(
   entries: readonly SessionEntry[],
   toys: ReadonlyMap<number, Toy>,
 ): SessionEntry[] {
   const girthOf = (entry: SessionEntry) => toys.get(entry.toy)?.circumference ?? -1;
-  return [...entries].sort(
-    (a, b) => INVOLVEMENT_RANK[a.involvement] - INVOLVEMENT_RANK[b.involvement] || girthOf(b) - girthOf(a),
-  );
+  return [...entries].sort((a, b) => levelOf(b.involvement) - levelOf(a.involvement) || girthOf(b) - girthOf(a));
 }
 
 export function toysById(toys: readonly Toy[]): Map<number, Toy> {
