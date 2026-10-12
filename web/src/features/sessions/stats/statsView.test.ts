@@ -36,20 +36,15 @@ const ctx = (overrides: Partial<StatContext> = {}): StatContext => ({
 const lengthDef: CalendarStatDef = {
   kind: 'calendar',
   key: 'length',
-  groupBy: 'date',
-  window: 'year',
   metric: METRIC_MAX_LENGTH,
   hue: ACTIVITY_PALETTE.lengthHue,
   title: (c) => c.t('common.length'),
 };
 
 const hourDef: FrequencyStatDef = {
-  kind: 'frequency',
+  kind: 'hour',
   key: 'hour',
-  groupBy: 'hour',
-  window: 'filter',
   metric: METRIC_COUNT,
-  size: 24,
   hue: ACTIVITY_PALETTE.timeOfDayHue,
   gamma: ACTIVITY_PALETTE.sessionsGamma,
   minPolicy: 'zero',
@@ -61,9 +56,8 @@ const hourDef: FrequencyStatDef = {
 
 const weekdayDef: FrequencyStatDef = {
   ...hourDef,
+  kind: 'weekday',
   key: 'weekday',
-  groupBy: 'weekday',
-  size: 7,
   hue: ACTIVITY_PALETTE.weekdayHue,
   minPolicy: 'nonzeroMin',
 };
@@ -207,7 +201,11 @@ describe('buildFrequencyView', () => {
 describe('deriveQueries', () => {
   it('batches the default config into three queries with deduped metrics', () => {
     const queries = deriveQueries(SESSION_STATS);
-    expect(queries.map((q) => q.key)).toEqual(['date:year', 'hour:filter', 'weekday:filter']);
+    expect(queries.map((q) => [q.key, q.groupBy, q.window])).toEqual([
+      ['calendar', 'date', 'year'],
+      ['hour', 'hour', 'filter'],
+      ['weekday', 'weekday', 'filter'],
+    ]);
     expect(queries[0].metrics).toEqual([
       METRIC_MAX_LENGTH,
       METRIC_MAX_CIRCUMFERENCE,
