@@ -1,3 +1,6 @@
+from django.test import SimpleTestCase
+
+from .stats import REDUCERS
 from .testutils import ApiTestBase
 from .testutils import utc as _utc
 
@@ -207,3 +210,24 @@ class StatsHasPrFilterTests(SessionStatsTestBase):
         groups = self._get(group_by="date", metrics="count", has_pr="true")
 
         self.assertEqual(groups, [{"key": "2026-06-01", "values": {"count": 1}}])
+
+
+class StatReducerTests(SimpleTestCase):
+    def test_aggregates_skip_missing_values(self):
+        values = [None, 2, None, 4]
+        self.assertEqual(REDUCERS["min"](values), 2)
+        self.assertEqual(REDUCERS["max"](values), 4)
+        self.assertEqual(REDUCERS["sum"](values), 6)
+        self.assertEqual(REDUCERS["avg"](values), 3)
+
+    def test_aggregates_of_only_missing_values_are_none(self):
+        for name in ("min", "max", "sum", "avg"):
+            self.assertIsNone(REDUCERS[name]([None, None]), name)
+            self.assertIsNone(REDUCERS[name]([]), name)
+
+    def test_first_and_last_keep_missing_boundary_values(self):
+        self.assertIsNone(REDUCERS["first"]([None, 2, 4]))
+        self.assertEqual(REDUCERS["last"]([None, 2, 4]), 4)
+        self.assertIsNone(REDUCERS["last"]([2, None]))
+        self.assertIsNone(REDUCERS["first"]([]))
+        self.assertIsNone(REDUCERS["last"]([]))
