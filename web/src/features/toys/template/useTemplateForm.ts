@@ -1,71 +1,40 @@
 'use client';
 
-import { useCallback, useMemo, useReducer } from 'react';
+import { useMemo, useReducer } from 'react';
 
+import { templateToEditor } from '@/features/toys/converters/template';
 import {
   initialTemplateFormState,
-  selectInsertableMm,
   selectMaxDiameterMm,
-  selectTotalMm,
   type SizeMode,
+  templateById,
   templateFormReducer,
-  type TemplateFormState,
 } from '@/features/toys/template/templateForm';
-import { TOY_TEMPLATES } from '@/features/toys/template/toyTemplates';
-import type { ToyTemplate } from '@/api/types';
-import { type Unit } from '@/features/preferences/units';
+import { parseToMm, type Unit } from '@/features/preferences/units';
 
-export type TemplateForm = Readonly<{
-  state: TemplateFormState;
-  selectedTemplate: ToyTemplate | null;
-  totalMm: number | null;
-  insertableMm: number | null;
-  maxDiameterMm: number | null;
-
-  selectTemplate: (template: ToyTemplate) => void;
-  changeTotal: (value: string) => void;
-  changeInsertable: (value: string) => void;
-  changeSize: (value: string) => void;
-  changeSizeMode: (mode: SizeMode) => void;
-}>;
-
-export function useTemplateForm(unit: Unit): TemplateForm {
+export function useTemplateForm(unit: Unit) {
   const [state, dispatch] = useReducer(templateFormReducer, initialTemplateFormState);
-
-  const selectedTemplate = useMemo(
-    () => (state.selectedId ? (TOY_TEMPLATES.find((t) => t.id === state.selectedId) ?? null) : null),
-    [state.selectedId],
-  );
-
-  const totalMm = selectTotalMm(state, unit);
-  const insertableMm = selectInsertableMm(state, unit);
+  const selectedTemplate = templateById(state.selectedId);
+  const totalMm = parseToMm(state.totalInput, unit);
   const maxDiameterMm = selectMaxDiameterMm(state, unit);
 
-  const selectTemplate = useCallback(
-    (template: ToyTemplate) => dispatch({ type: 'select-template', template, unit }),
-    [unit],
+  const previewToy = useMemo(
+    () =>
+      selectedTemplate && totalMm != null && maxDiameterMm != null
+        ? templateToEditor({ template: selectedTemplate, totalMm, maxDiameterMm })
+        : null,
+    [selectedTemplate, totalMm, maxDiameterMm],
   );
-  const changeTotal = useCallback(
-    (value: string) => dispatch({ type: 'change-total', value, selectedTemplate, unit }),
-    [selectedTemplate, unit],
-  );
-  const changeInsertable = useCallback(
-    (value: string) => dispatch({ type: 'change-insertable', value, selectedTemplate, unit }),
-    [selectedTemplate, unit],
-  );
-  const changeSize = useCallback((value: string) => dispatch({ type: 'change-size', value }), []);
-  const changeSizeMode = useCallback((mode: SizeMode) => dispatch({ type: 'change-size-mode', mode, unit }), [unit]);
 
   return {
     state,
     selectedTemplate,
-    totalMm,
-    insertableMm,
-    maxDiameterMm,
-    selectTemplate,
-    changeTotal,
-    changeInsertable,
-    changeSize,
-    changeSizeMode,
+    insertableMm: parseToMm(state.insertableInput, unit),
+    previewToy,
+    selectTemplate: (id: string) => dispatch({ type: 'select-template', id, unit }),
+    changeTotal: (value: string) => dispatch({ type: 'change-length', field: 'totalInput', value, unit }),
+    changeInsertable: (value: string) => dispatch({ type: 'change-length', field: 'insertableInput', value, unit }),
+    changeSize: (value: string) => dispatch({ type: 'change-size', value }),
+    changeSizeMode: (mode: SizeMode) => dispatch({ type: 'change-size-mode', mode, unit }),
   };
 }
