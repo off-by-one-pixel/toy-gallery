@@ -18,20 +18,12 @@ python /app/docker/init_superuser.py
 SSL_CERT_PATH="${SSL_CERT_PATH:-$DATA_DIR/certs/cert.pem}"
 SSL_KEY_PATH="${SSL_KEY_PATH:-$DATA_DIR/certs/key.pem}"
 
+set -- --bind "0.0.0.0:${PORT:-8000}" --workers "${WORKERS:-3}" --access-logfile - --error-logfile -
+SCHEME=HTTP
 if [ -f "$SSL_CERT_PATH" ] && [ -f "$SSL_KEY_PATH" ]; then
-  echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} (HTTPS)"
-  exec gunicorn toy_gallery.wsgi:application \
-    --bind "0.0.0.0:${PORT:-8000}" \
-    --workers "${WORKERS:-3}" \
-    --certfile "$SSL_CERT_PATH" \
-    --keyfile "$SSL_KEY_PATH" \
-    --access-logfile - \
-    --error-logfile -
+  set -- "$@" --certfile "$SSL_CERT_PATH" --keyfile "$SSL_KEY_PATH"
+  SCHEME=HTTPS
 fi
 
-echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} (HTTP)"
-exec gunicorn toy_gallery.wsgi:application \
-  --bind "0.0.0.0:${PORT:-8000}" \
-  --workers "${WORKERS:-3}" \
-  --access-logfile - \
-  --error-logfile -
+echo "[entrypoint] starting web server on 0.0.0.0:${PORT:-8000} ($SCHEME)"
+exec gunicorn toy_gallery.wsgi:application "$@"
