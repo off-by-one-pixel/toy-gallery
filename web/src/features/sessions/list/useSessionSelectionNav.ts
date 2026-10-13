@@ -3,12 +3,13 @@
 import { useEffect, useRef } from 'react';
 
 import { parseIntParam, useNavigation } from '@/hooks/useNavigation';
+import { routes } from '@/routes';
 
 const KEY = 'id';
 
 const REPLACE = { replace: true } as const;
 
-export const selectedSessionHref = (id: number): string => `/sessions?${KEY}=${id}`;
+export const selectedSessionHref = (id: number): string => `${routes.sessions.list}?${KEY}=${id}`;
 
 export function useSessionSelectionNav(loadedIds: readonly number[]) {
   const { param, updateParams: update } = useNavigation();

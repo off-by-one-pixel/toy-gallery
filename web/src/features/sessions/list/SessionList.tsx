@@ -5,6 +5,7 @@ import { Alert, Spinner } from '@heroui/react';
 import { Plus } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
+import { routes } from '@/routes';
 
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useStartLiveAction } from '@/features/sessions/live/useStartLiveAction';
@@ -67,7 +68,7 @@ function SessionListContent() {
 
   const startLiveAction = useStartLiveAction(addStartedSession);
 
-  const editSession = useCallback((id: number) => navigate(`/sessions/edit?id=${id}`), [navigate]);
+  const editSession = useCallback((id: number) => navigate(routes.sessions.edit(id)), [navigate]);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const removeSession = useCallback((id: number) => setPendingDeleteId(id), []);
   const confirmRemove = async () => {
@@ -92,7 +93,7 @@ function SessionListContent() {
       label: t('newButton'),
       icon: Plus,
       variant: 'primary',
-      onPress: () => navigate('/sessions/new'),
+      onPress: () => navigate(routes.sessions.new),
     },
   ];
 

@@ -4,12 +4,13 @@ import { useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
 
 import Switcher, { type SwitcherItem } from '@/components/Switcher';
+import { routes } from '@/routes';
 
 type Key = 'gallery' | 'sessions';
 
 const TABS: { key: Key; href: string; matches: (p: string) => boolean }[] = [
-  { key: 'gallery', href: '/', matches: (p) => p === '/' },
-  { key: 'sessions', href: '/sessions', matches: (p) => p.startsWith('/sessions') },
+  { key: 'gallery', href: routes.home, matches: (p) => p === routes.home },
+  { key: 'sessions', href: routes.sessions.list, matches: (p) => p.startsWith(routes.sessions.list) },
 ];
 
 type Props = Readonly<{

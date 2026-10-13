@@ -11,6 +11,7 @@ import type { Toy } from '@/api/types';
 import AttributesPanel from '@/features/toys/gallery/AttributesPanel';
 import RecordList from '@/features/sessions/list/RecordList';
 import { toyRecordItems } from '@/features/sessions/records';
+import { routes } from '@/routes';
 
 export default function ToyDetails({ toy, active }: Readonly<{ toy: Toy; active: boolean }>) {
   const { unit } = useUnit();
@@ -32,7 +33,7 @@ export default function ToyDetails({ toy, active }: Readonly<{ toy: Toy; active:
       <AttrRow
         label={tToy('timesUsed')}
         value={`${toy.usageCount ?? 0}`}
-        href={(toy.usageCount ?? 0) > 0 ? `/sessions?toys=${toy.id}` : undefined}
+        href={(toy.usageCount ?? 0) > 0 ? `${routes.sessions.list}?toys=${toy.id}` : undefined}
         hrefLabel={tToy('viewSessions')}
       />
       <AttrRow label={tToy('timeUsed')} value={formatDuration(toy.totalDurationMinutes ?? 0, locale)} />

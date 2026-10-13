@@ -8,6 +8,7 @@ import type { ActionMenuItem } from '@/components/ActionDropdownMenu';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useMediaStatus } from '@/features/sessions/media/useMediaStrip';
 import { useApiMutation } from '@/hooks/useApi';
+import { routes } from '@/routes';
 
 export function useAppMenuItems(): ActionMenuItem[] {
   const t = useTranslations();
@@ -33,7 +34,7 @@ export function useAppMenuItems(): ActionMenuItem[] {
       icon: Settings,
       label: t('collection.menu.settingsLabel'),
       description: t('collection.menu.settingsDescription'),
-      onAction: () => navigate('/settings'),
+      onAction: () => navigate(routes.settings),
     },
     ...(configured
       ? [

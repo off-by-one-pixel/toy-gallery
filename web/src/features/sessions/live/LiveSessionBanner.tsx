@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@heroui/react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
+import { routes } from '@/routes';
 
 import LiveDot from '@/features/sessions/live/LiveDot';
 import { useLiveElapsed } from '@/features/sessions/live/useLiveElapsed';
@@ -50,7 +51,7 @@ export default function LiveSessionBanner() {
             variant="outline"
             size="sm"
             className="shrink-0 bg-surface"
-            onPress={() => navigate(`/sessions/edit?id=${liveSession.id}`)}
+            onPress={() => navigate(routes.sessions.edit(liveSession.id))}
           >
             {t('live.openButton')}
           </Button>
