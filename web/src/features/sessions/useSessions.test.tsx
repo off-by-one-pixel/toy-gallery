@@ -33,6 +33,7 @@ import { navState, resetNavigation } from '@/test/navigation';
 import { settle } from '@/test/wait';
 import { createTestQueryClient } from '@/test/QueryWrapper';
 import { appWrapper } from '@/test/render';
+import { routes } from '@/routes';
 import { type SessionPayload, useSaveSession, useSession, useSessions } from '@/features/sessions/useSessions';
 
 const payload: SessionPayload = { startedAt: '2026-08-21T10:00:00Z', endedAt: null, entries: [] };
@@ -54,7 +55,7 @@ describe('session hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetNavigation();
-    navState.pathname = '/sessions';
+    navState.pathname = routes.sessions.list;
     localStorage.clear();
     sessionQueries.length = 0;
     respondSessions = () => page([makeSession({ id: 1 }), makeSession({ id: 2 })]);

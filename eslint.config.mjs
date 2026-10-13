@@ -1,6 +1,18 @@
 import coreWebVitals from 'eslint-config-next/core-web-vitals';
 import typescript from 'eslint-config-next/typescript';
 import pluginQuery from '@tanstack/eslint-plugin-query';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
+const topLevelRouteSegments = (dir) =>
+  readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) => (/^\(.+\)$/.test(entry.name) ? topLevelRouteSegments(join(dir, entry.name)) : [entry.name]))
+    .filter((name) => /^[a-z0-9][\w-]*$/i.test(name));
+
+const appRouteSegments = [...new Set(topLevelRouteSegments(join(import.meta.dirname, 'web/src/app')))];
+const appRoutePath = String.raw`^\x2F(${appRouteSegments.join('|')})(?:[\x2F?#]|$)`;
+const appRoutePathMessage = 'Build app paths with `routes` from @/routes instead of a path literal.';
 
 const config = [
   { ignores: ['**/build/**', '**/dist/**', '**/node_modules/**', '**/coverage/**', 'web/src/api/generated/**'] },
@@ -38,6 +50,17 @@ const config = [
             },
           ],
         },
+      ],
+    },
+  },
+  {
+    files: ['web/src/**/*.{ts,tsx}'],
+    ignores: ['web/src/routes.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        { selector: `Literal[value=/${appRoutePath}/]`, message: appRoutePathMessage },
+        { selector: `TemplateElement[value.raw=/${appRoutePath}/]`, message: appRoutePathMessage },
       ],
     },
   },

@@ -20,6 +20,7 @@ import en from '@/i18n/catalogs/en.json';
 import { navigateMock, resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
 import { withAppProviders } from '@/test/render';
+import { routes } from '@/routes';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 
 const live = (startedAt: string) => makeSession({ id: 5, startedAt, isLive: true });
@@ -47,7 +48,7 @@ describe('LiveSessionBanner', () => {
 
     vi.useRealTimers();
     fireEvent.click(screen.getByRole('button', { name: en.session.live.openButton }));
-    expect(navigateMock).toHaveBeenCalledWith('/sessions/edit?id=5');
+    expect(navigateMock).toHaveBeenCalledWith(routes.sessions.edit(5));
   });
 
   it('ticks the elapsed time forward', () => {

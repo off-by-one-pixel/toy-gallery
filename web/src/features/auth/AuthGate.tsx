@@ -3,6 +3,7 @@
 import { useNavigation } from '@/hooks/useNavigation';
 import { useEffect, ReactNode } from 'react';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { routes } from '@/routes';
 
 export default function AuthGate({ children }: Readonly<{ children: ReactNode }>) {
   const { isAuthenticated, isHydrated } = useAuth();
@@ -10,8 +11,7 @@ export default function AuthGate({ children }: Readonly<{ children: ReactNode }>
 
   useEffect(() => {
     if (isHydrated && !isAuthenticated) {
-      const next = encodeURIComponent(pathname || '/');
-      replace(`/login?next=${next}`);
+      replace(routes.login(pathname || routes.home));
     }
   }, [isHydrated, isAuthenticated, pathname, replace]);
 

@@ -19,6 +19,7 @@ import { tokenStorage } from '@/api/http';
 import { useAppMenuItems } from '@/components/appMenuActions';
 import { createTestQueryClient } from '@/test/QueryWrapper';
 import { appWrapper } from '@/test/render';
+import { routes } from '@/routes';
 
 const renderItems = (client: QueryClient = createTestQueryClient()) =>
   renderHook(() => useAppMenuItems(), { wrapper: appWrapper(client) });
@@ -80,7 +81,7 @@ describe('useAppMenuItems', () => {
     const { result } = renderItems();
     await settle();
     item(result.current, 'settings').onAction();
-    expect(navigateMock).toHaveBeenCalledWith('/settings');
+    expect(navigateMock).toHaveBeenCalledWith(routes.settings);
   });
 
   it('refreshes media and invalidates media and session lists', async () => {

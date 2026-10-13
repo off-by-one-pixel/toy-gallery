@@ -5,6 +5,7 @@ import { Alert, Spinner } from '@heroui/react';
 import { CalendarClock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useNavigation } from '@/hooks/useNavigation';
+import { routes } from '@/routes';
 import type { Toy } from '@/api/types';
 import { useToys } from '@/features/toys/useToys';
 import { useToyModalNav } from '@/features/toys/gallery/useToyModalNav';
@@ -93,7 +94,7 @@ const ToyGallery = () => {
       icon: CalendarClock,
       variant: 'outline',
       iconStrokeWidth: 1.8,
-      onPress: () => navigate('/sessions/new'),
+      onPress: () => navigate(routes.sessions.new),
     },
     { key: 'new-toy', label: t('toy.new'), icon: Plus, variant: 'primary', onPress: toyModal.openNew },
   ];

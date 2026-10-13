@@ -17,6 +17,7 @@ vi.mock('@/features/sessions/form/SessionForm', () => ({
 import { backOrMock, replaceMock, resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
 import { selectedSessionHref } from '@/features/sessions/list/useSessionSelectionNav';
+import { routes } from '@/routes';
 import Page from '@/app/(app)/sessions/new/page';
 
 describe('new session page', () => {
@@ -34,7 +35,7 @@ describe('new session page', () => {
 
   it('goes back when leaving without saving', () => {
     formProps.current?.onDone();
-    expect(backOrMock).toHaveBeenCalledWith('/sessions');
+    expect(backOrMock).toHaveBeenCalledWith(routes.sessions.list);
     expect(replaceMock).not.toHaveBeenCalled();
   });
 });
