@@ -1,6 +1,7 @@
 import { Involvement, type Session, type SessionEntry, type Toy } from '@/api/types';
 import type { MessageKey } from '@/i18n/translator';
 import { localDateKey } from '@/lib/dates';
+import { routeParams } from '@/routes';
 
 export type FilterKey = 'all' | 'week' | 'month';
 
@@ -182,7 +183,7 @@ export const setTimeWindowFilter = (filters: SessionFilters, timeWindow: TimeWin
 });
 
 export const parseSessionFilters = (get: (name: string) => string | null): SessionFilters => ({
-  toyIds: parseToyIdsParam(get('toys')),
+  toyIds: parseToyIdsParam(get(routeParams.toyIds)),
   timeWindow: parseTimeWindowParam(get('time')),
   ...(Object.fromEntries(
     SESSION_FLAG_KEYS.map((key) => [key, get(SESSION_FLAG_FILTERS[key].urlParam) === '1']),
@@ -190,7 +191,7 @@ export const parseSessionFilters = (get: (name: string) => string | null): Sessi
 });
 
 export const sessionFiltersUrlParams = (filters: SessionFilters): Record<string, string | null> => ({
-  toys: filters.toyIds.length > 0 ? filters.toyIds.join(',') : null,
+  [routeParams.toyIds]: filters.toyIds.length > 0 ? filters.toyIds.join(',') : null,
   time: filters.timeWindow ? `${filters.timeWindow.from}-${filters.timeWindow.to}` : null,
   ...Object.fromEntries(
     SESSION_FLAG_KEYS.map((key) => [SESSION_FLAG_FILTERS[key].urlParam, filters[key] ? '1' : null]),

@@ -16,7 +16,6 @@ vi.mock('@/features/sessions/form/SessionForm', () => ({
 
 import { backOrMock, replaceMock, resetNavigation } from '@/test/navigation';
 import { makeSession } from '@/test/fixtures';
-import { selectedSessionHref } from '@/features/sessions/list/useSessionSelectionNav';
 import { routes } from '@/routes';
 import Page from '@/app/(app)/sessions/new/page';
 
@@ -29,7 +28,7 @@ describe('new session page', () => {
 
   it('replaces the form with the sessions list selecting the saved session', () => {
     formProps.current?.onSaved(makeSession({ id: 7 }));
-    expect(replaceMock).toHaveBeenCalledWith(selectedSessionHref(7));
+    expect(replaceMock).toHaveBeenCalledWith(routes.sessions.selected(7));
     expect(backOrMock).not.toHaveBeenCalled();
   });
 

@@ -33,7 +33,7 @@ export default function ToyDetails({ toy, active }: Readonly<{ toy: Toy; active:
       <AttrRow
         label={tToy('timesUsed')}
         value={`${toy.usageCount ?? 0}`}
-        href={(toy.usageCount ?? 0) > 0 ? `${routes.sessions.list}?toys=${toy.id}` : undefined}
+        href={(toy.usageCount ?? 0) > 0 ? routes.sessions.forToy(toy.id) : undefined}
         hrefLabel={tToy('viewSessions')}
       />
       <AttrRow label={tToy('timeUsed')} value={formatDuration(toy.totalDurationMinutes ?? 0, locale)} />

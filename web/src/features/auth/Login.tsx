@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useApiMutation } from '@/hooks/useApi';
 import TextInput from '@/components/TextInput';
-import { routes } from '@/routes';
+import { routeParams, routes } from '@/routes';
 
 const LoginPage = () => {
   const { param, replace } = useNavigation();
@@ -20,7 +20,7 @@ const LoginPage = () => {
 
   const signIn = useApiMutation({
     fn: () => login(username, password),
-    onSuccess: () => replace(param('next') || routes.home),
+    onSuccess: () => replace(param(routeParams.next) || routes.home),
     errorSink: setError,
   });
 
