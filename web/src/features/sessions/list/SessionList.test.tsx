@@ -73,6 +73,7 @@ import {
   stubIntersectionObserver,
 } from '@/test/intersectionObserver';
 import { withAppProviders } from '@/test/render';
+import { routeParams } from '@/routes';
 import SessionList from '@/features/sessions/list/SessionList';
 
 stubIntersectionObserver();
@@ -278,7 +279,7 @@ describe('SessionList', () => {
 
   it('expands and scrolls to the row selected by the URL, then toggles selection through the overlay button', () => {
     const scrollIntoView = vi.spyOn(HTMLElement.prototype, 'scrollIntoView');
-    navState.search = 'id=2';
+    navState.search = `${routeParams.sessionId}=2`;
     renderList();
     const toggles = screen.getAllByRole('button', { name: en.session.detailsToggleLabel });
     const rows = toggles.map((toggle) => toggle.parentElement as HTMLElement);
@@ -289,15 +290,15 @@ describe('SessionList', () => {
     expect(scrollIntoView.mock.contexts).toEqual([rows[1]]);
 
     fireEvent.click(toggles[0]);
-    expect(updateParamsMock).toHaveBeenLastCalledWith({ id: '1' }, { replace: true });
+    expect(updateParamsMock).toHaveBeenLastCalledWith({ [routeParams.sessionId]: '1' }, { replace: true });
 
     fireEvent.click(toggles[1]);
-    expect(updateParamsMock).toHaveBeenLastCalledWith({ id: null }, { replace: true });
+    expect(updateParamsMock).toHaveBeenLastCalledWith({ [routeParams.sessionId]: null }, { replace: true });
     scrollIntoView.mockRestore();
   });
 
   it('shows no selection actions for a URL session that is not loaded', () => {
-    navState.search = 'id=9';
+    navState.search = `${routeParams.sessionId}=9`;
     renderList();
     for (const toggle of screen.getAllByRole('button', { name: en.session.detailsToggleLabel })) {
       expect(toggle.getAttribute('aria-expanded')).toBe('false');

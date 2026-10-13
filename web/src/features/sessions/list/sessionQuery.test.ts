@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { sessionListKey, sessionListQuery, type SessionListQueryState } from '@/features/sessions/list/sessionQuery';
 import { ALL_PERIOD, parseSessionFilters, periodRange, type Period } from '@/features/sessions/session';
 import { SESSION_SORT, sessionOrderingParam } from '@/features/sessions/sessionSort';
+import { routeParams } from '@/routes';
 
 const filters = (params: Record<string, string> = {}) => parseSessionFilters((name) => params[name] ?? null);
 
@@ -16,7 +17,7 @@ const state = (overrides: Partial<SessionListQueryState> = {}): SessionListQuery
 describe('sessionListQuery', () => {
   it('assembles the fetch arguments from every query dimension', () => {
     const sort = { column: 'duration', direction: 'desc' } as const;
-    const active = filters({ toys: '1,2', media: '1' });
+    const active = filters({ [routeParams.toyIds]: '1,2', media: '1' });
     const week: Period = { kind: 'week', anchor: '2026-06-08' };
     expect(sessionListQuery(state({ period: week, sort, filters: active }), 3)).toEqual({
       page: 3,
