@@ -31,7 +31,7 @@ describe('buildHref', () => {
   });
 
   it('preserves a multi-segment pathname', () => {
-    expect(buildHref('/sessions/edit', new URLSearchParams('id=5'))).toBe('/sessions/edit?id=5');
+    expect(buildHref('/list/edit', new URLSearchParams('id=5'))).toBe('/list/edit?id=5');
   });
 });
 

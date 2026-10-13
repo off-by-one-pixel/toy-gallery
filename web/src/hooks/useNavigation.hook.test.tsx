@@ -6,7 +6,7 @@ import { useNavigation } from '@/hooks/useNavigation';
 const push = vi.fn();
 const replace = vi.fn();
 let searchParams = new URLSearchParams();
-let pathname = '/sessions/new';
+let pathname = '/list/new';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, replace }),
@@ -18,24 +18,24 @@ beforeEach(() => {
   push.mockReset();
   replace.mockReset();
   searchParams = new URLSearchParams();
-  pathname = '/sessions/new';
+  pathname = '/list/new';
 });
 
 describe('useNavigation', () => {
   it('exposes the pathname and reads params', () => {
     searchParams = new URLSearchParams('stage=template');
     const { result } = renderHook(() => useNavigation());
-    expect(result.current.pathname).toBe('/sessions/new');
+    expect(result.current.pathname).toBe('/list/new');
     expect(result.current.param('stage')).toBe('template');
     expect(result.current.param('missing')).toBeNull();
   });
 
   it('navigates and replaces plain hrefs through the router', () => {
     const { result } = renderHook(() => useNavigation());
-    result.current.navigate('/sessions');
-    expect(push).toHaveBeenCalledWith('/sessions');
-    result.current.replace('/login');
-    expect(replace).toHaveBeenCalledWith('/login');
+    result.current.navigate('/list');
+    expect(push).toHaveBeenCalledWith('/list');
+    result.current.replace('/other');
+    expect(replace).toHaveBeenCalledWith('/other');
   });
 
   it('builds the new URL by merging the update onto the current params', () => {
@@ -47,7 +47,7 @@ describe('useNavigation', () => {
     });
 
     expect(push).toHaveBeenCalledTimes(1);
-    expect(push).toHaveBeenCalledWith('/sessions/new?stage=editor', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/list/new?stage=editor', { scroll: false });
   });
 
   it('routes through router.replace when { replace: true } is passed', () => {
@@ -58,7 +58,7 @@ describe('useNavigation', () => {
     });
 
     expect(push).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith('/sessions/new?stage=editor', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/list/new?stage=editor', { scroll: false });
   });
 
   it('chained updates within one event handler clobber each other', () => {
@@ -71,7 +71,7 @@ describe('useNavigation', () => {
     });
 
     expect(push).toHaveBeenCalledTimes(2);
-    expect(push).toHaveBeenNthCalledWith(1, '/sessions/new?stage=editor', { scroll: false });
-    expect(push).toHaveBeenNthCalledWith(2, '/sessions/new?stage=template', { scroll: false });
+    expect(push).toHaveBeenNthCalledWith(1, '/list/new?stage=editor', { scroll: false });
+    expect(push).toHaveBeenNthCalledWith(2, '/list/new?stage=template', { scroll: false });
   });
 });
