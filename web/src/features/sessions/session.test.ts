@@ -25,6 +25,7 @@ import {
 } from '@/features/sessions/session';
 import { Involvement, type SessionEntry } from '@/api/types';
 import { makeSession, makeToy } from '@/test/fixtures';
+import { routeParams, routes } from '@/routes';
 
 describe('mergeSessions', () => {
   it('appends only unseen ids preserving order', () => {
@@ -163,7 +164,7 @@ describe('parseToyIdsParam', () => {
 describe('session flag filter registry', () => {
   it('parses url params through the registry', () => {
     const params = new Map([
-      ['toys', '1,2'],
+      [routeParams.toyIds, '1,2'],
       ['pr', '1'],
     ]);
     const filters = parseSessionFilters((name) => params.get(name) ?? null);
@@ -173,9 +174,14 @@ describe('session flag filter registry', () => {
   it('round-trips filters through url params', () => {
     const filters = { ...NO_SESSION_FILTERS, toyIds: [3], hasMedia: true };
     const params = sessionFiltersUrlParams(filters);
-    expect(params).toEqual({ toys: '3', time: null, media: '1', pr: null });
+    expect(params).toEqual({ [routeParams.toyIds]: '3', time: null, media: '1', pr: null });
     const map = new Map(Object.entries(params).filter(([, v]) => v !== null) as [string, string][]);
     expect(parseSessionFilters((name) => map.get(name) ?? null)).toEqual(filters);
+  });
+
+  it('filters to the toy linked by the sessions route', () => {
+    const params = new URL(routes.sessions.forToy(3), 'http://app.test').searchParams;
+    expect(parseSessionFilters((name) => params.get(name))).toEqual({ ...NO_SESSION_FILTERS, toyIds: [3] });
   });
 
   it('builds wire params from active flags', () => {
