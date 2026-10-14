@@ -8,14 +8,14 @@ jobs:
   analysis:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v10.3.0
       - name: Install BE dependencies
         run: cd api && uv sync --frozen
       - name: Run BE tests with coverage
@@ -28,7 +28,7 @@ jobs:
             -e 's|filename="toys/|filename="api/toys/|g' \
             coverage.xml
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Enable pnpm
@@ -46,7 +46,7 @@ jobs:
         run: echo "SONAR_USER_HOME=$HOME/.sonar" >> "$GITHUB_ENV"
 
       - name: SonarQube Scan and Quality Gate
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@v8
         with:
           args: >
             -Dsonar.projectVersion=${{ github.sha }}
