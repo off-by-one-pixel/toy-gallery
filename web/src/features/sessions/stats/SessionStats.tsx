@@ -45,7 +45,7 @@ function SessionStats({ period, sessionFilters, defs = SESSION_STATS }: Props) {
       const combined = new Map<string, StatsGroup[]>();
       queries.forEach((query, i) => {
         const data = states[i]?.data;
-        if (data) combined.set(query.key, data);
+        if (data) combined.set(query.groupBy, data);
       });
       return {
         results: combined,

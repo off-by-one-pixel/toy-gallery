@@ -5,7 +5,7 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 
 import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 import type { ActivityCell, DimensionView } from '@/features/sessions/stats/activity';
-import type { FrequencyView, StatViewItem } from '@/features/sessions/stats/statsView';
+import type { FrequencyView, StatViewItem, WeeklyView } from '@/features/sessions/stats/statsView';
 
 type Props = Readonly<{ items: readonly StatViewItem[] }>;
 
@@ -18,15 +18,17 @@ const asActivityCell = (value: unknown): ActivityCell | null => (value ?? null) 
 export default function ActivityTracker({ items }: Props) {
   return (
     <div className="mx-auto grid max-w-300 grid-cols-1 gap-6 rounded-lg bg-surface/60 px-4 pt-3 pb-4 sm:grid-cols-2 sm:gap-8">
-      {items.map((item) =>
-        item.kind === 'calendar' ? (
-          <DimensionHeatmap key={item.key} view={item.view} />
-        ) : (
-          <FrequencyStrip key={item.key} view={item.view} />
-        ),
-      )}
+      {items.map((item) => (
+        <StatItem key={item.key} item={item} />
+      ))}
     </div>
   );
+}
+
+function StatItem({ item }: Readonly<{ item: StatViewItem }>) {
+  if (item.kind === 'calendar') return <DimensionHeatmap view={item.view} />;
+  if (item.kind === 'weekly') return <WeeklyBars view={item.view} />;
+  return <FrequencyStrip view={item.view} />;
 }
 
 function StatTitle({ title, summary }: Readonly<{ title: string; summary?: string | null }>) {
@@ -113,6 +115,37 @@ function FrequencyStrip({ view }: Readonly<{ view: FrequencyView }>) {
           </div>
           <StatLegend min={view.legendMin} max={view.max} gradient={view.legendGradient} className="mt-2" />
         </>
+      )}
+    </div>
+  );
+}
+
+function WeeklyBars({ view }: Readonly<{ view: WeeklyView }>) {
+  return (
+    <div className="sm:col-span-2">
+      <StatTitle title={view.title} summary={view.summary} />
+      {view.total === 0 ? (
+        <p className="py-2 text-caption text-text-tertiary">{view.emptyLabel}</p>
+      ) : (
+        <div className="flex gap-2 text-caption tabular-nums text-muted">
+          <span className="-translate-y-1/2 self-start">{view.maxLabel}</span>
+          <div className="flex-1">
+            <div className="flex h-24 items-end gap-0.5 border-y border-border">
+              {view.bars.map((bar) => (
+                <span key={bar.week} title={bar.tooltip} className="group flex h-full flex-1 items-end">
+                  <span
+                    className="w-full rounded-t-sm group-hover:opacity-75"
+                    style={{ height: `${bar.height}%`, background: view.fill }}
+                  />
+                </span>
+              ))}
+            </div>
+            <div className="mt-1 flex justify-between">
+              <span>{view.startLabel}</span>
+              <span>{view.endLabel}</span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

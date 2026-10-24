@@ -168,6 +168,11 @@
       "tooltip": "{bucket} · {count, plural, one {# session} other {# sessions}}",
       "empty": "No sessions in range"
     },
+    "sessionTime": {
+      "title": "Session time per week",
+      "tooltip": "Week of {week} · {duration}",
+      "empty": "No sessions in range"
+    },
     "media": {
       "heading": "Media",
       "empty": "No media in this session’s time window",

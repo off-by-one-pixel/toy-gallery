@@ -6,7 +6,16 @@ import {
   extent,
   legendGradient,
 } from '@/features/sessions/stats/activity';
-import { daysAgoDateString, formatDateKey, localDateKey, MS_PER_DAY, startOfDay } from '@/lib/dates';
+import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
+import {
+  daysAgoDateString,
+  formatDateKey,
+  localDateKey,
+  MS_PER_DAY,
+  parseDateKey,
+  startOfDay,
+  startOfWeek,
+} from '@/lib/dates';
 import type { Girth } from '@/features/preferences/girth';
 import { type Period, periodRange } from '@/features/sessions/session';
 import type { StatsGroup } from '@/api/types';
@@ -48,10 +57,20 @@ export type FrequencyStatDef = Readonly<{
   empty: (ctx: StatContext) => string;
 }>;
 
-export type StatDef = CalendarStatDef | FrequencyStatDef;
+export type WeeklyStatDef = Readonly<{
+  kind: 'weekly';
+  key: string;
+  metric: string;
+  hue: number;
+  title: (ctx: StatContext) => string;
+  empty: (ctx: StatContext) => string;
+  format: (value: number, ctx: StatContext) => string;
+  tooltip: (week: string, value: string, ctx: StatContext) => string;
+}>;
+
+export type StatDef = CalendarStatDef | FrequencyStatDef | WeeklyStatDef;
 
 export type StatQuery = Readonly<{
-  key: StatDef['kind'];
   groupBy: StatGroupBy;
   window: StatWindow;
   metrics: string[];
@@ -59,20 +78,17 @@ export type StatQuery = Readonly<{
 
 const BUCKET_COUNT = { hour: 24, weekday: 7 } as const;
 
+const groupByOf = (kind: StatDef['kind']): StatGroupBy => (kind === 'calendar' || kind === 'weekly' ? 'date' : kind);
+
 export const deriveQueries = (defs: readonly StatDef[]): StatQuery[] => {
-  const queries = new Map<StatDef['kind'], StatQuery>();
+  const queries = new Map<StatGroupBy, StatQuery>();
   for (const { kind, metric } of defs) {
-    const existing = queries.get(kind);
+    const groupBy = groupByOf(kind);
+    const existing = queries.get(groupBy);
     if (existing) {
       if (!existing.metrics.includes(metric)) existing.metrics.push(metric);
     } else {
-      const calendar = kind === 'calendar';
-      queries.set(kind, {
-        key: kind,
-        groupBy: calendar ? 'date' : kind,
-        window: calendar ? 'year' : 'filter',
-        metrics: [metric],
-      });
+      queries.set(groupBy, { groupBy, window: groupBy === 'date' ? 'year' : 'filter', metrics: [metric] });
     }
   }
   return [...queries.values()];
@@ -93,9 +109,22 @@ export type FrequencyView = Readonly<{
   cells: readonly { key: number; label: string | number; fill: string; tooltip: string }[];
 }>;
 
+export type WeeklyView = Readonly<{
+  title: string;
+  summary: string | null;
+  emptyLabel: string;
+  total: number;
+  fill: string;
+  maxLabel: string;
+  startLabel: string;
+  endLabel: string;
+  bars: readonly { week: string; height: number; tooltip: string }[];
+}>;
+
 export type StatViewItem =
   | Readonly<{ kind: 'calendar'; key: string; view: DimensionView }>
-  | Readonly<{ kind: 'frequency'; key: string; view: FrequencyView }>;
+  | Readonly<{ kind: 'frequency'; key: string; view: FrequencyView }>
+  | Readonly<{ kind: 'weekly'; key: string; view: WeeklyView }>;
 
 const calendarValues = (
   def: CalendarStatDef,
@@ -187,15 +216,72 @@ export function buildFrequencyView(
   };
 }
 
+const weekStarts = (first: Date, last: Date): Date[] => {
+  const weeks: Date[] = [];
+  let week = first;
+  while (week.getTime() <= last.getTime()) {
+    weeks.push(week);
+    week = new Date(week.getFullYear(), week.getMonth(), week.getDate() + 7);
+  }
+  return weeks;
+};
+
+const weeklyTotals = (def: WeeklyStatDef, groups: readonly StatsGroup[]): Map<string, number> => {
+  const totals = new Map<string, number>();
+  for (const group of groups) {
+    const week = localDateKey(startOfWeek(parseDateKey(group.key)));
+    totals.set(week, (totals.get(week) ?? 0) + (group.values[def.metric] ?? 0));
+  }
+  return totals;
+};
+
+export function buildWeeklyView(
+  def: WeeklyStatDef,
+  groups: readonly StatsGroup[],
+  ctx: StatContext,
+  options?: Readonly<{ today?: Date; windowDays?: number }>,
+): WeeklyView {
+  const windowDays = options?.windowDays ?? ACTIVITY_WINDOW_DAYS;
+  const today = startOfDay(options?.today ?? new Date());
+  const firstWeek = startOfWeek(new Date(today.getFullYear(), today.getMonth(), today.getDate() - (windowDays - 1)));
+  const lastWeek = startOfWeek(today);
+  const totals = weeklyTotals(def, groups);
+  const weeks = weekStarts(firstWeek, lastWeek).map((week) => {
+    const key = localDateKey(week);
+    return { key, value: totals.get(key) ?? 0 };
+  });
+
+  const max = Math.max(0, ...weeks.map((week) => week.value));
+  const total = weeks.reduce((sum, week) => sum + week.value, 0);
+  return {
+    title: def.title(ctx),
+    summary: total > 0 ? def.format(total, ctx) : null,
+    emptyLabel: def.empty(ctx),
+    total,
+    fill: `hsl(${def.hue}, ${ACTIVITY_PALETTE.saturation}%, ${ACTIVITY_PALETTE.barLightness}%)`,
+    maxLabel: def.format(max, ctx),
+    startLabel: formatDateKey(localDateKey(firstWeek), ctx.locale),
+    endLabel: formatDateKey(localDateKey(lastWeek), ctx.locale),
+    bars: weeks.map(({ key, value }) => ({
+      week: key,
+      height: max > 0 ? (value / max) * 100 : 0,
+      tooltip: def.tooltip(formatDateKey(key, ctx.locale), def.format(value, ctx), ctx),
+    })),
+  };
+}
+
 export function buildStatViews(
   defs: readonly StatDef[],
   results: ReadonlyMap<string, StatsGroup[]>,
   ctx: StatContext,
 ): StatViewItem[] {
   return defs.map((def) => {
-    const groups = results.get(def.kind) ?? [];
+    const groups = results.get(groupByOf(def.kind)) ?? [];
     if (def.kind === 'calendar') {
       return { kind: 'calendar', key: def.key, view: buildCalendarView(def, groups, ctx) };
+    }
+    if (def.kind === 'weekly') {
+      return { kind: 'weekly', key: def.key, view: buildWeeklyView(def, groups, ctx) };
     }
     return { kind: 'frequency', key: def.key, view: buildFrequencyView(def, groups, ctx) };
   });

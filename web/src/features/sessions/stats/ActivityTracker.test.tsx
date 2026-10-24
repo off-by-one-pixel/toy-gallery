@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import ActivityTracker from '@/features/sessions/stats/ActivityTracker';
-import type { FrequencyView, StatViewItem } from '@/features/sessions/stats/statsView';
+import type { FrequencyView, StatViewItem, WeeklyView } from '@/features/sessions/stats/statsView';
 
 const calendar: StatViewItem = {
   kind: 'calendar',
@@ -37,6 +37,26 @@ const frequency = (view: Partial<FrequencyView> = {}): StatViewItem => ({
   },
 });
 
+const weekly = (view: Partial<WeeklyView> = {}): StatViewItem => ({
+  kind: 'weekly',
+  key: 'session-time',
+  view: {
+    title: 'Session time per week',
+    summary: '3h',
+    emptyLabel: 'No sessions in range',
+    total: 180,
+    fill: 'red',
+    maxLabel: '2h',
+    startLabel: 'Jun 1',
+    endLabel: 'Jun 8',
+    bars: [
+      { week: '2026-06-01', height: 50, tooltip: 'Week of Jun 1 · 1h' },
+      { week: '2026-06-08', height: 100, tooltip: 'Week of Jun 8 · 2h' },
+    ],
+    ...view,
+  },
+});
+
 describe('ActivityTracker', () => {
   it('renders a calendar stat with its title, summary and legend labels', () => {
     render(<ActivityTracker items={[calendar]} />);
@@ -53,6 +73,22 @@ describe('ActivityTracker', () => {
     expect(screen.getByTitle('Tue: 1')).toBeTruthy();
     expect(screen.getByText('1')).toBeTruthy();
     expect(screen.getByText('4')).toBeTruthy();
+  });
+
+  it('renders a weekly stat with its total, peak, date range and bar tooltips', () => {
+    render(<ActivityTracker items={[weekly()]} />);
+    expect(screen.getByRole('heading', { name: 'Session time per week' })).toBeTruthy();
+    expect(screen.getByText('3h')).toBeTruthy();
+    expect(screen.getByText('2h')).toBeTruthy();
+    expect(screen.getByText('Jun 1')).toBeTruthy();
+    expect(screen.getByText('Jun 8')).toBeTruthy();
+    expect(screen.getByTitle('Week of Jun 8 · 2h')).toBeTruthy();
+  });
+
+  it('shows the empty label instead of bars for a weekly stat without data', () => {
+    render(<ActivityTracker items={[weekly({ total: 0 })]} />);
+    expect(screen.getByText('No sessions in range')).toBeTruthy();
+    expect(screen.queryByTitle('Week of Jun 8 · 2h')).toBeNull();
   });
 
   it('shows the empty label instead of buckets for a frequency stat without data', () => {

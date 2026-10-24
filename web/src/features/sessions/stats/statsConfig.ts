@@ -8,6 +8,9 @@ export const METRIC_COUNT = 'count';
 export const METRIC_MAX_LENGTH = 'max:insertable_length';
 export const METRIC_MAX_CIRCUMFERENCE = 'max:circumference';
 export const METRIC_TOTAL_DURATION = 'sum:duration';
+export const METRIC_TOTAL_SESSION_DURATION = 'sum:session_duration';
+
+const durationLabel = (minutes: number, locale: string) => formatDuration(Math.round(minutes), locale);
 
 export const SESSION_STATS: readonly StatDef[] = [
   {
@@ -41,8 +44,8 @@ export const SESSION_STATS: readonly StatDef[] = [
     hue: ACTIVITY_PALETTE.durationHue,
     gamma: ACTIVITY_PALETTE.durationGamma,
     title: (ctx) => ctx.t('session.timePerDayTitle'),
-    formatLegend: (value, ctx) => formatDuration(Math.round(value), ctx.locale),
-    summary: (total, ctx) => formatDuration(Math.round(total), ctx.locale),
+    formatLegend: (value, ctx) => durationLabel(value, ctx.locale),
+    summary: (total, ctx) => durationLabel(total, ctx.locale),
   },
   {
     kind: 'hour',
@@ -69,5 +72,15 @@ export const SESSION_STATS: readonly StatDef[] = [
     bucketLabel: (dow, ctx) => localizedWeekdayLabel(dow, ctx.locale),
     tooltip: (dow, count, ctx) =>
       ctx.t('session.weekday.tooltip', { bucket: localizedWeekdayLabel(dow, ctx.locale), count }),
+  },
+  {
+    kind: 'weekly',
+    key: 'session-time',
+    metric: METRIC_TOTAL_SESSION_DURATION,
+    hue: ACTIVITY_PALETTE.sessionTimeHue,
+    title: (ctx) => ctx.t('session.sessionTime.title'),
+    empty: (ctx) => ctx.t('session.sessionTime.empty'),
+    format: (value, ctx) => durationLabel(value, ctx.locale),
+    tooltip: (week, duration, ctx) => ctx.t('session.sessionTime.tooltip', { week, duration }),
   },
 ];
