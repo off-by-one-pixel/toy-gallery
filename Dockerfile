@@ -19,7 +19,7 @@ RUN pnpm --filter web build
 FROM python:3.13-slim AS python_deps
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1
-RUN pip install --no-cache-dir uv==0.5.14
+RUN pip install --no-cache-dir uv==0.13.0
 WORKDIR /app
 COPY api/pyproject.toml api/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
