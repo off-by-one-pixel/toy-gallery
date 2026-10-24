@@ -79,6 +79,17 @@ class SessionStatsTests(SessionStatsTestBase):
         self.assertEqual(values["avg:duration"], 30)
         self.assertEqual(values["sum:duration"], 30)
 
+    def test_session_duration_sums_wall_clock_minutes_with_default_for_unended(self):
+        self._make_session(
+            _utc("2026-06-01T08:00:00"),
+            [{"toy": self.toy_a, "involvement": "USED", "duration_minutes": 10}],
+            ended_at=_utc("2026-06-01T09:30:00"),
+        )
+        self._make_session(_utc("2026-06-01T12:00:00"), ended_at=_utc("2026-06-01T12:45:00"))
+        self._make_session(_utc("2026-06-01T20:00:00"))
+        groups = self._get(group_by="date", metrics="sum:session_duration,sum:duration")
+        self.assertEqual(groups[0]["values"], {"sum:session_duration": 165, "sum:duration": 10})
+
     def test_all_missing_values_yield_null(self):
         self._make_session(_utc("2026-06-01T08:00:00"), [{"involvement": "USED"}])
         groups = self._get(group_by="date", metrics="max:insertable_length,avg:duration")

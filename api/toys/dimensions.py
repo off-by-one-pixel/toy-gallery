@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import models
 
+DEFAULT_SESSION_MINUTES = 30
+
 
 def value_or_none(t: tuple[object, float] | None) -> float | None:
     return t[1] if t else None
@@ -63,3 +65,8 @@ class SessionDimensions:
     def total_session_duration(cls, session: models.Session) -> int | None:
         if session.started_at and session.ended_at:
             return int((session.ended_at - session.started_at) / timedelta(minutes=1))
+
+    @classmethod
+    def session_duration_or_default(cls, session: models.Session) -> int:
+        duration = cls.total_session_duration(session)
+        return DEFAULT_SESSION_MINUTES if duration is None else duration

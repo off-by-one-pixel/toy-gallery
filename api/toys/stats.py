@@ -11,6 +11,7 @@ FIELD_EXTRACTORS = {
     "insertable_length": SessionDimensions.peak_length,
     "circumference": SessionDimensions.peak_circumference,
     "duration": SessionDimensions.total_toy_duration,
+    "session_duration": SessionDimensions.session_duration_or_default,
 }
 
 

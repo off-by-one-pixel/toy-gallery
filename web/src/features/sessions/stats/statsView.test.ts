@@ -1,22 +1,26 @@
 import { describe, expect, it } from 'vitest';
 
-import { localDateKey, MS_PER_DAY } from '@/lib/dates';
+import { formatDateKey, localDateKey, MS_PER_DAY } from '@/lib/dates';
 import { ACTIVITY_PALETTE } from '@/features/sessions/stats/activityPalette';
 import {
   METRIC_COUNT,
   METRIC_MAX_CIRCUMFERENCE,
   METRIC_MAX_LENGTH,
   METRIC_TOTAL_DURATION,
+  METRIC_TOTAL_SESSION_DURATION,
   SESSION_STATS,
 } from '@/features/sessions/stats/statsConfig';
 import {
   buildCalendarView,
   buildFrequencyView,
+  buildStatViews,
+  buildWeeklyView,
   type CalendarStatDef,
   deriveQueries,
   type FrequencyStatDef,
   type StatContext,
   rangeFor,
+  type WeeklyStatDef,
 } from '@/features/sessions/stats/statsView';
 import type { StatsGroup } from '@/api/types';
 import en from '@/i18n/catalogs/en.json';
@@ -198,19 +202,93 @@ describe('buildFrequencyView', () => {
   });
 });
 
+const weeklyDef: WeeklyStatDef = {
+  kind: 'weekly',
+  key: 'weekly',
+  metric: METRIC_TOTAL_SESSION_DURATION,
+  hue: ACTIVITY_PALETTE.sessionTimeHue,
+  title: () => 'Weekly',
+  empty: () => 'empty',
+  format: (value) => `${value}m`,
+  tooltip: (week, value) => `${week}|${value}`,
+};
+
+const WEDNESDAY = new Date(2026, 5, 17);
+
+const weekly = (def: WeeklyStatDef, groups: StatsGroup[] = []) =>
+  buildWeeklyView(def, groups, ctx(), { today: WEDNESDAY, windowDays: 14 });
+
+describe('buildWeeklyView', () => {
+  it('spans Monday-start weeks from the window start through the current week', () => {
+    expect(weekly(weeklyDef).bars.map((bar) => bar.week)).toEqual(['2026-06-01', '2026-06-08', '2026-06-15']);
+  });
+
+  it('covers the default activity window with 53 weeks', () => {
+    expect(buildWeeklyView(weeklyDef, [], ctx(), { today: WEDNESDAY }).bars).toHaveLength(53);
+  });
+
+  it('sums daily values into their week and scales bars to the busiest week', () => {
+    const view = weekly(weeklyDef, [
+      group('2026-06-07', { [METRIC_TOTAL_SESSION_DURATION]: 30 }),
+      group('2026-06-08', { [METRIC_TOTAL_SESSION_DURATION]: 60 }),
+      group('2026-06-10', { [METRIC_TOTAL_SESSION_DURATION]: 60 }),
+      group('2026-06-16', { [METRIC_TOTAL_SESSION_DURATION]: null }),
+    ]);
+    expect(view.bars.map((bar) => bar.height)).toEqual([25, 100, 0]);
+    expect(view.total).toBe(150);
+    expect(view.summary).toBe('150m');
+    expect(view.maxLabel).toBe('120m');
+  });
+
+  it('labels the axis and tooltips with week starts', () => {
+    const view = weekly(weeklyDef, [group('2026-06-09', { [METRIC_TOTAL_SESSION_DURATION]: 45 })]);
+    expect(view.startLabel).toBe(formatDateKey('2026-06-01', 'en'));
+    expect(view.endLabel).toBe(formatDateKey('2026-06-15', 'en'));
+    expect(view.bars[1].tooltip).toBe(`${formatDateKey('2026-06-08', 'en')}|45m`);
+  });
+
+  it('has no summary and flat bars without data', () => {
+    const view = weekly(weeklyDef);
+    expect(view.summary).toBeNull();
+    expect(view.total).toBe(0);
+    expect(view.emptyLabel).toBe('empty');
+    expect(view.bars.every((bar) => bar.height === 0)).toBe(true);
+  });
+
+  it('formats the session-time config as localized durations', () => {
+    const def = SESSION_STATS.find((candidate): candidate is WeeklyStatDef => candidate.key === 'session-time');
+    expect(def).toBeDefined();
+    if (!def) return;
+    const view = weekly(def, [group('2026-06-16', { [METRIC_TOTAL_SESSION_DURATION]: 95 })]);
+    expect(view.summary).toBe('1h 35m');
+    expect(view.bars[2].tooltip).toBe(`Week of ${formatDateKey('2026-06-15', 'en')} · 1h 35m`);
+  });
+});
+
+describe('buildStatViews', () => {
+  it('feeds calendar and weekly stats from the shared date results', () => {
+    const groups = [group(localDateKey(new Date()), { [METRIC_MAX_LENGTH]: 170, [METRIC_TOTAL_SESSION_DURATION]: 30 })];
+    const items = buildStatViews([lengthDef, weeklyDef], new Map([['date', groups]]), ctx());
+    expect(items.map((item) => item.kind)).toEqual(['calendar', 'weekly']);
+    const weeklyItem = items[1];
+    expect(weeklyItem.kind === 'weekly' && weeklyItem.view.total).toBe(30);
+  });
+});
+
 describe('deriveQueries', () => {
   it('batches the default config into three queries with deduped metrics', () => {
     const queries = deriveQueries(SESSION_STATS);
-    expect(queries.map((q) => [q.key, q.groupBy, q.window])).toEqual([
-      ['calendar', 'date', 'year'],
-      ['hour', 'hour', 'filter'],
-      ['weekday', 'weekday', 'filter'],
+    expect(queries.map((q) => [q.groupBy, q.window])).toEqual([
+      ['date', 'year'],
+      ['hour', 'filter'],
+      ['weekday', 'filter'],
     ]);
     expect(queries[0].metrics).toEqual([
       METRIC_MAX_LENGTH,
       METRIC_MAX_CIRCUMFERENCE,
       METRIC_COUNT,
       METRIC_TOTAL_DURATION,
+      METRIC_TOTAL_SESSION_DURATION,
     ]);
     expect(queries[1].metrics).toEqual([METRIC_COUNT]);
   });

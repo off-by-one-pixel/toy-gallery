@@ -267,7 +267,8 @@ class SessionStatsQuerySerializer(SessionFilterQuerySerializer):
     metrics = serializers.CharField(
         help_text=(
             "Comma-separated metrics: 'count' or '<func>:<field>' with func in "
-            "min|max|avg|sum|first|last and field in insertable_length|circumference|duration."
+            "min|max|avg|sum|first|last and field in "
+            "insertable_length|circumference|duration|session_duration."
         )
     )
 
