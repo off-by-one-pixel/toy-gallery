@@ -8,7 +8,9 @@ import {
   localDateKey,
   localizedHourLabel,
   localizedWeekdayLabel,
+  parseDateKey,
   startOfDay,
+  startOfWeek,
 } from '@/lib/dates';
 
 describe('localDateKey', () => {
@@ -35,6 +37,29 @@ describe('startOfDay', () => {
     expect(localDateKey(start)).toBe('2026-06-08');
     expect(start.getHours()).toBe(0);
     expect(start.getMinutes()).toBe(0);
+  });
+});
+
+describe('startOfWeek', () => {
+  it('moves to the local midnight of the Monday on or before the date', () => {
+    const start = startOfWeek(new Date(2026, 5, 21, 23, 45));
+    expect(localDateKey(start)).toBe('2026-06-15');
+    expect(start.getHours()).toBe(0);
+    expect(localDateKey(startOfWeek(new Date(2026, 5, 15, 8)))).toBe('2026-06-15');
+  });
+
+  it('crosses month boundaries', () => {
+    expect(localDateKey(startOfWeek(new Date(2026, 6, 1)))).toBe('2026-06-29');
+  });
+});
+
+describe('parseDateKey', () => {
+  it('parses a date key as local midnight', () => {
+    expect(parseDateKey('2026-06-15')).toEqual(new Date(2026, 5, 15));
+  });
+
+  it('defaults a month key to its first day', () => {
+    expect(parseDateKey('2026-06')).toEqual(new Date(2026, 5, 1));
   });
 });
 

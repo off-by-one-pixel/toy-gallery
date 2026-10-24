@@ -1,6 +1,6 @@
 import { Involvement, type Session, type SessionEntry, type Toy } from '@/api/types';
 import type { MessageKey } from '@/i18n/translator';
-import { localDateKey } from '@/lib/dates';
+import { localDateKey, parseDateKey, startOfWeek } from '@/lib/dates';
 import { routeParams } from '@/routes';
 
 export type FilterKey = 'all' | 'week' | 'month';
@@ -16,17 +16,6 @@ export type Period = Readonly<{ kind: 'all' }> | Readonly<{ kind: 'week' | 'mont
 
 export const ALL_PERIOD: Period = { kind: 'all' };
 
-const parseAnchor = (key: string): Date => {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d ?? 1);
-};
-
-const startOfWeek = (d: Date): Date => {
-  const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-  return monday;
-};
-
 const anchorFor = (kind: 'week' | 'month', d: Date): string =>
   kind === 'week' ? localDateKey(startOfWeek(d)) : localDateKey(new Date(d.getFullYear(), d.getMonth(), 1));
 
@@ -37,7 +26,7 @@ export function currentPeriod(kind: FilterKey, now: Date = new Date()): Period {
 
 const shiftAnchor = (period: Period, step: number): Date => {
   if (period.kind === 'all') return new Date();
-  const anchor = parseAnchor(period.anchor);
+  const anchor = parseDateKey(period.anchor);
   if (period.kind === 'week') anchor.setDate(anchor.getDate() + step * 7);
   else anchor.setMonth(anchor.getMonth() + step);
   return anchor;
@@ -72,7 +61,7 @@ export function periodUrlParam(period: Period): string | null {
 
 export function parsePeriodParam(raw: string | null, now: Date = new Date()): Period {
   if (raw && /^w\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const period: Period = { kind: 'week', anchor: anchorFor('week', parseAnchor(raw.slice(1))) };
+    const period: Period = { kind: 'week', anchor: anchorFor('week', parseDateKey(raw.slice(1))) };
     return canStepForward(period, now) || period.anchor === anchorFor('week', now)
       ? period
       : currentPeriod('week', now);
@@ -88,7 +77,7 @@ export function parsePeriodParam(raw: string | null, now: Date = new Date()): Pe
 
 export function periodLabel(period: Period, locale: string, now: Date = new Date()): string {
   if (period.kind === 'all') return '';
-  const start = parseAnchor(period.anchor);
+  const start = parseDateKey(period.anchor);
   const sameYear = start.getFullYear() === now.getFullYear();
   if (period.kind === 'month') {
     return start.toLocaleDateString(locale, { month: 'long', year: sameYear ? undefined : 'numeric' });

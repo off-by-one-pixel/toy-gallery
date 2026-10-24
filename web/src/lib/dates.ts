@@ -11,7 +11,15 @@ export const daysAgoDateString = (days: number, now: Date = new Date()): string 
   return localDateKey(shifted);
 };
 
+export const parseDateKey = (key: string): Date => {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d ?? 1);
+};
+
 export const startOfDay = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+export const startOfWeek = (d: Date): Date =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
 
 export const calendarDaysBetween = (from: Date, to: Date): number =>
   Math.floor((startOfDay(to).getTime() - startOfDay(from).getTime()) / MS_PER_DAY);
@@ -22,8 +30,7 @@ export function datetimeLocalValue(d: Date): string {
 }
 
 export function formatDateKey(key: string, locale: string): string {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(locale, {
+  return parseDateKey(key).toLocaleDateString(locale, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
