@@ -392,7 +392,7 @@ paths:
           type: string
           minLength: 1
         description: 'Comma-separated metrics: ''count'' or ''<func>:<field>'' with
-          func in min|max|avg|sum|first|last and field in insertable_length|circumference|duration.'
+          func in min|max|avg|sum|first|last and field in insertable_length|circumference|duration|session_duration.'
         required: true
       - in: query
         name: start

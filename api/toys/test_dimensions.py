@@ -5,7 +5,12 @@ from datetime import UTC, datetime
 from django.test import SimpleTestCase, TestCase
 
 from toys import models
-from toys.dimensions import SessionDimensions, max_entry_or_none, value_or_none
+from toys.dimensions import (
+    DEFAULT_SESSION_MINUTES,
+    SessionDimensions,
+    max_entry_or_none,
+    value_or_none,
+)
 
 
 class FakeEntry:
@@ -39,6 +44,21 @@ class ValueOrNoneTests(SimpleTestCase):
 
     def test_passes_none_through(self):
         self.assertIsNone(value_or_none(None))
+
+
+class SessionDurationOrDefaultTests(SimpleTestCase):
+    def test_uses_wall_clock_minutes_of_an_ended_session(self):
+        session = models.Session(
+            started_at=datetime(2026, 6, 1, 8, tzinfo=UTC),
+            ended_at=datetime(2026, 6, 1, 9, 15, tzinfo=UTC),
+        )
+        self.assertEqual(SessionDimensions.session_duration_or_default(session), 75)
+
+    def test_defaults_a_session_without_an_end(self):
+        session = models.Session(started_at=datetime(2026, 6, 1, 8, tzinfo=UTC))
+        self.assertEqual(
+            SessionDimensions.session_duration_or_default(session), DEFAULT_SESSION_MINUTES
+        )
 
 
 class SessionPeaksTests(TestCase):
