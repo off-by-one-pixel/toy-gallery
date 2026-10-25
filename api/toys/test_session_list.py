@@ -1,6 +1,9 @@
+from unittest import mock
+
 from . import models
 from .testutils import ApiTestBase
 from .testutils import utc as _utc
+from .views import SessionPagination
 
 URL = "/toys/sessions/"
 
@@ -112,6 +115,21 @@ class SessionListTests(SessionListTestBase):
         for params in cases:
             response = self.client.get(URL, params)
             self.assertEqual(response.status_code, 400, params)
+
+    def test_page_size_returns_every_session_in_one_page(self):
+        for minute in range(25):
+            self._make_session(_utc(f"2026-06-01T08:{minute:02d}:00"))
+        data = self._get(page_size=25)
+        self.assertEqual(len(data["results"]), 25)
+        self.assertIsNone(data["next"])
+
+    def test_page_size_is_capped(self):
+        for hour in (8, 9, 10):
+            self._make_session(_utc(f"2026-06-01T{hour:02d}:00:00"))
+        with mock.patch.object(SessionPagination, "max_page_size", 2):
+            data = self._get(page_size=100)
+        self.assertEqual(len(data["results"]), 2)
+        self.assertIsNotNone(data["next"])
 
     def test_out_of_range_page_returns_404(self):
         self._make_session(_utc("2026-06-01T08:00:00"))

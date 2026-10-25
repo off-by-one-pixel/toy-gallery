@@ -126,6 +126,8 @@ class ToyViewSet(viewsets.ModelViewSet):
 
 class SessionPagination(PageNumberPagination):
     page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 5000
 
 
 def _session_ordering_annotation(field):
