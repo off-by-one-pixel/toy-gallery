@@ -385,3 +385,12 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data["new_password"])
         user.save(update_fields=["password"])
         return user
+
+
+class AppTokenStatusSerializer(serializers.Serializer):
+    created = serializers.DateTimeField(allow_null=True)
+
+
+class AppTokenSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    created = serializers.DateTimeField()

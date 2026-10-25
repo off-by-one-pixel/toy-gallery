@@ -3,6 +3,42 @@ info:
   title: Toy Gallery API
   version: 1.0.0
 paths:
+  /toys/app_token/:
+    get:
+      operationId: toys_app_token_retrieve
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppTokenStatus'
+          description: ''
+    post:
+      operationId: toys_app_token_create
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppToken'
+          description: ''
+    delete:
+      operationId: toys_app_token_destroy
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /toys/change_password/:
     post:
       operationId: toys_change_password_create
@@ -22,6 +58,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -104,6 +141,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -129,6 +167,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -150,6 +189,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -182,6 +222,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -213,6 +254,7 @@ paths:
               $ref: '#/components/schemas/PatchedSessionRequest'
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -233,6 +275,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -250,6 +293,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -264,6 +308,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -290,6 +335,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -304,6 +350,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -318,6 +365,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -332,6 +380,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -346,6 +395,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -427,6 +477,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -495,6 +546,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -522,6 +574,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -543,6 +596,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -575,6 +629,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -606,6 +661,7 @@ paths:
               $ref: '#/components/schemas/PatchedToyRequest'
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -626,6 +682,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -636,6 +693,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -652,6 +710,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -666,6 +725,7 @@ paths:
       - toys
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -692,6 +752,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -701,6 +762,26 @@ paths:
           description: ''
 components:
   schemas:
+    AppToken:
+      type: object
+      properties:
+        key:
+          type: string
+        created:
+          type: string
+          format: date-time
+      required:
+      - created
+      - key
+    AppTokenStatus:
+      type: object
+      properties:
+        created:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - created
     AttributeSuggestion:
       type: object
       properties:
@@ -1454,3 +1535,8 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
