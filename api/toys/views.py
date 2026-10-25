@@ -35,14 +35,13 @@ class ToyViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ToySerializer
 
     def perform_create(self, serializer):
-        serializer.save()
-        self._reload_annotated(serializer)
+        self._save_annotated(serializer)
 
     def perform_update(self, serializer):
-        serializer.save()
-        self._reload_annotated(serializer)
+        self._save_annotated(serializer)
 
-    def _reload_annotated(self, serializer):
+    def _save_annotated(self, serializer):
+        serializer.save()
         serializer.instance = self.get_queryset().get(pk=serializer.instance.pk)
 
     def destroy(self, request, *args, **kwargs):
