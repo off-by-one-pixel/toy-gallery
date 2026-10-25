@@ -1,4 +1,7 @@
 import {
+  toysAppTokenCreate,
+  toysAppTokenDestroy,
+  toysAppTokenRetrieve,
   toysChangePasswordCreate,
   toysSessionsStatsRetrieve,
   toysSessionsCreate,
@@ -35,6 +38,8 @@ import type {
   ToyRequest as ApiToyRequest,
 } from '@/api/generated/schemas';
 import {
+  type AppToken,
+  type AppTokenStatus,
   type AttributeSuggestion,
   type DeleteCollectionSummary,
   type ImportSummary,
@@ -58,6 +63,14 @@ export const login = async (username: string, password: string): Promise<TokenPa
 
 export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
   await toysChangePasswordCreate({ current_password: currentPassword, new_password: newPassword });
+};
+
+export const fetchAppTokenStatus = (): Promise<AppTokenStatus> => camel(toysAppTokenRetrieve());
+
+export const createAppToken = (): Promise<AppToken> => camel(toysAppTokenCreate());
+
+export const revokeAppToken = async (): Promise<void> => {
+  await toysAppTokenDestroy();
 };
 
 export const fetchToys = (): Promise<Toy[]> => camel(toysToysList());
