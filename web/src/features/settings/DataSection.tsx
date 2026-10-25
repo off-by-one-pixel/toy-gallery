@@ -13,6 +13,7 @@ import { useApiMutation } from '@/hooks/useApi';
 import ConfirmModal from '@/components/ConfirmModal';
 import SectionCard from '@/features/settings/SectionCard';
 import SectionHeading from '@/components/SectionHeading';
+import SettingsRow from '@/features/settings/SettingsRow';
 
 export default function DataSection() {
   const t = useTranslations('settings.data');
@@ -50,7 +51,7 @@ export default function DataSection() {
     <SectionCard>
       <SectionHeading title={t('heading')} />
       <ul className="flex flex-col divide-y divide-border">
-        <DataRow
+        <SettingsRow
           icon={<Download size={16} strokeWidth={1.8} className="text-muted" />}
           label={t('exportLabel')}
           description={t('exportDescription')}
@@ -60,7 +61,7 @@ export default function DataSection() {
             </Button>
           }
         />
-        <DataRow
+        <SettingsRow
           icon={<Upload size={16} strokeWidth={1.8} className="text-muted" />}
           label={t('importLabel')}
           description={t('importDescription')}
@@ -70,7 +71,7 @@ export default function DataSection() {
             </Button>
           }
         />
-        <DataRow
+        <SettingsRow
           icon={<Trophy size={16} strokeWidth={1.8} className="text-muted" />}
           label={t('rebuildLabel')}
           description={t('rebuildDescription')}
@@ -80,7 +81,7 @@ export default function DataSection() {
             </Button>
           }
         />
-        <DataRow
+        <SettingsRow
           icon={<Trash2 size={16} strokeWidth={1.8} className="text-danger" />}
           label={<span className="text-danger">{t('deleteLabel')}</span>}
           description={t('deleteDescription')}
@@ -116,25 +117,5 @@ export default function DataSection() {
         />
       )}
     </SectionCard>
-  );
-}
-
-type DataRowProps = Readonly<{
-  icon: React.ReactNode;
-  label: React.ReactNode;
-  description: string;
-  action: React.ReactNode;
-}>;
-
-function DataRow({ icon, label, description, action }: DataRowProps) {
-  return (
-    <li className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-secondary">{icon}</div>
-      <div className="flex-1">
-        <div className="text-sm font-medium text-foreground">{label}</div>
-        <div className="text-meta text-muted">{description}</div>
-      </div>
-      {action}
-    </li>
   );
 }

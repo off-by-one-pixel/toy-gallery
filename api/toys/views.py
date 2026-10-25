@@ -8,10 +8,12 @@ from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from . import export as export_mod
 from . import media, models, serializers, stats
@@ -35,14 +37,13 @@ class ToyViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ToySerializer
 
     def perform_create(self, serializer):
-        serializer.save()
-        self._reload_annotated(serializer)
+        self._save_annotated(serializer)
 
     def perform_update(self, serializer):
-        serializer.save()
-        self._reload_annotated(serializer)
+        self._save_annotated(serializer)
 
-    def _reload_annotated(self, serializer):
+    def _save_annotated(self, serializer):
+        serializer.save()
         serializer.instance = self.get_queryset().get(pk=serializer.instance.pk)
 
     def destroy(self, request, *args, **kwargs):
@@ -371,4 +372,26 @@ class ChangePasswordView(APIView):
         s = serializers.ChangePasswordSerializer(data=request.data, context={"request": request})
         s.is_valid(raise_exception=True)
         s.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AppTokenView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    @extend_schema(responses=serializers.AppTokenStatusSerializer)
+    def get(self, request):
+        token = Token.objects.filter(user=request.user).first()
+        created = token.created if token else None
+        return Response(serializers.AppTokenStatusSerializer({"created": created}).data)
+
+    @extend_schema(request=None, responses={201: serializers.AppTokenSerializer})
+    def post(self, request):
+        with transaction.atomic():
+            Token.objects.filter(user=request.user).delete()
+            token = Token.objects.create(user=request.user)
+        return Response(serializers.AppTokenSerializer(token).data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(responses={204: None})
+    def delete(self, request):
+        Token.objects.filter(user=request.user).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

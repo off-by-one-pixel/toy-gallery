@@ -2,6 +2,8 @@ import { InvolvementEnum, SectionShapeEnum } from '@/api/generated/schemas';
 
 export type { AttributeSuggestion } from '@/api/generated/schemas';
 import type {
+  AppToken as ApiAppToken,
+  AppTokenStatus as ApiAppTokenStatus,
   DeleteCollectionSummary as ApiDeleteCollectionSummary,
   ImportSummary as ApiImportSummary,
   MediaStatus as ApiMediaStatus,
@@ -48,6 +50,9 @@ export type MediaRefreshSummary = SnakeToCamel<ApiRefreshMediaResponse>;
 
 export type ImportSummary = SnakeToCamel<ApiImportSummary>;
 export type DeleteCollectionSummary = SnakeToCamel<ApiDeleteCollectionSummary>;
+
+export type AppToken = SnakeToCamel<ApiAppToken>;
+export type AppTokenStatus = SnakeToCamel<ApiAppTokenStatus>;
 
 export type ToyTemplate = Readonly<{
   id: string;

@@ -20,6 +20,9 @@ export const queryKeys = {
     status: ['media', 'status'] as const,
     session: (sessionId: number) => ['media', 'session', sessionId] as const,
   },
+  appToken: {
+    status: ['appToken', 'status'] as const,
+  },
 };
 
 const sessionHistoryKeys = [queryKeys.toys.all, queryKeys.sessions.lists, queryKeys.sessions.stats] as const;

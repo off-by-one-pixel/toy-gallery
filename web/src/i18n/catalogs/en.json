@@ -286,6 +286,39 @@
       "heading": "Change password",
       "subtitle": "Enter your current password and pick a new one."
     },
+    "apiAccess": {
+      "heading": "API access",
+      "subtitle": "Let tools like Grafana read your data through the API.",
+      "tokenLabel": "App token",
+      "tokenUnknown": "Read-only token for other tools.",
+      "tokenMissing": "Read-only token for other tools. None generated yet.",
+      "tokenCreated": "Read-only. Created {date}.",
+      "blocked": {
+        "loading": "Checking for an existing token…",
+        "statusFailed": "Couldn't check for an existing token: {error}",
+        "busy": "Waiting for the current token change to finish."
+      },
+      "generateButton": "Generate",
+      "regenerateButton": "Regenerate",
+      "revokeButton": "Revoke",
+      "newTokenHint": "Copy this token now. You won't be able to see it again.",
+      "usageHint": "Send it in the <code>Authorization</code> header, prefixed with <code>Token</code>.",
+      "copyFailed": "Could not access clipboard — select the token and copy it manually.",
+      "revokedToast": "App token revoked",
+      "regenerateConfirm": {
+        "title": "Regenerate app token?",
+        "body": "The current token stops working immediately. Update any tools that use it.",
+        "action": "Regenerate token"
+      },
+      "revokeConfirm": {
+        "title": "Revoke app token?",
+        "body": "Tools using this token lose access immediately.",
+        "action": "Revoke token"
+      },
+      "docsLabel": "API documentation",
+      "docsDescription": "Browse and try the endpoints in Swagger UI.",
+      "docsButton": "Open"
+    },
     "data": {
       "heading": "Data",
       "exportLabel": "Export collection",

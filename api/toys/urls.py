@@ -20,5 +20,6 @@ urlpatterns = [
         views.ChangePasswordView.as_view(),
         name="change_password",
     ),
+    path("app_token/", views.AppTokenView.as_view(), name="app_token"),
     path("", include(router.urls)),
 ]
