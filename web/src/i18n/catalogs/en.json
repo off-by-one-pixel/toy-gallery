@@ -288,11 +288,11 @@
     },
     "apiAccess": {
       "heading": "API access",
-      "subtitle": "Let tools like Grafana read your data through the API.",
+      "subtitle": "Let tools like Grafana or Home Assistant read your data and start or stop sessions through the API.",
       "tokenLabel": "App token",
-      "tokenUnknown": "Read-only token for other tools.",
-      "tokenMissing": "Read-only token for other tools. None generated yet.",
-      "tokenCreated": "Read-only. Created {date}.",
+      "tokenUnknown": "Read-only token for other tools, plus session start and stop.",
+      "tokenMissing": "Read-only token for other tools, plus session start and stop. None generated yet.",
+      "tokenCreated": "Read-only, plus session start and stop. Created {date}.",
       "blocked": {
         "loading": "Checking for an existing token…",
         "statusFailed": "Couldn't check for an existing token: {error}",

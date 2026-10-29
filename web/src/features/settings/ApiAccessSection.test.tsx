@@ -63,7 +63,7 @@ describe('ApiAccessSection', () => {
   it('shows when the existing token was created', async () => {
     vi.mocked(fetchAppTokenStatus).mockResolvedValue({ created: CREATED });
     renderSection();
-    expect(await screen.findByText('Read-only. Created Oct 24, 2026.')).toBeTruthy();
+    expect(await screen.findByText('Read-only, plus session start and stop. Created Oct 24, 2026.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: strings.generateButton })).toBeNull();
   });
 
