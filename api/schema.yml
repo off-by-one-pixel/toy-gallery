@@ -491,6 +491,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/SessionStatsResponse'
           description: ''
+  /toys/sessions/stop/:
+    post:
+      operationId: toys_sessions_stop_create
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveSessionResponse'
+          description: ''
   /toys/token/:
     post:
       operationId: toys_token_create

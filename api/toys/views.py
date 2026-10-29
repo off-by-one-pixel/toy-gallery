@@ -248,6 +248,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     ).order_by("-is_live", "-started_at", "-id")
     serializer_class = serializers.SessionSerializer
     pagination_class = SessionPagination
+    app_token_write_actions = ("start", "stop")
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -273,6 +274,17 @@ class SessionViewSet(viewsets.ModelViewSet):
             except IntegrityError:
                 live = models.Session.objects.filter(is_live=True).first()
         return Response(serializers.SessionSerializer(live).data)
+
+    @extend_schema(request=None, responses=serializers.LiveSessionResponseSerializer)
+    @action(detail=False, methods=["post"], url_path="stop")
+    def stop(self, request):
+        live = models.Session.objects.filter(is_live=True).first()
+        if live is None:
+            return Response({"session": None})
+        ended = serializers.SessionSerializer(live, data={"ended_at": timezone.now()}, partial=True)
+        ended.is_valid(raise_exception=True)
+        ended.save()
+        return Response({"session": ended.data})
 
     @extend_schema(responses=serializers.LiveSessionResponseSerializer)
     @action(detail=False, methods=["get"], url_path="live")
