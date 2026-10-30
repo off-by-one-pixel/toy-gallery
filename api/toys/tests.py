@@ -526,6 +526,37 @@ class LiveSessionTests(ApiTestBase):
         self.assertEqual(response.data["session"]["id"], started.data["id"])
         self.assertTrue(response.data["session"]["is_live"])
 
+    def test_stop_ends_the_live_session_now_without_toys(self):
+        started = self.client.post("/toys/sessions/start/").data
+        before = timezone.now()
+        response = self.client.post("/toys/sessions/stop/")
+        self.assertEqual(response.status_code, 200, response.content)
+        stopped = response.data["session"]
+        self.assertEqual(stopped["id"], started["id"])
+        self.assertFalse(stopped["is_live"])
+        self.assertEqual(stopped["entries"], [])
+        ended = models.Session.objects.get(pk=started["id"]).ended_at
+        self.assertGreaterEqual(ended, before)
+        self.assertLessEqual(ended, timezone.now())
+        self.assertIsNone(self.client.get("/toys/sessions/live/").data["session"])
+
+    def test_stop_without_a_live_session_changes_nothing(self):
+        finished = models.Session.objects.create(
+            started_at=SESSION_START, ended_at="2026-06-01T11:00:00Z"
+        )
+        response = self.client.post("/toys/sessions/stop/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertIsNone(response.data["session"])
+        finished.refresh_from_db()
+        self.assertEqual(finished.ended_at.isoformat(), "2026-06-01T11:00:00+00:00")
+
+    def test_start_after_stop_opens_a_new_session(self):
+        first = self.client.post("/toys/sessions/start/").data
+        self.client.post("/toys/sessions/stop/")
+        second = self.client.post("/toys/sessions/start/").data
+        self.assertNotEqual(first["id"], second["id"])
+        self.assertTrue(second["is_live"])
+
     def test_saving_an_end_time_ends_the_live_session(self):
         toy = self._create_toy()
         started = self.client.post("/toys/sessions/start/").data
