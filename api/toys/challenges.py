@@ -24,7 +24,8 @@ NEW_TOY_POINTS = 10
 RECENT_USE_WINDOW = timedelta(days=14)
 OLD_TOY_WINDOW = timedelta(days=60)
 NEAR_RECORD_SHARE = 0.75
-STEP_POINTS = ((0.025, 5), (0.05, 3), (0.10, 1))
+GIRTH_STEP_POINTS = ((0.025, 5), (0.05, 3), (0.10, 1))
+DEPTH_STEP_POINTS = ((0.05, 5), (0.10, 3), (0.15, 1))
 OLD_TOY_POINTS = ((100, 5), (20, 4), (5, 3), (1, 2))
 
 _FINISHED = Q(toysessionentry__session__is_live=False)
@@ -61,8 +62,8 @@ class ChallengeCtx:
     now: datetime
 
 
-def step_points(step: float) -> int | None:
-    return next((points for limit, points in STEP_POINTS if step <= limit), None)
+def step_points(step: float, bands: tuple[tuple[float, int], ...]) -> int | None:
+    return next((points for limit, points in bands if step <= limit), None)
 
 
 def old_toy_points(session_count: int) -> int:
@@ -84,7 +85,11 @@ def _new_toy(ctx: ChallengeCtx) -> list[Challenge]:
 
 
 def _size_challenges(
-    kind: str, ctx: ChallengeCtx, record: float | None, size_of: Callable[[ToyUsage], float | None]
+    kind: str,
+    ctx: ChallengeCtx,
+    record: float | None,
+    size_of: Callable[[ToyUsage], float | None],
+    bands: tuple[tuple[float, int], ...],
 ) -> list[Challenge]:
     if not record:
         return []
@@ -94,7 +99,7 @@ def _size_challenges(
         if size is None or size <= record:
             continue
         step = (size - record) / record
-        points = step_points(step)
+        points = step_points(step, bands)
         if points is not None:
             values = {"target": size, "best": record, "step": step}
             found.append(_challenge(kind, toy, points, _recent_use(toy, ctx.now), **values))
@@ -102,11 +107,15 @@ def _size_challenges(
 
 
 def _girth(ctx: ChallengeCtx) -> list[Challenge]:
-    return _size_challenges(GIRTH, ctx, ctx.girth_record, lambda toy: toy.circumference)
+    return _size_challenges(
+        GIRTH, ctx, ctx.girth_record, lambda toy: toy.circumference, GIRTH_STEP_POINTS
+    )
 
 
 def _depth(ctx: ChallengeCtx) -> list[Challenge]:
-    return _size_challenges(DEPTH, ctx, ctx.depth_record, lambda toy: toy.insertable_length)
+    return _size_challenges(
+        DEPTH, ctx, ctx.depth_record, lambda toy: toy.insertable_length, DEPTH_STEP_POINTS
+    )
 
 
 def _old_toy(ctx: ChallengeCtx) -> list[Challenge]:
