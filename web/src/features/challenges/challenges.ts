@@ -23,10 +23,9 @@ const recordText = (key: RecordKey, value: number | null, ctx: RecordDisplayCont
   return formatted.suffix ? `${formatted.text} ${formatted.suffix}` : formatted.text;
 };
 
-const stepText = (challenge: Challenge, locale: string): string | null => {
-  if (challenge.target == null || !challenge.best) return null;
-  const format = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1, signDisplay: 'always' });
-  return format.format(challenge.target / challenge.best - 1);
+const stepText = (challenge: Challenge, recordKey: RecordKey, ctx: RecordDisplayContext): string | null => {
+  if (challenge.target == null || challenge.best == null) return null;
+  return `+${recordText(recordKey, challenge.target - challenge.best, ctx)}`;
 };
 
 const recentUseChips = (challenge: Challenge, ctx: ChallengeDisplayContext): string[] => {
@@ -42,7 +41,7 @@ const sizeChips = (
   stepKey: 'girthStep' | 'lengthStep',
   recordKey: RecordKey,
 ): string[] => {
-  const step = stepText(challenge, ctx.locale);
+  const step = stepText(challenge, recordKey, ctx);
   return [
     ...(step ? [ctx.t(`challenge.chip.${stepKey}`, { step })] : []),
     ctx.t('challenge.chip.best', { value: recordText(recordKey, challenge.best, ctx) }),
