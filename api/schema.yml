@@ -724,6 +724,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/AttributeSuggestion'
           description: ''
+  /toys/toys/challenges/:
+    get:
+      operationId: toys_toys_challenges_list
+      tags:
+      - toys
+      security:
+      - jwtAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Challenge'
+          description: ''
   /toys/toys/delete_all/:
     delete:
       operationId: toys_toys_delete_all_destroy
@@ -815,6 +832,69 @@ components:
       required:
       - key
       - values
+    Challenge:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/ChallengeKindEnum'
+        toy:
+          type: integer
+        points:
+          type: integer
+        target:
+          type: number
+          format: double
+          nullable: true
+        best:
+          type: number
+          format: double
+          nullable: true
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChallengeReasonEnum'
+        session_count:
+          type: integer
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+        average_minutes:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - average_minutes
+      - best
+      - kind
+      - last_used_at
+      - points
+      - reasons
+      - session_count
+      - target
+      - toy
+    ChallengeKindEnum:
+      enum:
+      - new-toy
+      - girth
+      - depth
+      - old-toy
+      - time
+      type: string
+      description: |-
+        * `new-toy` - new-toy
+        * `girth` - girth
+        * `depth` - depth
+        * `old-toy` - old-toy
+        * `time` - time
+    ChallengeReasonEnum:
+      enum:
+      - recent-use
+      - near-record
+      type: string
+      description: |-
+        * `recent-use` - recent-use
+        * `near-record` - near-record
     ChangePasswordRequest:
       type: object
       properties:

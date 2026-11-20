@@ -149,6 +149,8 @@ SPECTACULAR_SETTINGS = {
         "SectionShapeEnum": "toys.models.Shape.CAP_SHAPE_CHOICES",
         "CurveAngleEnum": "toys.models.ShapeSection.CURVE_ANGLE_CHOICES",
         "SessionMediaKindEnum": "toys.serializers.SESSION_MEDIA_KINDS",
+        "ChallengeKindEnum": "toys.challenges.KINDS",
+        "ChallengeReasonEnum": "toys.challenges.REASONS",
     },
 }
 
