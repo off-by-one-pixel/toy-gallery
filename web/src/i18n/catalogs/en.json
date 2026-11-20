@@ -117,17 +117,15 @@
       "depth": "Fully insert",
       "oldToy": "Use it again",
       "time": "Beat",
-      "logTime": "Log a time"
+      "logTime": "Log a time",
+      "average": "avg {average}"
     },
     "chip": {
       "new": "New toy",
-      "girthStep": "{step} girth",
-      "lengthStep": "{step} length",
       "best": "Best {value}",
       "recentUse": "Used {when}",
       "notUsedSince": "Not used since {date}",
-      "sessions": "Used {count}×",
-      "nearRecord": "Avg {average}, best {best}"
+      "sessions": "Used {count}×"
     }
   },
   "session": {

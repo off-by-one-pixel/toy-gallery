@@ -143,6 +143,7 @@ function TargetBlock({ target, tone }: Readonly<{ target: ChallengeTarget; tone:
           {' '}
         </span>
       )}
+      {target.detail && <span className="text-xs font-semibold tabular-nums opacity-80">{target.detail}</span>}
     </div>
   );
 }

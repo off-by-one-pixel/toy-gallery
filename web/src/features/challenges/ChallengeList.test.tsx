@@ -54,7 +54,7 @@ describe('ChallengeList', () => {
     const rows = within(list).getAllByRole('listitem');
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/First session\s?AcmeFreshM/),
-      expect.stringContaining('Insert205mmAcmeWide'),
+      expect.stringContaining('Insert205mm+5 mmAcmeWide'),
     ]);
   });
 
@@ -64,11 +64,10 @@ describe('ChallengeList', () => {
     ]);
     renderList();
     const list = await screen.findByRole('list', { name: en.challenge.listLabel });
-    expect(list.textContent).toContain('Fully insert254mm');
+    expect(list.textContent).toContain('Fully insert254mm+25 mm');
     const [toggle] = screen.getAllByLabelText(en.unitToggle.ariaLabel);
     fireEvent.click(within(toggle).getByRole('button', { name: 'in' }));
-    expect(list.textContent).toContain('Fully insert10.00in');
-    expect(list.textContent).toContain('+1.00 in length');
+    expect(list.textContent).toContain('Fully insert10.00in+1.00 in');
   });
 
   it('shows girth targets as a diameter when picked in the toolbar', async () => {
@@ -77,10 +76,10 @@ describe('ChallengeList', () => {
     ]);
     renderList();
     const list = await screen.findByRole('list', { name: en.challenge.listLabel });
-    expect(list.textContent).toContain('Insert314mm');
+    expect(list.textContent).toContain('Insert314mm+16 mm');
     const [toggle] = screen.getAllByLabelText(en.girthToggle.ariaLabel);
     fireEvent.click(within(toggle).getByRole('button', { name: en.girthToggle.diameter }));
-    expect(list.textContent).toContain('Insert100mm');
+    expect(list.textContent).toContain('Insert100mm+5 mm');
   });
 
   it('skips a challenge whose toy is not in the collection', async () => {
