@@ -4,6 +4,7 @@ export const queryKeys = {
   toys: {
     all: ['toys'] as const,
     attributeSuggestions: ['toys', 'attributeSuggestions'] as const,
+    challenges: ['toys', 'challenges'] as const,
   },
   sessions: {
     lists: ['sessions', 'list'] as const,
