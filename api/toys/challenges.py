@@ -21,6 +21,7 @@ REASONS = [RECENT_USE, NEAR_RECORD]
 REASON_POINTS = {RECENT_USE: 3, NEAR_RECORD: 2}
 
 NEW_TOY_POINTS = 10
+LOGGED_TIME_POINTS = 1
 RECENT_USE_WINDOW = timedelta(days=14)
 OLD_TOY_WINDOW = timedelta(days=60)
 NEAR_RECORD_SHARE = 0.75
@@ -132,14 +133,15 @@ def _time(ctx: ChallengeCtx) -> list[Challenge]:
     for toy in ctx.toys:
         if toy.session_count == 0:
             continue
-        reasons = _recent_use(toy, ctx.now)
         best = ctx.time_records.get(toy.id)
         if best is None:
-            found.append(_challenge(TIME, toy, 0, reasons))
+            found.append(_challenge(TIME, toy, 0))
             continue
+        reasons = _recent_use(toy, ctx.now)
         if toy.average_minutes is not None and toy.average_minutes >= NEAR_RECORD_SHARE * best:
             reasons += (NEAR_RECORD,)
-        found.append(_challenge(TIME, toy, 0, reasons, target=best + 1, best=best))
+        values = {"target": best + 1, "best": best}
+        found.append(_challenge(TIME, toy, LOGGED_TIME_POINTS, reasons, **values))
     return found
 
 

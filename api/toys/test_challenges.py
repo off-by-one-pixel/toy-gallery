@@ -224,13 +224,13 @@ class OldToyChallengeTests(ChallengeTestBase):
 
 
 class TimeChallengeTests(ChallengeTestBase):
-    def test_a_toy_without_a_logged_time_asks_for_one(self):
+    def test_a_toy_without_a_logged_time_asks_for_one_without_points(self):
         toy = self._toy("A")
         self._use(toy, days_ago=2)
         challenge = self._found(TIME)[toy]
         self.assertEqual(
             (challenge.points, challenge.target, challenge.best, challenge.reasons),
-            (3, None, None, (RECENT_USE,)),
+            (0, None, None, ()),
         )
 
     def test_the_target_is_one_minute_above_the_record(self):
@@ -238,19 +238,29 @@ class TimeChallengeTests(ChallengeTestBase):
         self._use(toy, duration=30)
         self._use(toy, duration=10, days_ago=LONG_AGO + 1)
         challenge = self._found(TIME)[toy]
-        self.assertEqual((challenge.target, challenge.best, challenge.points), (31, 30, 0))
+        self.assertEqual((challenge.target, challenge.best, challenge.points), (31, 30, 1))
 
-    def test_an_average_near_the_record_gets_two_points(self):
+    def test_an_average_near_the_record_gets_two_more_points(self):
         toy = self._toy("A")
         self._use(toy, duration=30)
         self._use(toy, duration=20, days_ago=LONG_AGO + 1)
         challenge = self._found(TIME)[toy]
-        self.assertEqual((challenge.points, challenge.reasons), (2, (NEAR_RECORD,)))
+        self.assertEqual((challenge.points, challenge.reasons), (3, (NEAR_RECORD,)))
 
     def test_recent_use_and_a_near_average_add_up(self):
         toy = self._toy("A")
         self._use(toy, days_ago=1, duration=30)
-        self.assertEqual(self._found(TIME)[toy].points, 5)
+        self.assertEqual(self._found(TIME)[toy].points, 6)
+
+    def test_a_logged_time_ranks_above_a_recently_used_toy_without_one(self):
+        timed = self._toy("B")
+        self._use(timed, duration=30)
+        self._use(timed, duration=10, days_ago=LONG_AGO + 1)
+        untimed = self._toy("A")
+        self._use(untimed, days_ago=1)
+        resync_records()
+        ranked = [c.toy.id for c in find_challenges(NOW) if c.kind == TIME]
+        self.assertEqual(ranked, [timed, untimed])
 
     def test_the_live_session_does_not_change_the_record(self):
         toy = self._toy("A")
