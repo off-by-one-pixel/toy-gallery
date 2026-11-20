@@ -27,14 +27,15 @@ class SessionDimensions:
     def _length_entries(session: models.Session):
         from .models import ToySessionEntry
 
-        return [e for e in session.entries.all() if e.involvement == ToySessionEntry.FULLY_INSERTED]
+        levels = ToySessionEntry.LENGTH_INVOLVEMENTS
+        return [e for e in session.entries.all() if e.involvement in levels]
 
     @staticmethod
     def _circumference_entries(session: models.Session):
         from .models import ToySessionEntry
 
-        contributing = (ToySessionEntry.INSERTED, ToySessionEntry.FULLY_INSERTED)
-        return [e for e in session.entries.all() if e.involvement in contributing]
+        levels = ToySessionEntry.CIRCUMFERENCE_INVOLVEMENTS
+        return [e for e in session.entries.all() if e.involvement in levels]
 
     @classmethod
     def peak_length(cls, session: models.Session) -> float | None:

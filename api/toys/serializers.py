@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from toys.records.session import record_session
 
-from . import models, stats
+from . import challenges, models, stats
 from .dimensions import SessionDimensions
 
 
@@ -339,6 +339,18 @@ class MediaLikeResponseSerializer(serializers.Serializer):
 class AttributeSuggestionSerializer(serializers.Serializer):
     key = serializers.CharField()
     values = serializers.ListField(child=serializers.CharField())
+
+
+class ChallengeSerializer(serializers.Serializer):
+    kind = serializers.ChoiceField(choices=challenges.KINDS)
+    toy = serializers.IntegerField(source="toy.id")
+    points = serializers.IntegerField()
+    target = serializers.FloatField(allow_null=True)
+    best = serializers.FloatField(allow_null=True)
+    reasons = serializers.ListField(child=serializers.ChoiceField(choices=challenges.REASONS))
+    session_count = serializers.IntegerField(source="toy.session_count")
+    last_used_at = serializers.DateTimeField(source="toy.last_used_at", allow_null=True)
+    average_minutes = serializers.FloatField(source="toy.average_minutes", allow_null=True)
 
 
 class RefreshMediaResponseSerializer(serializers.Serializer):

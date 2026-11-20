@@ -17,6 +17,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from . import export as export_mod
 from . import media, models, serializers, stats
+from .challenges import find_challenges
 from .records.session import resync_records
 
 
@@ -63,6 +64,12 @@ class ToyViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(responses=serializers.ChallengeSerializer(many=True))
+    @action(detail=False, methods=["get"])
+    def challenges(self, request):
+        found = find_challenges(timezone.now())
+        return Response(serializers.ChallengeSerializer(found, many=True).data)
 
     @extend_schema(responses=serializers.AttributeSuggestionSerializer(many=True))
     @action(detail=False, methods=["get"], url_path="attribute-suggestions")

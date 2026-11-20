@@ -93,6 +93,8 @@ class ToySessionEntry(models.Model):
     ]
 
     INVOLVEMENT_VALUE = {USED: 0, INSERTED: 1, FULLY_INSERTED: 2}
+    CIRCUMFERENCE_INVOLVEMENTS = (INSERTED, FULLY_INSERTED)
+    LENGTH_INVOLVEMENTS = (FULLY_INSERTED,)
 
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="entries")
     toy = models.ForeignKey(Toy, on_delete=models.PROTECT)
