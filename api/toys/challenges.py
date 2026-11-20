@@ -51,7 +51,6 @@ class Challenge:
     target: float | None = None
     best: float | None = None
     reasons: tuple[str, ...] = ()
-    step: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -99,10 +98,9 @@ def _size_challenges(
         size = size_of(toy)
         if size is None or size <= record:
             continue
-        step = (size - record) / record
-        points = step_points(step, bands)
+        points = step_points((size - record) / record, bands)
         if points is not None:
-            values = {"target": size, "best": record, "step": step}
+            values = {"target": size, "best": record}
             found.append(_challenge(kind, toy, points, _recent_use(toy, ctx.now), **values))
     return found
 
@@ -172,9 +170,7 @@ def _toy_records(kind: str) -> dict[int, float]:
 
 
 def _sort_key(challenge: Challenge):
-    toy = challenge.toy
-    kind_order = KINDS.index(challenge.kind)
-    return (-challenge.points, kind_order, challenge.step, toy.name.casefold(), toy.id)
+    return (-challenge.points, -challenge.toy.id)
 
 
 def sort_challenges(found: list[Challenge]) -> list[Challenge]:

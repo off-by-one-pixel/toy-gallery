@@ -58,9 +58,9 @@ class RecordKeysTests(SimpleTestCase):
         self.assertLessEqual(set(RECORD_KEYS.values()), registered)
 
 
-def _challenge(kind, name, points, step=0.0, toy_id=1):
+def _challenge(kind, name, points, toy_id=1):
     toy = ToyUsage(toy_id, name, None, None, 0, None, None)
-    return Challenge(kind, toy, points, step=step)
+    return Challenge(kind, toy, points)
 
 
 def _order(found):
@@ -72,18 +72,13 @@ class SortChallengesTests(SimpleTestCase):
         found = [_challenge(TIME, "a", 2), _challenge(GIRTH, "b", 8), _challenge(OLD_TOY, "c", 5)]
         self.assertEqual(_order(found), [(GIRTH, "b"), (OLD_TOY, "c"), (TIME, "a")])
 
-    def test_equal_points_follow_the_kind_order(self):
-        found = [_challenge(kind, "a", 3) for kind in [TIME, OLD_TOY, DEPTH, GIRTH, NEW_TOY]]
-        kinds = [kind for kind, _ in _order(found)]
-        self.assertEqual(kinds, [NEW_TOY, GIRTH, DEPTH, OLD_TOY, TIME])
-
-    def test_equal_kind_puts_the_smaller_step_first(self):
-        found = [_challenge(GIRTH, "a", 3, step=0.05), _challenge(GIRTH, "b", 3, step=0.04)]
-        self.assertEqual(_order(found), [(GIRTH, "b"), (GIRTH, "a")])
-
-    def test_equal_step_sorts_by_toy_name_ignoring_case(self):
-        found = [_challenge(TIME, "beta", 3, toy_id=1), _challenge(TIME, "Alpha", 3, toy_id=2)]
-        self.assertEqual(_order(found), [(TIME, "Alpha"), (TIME, "beta")])
+    def test_equal_points_put_the_larger_toy_id_first_whatever_the_kind(self):
+        found = [
+            _challenge(NEW_TOY, "a", 3, toy_id=1),
+            _challenge(TIME, "b", 3, toy_id=3),
+            _challenge(GIRTH, "c", 3, toy_id=2),
+        ]
+        self.assertEqual(_order(found), [(TIME, "b"), (GIRTH, "c"), (NEW_TOY, "a")])
 
 
 class ChallengeTestBase(ApiTestBase):
