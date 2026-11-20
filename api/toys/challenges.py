@@ -21,6 +21,7 @@ REASONS = [RECENT_USE, NEAR_RECORD]
 REASON_POINTS = {RECENT_USE: 3, NEAR_RECORD: 2}
 
 NEW_TOY_POINTS = 10
+LOGGED_TIME_POINTS = 1
 RECENT_USE_WINDOW = timedelta(days=14)
 OLD_TOY_WINDOW = timedelta(days=60)
 NEAR_RECORD_SHARE = 0.75
@@ -50,7 +51,6 @@ class Challenge:
     target: float | None = None
     best: float | None = None
     reasons: tuple[str, ...] = ()
-    step: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -98,10 +98,9 @@ def _size_challenges(
         size = size_of(toy)
         if size is None or size <= record:
             continue
-        step = (size - record) / record
-        points = step_points(step, bands)
+        points = step_points((size - record) / record, bands)
         if points is not None:
-            values = {"target": size, "best": record, "step": step}
+            values = {"target": size, "best": record}
             found.append(_challenge(kind, toy, points, _recent_use(toy, ctx.now), **values))
     return found
 
@@ -132,14 +131,15 @@ def _time(ctx: ChallengeCtx) -> list[Challenge]:
     for toy in ctx.toys:
         if toy.session_count == 0:
             continue
-        reasons = _recent_use(toy, ctx.now)
         best = ctx.time_records.get(toy.id)
         if best is None:
-            found.append(_challenge(TIME, toy, 0, reasons))
+            found.append(_challenge(TIME, toy, 0))
             continue
+        reasons = _recent_use(toy, ctx.now)
         if toy.average_minutes is not None and toy.average_minutes >= NEAR_RECORD_SHARE * best:
             reasons += (NEAR_RECORD,)
-        found.append(_challenge(TIME, toy, 0, reasons, target=best + 1, best=best))
+        values = {"target": best + 1, "best": best}
+        found.append(_challenge(TIME, toy, LOGGED_TIME_POINTS, reasons, **values))
     return found
 
 
@@ -170,9 +170,7 @@ def _toy_records(kind: str) -> dict[int, float]:
 
 
 def _sort_key(challenge: Challenge):
-    toy = challenge.toy
-    kind_order = KINDS.index(challenge.kind)
-    return (-challenge.points, kind_order, challenge.step, toy.name.casefold(), toy.id)
+    return (-challenge.points, -challenge.toy.id)
 
 
 def sort_challenges(found: list[Challenge]) -> list[Challenge]:
