@@ -13,6 +13,7 @@ export const routes = {
   home: '/',
   login: (next: string) => withParam('/login', routeParams.next, next),
   settings: '/settings',
+  challenges: '/challenges',
   sessions: {
     list: SESSIONS,
     selected: (id: number) => withParam(SESSIONS, routeParams.sessionId, id),

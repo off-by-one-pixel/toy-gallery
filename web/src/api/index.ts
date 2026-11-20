@@ -19,6 +19,7 @@ import {
   toysSessionsUpdate,
   toysTokenCreate,
   toysToysAttributeSuggestionsList,
+  toysToysChallengesList,
   toysToysCreate,
   toysToysDeleteAllDestroy,
   toysToysDestroy,
@@ -41,6 +42,7 @@ import {
   type AppToken,
   type AppTokenStatus,
   type AttributeSuggestion,
+  type Challenge,
   type DeleteCollectionSummary,
   type ImportSummary,
   type MediaRefreshSummary,
@@ -76,6 +78,8 @@ export const revokeAppToken = async (): Promise<void> => {
 export const fetchToys = (): Promise<Toy[]> => camel(toysToysList());
 
 export const fetchAttributeSuggestions = (): Promise<AttributeSuggestion[]> => toysToysAttributeSuggestionsList();
+
+export const fetchChallenges = (): Promise<Challenge[]> => camel(toysToysChallengesList());
 
 export const deleteToy = async (id: number | string): Promise<void> => {
   await toysToysDestroy(Number(id));

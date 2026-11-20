@@ -4,6 +4,7 @@ export type { AttributeSuggestion } from '@/api/generated/schemas';
 import type {
   AppToken as ApiAppToken,
   AppTokenStatus as ApiAppTokenStatus,
+  Challenge as ApiChallenge,
   DeleteCollectionSummary as ApiDeleteCollectionSummary,
   ImportSummary as ApiImportSummary,
   MediaStatus as ApiMediaStatus,
@@ -53,6 +54,8 @@ export type DeleteCollectionSummary = SnakeToCamel<ApiDeleteCollectionSummary>;
 
 export type AppToken = SnakeToCamel<ApiAppToken>;
 export type AppTokenStatus = SnakeToCamel<ApiAppTokenStatus>;
+
+export type Challenge = SnakeToCamel<ApiChallenge>;
 
 export type ToyTemplate = Readonly<{
   id: string;

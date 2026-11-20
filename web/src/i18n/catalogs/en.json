@@ -104,7 +104,31 @@
   "nav": {
     "ariaLabel": "Primary navigation",
     "gallery": "Gallery",
-    "sessions": "Sessions"
+    "sessions": "Sessions",
+    "challenges": "Challenges"
+  },
+  "challenge": {
+    "items": "{count, plural, one {# challenge} other {# challenges}}",
+    "listLabel": "Challenges",
+    "empty": "No challenges right now. Add a toy or log a session to get new ones.",
+    "target": {
+      "newToy": "First session",
+      "girth": "Insert",
+      "depth": "Fully insert",
+      "oldToy": "Use it again",
+      "time": "Beat",
+      "logTime": "Log a time"
+    },
+    "chip": {
+      "new": "New toy",
+      "girthStep": "{step} girth",
+      "lengthStep": "{step} length",
+      "best": "Best {value}",
+      "recentUse": "Used {when}",
+      "notUsedSince": "Not used since {date}",
+      "sessions": "Used {count}×",
+      "nearRecord": "Avg {average}, best {best}"
+    }
   },
   "session": {
     "newButton": "New session",
