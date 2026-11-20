@@ -5,7 +5,9 @@ from django.test import SimpleTestCase
 from . import models
 from .challenges import (
     DEPTH,
+    DEPTH_STEP_POINTS,
     GIRTH,
+    GIRTH_STEP_POINTS,
     NEAR_RECORD,
     NEW_TOY,
     OLD_TOY,
@@ -28,11 +30,18 @@ LONG_AGO = 100
 
 
 class StepPointsTests(SimpleTestCase):
-    def test_bands(self):
-        cases = [(0.01, 5), (0.025, 5), (0.03, 3), (0.05, 3), (0.07, 1), (0.10, 1), (0.11, None)]
+    def _assert_bands(self, bands, cases):
         for step, points in cases:
             with self.subTest(step=step):
-                self.assertEqual(step_points(step), points)
+                self.assertEqual(step_points(step, bands), points)
+
+    def test_girth_bands(self):
+        cases = [(0.01, 5), (0.025, 5), (0.03, 3), (0.05, 3), (0.07, 1), (0.10, 1), (0.11, None)]
+        self._assert_bands(GIRTH_STEP_POINTS, cases)
+
+    def test_depth_bands(self):
+        cases = [(0.03, 5), (0.05, 5), (0.07, 3), (0.10, 3), (0.12, 1), (0.15, 1), (0.16, None)]
+        self._assert_bands(DEPTH_STEP_POINTS, cases)
 
 
 class OldToyPointsTests(SimpleTestCase):
@@ -187,10 +196,13 @@ class DepthChallengeTests(ChallengeTestBase):
         challenge = self._found(DEPTH)[toy]
         self.assertEqual((challenge.points, challenge.target, challenge.best), (5, 204.0, 200.0))
 
-    def test_a_step_above_ten_percent_has_no_challenge(self):
+    def test_points_follow_the_depth_bands(self):
         self._use(self._toy("Record", insertable_length=200.0), involvement="FULLY_INSERTED")
-        toy = self._toy("Far", insertable_length=221.0)
-        self.assertNotIn(toy, self._found(DEPTH))
+        steps = {"5%": 210.0, "10%": 220.0, "15%": 230.0, "16%": 232.0}
+        toys = {label: self._toy(label, insertable_length=size) for label, size in steps.items()}
+        found = self._found(DEPTH)
+        points = {label: found[toy].points if toy in found else None for label, toy in toys.items()}
+        self.assertEqual(points, {"5%": 5, "10%": 3, "15%": 1, "16%": None})
 
 
 class OldToyChallengeTests(ChallengeTestBase):
