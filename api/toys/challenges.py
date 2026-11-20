@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from django.db.models import Avg, Count, Max, Q
 
-from .models import Toy, ToySessionEntry
+from .models import PersonalRecord, Toy
 
 NEW_TOY = "new-toy"
 GIRTH = "girth"
@@ -12,6 +12,8 @@ DEPTH = "depth"
 OLD_TOY = "old-toy"
 TIME = "time"
 KINDS = [NEW_TOY, GIRTH, DEPTH, OLD_TOY, TIME]
+
+RECORD_KEYS = {GIRTH: "pr-width", DEPTH: "pr-depth", TIME: "toy-time"}
 
 RECENT_USE = "recent-use"
 NEAR_RECORD = "near-record"
@@ -36,7 +38,6 @@ class ToyUsage:
     insertable_length: float | None
     session_count: int
     last_used_at: datetime | None
-    best_minutes: int | None
     average_minutes: float | None
 
 
@@ -54,8 +55,9 @@ class Challenge:
 @dataclass(frozen=True)
 class ChallengeCtx:
     toys: list[ToyUsage]
-    peak_circumference: float | None
-    peak_length: float | None
+    girth_record: float | None
+    depth_record: float | None
+    time_records: dict[int, float]
     now: datetime
 
 
@@ -82,29 +84,29 @@ def _new_toy(ctx: ChallengeCtx) -> list[Challenge]:
 
 
 def _size_challenges(
-    kind: str, ctx: ChallengeCtx, peak: float | None, size_of: Callable[[ToyUsage], float | None]
+    kind: str, ctx: ChallengeCtx, record: float | None, size_of: Callable[[ToyUsage], float | None]
 ) -> list[Challenge]:
-    if not peak:
+    if not record:
         return []
     found = []
     for toy in ctx.toys:
         size = size_of(toy)
-        if size is None or size <= peak:
+        if size is None or size <= record:
             continue
-        step = (size - peak) / peak
+        step = (size - record) / record
         points = step_points(step)
         if points is not None:
-            reasons = _recent_use(toy, ctx.now)
-            found.append(_challenge(kind, toy, points, reasons, target=size, best=peak, step=step))
+            values = {"target": size, "best": record, "step": step}
+            found.append(_challenge(kind, toy, points, _recent_use(toy, ctx.now), **values))
     return found
 
 
 def _girth(ctx: ChallengeCtx) -> list[Challenge]:
-    return _size_challenges(GIRTH, ctx, ctx.peak_circumference, lambda toy: toy.circumference)
+    return _size_challenges(GIRTH, ctx, ctx.girth_record, lambda toy: toy.circumference)
 
 
 def _depth(ctx: ChallengeCtx) -> list[Challenge]:
-    return _size_challenges(DEPTH, ctx, ctx.peak_length, lambda toy: toy.insertable_length)
+    return _size_challenges(DEPTH, ctx, ctx.depth_record, lambda toy: toy.insertable_length)
 
 
 def _old_toy(ctx: ChallengeCtx) -> list[Challenge]:
@@ -122,11 +124,11 @@ def _time(ctx: ChallengeCtx) -> list[Challenge]:
         if toy.session_count == 0:
             continue
         reasons = _recent_use(toy, ctx.now)
-        best = toy.best_minutes
-        if best is None or toy.average_minutes is None:
+        best = ctx.time_records.get(toy.id)
+        if best is None:
             found.append(_challenge(TIME, toy, 0, reasons))
             continue
-        if toy.average_minutes >= NEAR_RECORD_SHARE * best:
+        if toy.average_minutes is not None and toy.average_minutes >= NEAR_RECORD_SHARE * best:
             reasons += (NEAR_RECORD,)
         found.append(_challenge(TIME, toy, 0, reasons, target=best + 1, best=best))
     return found
@@ -141,7 +143,6 @@ def _toy_usage() -> list[ToyUsage]:
         .annotate(
             session_count=Count("toysessionentry", filter=_FINISHED),
             last_used_at=Max("toysessionentry__session__started_at", filter=_FINISHED),
-            best_minutes=Max("toysessionentry__duration_minutes", filter=_FINISHED),
             average_minutes=Avg("toysessionentry__duration_minutes", filter=_FINISHED),
         )
         .values(*(field.name for field in fields(ToyUsage)))
@@ -149,9 +150,14 @@ def _toy_usage() -> list[ToyUsage]:
     return [ToyUsage(**row) for row in rows]
 
 
-def _peak(field: str, involvements: tuple[str, ...]) -> float | None:
-    entries = ToySessionEntry.objects.filter(session__is_live=False, involvement__in=involvements)
-    return entries.aggregate(peak=Max(f"toy__{field}"))["peak"]
+def _record(kind: str) -> float | None:
+    records = PersonalRecord.objects.filter(key=RECORD_KEYS[kind])
+    return records.aggregate(best=Max("value"))["best"]
+
+
+def _toy_records(kind: str) -> dict[int, float]:
+    records = PersonalRecord.objects.filter(key=RECORD_KEYS[kind]).values("toy")
+    return {row["toy"]: row["best"] for row in records.annotate(best=Max("value"))}
 
 
 def _sort_key(challenge: Challenge):
@@ -167,8 +173,9 @@ def sort_challenges(found: list[Challenge]) -> list[Challenge]:
 def find_challenges(now: datetime) -> list[Challenge]:
     ctx = ChallengeCtx(
         toys=_toy_usage(),
-        peak_circumference=_peak("circumference", ToySessionEntry.CIRCUMFERENCE_INVOLVEMENTS),
-        peak_length=_peak("insertable_length", ToySessionEntry.LENGTH_INVOLVEMENTS),
+        girth_record=_record(GIRTH),
+        depth_record=_record(DEPTH),
+        time_records=_toy_records(TIME),
         now=now,
     )
     found = [challenge for definition in _DEFINITIONS for challenge in definition(ctx)]

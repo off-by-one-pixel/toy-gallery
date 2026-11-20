@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.test import SimpleTestCase
 
+from . import models
 from .challenges import (
     DEPTH,
     GIRTH,
@@ -9,6 +10,7 @@ from .challenges import (
     NEW_TOY,
     OLD_TOY,
     RECENT_USE,
+    RECORD_KEYS,
     TIME,
     Challenge,
     ToyUsage,
@@ -17,6 +19,8 @@ from .challenges import (
     sort_challenges,
     step_points,
 )
+from .records import SESSION_RECORD_DEFINITIONS, TOY_RECORD_DEFINITIONS
+from .records.session import resync_records
 from .testutils import ApiTestBase, utc
 
 NOW = utc("2026-06-30T12:00:00")
@@ -39,8 +43,14 @@ class OldToyPointsTests(SimpleTestCase):
                 self.assertEqual(old_toy_points(count), points)
 
 
+class RecordKeysTests(SimpleTestCase):
+    def test_each_record_key_is_a_registered_record(self):
+        registered = SESSION_RECORD_DEFINITIONS.keys() | TOY_RECORD_DEFINITIONS.keys()
+        self.assertLessEqual(set(RECORD_KEYS.values()), registered)
+
+
 def _challenge(kind, name, points, step=0.0, toy_id=1):
-    toy = ToyUsage(toy_id, name, None, None, 0, None, None, None)
+    toy = ToyUsage(toy_id, name, None, None, 0, None, None)
     return Challenge(kind, toy, points, step=step)
 
 
@@ -76,6 +86,7 @@ class ChallengeTestBase(ApiTestBase):
         return self._make_session(NOW - timedelta(days=days_ago), [entry], **fields)
 
     def _found(self, kind):
+        resync_records()
         return {c.toy.id: c for c in find_challenges(NOW) if c.kind == kind}
 
 
@@ -148,6 +159,13 @@ class GirthChallengeTests(ChallengeTestBase):
         found = self._found(GIRTH)
         self.assertEqual(found[candidate].best, 204.0)
         self.assertNotIn(retired_candidate, found)
+
+    def test_the_record_is_the_saved_record_value(self):
+        resync_records()
+        models.Toy.objects.filter(pk=self.record_toy).update(circumference=205.0)
+        toy = self._toy("Next", circumference=210.0)
+        challenge = next(c for c in find_challenges(NOW) if c.kind == GIRTH and c.toy.id == toy)
+        self.assertEqual(challenge.best, 200.0)
 
     def test_a_toy_without_a_circumference_is_not_a_candidate(self):
         toy = self._toy("Unknown", circumference=None)
