@@ -5,9 +5,10 @@ from django.test import SimpleTestCase
 from . import models
 from .challenges import (
     DEPTH,
-    DEPTH_STEP_POINTS,
+    DEPTH_INCH_STEPS,
     GIRTH,
-    GIRTH_STEP_POINTS,
+    GIRTH_INCH_STEPS,
+    MM_PER_INCH,
     NEAR_RECORD,
     NEW_TOY,
     OLD_TOY,
@@ -30,18 +31,19 @@ LONG_AGO = 100
 
 
 class StepPointsTests(SimpleTestCase):
-    def _assert_bands(self, bands, cases):
-        for step, points in cases:
-            with self.subTest(step=step):
-                self.assertEqual(step_points(step, bands), points)
+    def _assert_steps(self, inch_steps, record_inches, cases):
+        for size_inches, points in cases:
+            with self.subTest(size=size_inches):
+                increase = size_inches * MM_PER_INCH - record_inches * MM_PER_INCH
+                self.assertEqual(step_points(increase, inch_steps), points)
 
-    def test_girth_bands(self):
-        cases = [(0.01, 5), (0.025, 5), (0.03, 3), (0.05, 3), (0.07, 1), (0.10, 1), (0.11, None)]
-        self._assert_bands(GIRTH_STEP_POINTS, cases)
+    def test_girth_steps_are_half_inch_bands_up_to_one_and_a_half_inches(self):
+        cases = [(6.2, 5), (6.5, 5), (6.7, 3), (7.0, 3), (7.2, 1), (7.5, 1), (7.55, None)]
+        self._assert_steps(GIRTH_INCH_STEPS, 6.0, cases)
 
-    def test_depth_bands(self):
-        cases = [(0.03, 5), (0.05, 5), (0.07, 3), (0.10, 3), (0.12, 1), (0.15, 1), (0.16, None)]
-        self._assert_bands(DEPTH_STEP_POINTS, cases)
+    def test_depth_steps_end_at_one_two_and_two_and_a_half_inches(self):
+        cases = [(8.5, 5), (9.0, 5), (9.5, 3), (10.0, 3), (10.2, 1), (10.5, 1), (10.55, None)]
+        self._assert_steps(DEPTH_INCH_STEPS, 8.0, cases)
 
 
 class OldToyPointsTests(SimpleTestCase):
@@ -123,11 +125,11 @@ class GirthChallengeTests(ChallengeTestBase):
         self._use(self.record_toy, involvement="INSERTED")
 
     def test_points_follow_the_step_above_the_record(self):
-        steps = {"2%": 204.0, "5%": 210.0, "7.5%": 215.0, "15%": 230.0, "smaller": 190.0}
+        steps = {"+10mm": 210.0, "+20mm": 220.0, "+35mm": 235.0, "+39mm": 239.0, "less": 190.0}
         toys = {label: self._toy(label, circumference=size) for label, size in steps.items()}
         found = self._found(GIRTH)
         points = {label: found[toy].points if toy in found else None for label, toy in toys.items()}
-        self.assertEqual(points, {"2%": 5, "5%": 3, "7.5%": 1, "15%": None, "smaller": None})
+        self.assertEqual(points, {"+10mm": 5, "+20mm": 3, "+35mm": 1, "+39mm": None, "less": None})
 
     def test_the_challenge_names_the_target_and_the_record(self):
         toy = self._toy("Next", circumference=210.0)
@@ -193,11 +195,11 @@ class DepthChallengeTests(ChallengeTestBase):
 
     def test_points_follow_the_depth_bands(self):
         self._use(self._toy("Record", insertable_length=200.0), involvement="FULLY_INSERTED")
-        steps = {"5%": 210.0, "10%": 220.0, "15%": 230.0, "16%": 232.0}
+        steps = {"+20mm": 220.0, "+45mm": 245.0, "+60mm": 260.0, "+64mm": 264.0}
         toys = {label: self._toy(label, insertable_length=size) for label, size in steps.items()}
         found = self._found(DEPTH)
         points = {label: found[toy].points if toy in found else None for label, toy in toys.items()}
-        self.assertEqual(points, {"5%": 5, "10%": 3, "15%": 1, "16%": None})
+        self.assertEqual(points, {"+20mm": 5, "+45mm": 3, "+60mm": 1, "+64mm": None})
 
 
 class OldToyChallengeTests(ChallengeTestBase):

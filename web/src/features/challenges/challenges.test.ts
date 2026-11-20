@@ -48,20 +48,29 @@ describe('CHALLENGE_DISPLAY', () => {
     const girth = challenge({ kind: 'girth', target: 210, best: 200, reasons: ['recent-use'], lastUsedAt: daysAgo(3) });
     expect(show(girth)).toEqual({
       target: { label: 'Insert', value: { text: '210', suffix: 'mm' } },
-      chips: ['+5% girth', 'Best 200 mm', 'Used 3 days ago'],
+      chips: ['+10 mm girth', 'Best 200 mm', 'Used 3 days ago'],
     });
   });
 
-  it('shows girth values as a diameter when the user prefers it', () => {
-    const girth = challenge({ kind: 'girth', target: 100 * Math.PI, best: 95 * Math.PI });
-    expect(show(girth, ctx({ girth: 'diameter' })).target.value).toEqual({ text: '100', suffix: 'mm' });
+  it('shows girth values and the step as a diameter when the user prefers it', () => {
+    const girth = show(
+      challenge({ kind: 'girth', target: 100 * Math.PI, best: 95 * Math.PI }),
+      ctx({ girth: 'diameter' }),
+    );
+    expect(girth.target.value).toEqual({ text: '100', suffix: 'mm' });
+    expect(girth.chips[0]).toBe('+5 mm girth');
   });
 
   it('asks for a full insertion on the depth target', () => {
     expect(show(challenge({ kind: 'depth', target: 205, best: 200 }))).toEqual({
       target: { label: 'Fully insert', value: { text: '205', suffix: 'mm' } },
-      chips: ['+2.5% length', 'Best 200 mm'],
+      chips: ['+5 mm length', 'Best 200 mm'],
     });
+  });
+
+  it('shows the step in the unit the user prefers', () => {
+    const depth = challenge({ kind: 'depth', target: 14 * 25.4, best: 12.2 * 25.4 });
+    expect(show(depth, ctx({ unit: Unit.in })).chips[0]).toBe('+1.80 in length');
   });
 
   it('says yesterday for a use on the previous day', () => {
