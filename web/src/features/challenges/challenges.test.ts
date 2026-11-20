@@ -44,33 +44,33 @@ describe('CHALLENGE_DISPLAY', () => {
     });
   });
 
-  it('names the girth target, the step, the record and a recent use', () => {
+  it('names the girth target with its increase, the record and a recent use', () => {
     const girth = challenge({ kind: 'girth', target: 210, best: 200, reasons: ['recent-use'], lastUsedAt: daysAgo(3) });
     expect(show(girth)).toEqual({
-      target: { label: 'Insert', value: { text: '210', suffix: 'mm' } },
-      chips: ['+10 mm girth', 'Best 200 mm', 'Used 3 days ago'],
+      target: { label: 'Insert', value: { text: '210', suffix: 'mm' }, detail: '+10 mm' },
+      chips: ['Best 200 mm', 'Used 3 days ago'],
     });
   });
 
-  it('shows girth values and the step as a diameter when the user prefers it', () => {
-    const girth = show(
-      challenge({ kind: 'girth', target: 100 * Math.PI, best: 95 * Math.PI }),
-      ctx({ girth: 'diameter' }),
-    );
-    expect(girth.target.value).toEqual({ text: '100', suffix: 'mm' });
-    expect(girth.chips[0]).toBe('+5 mm girth');
+  it('shows girth values and the increase as a diameter when the user prefers it', () => {
+    const girth = challenge({ kind: 'girth', target: 100 * Math.PI, best: 95 * Math.PI });
+    expect(show(girth, ctx({ girth: 'diameter' })).target).toEqual({
+      label: 'Insert',
+      value: { text: '100', suffix: 'mm' },
+      detail: '+5 mm',
+    });
   });
 
-  it('asks for a full insertion on the depth target', () => {
+  it('asks for a full insertion on the depth target with its increase', () => {
     expect(show(challenge({ kind: 'depth', target: 205, best: 200 }))).toEqual({
-      target: { label: 'Fully insert', value: { text: '205', suffix: 'mm' } },
-      chips: ['+5 mm length', 'Best 200 mm'],
+      target: { label: 'Fully insert', value: { text: '205', suffix: 'mm' }, detail: '+5 mm' },
+      chips: ['Best 200 mm'],
     });
   });
 
-  it('shows the step in the unit the user prefers', () => {
+  it('shows the increase in the unit the user prefers', () => {
     const depth = challenge({ kind: 'depth', target: 14 * 25.4, best: 12.2 * 25.4 });
-    expect(show(depth, ctx({ unit: Unit.in })).chips[0]).toBe('+1.80 in length');
+    expect(show(depth, ctx({ unit: Unit.in })).target.detail).toBe('+1.80 in');
   });
 
   it('says yesterday for a use on the previous day', () => {
@@ -87,8 +87,13 @@ describe('CHALLENGE_DISPLAY', () => {
     expect(show(challenge({ kind: 'time' }))).toEqual({ target: { label: 'Log a time' }, chips: [] });
   });
 
-  it('names the time to beat and the average when it is near the record', () => {
+  it('names the time to beat with the average', () => {
     const time = challenge({ kind: 'time', target: 26, best: 25, reasons: ['near-record'], averageMinutes: 22.4 });
-    expect(show(time)).toEqual({ target: { label: 'Beat', value: { text: '25m' } }, chips: ['Avg 22m, best 25m'] });
+    expect(show(time)).toEqual({ target: { label: 'Beat', value: { text: '25m' }, detail: 'avg 22m' }, chips: [] });
+  });
+
+  it('shows the average even when it is not near the record', () => {
+    const time = challenge({ kind: 'time', target: 61, best: 60, averageMinutes: 20 });
+    expect(show(time).target.detail).toBe('avg 20m');
   });
 });

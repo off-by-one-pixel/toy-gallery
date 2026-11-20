@@ -1,13 +1,16 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/hooks/useNavigation', async () => (await import('@/test/navigation')).navigationModule());
 
 vi.mock('@/api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api')>()),
   fetchChallenges: vi.fn(),
+  fetchLiveSession: vi.fn(),
   fetchToys: vi.fn(),
 }));
 
-import { fetchChallenges, fetchToys } from '@/api';
+import { fetchChallenges, fetchLiveSession, fetchToys } from '@/api';
 import type { Challenge } from '@/api/types';
 import ChallengeList from '@/features/challenges/ChallengeList';
 import en from '@/i18n/catalogs/en.json';
@@ -33,6 +36,8 @@ const renderList = () => render(withAppProviders(<ChallengeList />));
 describe('ChallengeList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    vi.mocked(fetchLiveSession).mockResolvedValue(null);
     vi.mocked(fetchToys).mockResolvedValue([
       makeToy({ id: 1, brand: 'Acme', name: 'Fresh', size: 'M' }),
       makeToy({ id: 2, brand: 'Acme', name: 'Wide' }),
@@ -49,8 +54,32 @@ describe('ChallengeList', () => {
     const rows = within(list).getAllByRole('listitem');
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/First session\s?AcmeFreshM/),
-      expect.stringContaining('Insert205mmAcmeWide'),
+      expect.stringContaining('Insert205mm+5 mmAcmeWide'),
     ]);
+  });
+
+  it('shows the targets in the unit picked in the toolbar', async () => {
+    vi.mocked(fetchChallenges).mockResolvedValue([
+      challenge({ kind: 'depth', toy: 2, points: 5, target: 254, best: 228.6 }),
+    ]);
+    renderList();
+    const list = await screen.findByRole('list', { name: en.challenge.listLabel });
+    expect(list.textContent).toContain('Fully insert254mm+25 mm');
+    const [toggle] = screen.getAllByLabelText(en.unitToggle.ariaLabel);
+    fireEvent.click(within(toggle).getByRole('button', { name: 'in' }));
+    expect(list.textContent).toContain('Fully insert10.00in+1.00 in');
+  });
+
+  it('shows girth targets as a diameter when picked in the toolbar', async () => {
+    vi.mocked(fetchChallenges).mockResolvedValue([
+      challenge({ kind: 'girth', toy: 2, points: 5, target: 100 * Math.PI, best: 95 * Math.PI }),
+    ]);
+    renderList();
+    const list = await screen.findByRole('list', { name: en.challenge.listLabel });
+    expect(list.textContent).toContain('Insert314mm+16 mm');
+    const [toggle] = screen.getAllByLabelText(en.girthToggle.ariaLabel);
+    fireEvent.click(within(toggle).getByRole('button', { name: en.girthToggle.diameter }));
+    expect(list.textContent).toContain('Insert100mm+5 mm');
   });
 
   it('skips a challenge whose toy is not in the collection', async () => {

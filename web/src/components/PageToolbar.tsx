@@ -10,11 +10,11 @@ import UnitToggle from '@/features/preferences/UnitToggle';
 import LiveSessionBanner from '@/features/sessions/live/LiveSessionBanner';
 
 type Props = Readonly<{
-  start: ReactNode;
+  start?: ReactNode;
   menuExtrasStart?: ReactNode;
   menuExtrasEnd?: ReactNode;
   inlineExtras?: ReactNode;
-  actions: ActionDef[];
+  actions?: ActionDef[];
   growStart?: boolean;
   children?: ReactNode;
 }>;
@@ -24,7 +24,7 @@ export default function PageToolbar({
   menuExtrasStart,
   menuExtrasEnd,
   inlineExtras,
-  actions,
+  actions = [],
   growStart = false,
   children,
 }: Props) {

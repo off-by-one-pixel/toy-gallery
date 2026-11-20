@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { fetchChallenges } from '@/api';
 import { queryKeys } from '@/api/queryKeys';
 import type { Challenge, Toy } from '@/api/types';
+import PageToolbar from '@/components/PageToolbar';
 import { useSetTopBarSubtitle } from '@/components/TopBarProvider';
 import {
   CHALLENGE_DISPLAY,
@@ -66,14 +67,17 @@ export default function ChallengeList() {
   };
 
   return (
-    <main className="mx-auto max-w-300 px-4 py-6 sm:px-6">
-      {error && (
-        <Alert status="danger" className="mb-4">
-          <Alert.Description>{error}</Alert.Description>
-        </Alert>
-      )}
-      {renderBody()}
-    </main>
+    <>
+      <PageToolbar />
+      <main className="mx-auto max-w-300 px-4 py-6 sm:px-6">
+        {error && (
+          <Alert status="danger" className="mb-4">
+            <Alert.Description>{error}</Alert.Description>
+          </Alert>
+        )}
+        {renderBody()}
+      </main>
+    </>
   );
 }
 
@@ -139,6 +143,7 @@ function TargetBlock({ target, tone }: Readonly<{ target: ChallengeTarget; tone:
           {' '}
         </span>
       )}
+      {target.detail && <span className="text-xs font-semibold tabular-nums opacity-80">{target.detail}</span>}
     </div>
   );
 }
