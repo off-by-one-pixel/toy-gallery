@@ -22,7 +22,8 @@ import SectionHeading from '@/components/SectionHeading';
 import ToySortControl from '@/features/toys/gallery/ToySortControl';
 import ToyChipSelector from '@/features/sessions/form/ToyChipSelector';
 import {
-  isLiveOpen,
+  type LiveState,
+  liveState,
   selectionsFromSession,
   sessionPayload,
   sessionSaveKind,
@@ -33,14 +34,19 @@ import type { Translator } from '@/i18n/translator';
 
 type SessionFormMode = { kind: 'new' } | { kind: 'edit'; sessionId: number };
 
-const saveLabelFor = (isLive: boolean, liveUpdateMode: boolean, t: Translator<'session'>): string => {
-  if (!isLive) return t('save');
-  return liveUpdateMode ? t('live.updateButton') : t('live.endAndSaveButton');
+const saveLabelFor = (live: LiveState | null, t: Translator<'session'>): string => {
+  if (live === 'open') return t('live.updateButton');
+  if (live === 'ending') return t('live.endAndSaveButton');
+  return t('save');
 };
 
 const datetimeLocalNow = () => datetimeLocalValue(new Date());
 
-type Props = Readonly<{ mode: SessionFormMode; onDone: () => void; onSaved: (session: Session) => void }>;
+type Props = Readonly<{
+  mode: SessionFormMode;
+  onDone: () => void;
+  onSaved: (saved: Session, live: LiveState | null) => void;
+}>;
 
 type SessionDetail = ReturnType<typeof useSession>;
 
@@ -88,13 +94,13 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
     ];
   }, [toys, query, sort, initialToyIds]);
   const selectedCount = selections.size;
-  const liveOpen = isLiveOpen(loadedSession, endedAt);
+  const live = liveState(loadedSession, endedAt);
+  const liveOpen = live === 'open';
   const now = useNow(60_000, liveOpen);
   const spanEnd = liveOpen ? datetimeLocalValue(now) : endedAt;
   const sessionSpan = startedAt && spanEnd ? minutesBetween(startedAt, spanEnd) : null;
   const wholeSessionMinutes = sessionSpan !== null && sessionSpan > 0 ? sessionSpan : null;
 
-  const isLive = loadedSession?.isLive === true;
   const draft = { startedAt, endedAt, selections };
   const saveKind = sessionSaveKind(loadedSession, draft);
 
@@ -107,11 +113,11 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
       liveStartOnly: saveKind === 'startOnly',
       payload: sessionPayload(draft),
     });
-    if (saved) onSaved(saved);
+    if (saved) onSaved(saved, live);
   };
 
   const title = mode.kind === 'edit' ? t('editTitle') : t('newTitle');
-  const saveLabel = saveLabelFor(isLive, liveOpen, t);
+  const saveLabel = saveLabelFor(live, t);
 
   return (
     <>
@@ -126,7 +132,7 @@ function SessionFormContent({ mode, onDone, onSaved, detail }: Props & Readonly<
             {t('backToList')}
           </button>
           <h1 className="m-0 text-lg font-semibold tracking-tight text-foreground">{title}</h1>
-          {loadedSession?.isLive === true && <LiveBadge />}
+          {live && <LiveBadge />}
         </div>
       </header>
 

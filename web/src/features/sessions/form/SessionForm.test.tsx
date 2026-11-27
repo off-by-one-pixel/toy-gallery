@@ -76,8 +76,27 @@ describe('SessionForm live sessions', () => {
         payload: expect.objectContaining({ entries: [] }),
       }),
     );
-    await settle(() => expect(onSaved).toHaveBeenCalledWith(saved));
+    await settle(() => expect(onSaved).toHaveBeenCalledWith(saved, 'open'));
     expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it('reports a live session as ending when it is saved with an end time', async () => {
+    const saved = makeSession({ id: 5, startedAt: '2026-08-22T08:00:00Z', endedAt: '2026-08-22T09:00:00Z' });
+    sessionsState.current.session = makeSession({
+      id: 5,
+      startedAt: '2026-08-22T08:00:00Z',
+      isLive: true,
+      entries: [{ toy: 1, involvement: 'FULLY_INSERTED', durationMinutes: null }],
+    } as never);
+    sessionsState.current.saveSession.mockResolvedValue(saved);
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
+
+    await screen.findByRole('button', { name: en.session.live.updateButton });
+    const endInput = document.querySelectorAll('input[type="datetime-local"]')[1];
+    fireEvent.change(endInput, { target: { value: '2026-08-22T09:00' } });
+    fireEvent.click(await screen.findByRole('button', { name: en.session.live.endAndSaveButton }));
+
+    await settle(() => expect(onSaved).toHaveBeenCalledWith(saved, 'ending'));
   });
 
   it('offers a start-to-now quick set for toy time on a live session', async () => {

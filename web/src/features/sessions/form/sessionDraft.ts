@@ -35,8 +35,12 @@ export const withDuration = (
   return current ? new Map(selections).set(toyId, { ...current, durationMinutes }) : selections;
 };
 
-export const isLiveOpen = (session: Session | null, endedAt: string): boolean =>
-  session?.isLive === true && endedAt === '';
+export type LiveState = 'open' | 'ending';
+
+export const liveState = (session: Session | null, endedAt: string): LiveState | null => {
+  if (session?.isLive !== true) return null;
+  return endedAt === '' ? 'open' : 'ending';
+};
 
 export const sessionSaveKind = (
   session: Session | null,
@@ -44,7 +48,7 @@ export const sessionSaveKind = (
 ): SessionSaveKind | null => {
   if (selections.size > 0) return 'full';
   const startChanged = session !== null && startedAt !== datetimeLocalValue(new Date(session.startedAt));
-  return isLiveOpen(session, endedAt) && startChanged ? 'startOnly' : null;
+  return liveState(session, endedAt) === 'open' && startChanged ? 'startOnly' : null;
 };
 
 export const sessionPayload = ({ startedAt, endedAt, selections }: SessionDraft): SessionPayload => ({
