@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Involvement } from '@/api/types';
 import {
-  isLiveOpen,
+  liveState,
   selectionsFromSession,
   sessionPayload,
   sessionSaveKind,
@@ -73,18 +73,18 @@ describe('withDuration', () => {
   });
 });
 
-describe('isLiveOpen', () => {
+describe('liveState', () => {
   it('is open for a live session without an end time', () => {
-    expect(isLiveOpen(makeSession({ isLive: true }), '')).toBe(true);
+    expect(liveState(makeSession({ isLive: true }), '')).toBe('open');
   });
 
-  it('is closed once an end time is entered', () => {
-    expect(isLiveOpen(makeSession({ isLive: true }), '2026-08-22T09:00')).toBe(false);
+  it('is ending once an end time is entered', () => {
+    expect(liveState(makeSession({ isLive: true }), '2026-08-22T09:00')).toBe('ending');
   });
 
-  it('is closed for a finished session and without a session', () => {
-    expect(isLiveOpen(makeSession(), '')).toBe(false);
-    expect(isLiveOpen(null, '')).toBe(false);
+  it('is absent for a finished session and without a session', () => {
+    expect(liveState(makeSession(), '')).toBeNull();
+    expect(liveState(null, '')).toBeNull();
   });
 });
 
