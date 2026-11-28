@@ -5,12 +5,15 @@ import {
   datetimeLocalValue,
   formatWhen,
   daysAgoDateString,
+  joinDatetimeLocal,
   localDateKey,
   localizedHourLabel,
   localizedWeekdayLabel,
   parseDateKey,
+  splitDatetimeLocal,
   startOfDay,
   startOfWeek,
+  withDefaultDate,
 } from '@/lib/dates';
 
 describe('localDateKey', () => {
@@ -66,6 +69,38 @@ describe('parseDateKey', () => {
 describe('datetimeLocalValue', () => {
   it('formats a local datetime-local input value', () => {
     expect(datetimeLocalValue(new Date(2026, 5, 8, 7, 5))).toBe('2026-06-08T07:05');
+  });
+});
+
+describe('splitDatetimeLocal', () => {
+  it('splits a datetime-local value into its date and time', () => {
+    expect(splitDatetimeLocal('2026-06-08T07:05')).toEqual({ date: '2026-06-08', time: '07:05' });
+  });
+
+  it('gives empty parts for an empty value', () => {
+    expect(splitDatetimeLocal('')).toEqual({ date: '', time: '' });
+  });
+});
+
+describe('joinDatetimeLocal', () => {
+  it('joins a date and a time into a datetime-local value', () => {
+    expect(joinDatetimeLocal({ date: '2026-06-08', time: '07:05' })).toBe('2026-06-08T07:05');
+  });
+
+  it('is empty until both parts are set', () => {
+    expect(joinDatetimeLocal({ date: '2026-06-08', time: '' })).toBe('');
+    expect(joinDatetimeLocal({ date: '', time: '07:05' })).toBe('');
+  });
+});
+
+describe('withDefaultDate', () => {
+  it('fills in the date when none is set', () => {
+    expect(withDefaultDate({ date: '', time: '' }, '2026-06-08')).toEqual({ date: '2026-06-08', time: '' });
+  });
+
+  it('keeps a date that is already set', () => {
+    const parts = { date: '2026-06-01', time: '21:00' };
+    expect(withDefaultDate(parts, '2026-06-08')).toBe(parts);
   });
 });
 

@@ -143,6 +143,8 @@
     "startedLabel": "Started",
     "endedLabel": "Ended",
     "clearEndedLabel": "Clear end time",
+    "dateFieldLabel": "Date",
+    "timeFieldLabel": "Time",
     "duration": {
       "label": "Plugged time",
       "clearLabel": "Clear plugged time",

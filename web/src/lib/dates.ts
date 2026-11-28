@@ -29,6 +29,18 @@ export function datetimeLocalValue(d: Date): string {
   return `${localDateKey(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+export type DateTimeParts = Readonly<{ date: string; time: string }>;
+
+export const splitDatetimeLocal = (value: string): DateTimeParts => {
+  const [date = '', time = ''] = value.split('T');
+  return { date, time };
+};
+
+export const joinDatetimeLocal = ({ date, time }: DateTimeParts): string => (date && time ? `${date}T${time}` : '');
+
+export const withDefaultDate = (parts: DateTimeParts, date: string): DateTimeParts =>
+  parts.date ? parts : { ...parts, date };
+
 export function formatDateKey(key: string, locale: string): string {
   return parseDateKey(key).toLocaleDateString(locale, {
     weekday: 'short',

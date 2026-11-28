@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { settle } from '@/test/wait';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -28,6 +28,7 @@ vi.mock('@/features/toys/useToys', () => ({
 import en from '@/i18n/catalogs/en.json';
 import { resetNavigation } from '@/test/navigation';
 import { makeSession, makeToy } from '@/test/fixtures';
+import { localDateKey } from '@/lib/dates';
 import { formatDuration } from '@/lib/duration';
 import { withAppProviders } from '@/test/render';
 import SessionForm from '@/features/sessions/form/SessionForm';
@@ -35,6 +36,11 @@ import SessionForm from '@/features/sessions/form/SessionForm';
 globalThis.CSS ??= { escape: (value: string) => value } as unknown as typeof CSS;
 
 const liveSession = (startedAt: string) => makeSession({ id: 5, startedAt, isLive: true });
+
+const fieldInput = (field: string, part: string) =>
+  within(screen.getByRole('group', { name: field })).getByLabelText<HTMLInputElement>(part);
+
+const setInput = (input: HTMLInputElement, value: string) => fireEvent.change(input, { target: { value } });
 
 const onDone = vi.fn();
 const onSaved = vi.fn();
@@ -62,9 +68,7 @@ describe('SessionForm live sessions', () => {
     expect(screen.queryByRole('button', { name: en.session.live.endAndSaveButton })).toBeNull();
     expect(save.hasAttribute('disabled')).toBe(true);
 
-    const startInput = document.querySelector('input[type="datetime-local"]');
-    expect(startInput).not.toBeNull();
-    fireEvent.change(startInput as Element, { target: { value: '2026-08-22T07:00' } });
+    setInput(fieldInput(en.session.startedLabel, en.session.timeFieldLabel), '07:07');
     await settle(() => expect(save.hasAttribute('disabled')).toBe(false));
     fireEvent.click(save);
 
@@ -92,11 +96,56 @@ describe('SessionForm live sessions', () => {
     render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
 
     await screen.findByRole('button', { name: en.session.live.updateButton });
-    const endInput = document.querySelectorAll('input[type="datetime-local"]')[1];
-    fireEvent.change(endInput, { target: { value: '2026-08-22T09:00' } });
+    setInput(fieldInput(en.session.endedLabel, en.session.dateFieldLabel), '2026-08-22');
+    setInput(fieldInput(en.session.endedLabel, en.session.timeFieldLabel), '09:00');
     fireEvent.click(await screen.findByRole('button', { name: en.session.live.endAndSaveButton }));
 
     await settle(() => expect(onSaved).toHaveBeenCalledWith(saved, 'ending'));
+  });
+
+  it('sets the end date to today when the end time is focused, keeping the session open until a time is set', async () => {
+    sessionsState.current.session = liveSession('2026-08-22T08:00:00Z');
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
+
+    await screen.findByRole('button', { name: en.session.live.updateButton });
+    const endDate = fieldInput(en.session.endedLabel, en.session.dateFieldLabel);
+    const endTime = fieldInput(en.session.endedLabel, en.session.timeFieldLabel);
+    expect(endDate.value).toBe('');
+    fireEvent.focus(endTime);
+
+    await settle(() => expect(endDate.value).toBe(localDateKey(new Date())));
+    expect(screen.getByRole('button', { name: en.session.live.updateButton })).toBeTruthy();
+
+    setInput(endTime, '09:00');
+    await settle(() => expect(screen.getByRole('button', { name: en.session.live.endAndSaveButton })).toBeTruthy());
+  });
+
+  it('keeps an end date that is already set when the end time is focused', async () => {
+    sessionsState.current.session = liveSession('2026-08-22T08:00:00Z');
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
+
+    await screen.findByRole('button', { name: en.session.live.updateButton });
+    const endDate = fieldInput(en.session.endedLabel, en.session.dateFieldLabel);
+    setInput(endDate, '2026-08-22');
+    fireEvent.focus(fieldInput(en.session.endedLabel, en.session.timeFieldLabel));
+
+    await settle(() => expect(screen.getByRole('button', { name: en.session.clearEndedLabel })).toBeTruthy());
+    expect(endDate.value).toBe('2026-08-22');
+  });
+
+  it('clears both the end date and the end time', async () => {
+    sessionsState.current.session = makeSession({
+      id: 5,
+      startedAt: '2026-06-01T20:00:00',
+      endedAt: '2026-06-01T21:30:00',
+    });
+    render(withAppProviders(<SessionForm mode={{ kind: 'edit', sessionId: 5 }} onDone={onDone} onSaved={onSaved} />));
+
+    fireEvent.click(await screen.findByRole('button', { name: en.session.clearEndedLabel }));
+
+    await settle(() => expect(fieldInput(en.session.endedLabel, en.session.dateFieldLabel).value).toBe(''));
+    expect(fieldInput(en.session.endedLabel, en.session.timeFieldLabel).value).toBe('');
+    expect(screen.queryByRole('button', { name: en.session.clearEndedLabel })).toBeNull();
   });
 
   it('offers a start-to-now quick set for toy time on a live session', async () => {
