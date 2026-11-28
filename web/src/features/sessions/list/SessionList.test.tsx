@@ -66,6 +66,7 @@ import { navState, resetNavigation, updateParamsMock } from '@/test/navigation';
 import type { Session, Toy } from '@/api/types';
 import { currentPeriod, parseSessionFilters, stepPeriod, toysById } from '@/features/sessions/session';
 import { makeSession, makeToy } from '@/test/fixtures';
+import { formatDuration } from '@/lib/duration';
 import {
   intersect,
   observerCallbacks,
@@ -202,6 +203,27 @@ describe('SessionList', () => {
     });
     expect(screen.getAllByLabelText(en.session.records.plugged)).toHaveLength(2);
     expect(screen.getAllByText('45m').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows the session duration under the start time only for sessions with an end time', () => {
+    renderList({ sessions: [{ ...session(1), endedAt: '2026-06-01T21:30:00' }, session(2)] });
+    const [ended, open] = screen.getAllByText(/^Jun 1 ·/).map((when) => when.parentElement);
+    expect(ended?.nextElementSibling?.textContent).toBe(formatDuration(90, 'en'));
+    expect(ended?.nextElementSibling?.className).toContain('text-muted');
+    expect(open?.nextElementSibling).toBeNull();
+  });
+
+  it('keeps the media badge on the start time line, with the duration below', () => {
+    renderList({ sessions: [{ ...session(1, { photos: 2, videos: 1 }), endedAt: '2026-06-01T21:30:00' }] });
+    const line = screen.getByLabelText('2 photos, 1 videos').parentElement;
+    expect(line?.firstElementChild?.textContent).toMatch(/^Jun 1 ·/);
+    expect(line?.nextElementSibling?.textContent).toBe(formatDuration(90, 'en'));
+  });
+
+  it('shows the running time of a live session under its start time, not as plugged time', () => {
+    renderList({ sessions: [{ ...session(1), isLive: true }] });
+    expect(screen.getByText(/^Jun 1 ·/).parentElement?.nextElementSibling?.className).toContain('text-live-strong');
+    expect(screen.queryByText(en.session.totalTime)).toBeNull();
   });
 
   it('publishes the server count to the top bar, not the loaded page size', () => {

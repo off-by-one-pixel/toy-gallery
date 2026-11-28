@@ -132,7 +132,7 @@
     "newButton": "New session",
     "recorded": "recorded",
     "detailsToggleLabel": "Toggle session details",
-    "totalTime": "Time",
+    "totalTime": "Plugged time",
     "live": {
       "startButton": "Start session",
       "badge": "Live",
@@ -143,6 +143,8 @@
     "startedLabel": "Started",
     "endedLabel": "Ended",
     "clearEndedLabel": "Clear end time",
+    "dateFieldLabel": "Date",
+    "timeFieldLabel": "Time",
     "duration": {
       "label": "Plugged time",
       "clearLabel": "Clear plugged time",

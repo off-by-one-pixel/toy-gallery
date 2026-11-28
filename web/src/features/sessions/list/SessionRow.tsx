@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActionButtons, editDeleteActions } from '@/components/ActionButtons';
 import { useGirth } from '@/features/preferences/useGirth';
 import { displayGirth } from '@/features/preferences/girth';
-import { formatDuration } from '@/lib/duration';
+import { formatDuration, minutesBetween } from '@/lib/duration';
 import { heightScale } from '@/features/toys/scaling';
 import { formatWhen } from '@/lib/dates';
 import { sortEntriesByInvolvement } from '@/features/sessions/session';
@@ -78,7 +78,8 @@ function SessionRow({
   const scale = heightScale(orderedEntries.map((e) => toysById.get(e.toy)));
   const totalMinutes = session.totalToyDurationMinutes ?? 0;
   const { elapsed } = useLiveElapsed(session.isLive ? session.startedAt : null);
-  const timeValue = elapsed ?? formatDuration(totalMinutes, locale);
+  const sessionDuration =
+    elapsed ?? (session.endedAt ? formatDuration(minutesBetween(session.startedAt, session.endedAt), locale) : null);
 
   const mmValue = (mm: number | null | undefined) =>
     mm == null ? null : (
@@ -119,27 +120,36 @@ function SessionRow({
         className="absolute inset-0 cursor-pointer rounded-xl"
       />
       <div className="flex items-center justify-between gap-3 sm:contents">
-        <div className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-foreground sm:order-1">
-          <span className="whitespace-nowrap">{formatWhen(session.startedAt, new Date(), locale, whenT)}</span>
-          {session.isLive && <LiveBadge />}
-          {photoCount + videoCount > 0 && (
+        <div className="flex flex-col text-base font-semibold tracking-tight text-foreground sm:order-1">
+          <div className="flex items-center gap-2.5">
+            <span className="whitespace-nowrap">{formatWhen(session.startedAt, new Date(), locale, whenT)}</span>
+            {session.isLive && <LiveBadge />}
+            {photoCount + videoCount > 0 && (
+              <span
+                aria-label={t('media.countsLabel', { photos: photoCount, videos: videoCount })}
+                title={t('media.countsLabel', { photos: photoCount, videos: videoCount })}
+                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent-soft px-2.5 py-1 text-sm font-medium tabular-nums text-accent-soft-foreground"
+              >
+                {photoCount > 0 && (
+                  <span className="inline-flex items-center gap-0.5">
+                    <ImageIcon size={14} strokeWidth={2} />
+                    {photoCount}
+                  </span>
+                )}
+                {videoCount > 0 && (
+                  <span className="inline-flex items-center gap-0.5">
+                    <Video size={14} strokeWidth={2} />
+                    {videoCount}
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+          {sessionDuration && (
             <span
-              aria-label={t('media.countsLabel', { photos: photoCount, videos: videoCount })}
-              title={t('media.countsLabel', { photos: photoCount, videos: videoCount })}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent-soft px-2.5 py-1 text-sm font-medium tabular-nums text-accent-soft-foreground"
+              className={'text-sm font-medium tabular-nums ' + (session.isLive ? 'text-live-strong' : 'text-muted')}
             >
-              {photoCount > 0 && (
-                <span className="inline-flex items-center gap-0.5">
-                  <ImageIcon size={14} strokeWidth={2} />
-                  {photoCount}
-                </span>
-              )}
-              {videoCount > 0 && (
-                <span className="inline-flex items-center gap-0.5">
-                  <Video size={14} strokeWidth={2} />
-                  {videoCount}
-                </span>
-              )}
+              {sessionDuration}
             </span>
           )}
         </div>
@@ -178,12 +188,11 @@ function SessionRow({
             value={mmValue(displayGirth(session.maxCircumference, girth))}
             recordLabel={peakRecordLabel('circumference')}
           />
-          {(session.isLive || totalMinutes > 0) && (
+          {totalMinutes > 0 && (
             <PeakRow
               label={t('totalTime')}
-              value={timeValue}
-              recordLabel={session.isLive ? undefined : peakRecordLabel('duration')}
-              live={session.isLive}
+              value={formatDuration(totalMinutes, locale)}
+              recordLabel={peakRecordLabel('duration')}
             />
           )}
         </div>

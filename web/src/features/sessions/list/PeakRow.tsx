@@ -8,22 +8,16 @@ type Props = Readonly<{
   label: string;
   value: ReactNode;
   recordLabel?: string;
-  live?: boolean;
 }>;
 
-export default function PeakRow({ label, value, recordLabel, live = false }: Props) {
+export default function PeakRow({ label, value, recordLabel }: Props) {
   return (
     <div className="flex items-baseline gap-2 py-0.5 sm:contents">
       <span className="text-caption uppercase tracking-wider text-text-tertiary sm:justify-self-end">{label}</span>
       {value == null ? (
         <span className="text-[15px] font-medium text-text-tertiary sm:justify-self-start sm:text-[17px]">—</span>
       ) : (
-        <span
-          className={
-            'whitespace-nowrap text-[15px] font-semibold tracking-tight tabular-nums sm:justify-self-start sm:text-[17px] ' +
-            (live ? 'rounded-full bg-live/15 px-2.5 py-0.5 text-live-strong' : 'text-foreground')
-          }
-        >
+        <span className="whitespace-nowrap text-[15px] font-semibold tracking-tight text-foreground tabular-nums sm:justify-self-start sm:text-[17px]">
           {value}
           {recordLabel && <RecordTrophy label={recordLabel} className="relative -top-0.5 ml-1.5 align-middle" />}
         </span>
