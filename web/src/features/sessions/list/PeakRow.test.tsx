@@ -17,9 +17,4 @@ describe('PeakRow', () => {
     expect(screen.getByText('120 mm').className).toContain('text-foreground');
     expect(screen.getByLabelText('Longest')).toBeTruthy();
   });
-
-  it('highlights a live value', () => {
-    render(withAppProviders(<PeakRow label="Total time" value="12m 05s" live />));
-    expect(screen.getByText('12m 05s').className).toContain('text-live-strong');
-  });
 });

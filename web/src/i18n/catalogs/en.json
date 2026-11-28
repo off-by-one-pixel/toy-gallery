@@ -132,7 +132,7 @@
     "newButton": "New session",
     "recorded": "recorded",
     "detailsToggleLabel": "Toggle session details",
-    "totalTime": "Time",
+    "totalTime": "Plugged time",
     "live": {
       "startButton": "Start session",
       "badge": "Live",
